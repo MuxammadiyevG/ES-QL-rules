@@ -15,9 +15,9 @@ RULES_BASE_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), "..", "rules"))
 
 # Elasticsearch Configuration
-ELASTIC_URL = "http://139.28.47.17:9908/"
-ELASTIC_USER = "elastic"
-ELASTIC_PASS = "elasticpassword"
+ELASTIC_URL = ""
+ELASTIC_USER = ""
+ELASTIC_PASS = ""
 
 es = Elasticsearch(
     ELASTIC_URL,
