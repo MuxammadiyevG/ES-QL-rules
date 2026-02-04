@@ -58,14 +58,10 @@ references:
   - "HIPAA Security Rule - Access Controls"
   - "45 CFR §164.308(a)(3) - Workforce Security"
   - "Federal Trade Commission - Medical Identity Theft"
-nist: "IR-4"
-gdpr: ""
-pci_dss:
-  requirement: ""
-  controls: []
-hipaa:
-  security_rule: "§164.312(a)"
-  privacy_rule: ""
+nist: ["IR-4"]
+gdpr: []
+pci_dss: []
+hipaa: ["§164.312(a)"]
 mitre_attack:
-  tactic: "Impact"
-  technique: "T1498"
+  TA0004:
+    T1498: []
