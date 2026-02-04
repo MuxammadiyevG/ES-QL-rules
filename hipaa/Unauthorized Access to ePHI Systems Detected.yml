@@ -1,0 +1,72 @@
+#//RULE-HIPAA-01 — Unauthorized Access to Electronic PHI (ePHI) - §164.312(a)(1)
+#//Requirement: HIPAA Security Rule §164.312(a)(1) - Access Control
+#//Objective: Detect unauthorized access to systems containing ePHI
+#//Data sources: Authentication logs, database audit logs, EMR access logs
+#//ECS fields used: event.category, user.name, event.outcome, source.ip, destination.ip
+#//Tuning notes: Define ePHI systems; monitor role-based access violations
+
+name: "RULE-HIPAA-01: Unauthorized Access to ePHI Systems Detected"
+description: |
+  Identifies unauthorized access attempts or successful unauthorized access to
+  electronic Protected Health Information (ePHI) systems including EHR/EMR databases,
+  patient records, billing systems, and clinical applications. HIPAA Security Rule
+  §164.312(a)(1) requires unique user identification and emergency access procedures.
+  Detects failed authentication to ePHI systems, privilege escalation to PHI databases,
+  access from unauthorized IP ranges, and off-hours access by non-clinical users.
+  Correlate with user roles, access policies, and emergency access logs.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "authentication"
+    AND (
+      CIDR_MATCH(destination.ip, "10.100.0.0/16", "192.168.50.0/24")
+      OR host.name RLIKE "(?i).*(emr|ehr|epic|cerner|meditech|pacs|ris|his|phi|patient|clinical).*"
+    )
+  | WHERE (
+      event.outcome == "failure"
+      OR (event.outcome == "success" 
+          AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+    )
+  | STATS access_attempts = COUNT(*),
+          success_count = COUNT_IF(event.outcome == "success"),
+          failure_count = COUNT_IF(event.outcome == "failure"),
+          sources = VALUES(source.ip),
+          systems = VALUES(host.name),
+          users = VALUES(user.name)
+    BY source.ip, user.name
+  | WHERE access_attempts > 0
+  | EVAL risk_score = CASE(
+      success_count > 0 AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"), 100,
+      failure_count > 10, 90,
+      success_count > 0, 85,
+      75
+    )
+  | KEEP source.ip, user.name, access_attempts, success_count, failure_count, systems, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_a
+  - access_control
+  - ephi
+  - authentication
+severity: critical
+risk_score: 95
+references:
+  - "45 CFR §164.312(a)(1) - Access Control"
+  - "45 CFR §164.308(a)(3) - Workforce Security"
+nist: ["AC-3"]
+gdpr: ["Article 32"]
+pci_dss: ["7.1"]
+hipaa: ["§164.312(a)(1)"]
+mitre_attack:
+  TA0001: 
+    T1078: ["T1078.001"]

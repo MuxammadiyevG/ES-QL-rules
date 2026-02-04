@@ -1,0 +1,58 @@
+#//RULE-GDPR-18 — Children's Data Processed Without Parental Consent (GDPR Article 8)
+#//Requirement: Article 8
+#//Objective: Detect processing of children's data without age verification
+#//Data sources: Application logs, user registration logs
+#//ECS fields used: event.action, user.name, log.original
+#//Tuning notes: Monitor age fields; verify parental consent mechanisms
+
+name: "RULE-GDPR-18: Children's Personal Data Processed Without Consent Verification"
+description: |
+  Identifies processing of personal data of children under 16 (or lower age per
+  Member State law) without verifiable parental consent, violating GDPR Article 8.
+  Detects user registrations with age <16 where consent verification is not logged,
+  social media/online service accounts created by minors without parent approval,
+  and marketing to children without guardian authorization. Article 8 requires
+  reasonable efforts to verify parental consent for information society services.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.action IN ("user_created", "account_registered", "signup")
+    AND (
+      log.original RLIKE "(?i).*(age.*=.*(1[0-5]|[0-9])|birthdate.*20(0[8-9]|1[0-9]|2[0-4])).*"
+      OR log.original RLIKE "(?i).*(minor|child|under.*16|parental).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(parent.*consent|guardian.*approval|verified.*age|adult.*authorization).*"
+  | STATS minor_accounts = COUNT(*),
+          users = VALUES(user.name),
+          registration_details = VALUES(log.original)
+    BY host.name
+  | WHERE minor_accounts > 0
+  | EVAL risk_score = CASE(
+      minor_accounts > 50, 95,
+      minor_accounts > 10, 85,
+      75
+    )
+  | KEEP host.name, minor_accounts, users, risk_score
+  | SORT minor_accounts DESC
+enabled: false
+tags:
+  - gdpr
+  - article_8
+  - children
+  - parental_consent
+  - age_verification
+severity: high
+risk_score: 85
+references:
+  - "GDPR Article 8 - Conditions for Children's Consent"
+  - "GDPR Recital 38 - Verifiable Parental Consent"
+nist: ["IP-1"]
+gdpr: ["Article 8"]
+pci_dss: []
+mitre_attack: []

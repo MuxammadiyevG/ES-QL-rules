@@ -1,0 +1,60 @@
+#//RULE-GDPR-44 — Portability Data Export in Non-Interoperable Format (GDPR Article 20)
+#//Requirement: Article 20
+#//Objective: Detect data exports in non-machine-readable formats
+#//Data sources: Export logs, download logs, API logs
+#//ECS fields used: file.extension, http.response.headers, event.action
+#//Tuning notes: Monitor export file formats; require structured data (JSON/CSV/XML)
+
+name: "RULE-GDPR-44: Data Portability Export in Non-Machine-Readable Format"
+description: |
+  Identifies data portability exports provided in non-structured or non-machine-readable
+  formats (PDF, images, plain text) instead of structured formats (JSON, CSV, XML)
+  as required by GDPR Article 20(1). Detects user data exports generated as PDF
+  reports, screenshot images, or unstructured text files that prevent portability
+  to other services. Article 20 requires commonly used, machine-readable format
+  to facilitate data transfer. Monitor export API responses and file generation
+  for format compliance.
+type: esql
+params: '{}'
+schedule_interval: 12h
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE event.action RLIKE "(?i).*(export|download|portability.*request).*"
+    AND (
+      file.extension IN ("pdf", "png", "jpg", "jpeg", "txt", "doc", "docx")
+      OR http.response.headers RLIKE "(?i).*content-type.*(pdf|image|octet-stream).*"
+    )
+    AND log.original RLIKE "(?i).*(user.*data|personal.*data|profile.*data).*"
+  | WHERE NOT file.extension IN ("json", "csv", "xml", "xlsx")
+  | STATS non_compliant_exports = COUNT(*),
+          formats = VALUES(file.extension),
+          users = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE non_compliant_exports > 0
+  | EVAL risk_score = CASE(
+      formats IN ("pdf", "png", "jpg"), 90,
+      non_compliant_exports > 5, 85,
+      80
+    )
+  | KEEP user.name, host.name, non_compliant_exports, formats, risk_score
+  | SORT non_compliant_exports DESC
+enabled: false
+tags:
+  - gdpr
+  - article_20
+  - data_portability
+  - format_compliance
+  - data_subject_rights
+severity: high
+risk_score: 85
+references:
+  - "GDPR Article 20(1) - Right to Data Portability"
+  - "GDPR Recital 68 - Machine-Readable Format"
+nist: ["IP-4"]
+gdpr: ["Article 20"]
+pci_dss: []
+mitre_attack: []

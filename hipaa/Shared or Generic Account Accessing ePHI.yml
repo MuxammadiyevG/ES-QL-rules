@@ -1,0 +1,73 @@
+#//RULE-HIPAA-03 — Unique User Identification Violation - §164.312(a)(2)(i)
+#//Requirement: HIPAA Security Rule §164.312(a)(2)(i) - Unique User Identification
+#//Objective: Detect shared accounts or generic usernames accessing ePHI
+#//Data sources: Authentication logs, EHR access logs
+#//ECS fields used: event.category, user.name, source.ip, host.name
+#//Tuning notes: Identify generic/shared accounts; monitor concurrent access
+
+name: "RULE-HIPAA-03: Shared or Generic Account Accessing ePHI"
+description: |
+  Identifies use of shared, generic, or group accounts to access ePHI systems,
+  violating HIPAA §164.312(a)(2)(i) requirement for unique user identification.
+  Detects authentication with generic usernames (nurse, doctor, admin, clerk) or
+  concurrent logins from same account across different locations/IPs. Unique user
+  IDs are critical for accountability, audit trails, and investigating unauthorized
+  access. Common violation in healthcare: shared workstation accounts, department
+  logins, or "float pool" credentials. Monitor for generic patterns and simultaneous
+  sessions.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "authentication"
+    AND event.outcome == "success"
+    AND (
+      user.name RLIKE "(?i).*(nurse|doctor|admin|clerk|staff|shared|generic|dept|station|workstation|float|temp|guest).*"
+      OR host.name RLIKE "(?i).*(emr|ehr|epic|cerner|phi).*"
+    )
+  | STATS login_count = COUNT(*),
+          unique_sources = COUNT_DISTINCT(source.ip),
+          sources = VALUES(source.ip),
+          systems = VALUES(host.name),
+          first_login = MIN(@timestamp),
+          last_login = MAX(@timestamp)
+    BY user.name
+  | WHERE login_count > 0
+  | EVAL concurrent_use = CASE(
+      unique_sources > 1, 1,
+      0
+    )
+  | EVAL risk_score = CASE(
+      concurrent_use == 1, 100,
+      user.name RLIKE "(?i).*(shared|generic|dept).*", 95,
+      login_count > 20, 90,
+      85
+    )
+  | KEEP user.name, login_count, unique_sources, sources, concurrent_use, systems, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_a_2
+  - unique_user_id
+  - shared_account
+  - accountability
+severity: critical
+risk_score: 95
+references:
+  - "45 CFR §164.312(a)(2)(i) - Unique User Identification"
+  - "45 CFR §164.308(a)(5)(ii)(C) - Log-in Monitoring"
+nist: ["IA-2"]
+gdpr: ["Article 32"]
+pci_dss: ["8.5"]
+hipaa: ["§164.312(a)(2)(i)"]
+mitre_attack:
+  TA0005:
+    T1078: []

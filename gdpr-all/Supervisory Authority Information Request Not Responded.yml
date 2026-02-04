@@ -1,0 +1,60 @@
+#//RULE-GDPR-50 — Supervisory Authority Inspection Request Not Responded (GDPR Article 31, 58)
+#//Requirement: Articles 31, 58
+#//Objective: Detect missed regulator information requests
+#//Data sources: Email logs, compliance ticketing logs
+#//ECS fields used: email.from, email.subject, log.original, @timestamp
+#//Tuning notes: Monitor for regulator domains; flag unanswered inquiries
+#
+name: "RULE-GDPR-50: Supervisory Authority Information Request Not Responded"
+description: |
+  Identifies information requests or inquiries from data protection supervisory
+  authorities (ICO, CNIL, EDPS, national DPAs) that have not received timely response,
+  violating GDPR Article 31 cooperation obligation and Article 58 investigation
+  powers. Detects emails from regulator domains (.gov.uk, .gouv.fr, .gob.es, etc.)
+  flagged as investigation/inspection/request that remain unanswered beyond reasonable
+  timeframe. Non-cooperation with supervisory authorities can result in administrative
+  fines and enforcement escalation. Priority escalation to legal/DPO required.
+type: esql
+params: '{}'
+schedule_interval: 12h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.dataset RLIKE "(?i).*mail.*"
+    AND email.from RLIKE "(?i).*(ico\\.org\\.uk|cnil\\.fr|edps\\.europa\\.eu|datenschutz\\.de|gpdp\\.it|aepd\\.es|dpa\\..*|supervisory.*authority).*"
+    AND email.subject RLIKE "(?i).*(investigation|inquiry|request|inspection|compliance.*check|article.*58).*"
+  | WHERE NOT log.original RLIKE "(?i).*(responded|replied|answered|acknowledged).*"
+  | STATS unanswered_requests = COUNT(*),
+          oldest_request = MIN(@timestamp),
+          authorities = VALUES(email.from),
+          subjects = VALUES(email.subject)
+    BY email.from, host.name
+  | EVAL days_unanswered = (NOW() - oldest_request) / 86400000
+  | WHERE days_unanswered > 14  
+  | EVAL risk_score = CASE(
+      days_unanswered > 60, 100,
+      days_unanswered > 30, 95,
+      90
+    )
+  | KEEP email.from, host.name, unanswered_requests, days_unanswered, oldest_request, subjects, risk_score
+  | SORT days_unanswered DESC
+enabled: false
+tags:
+  - gdpr
+  - article_31
+  - article_58
+  - supervisory_authority
+  - cooperation
+  - regulatory_response
+severity: critical
+risk_score: 100
+references:
+  - "GDPR Article 31 - Cooperation with Supervisory Authority"
+  - "GDPR Article 58 - Powers of Supervisory Authority"
+nist: ["PM-9"]
+gdpr: ["Articles 31, 58"]
+pci_dss: []
+mitre_attack: []

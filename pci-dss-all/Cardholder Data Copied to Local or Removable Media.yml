@@ -1,0 +1,66 @@
+#//RULE-PCI-40 — Cardholder Data on Local Drive (PCI 12.3.10)
+#//Requirement: 12
+#//Objective: Detect copying/storing CHD to local hard drives or removable media
+#//Data sources: DLP logs, file system monitoring, USB device logs
+#//ECS fields used: event.category, file.path, file.size, user.name
+#//Tuning notes: Monitor file creation on local drives; detect PAN patterns; track USB usage
+
+name: "RULE-PCI-40: Cardholder Data Copied to Local or Removable Media"
+description: |
+  Identifies potential cardholder data being copied to local hard drives, USB drives,
+  or removable media by remote access users. PCI DSS 12.3.10 prohibits copying CHD
+  to local media unless explicitly authorized for defined business need. Unauthorized
+  local storage creates data breach risk and violates data protection requirements.
+  Monitor file operations during remote sessions and validate against approved data
+  handling procedures.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "file"
+    AND event.action IN ("created", "modified")
+    AND (
+      file.path RLIKE ".*[C-Z]:\\\\Users\\\\.*\\\\(Documents|Downloads|Desktop)\\\\.*"
+      OR file.path RLIKE ".*/home/.*/Downloads/.*"
+      OR file.path RLIKE ".*[D-Z]:\\\\.*"
+    )
+    AND file.extension IN ("csv", "txt", "xlsx", "xls", "xml", "json", "sql", "bak")
+    AND file.size > 10240
+  | WHERE user.name IS NOT NULL
+  | STATS file_operations = COUNT(*),
+          total_size_mb = SUM(file.size) / 1048576,
+          files = VALUES(file.name),
+          paths = VALUES(file.path)
+    BY user.name, host.name
+  | WHERE file_operations > 3 OR total_size_mb > 10
+  | EVAL risk_score = CASE(
+      total_size_mb > 100, 95,
+      file_operations > 20, 90,
+      paths RLIKE "(?i).*(removable|usb|d:|e:|f:).*", 100,
+      80
+    )
+  | KEEP user.name, host.name, file_operations, total_size_mb, files, paths, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_12
+  - data_protection
+  - data_exfiltration
+  - removable_media
+severity: high
+risk_score: 90
+references:
+  - "PCI DSS v3.1 Requirement 12.3.10"
+nist: ["MP-7"]
+gdpr: ["Article 32"]
+pci_dss: ["12.3.10"]
+mitre_attack:
+  TA0010:
+    T1052.001: []

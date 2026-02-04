@@ -1,0 +1,61 @@
+#//RULE-PCI-03 — Direct Internet Access to CDE (PCI 1.3.3)
+#//Requirement: 1
+#//Objective: Detect direct connections between Internet and cardholder data environment
+#//Data sources: Network logs, firewall logs
+#//ECS fields used: source.ip, destination.ip, network.direction, event.category
+#//Tuning notes: Define CDE IP ranges; allowlist authorized DMZ traffic
+
+name: "RULE-PCI-03: Direct Internet to CDE Connection Attempt"
+description: |
+  Detects network connections originating from public Internet IP addresses directly
+  to systems in the cardholder data environment, bypassing DMZ controls. PCI DSS 1.3.3
+  prohibits direct connections between Internet and CDE. This indicates firewall
+  misconfiguration or network segmentation failure. Configure CDE IP ranges and
+  exclude authorized DMZ/proxy traffic patterns.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.category == "network" 
+    AND network.direction == "inbound"
+    AND source.ip IS NOT NULL
+    AND destination.ip IS NOT NULL
+  | WHERE NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.0/8")
+    AND CIDR_MATCH(destination.ip, "10.100.0.0/16", "192.168.10.0/24")  
+  | STATS connection_count = COUNT(*),
+          unique_sources = COUNT_DISTINCT(source.ip),
+          unique_destinations = COUNT_DISTINCT(destination.ip),
+          ports = VALUES(destination.port),
+          protocols = VALUES(network.protocol)
+    BY source.ip, destination.ip
+  | WHERE connection_count > 0
+  | EVAL risk_level = CASE(
+      destination.port IN (3306, 1433, 5432, 1521), 95,  
+      destination.port IN (22, 3389), 85, 
+      unique_destinations > 5, 80,
+      70
+    )
+  | KEEP source.ip, destination.ip, connection_count, ports, protocols, risk_level
+  | SORT risk_level DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_1
+  - network
+  - segmentation
+  - cde_access
+severity: critical
+risk_score: 90
+references:
+  - "PCI DSS v3.1 Requirement 1.3.3"
+nist: "SC-7"
+gdpr: "Article 32"
+pci_dss: ["1.3.3", "1.3.1", "1.3.2"]
+mitre_attack: 
+  TA0001: 
+    T1190: []

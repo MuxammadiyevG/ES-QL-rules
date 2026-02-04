@@ -1,0 +1,62 @@
+#//RULE-GDPR-07 — Erasure Request Not Executed (GDPR Article 17)
+#//Requirement: Article 17
+#//Objective: Detect personal data retained after deletion request
+#//Data sources: Database logs, file system monitoring, application logs
+#//ECS fields used: event.action, user.name, database.query, file.path
+#//Tuning notes: Track deletion requests; verify data purge; monitor for zombie records
+
+name: "RULE-GDPR-07: Personal Data Retained After Erasure Request"
+description: |
+  Identifies personal data that remains in databases or file systems after a valid
+  erasure request under GDPR Article 17 (Right to be Forgotten). Detects user
+  records, files, or backups still containing data of users who requested deletion.
+  Monitors for database SELECT queries returning deleted user data, files in user
+  directories not purged, and backup systems retaining deleted records. Excludes
+  legally mandated retention (accounting, legal holds). Critical compliance gap.
+type: esql
+params: '{}'
+schedule_interval: 12h
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE (
+      (event.category == "database"
+       AND database.query RLIKE "(?i).*SELECT.*FROM.*(user|customer|profile).*"
+       AND database.query RLIKE "(?i).*(deleted.*flag.*=.*0|active.*=.*1|status.*!=.*deleted).*")
+      OR
+      (event.category == "file"
+       AND file.path RLIKE "(?i).*/users?/(deleted|removed|gdpr.*erased)/.*"
+       AND event.action IN ("access", "read", "open"))
+    )
+  | STATS access_events = COUNT(*),
+          files_accessed = VALUES(file.path),
+          queries = VALUES(database.query),
+          users = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE access_events > 0
+  | EVAL risk_score = CASE(
+      access_events > 10, 100,
+      files_accessed IS NOT NULL, 95,
+      85
+    )
+  | KEEP user.name, host.name, access_events, files_accessed, queries, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_17
+  - right_to_erasure
+  - data_deletion
+  - data_subject_rights
+severity: critical
+risk_score: 95
+references:
+  - "GDPR Article 17 - Right to Erasure (Right to be Forgotten)"
+  - "GDPR Article 5(1)(e) - Storage Limitation"
+nist: ["SI-12"]
+gdpr: ["Article 17"]
+pci_dss: []
+mitre_attack: []

@@ -1,0 +1,62 @@
+#//RULE-GDPR-43 — Restriction of Processing Request Not Honored (GDPR Article 18)
+#//Requirement: Article 18
+#//Objective: Detect continued processing despite restriction requests
+#//Data sources: Application logs, database logs, processing logs
+#//ECS fields used: event.action, user.name, log.original
+#//Tuning notes: Track restriction markers; monitor processing after restriction
+
+name: "RULE-GDPR-43: Processing Continues After Restriction Request"
+description: |
+  Identifies continued processing of personal data after data subject requested
+  restriction of processing under GDPR Article 18. Detects database queries,
+  marketing emails, or analytics processing on user accounts flagged for restriction
+  (during accuracy disputes, unlawful processing objections, or pending erasure).
+  Article 18 restricts processing to storage only (with consent or for legal claims)
+  during restriction period. Monitor for restricted user activity and verify
+  processing limitation enforcement.
+type: esql
+params: '{}'
+schedule_interval: 12h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(process|query|export|email|market|analyz).*"
+      OR database.query RLIKE "(?i).*SELECT.*FROM.*(user|customer).*"
+    )
+    AND (
+      user.tags IN ["restriction_requested", "processing_restricted", "article_18"]
+      OR log.original RLIKE "(?i).*(restriction.*flag|processing.*limited).*"
+    )
+  | WHERE NOT event.action RLIKE "(?i).*(storage|retention|legal.*claim).*"
+  | STATS violation_events = COUNT(*),
+          processing_types = VALUES(event.action),
+          users_affected = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE violation_events > 0
+  | EVAL risk_score = CASE(
+      processing_types RLIKE "(?i).*(export|transfer|market).*", 95,
+      violation_events > 10, 90,
+      85
+    )
+  | KEEP user.name, host.name, violation_events, processing_types, risk_score
+  | SORT violation_events DESC
+enabled: false
+tags:
+  - gdpr
+  - article_18
+  - restriction
+  - data_subject_rights
+  - processing_limitation
+severity: high
+risk_score: 90
+references:
+  - "GDPR Article 18 - Right to Restriction of Processing"
+  - "GDPR Article 12(3) - Response Timelines"
+nist: ["IP-4"]
+gdpr: ["Article 18"]
+pci_dss: []
+mitre_attack: []

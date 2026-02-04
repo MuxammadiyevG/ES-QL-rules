@@ -1,0 +1,64 @@
+#//RULE-PCI-17 — SQL Injection Attempt (PCI 6.5.1)
+#//Requirement: 6
+#//Objective: Detect SQL injection attacks against web applications
+#//Data sources: Web access logs (nginx), WAF logs
+#//ECS fields used: url.query, http.request.body, user_agent.original, source.ip
+#//Tuning notes: Monitor for SQL syntax in parameters; correlate with WAF blocks
+
+name: "RULE-PCI-17: SQL Injection Attack Attempt"
+description: |
+  Identifies potential SQL injection attempts in web requests by detecting SQL
+  syntax patterns in URL parameters and POST bodies. PCI DSS 6.5.1 requires
+  addressing injection flaws in application development. Common patterns include
+  UNION SELECT, OR 1=1, comment syntax (--), and blind injection techniques.
+  Tune to reduce false positives from legitimate queries and correlate with WAF
+  and application error logs.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-nginx-access-*
+  - logs-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, logs-*
+  | WHERE event.category == "web"
+    AND (
+      url.query RLIKE "(?i).*(union.*select|or.*1.*=.*1|;.*drop|;.*exec|'.*or.*'|\".*or.*\"|--|\\/\\*|xp_cmdshell).*"
+      OR http.request.body RLIKE "(?i).*(union.*select|or.*1.*=.*1|;.*drop|;.*exec|'.*or.*'|\".*or.*\"|--|\\/\\*|xp_cmdshell).*"
+      OR url.path RLIKE ".*'.*"
+    )
+  | STATS attempt_count = COUNT(*),
+          unique_ips = COUNT_DISTINCT(source.ip),
+          urls = VALUES(url.path),
+          queries = VALUES(url.query),
+          user_agents = VALUES(user_agent.original)
+    BY source.ip, url.path
+  | WHERE attempt_count > 0
+  | EVAL risk_score = CASE(
+      attempt_count > 10, 100,
+      queries RLIKE "(?i).*(union.*select|drop.*table).*", 95,
+      attempt_count > 3, 85,
+      70
+    )
+  | KEEP source.ip, url.path, attempt_count, unique_ips, queries, user_agents, risk_score
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - pci_dss
+  - requirement_6
+  - web
+  - sql_injection
+  - attack
+severity: critical
+risk_score: 95
+references:
+  - "PCI DSS v3.1 Requirement 6.5.1"
+  - "OWASP Top 10 A1:2017"
+nist: ["SI-10"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5.1"]
+mitre_attack:
+  TA0001:
+    T1190: []

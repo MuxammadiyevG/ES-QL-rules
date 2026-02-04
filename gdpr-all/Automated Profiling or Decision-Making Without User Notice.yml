@@ -1,0 +1,58 @@
+#//RULE-GDPR-19 — Profiling Without Notification (GDPR Article 13/14/22)
+#//Requirement: Articles 13, 14, 22
+#//Objective: Detect automated profiling/decision-making without user transparency
+#//Data sources: Application logs, analytics logs, ML model logs
+#//ECS fields used: event.action, log.original, event.category
+#//Tuning notes: Monitor ML model inference; track automated decision systems
+
+name: "RULE-GDPR-19: Automated Profiling or Decision-Making Without User Notice"
+description: |
+  Identifies automated profiling, scoring, or decision-making systems operating
+  without informing data subjects of the logic, significance, and consequences as
+  required by GDPR Articles 13(2)(f), 14(2)(g), and 22. Detects ML model predictions,
+  credit scoring, fraud detection, or behavioral profiling without corresponding
+  transparency notices. Article 22 grants right to human review of automated decisions.
+  Operating profiling systems invisibly violates transparency obligations.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      log.original RLIKE "(?i).*(ml.*model|profil|scor|predict|classif|automat.*decision|algorithm).*"
+      AND log.original RLIKE "(?i).*(execut|run|infer|apply|decision).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(user.*notif|transparency|explain|article.*22|human.*review|disclosure).*"
+  | STATS profiling_events = COUNT(*),
+          systems = VALUES(log.original),
+          first_event = MIN(@timestamp)
+    BY host.name
+  | WHERE profiling_events > 10
+  | EVAL risk_score = CASE(
+      systems RLIKE "(?i).*(credit|loan|hiring|termination).*", 100,
+      profiling_events > 100, 90,
+      80
+    )
+  | KEEP host.name, profiling_events, systems, first_event, risk_score
+  | SORT profiling_events DESC
+enabled: false
+tags:
+  - gdpr
+  - article_22
+  - article_13
+  - profiling
+  - automated_decision
+  - transparency
+severity: high
+risk_score: 90
+references:
+  - "GDPR Article 22 - Automated Individual Decision-Making"
+  - "GDPR Article 13/14 - Transparency Obligations"
+nist: ["IP-1"]
+gdpr: ["Article 22"]
+pci_dss: []
+mitre_attack: []

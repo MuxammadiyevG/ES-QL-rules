@@ -1,0 +1,67 @@
+#//RULE-HIPAA-06 — ePHI Access Audit Log Gap Detected - §164.312(b)
+#//Requirement: HIPAA Security Rule §164.312(b) - Audit Controls
+#//Objective: Detect missing or disabled audit logging for ePHI systems
+#//Data sources: System logs, security event logs, database audit logs
+#//ECS fields used: event.category, @timestamp, host.name
+#//Tuning notes: Monitor log volume trends; detect logging service failures
+
+name: "RULE-HIPAA-06: Audit Logging Disabled or Gap in ePHI Systems"
+description: |
+  Identifies gaps in audit trail logging for systems processing ePHI or disabled
+  audit mechanisms, violating HIPAA §164.312(b) requirement to implement hardware,
+  software, and procedural mechanisms to record and examine activity. Detects
+  extended periods without security events from EHR/EMR systems, database audit
+  log gaps, disabled Windows Security logging on clinical workstations, or logging
+  service failures. Audit trails are critical for breach detection and compliance
+  investigations. Monitor for abnormal silence and logging service status.
+type: esql
+params: '{}'
+schedule_interval: 1h
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE (
+      host.name RLIKE "(?i).*(emr|ehr|epic|cerner|phi|patient|clinical|his|pacs).*"
+      OR event.dataset RLIKE "(?i).*(medical|health|clinical).*"
+    )
+    AND event.category IN ("authentication", "database", "file", "process")
+    AND @timestamp > NOW() - 2 HOURS
+  | STATS event_count = COUNT(*),
+          last_event = MAX(@timestamp),
+          event_types = VALUES(event.category)
+    BY host.name, event.category
+  | EVAL hours_since_last = (NOW() - last_event) / 3600000
+  | WHERE hours_since_last > 6  // No events in 6+ hours (suspicious)
+    OR event_count < 5  // Very few events in 2-hour window
+  | EVAL risk_score = CASE(
+      hours_since_last > 24, 100,
+      hours_since_last > 12, 90,
+      event_count < 2, 85,
+      75
+    )
+  | KEEP host.name, event.category, event_count, hours_since_last, last_event, risk_score
+  | SORT hours_since_last DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_b
+  - audit_controls
+  - logging
+  - monitoring
+severity: critical
+risk_score: 90
+references:
+  - "45 CFR §164.312(b) - Audit Controls"
+  - "45 CFR §164.308(a)(1)(ii)(D) - Information System Activity Review"
+nist: ["AU-2"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2"]
+hipaa: ["§164.312(b)"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.002"]

@@ -1,0 +1,69 @@
+#//EVIDENCE-PCI-06 — SDLC, Code Review, Change Control (PCI 6.1, 6.3, 6.4, 6.5.x, 6.6, 6.7)
+#//Requirement: 6
+#//Objective: Evidence of secure SDLC, vulnerability management process, code reviews, testing
+#//Why not detectable: Requires audit of vulnerability tracking systems, code review
+#//documentation, change control procedures, separation of dev/test/prod environments,
+#//penetration testing reports, and WAF deployment. ES|QL cannot validate process
+#//compliance, code quality gates, or testing methodology. Verified through SDLC
+#//artifact review, code repository analysis, and change management system audit.
+#//RULE-PCI-20 — Excessive Privileged Access (PCI 7.1.2)
+#//Requirement: 7
+#//Objective: Detect users with more privileges than job requires
+#//Data sources: Windows Event Logs, Linux auditd, Active Directory
+#//ECS fields used: event.category, user.name, group.name, event.action
+#//Tuning notes: Define role-based access matrix; monitor group membership changes
+
+name: "RULE-PCI-20: User Granted Excessive Privileged Access"
+description: |
+  Identifies users added to privileged groups (Administrators, Domain Admins, root,
+  sudo) without corresponding role justification. PCI DSS 7.1.2 requires restricting
+  privileged access to least privileges necessary. Excessive permissions violate
+  principle of least privilege and increase insider threat risk. Correlate with
+  HR data and access request tickets to validate business need.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "iam"
+    AND event.action IN ("added-member-to-group", "user_mgmt", "group_add")
+    AND (
+      group.name RLIKE "(?i).*(admin|domain.*admin|enterprise.*admin|schema.*admin|sudo|wheel|root).*"
+      OR winlog.event_data.TargetUserName RLIKE "(?i).*(admin|privileged).*"
+    )
+  | STATS privilege_grants = COUNT(*),
+          groups = VALUES(group.name),
+          granted_by = VALUES(user.name),
+          targets = VALUES(winlog.event_data.TargetUserName)
+    BY winlog.event_data.TargetUserName, host.name
+  | WHERE privilege_grants > 0
+  | EVAL risk_score = CASE(
+      groups RLIKE "(?i).*(domain.*admin|enterprise.*admin).*", 95,
+      groups RLIKE "(?i).*(admin|sudo|wheel).*", 85,
+      privilege_grants > 3, 80,
+      70
+    )
+  | KEEP winlog.event_data.TargetUserName, host.name, groups, privilege_grants, granted_by, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_7
+  - access_control
+  - privilege_escalation
+  - iam
+severity: high
+risk_score: 85
+references:
+  - "PCI DSS v3.1 Requirement 7.1.2"
+nist: ["AC-6"]
+gdpr: ["Article 32"]
+pci_dss: ["7.1.2", "7.1.3"]
+mitre_attack:
+  TA0004:
+    T1098: []

@@ -1,0 +1,67 @@
+#//RULE-PCI-12 — Weak TLS/SSL Configuration (PCI 4.1, 4.1.1)
+#//Requirement: 4
+#//Objective: Detect weak or deprecated TLS versions and ciphers
+#//Data sources: Network logs, TLS handshake metadata
+#//ECS fields used: tls.version, tls.cipher, network.protocol, destination.port
+#//Tuning notes: Alert on TLS < 1.2, weak ciphers (RC4, DES, export); verify wireless encryption
+
+name: "RULE-PCI-12: Weak or Deprecated TLS/SSL Configuration"
+description: |
+  Detects usage of weak TLS versions (SSL 2.0/3.0, TLS 1.0/1.1) or insecure cipher
+  suites (RC4, DES, export ciphers, NULL encryption). PCI DSS 4.1 requires strong
+  cryptography; deprecated protocols expose data to downgrade attacks and weak ciphers
+  enable decryption. Monitor TLS handshakes for version negotiation and cipher
+  selection. Exclude planned legacy system migrations with risk acceptance.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE network.protocol RLIKE "(?i).*(tls|ssl).*"
+    AND (
+      tls.version IN ("1.0", "1.1", "SSLv2", "SSLv3")
+      OR tls.cipher RLIKE "(?i).*(rc4|des|export|null|anon|adh).*"
+    )
+  | STATS connection_count = COUNT(*),
+          tls_versions = VALUES(tls.version),
+          ciphers = VALUES(tls.cipher),
+          sources = VALUES(source.ip),
+          destinations = VALUES(destination.ip)
+    BY tls.version, tls.cipher, destination.port
+  | WHERE connection_count > 0
+  | EVAL severity_level = CASE(
+      tls.version IN ("SSLv2", "SSLv3"), "critical",
+      tls.cipher RLIKE "(?i).*(null|export).*", "critical",
+      tls.version IN ("1.0", "1.1"), "high",
+      tls.cipher RLIKE "(?i).*(rc4|des).*", "high",
+      "medium"
+    )
+  | EVAL risk_score = CASE(
+      severity_level == "critical", 95,
+      severity_level == "high", 80,
+      60
+    )
+  | KEEP tls.version, tls.cipher, destination.port, connection_count, sources, severity_level, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_4
+  - encryption
+  - tls
+  - network
+severity: high
+risk_score: 85
+references:
+  - "PCI DSS v3.1 Requirement 4.1"
+  - "PCI SSC TLS guidance"
+nist: ["SC-8"]
+gdpr: ["Article 32"]
+pci_dss: ["4.1", "4.1.1"]
+mitre_attack:
+  TA0009: 
+    T1040: []

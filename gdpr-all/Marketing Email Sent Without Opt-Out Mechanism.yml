@@ -1,0 +1,63 @@
+#//RULE-GDPR-24 — Marketing Without Opt-Out Mechanism (GDPR Article 21)
+#//Requirement: Article 21
+#//Objective: Detect marketing communications without unsubscribe option
+#//Data sources: Email server logs, marketing automation logs
+#//ECS fields used: email.subject, email.body, log.original, event.category
+#//Tuning notes: Scan marketing emails for unsubscribe links; monitor opt-out processing
+
+name: "RULE-GDPR-24: Marketing Email Sent Without Opt-Out Mechanism"
+description: |
+  Identifies marketing or promotional emails sent without a clear and easy opt-out
+  (unsubscribe) mechanism as required by GDPR Article 21 right to object. Detects
+  marketing emails missing "unsubscribe" links, opt-out pages, or preference centers.
+  Article 21(2) requires explicit attention to objection right in direct marketing
+  context, presented clearly at first communication and in every message. Missing
+  opt-out violates data subject rights and ePrivacy Directive.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.dataset RLIKE "(?i).*mail.*"
+    AND (
+      email.subject RLIKE "(?i).*(newsletter|promotion|offer|deal|sale|marketing).*"
+      OR log.original RLIKE "(?i).*(marketing.*email|promotional.*message).*"
+    )
+  | WHERE NOT (
+      email.body RLIKE "(?i).*(unsubscribe|opt.*out|preferences|manage.*subscription|stop.*receiving).*"
+      OR log.original RLIKE "(?i).*(unsubscribe.*link|opt.*out.*url).*"
+    )
+  | STATS violation_emails = COUNT(*),
+          recipients = COUNT_DISTINCT(email.to),
+          subjects = VALUES(email.subject),
+          senders = VALUES(email.from)
+    BY email.from, host.name
+  | WHERE violation_emails > 0
+  | EVAL risk_score = CASE(
+      recipients > 1000, 95,
+      recipients > 100, 85,
+      violation_emails > 10, 80,
+      70
+    )
+  | KEEP email.from, host.name, violation_emails, recipients, subjects, risk_score
+  | SORT violation_emails DESC
+enabled: false
+tags:
+  - gdpr
+  - article_21
+  - marketing
+  - opt_out
+  - data_subject_rights
+severity: medium
+risk_score: 75
+references:
+  - "GDPR Article 21 - Right to Object"
+  - "ePrivacy Directive - Marketing Communications"
+nist: ["IP-1"]
+gdpr: ["Article 21"]
+pci_dss: []
+mitre_attack: []

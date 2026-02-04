@@ -1,0 +1,66 @@
+
+#//RULE-PCI-08 — Sensitive Authentication Data Storage (PCI 3.2.1, 3.2.2, 3.2.3)
+#//Requirement: 3
+#//Objective: Detect storage of prohibited data (full track, CVV, PIN)
+#//Data sources: Application logs, database query logs
+#//ECS fields used: log.original, event.dataset, database.query
+#//Tuning notes: Monitor DB INSERT/UPDATE for track data keywords; coordinate with app teams
+
+name: "RULE-PCI-08: Prohibited Sensitive Authentication Data Storage"
+description: |
+  Identifies database operations or log entries suggesting storage of full magnetic
+  stripe data, CVV/CVC, or PIN data after authorization. PCI DSS 3.2.x strictly
+  prohibits post-authorization storage of these data elements. Detection relies on
+  keyword patterns in SQL queries and logs. High risk of false positives from
+  legitimate transaction processing; correlate with application architecture review.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (event.dataset RLIKE ".*database.*"
+       AND log.original RLIKE "(?i).*(INSERT|UPDATE|CREATE TABLE).*"
+       AND log.original RLIKE "(?i).*(track[_]?data|cvv|cvc|cvc2|pin[_]?block|mag[_]?stripe|service[_]?code).*")
+      OR
+      (event.category == "web"
+       AND log.original RLIKE "(?i).*(storing|saved|persisted).*(cvv|pin|track).*")
+      OR
+      (event.category == "web"
+       AND log.original RLIKE "(?i).*(storing|saved|persisted).*(cvv|pin|track).*")
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(token|encrypt|hash|mask).*"
+  | STATS violation_count = COUNT(*),
+          queries = VALUES(log.original),
+          hosts = VALUES(host.name)
+    BY event.dataset, host.name
+  | WHERE violation_count > 0
+  | EVAL data_type = CASE(
+      queries RLIKE "(?i).*pin.*", "PIN",
+      queries RLIKE "(?i).*(cvv|cvc).*", "CVV",
+      queries RLIKE "(?i).*track.*", "Track Data",
+      "Unknown"
+    )
+  | KEEP host.name, event.dataset, violation_count, data_type
+  | SORT violation_count DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_3
+  - data_protection
+  - sensitive_data
+  - database
+severity: critical
+risk_score: 100
+references:
+  - "PCI DSS v3.1 Requirement 3.2.1, 3.2.2, 3.2.3"
+nist: ["SC-28"]
+gdpr: ["Article 32"]
+pci_dss: ["3.2.1", "3.2.2", "3.2.3"]
+mitre_attack:
+  TA0009: 
+    T1005: []

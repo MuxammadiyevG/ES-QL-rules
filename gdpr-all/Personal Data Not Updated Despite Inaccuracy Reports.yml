@@ -1,0 +1,61 @@
+#//RULE-GDPR-41 — Data Accuracy Not Maintained (GDPR Article 5(1)(d), Article 16)
+#//Requirement: Articles 5, 16
+#//Objective: Detect outdated or incorrect personal data
+#//Data sources: Data quality logs, customer update logs
+#//ECS fields used: event.action, log.original, @timestamp
+#//Tuning notes: Track data age; monitor update frequency; flag stale records
+
+name: "RULE-GDPR-41: Personal Data Not Updated Despite Inaccuracy Reports"
+description: |
+  Identifies personal data records that remain unchanged despite user rectification
+  requests or data quality alerts, violating GDPR Article 5(1)(d) accuracy principle
+  and Article 16 right to rectification. Detects customer profile update requests
+  not processed, address/contact changes ignored, or data quality alerts for stale
+  information not acted upon within reasonable timeframes. Maintaining accurate
+  data is fundamental GDPR principle. Monitor update request fulfillment rates
+  and data freshness metrics.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(rectification.*request|update.*request|correction.*request|data.*quality.*alert).*"
+      OR log.original RLIKE "(?i).*(inaccurate.*data|stale.*record|outdated.*information).*"
+    )
+    AND log.original NOT RLIKE "(?i).*(updated|corrected|rectified|resolved).*"
+  | STATS pending_updates = COUNT(*),
+          oldest_request = MIN(@timestamp),
+          request_types = VALUES(event.action),
+          users_affected = COUNT_DISTINCT(user.name)
+    BY user.name, host.name
+  | EVAL days_pending = (NOW() - oldest_request) / 86400000
+  | WHERE days_pending > 30  
+  | EVAL risk_score = CASE(
+      days_pending > 90, 90,
+      days_pending > 60, 80,
+      70
+    )
+  | KEEP user.name, host.name, pending_updates, days_pending, oldest_request, request_types, risk_score
+  | SORT days_pending DESC
+enabled: false
+tags:
+  - gdpr
+  - article_5
+  - article_16
+  - data_accuracy
+  - rectification
+  - data_quality
+severity: medium
+risk_score: 75
+references:
+  - "GDPR Article 5(1)(d) - Accuracy Principle"
+  - "GDPR Article 16 - Right to Rectification"
+nist: ["SI-12"]
+gdpr: ["Articles 5(1)(d), 16"]
+pci_dss: []
+mitre_attack: []

@@ -1,0 +1,62 @@
+#//RULE-GDPR-39 — High-Risk Processing Not Reported to DPO (GDPR Article 37-39)
+#//Requirement: Articles 37, 38, 39
+#//Objective: Detect high-risk activities without DPO consultation
+#//Data sources: Project management logs, DPIA logs, DPO ticketing system
+#//ECS fields used: event.action, log.original, event.category
+#//Tuning notes: Track DPO involvement; monitor high-risk project milestones
+
+name: "RULE-GDPR-39: High-Risk Data Processing Activity Without DPO Consultation"
+description: |
+  Identifies high-risk personal data processing activities (large-scale profiling,
+  special category data, systematic monitoring, new technologies) initiated without
+  documented Data Protection Officer (DPO) involvement as required by GDPR Articles
+  37-39. Detects project launches, system deployments, or processing changes meeting
+  Article 35 DPIA thresholds without DPO consultation records. DPO must be involved
+  in all data protection matters and inform/advise on GDPR compliance. Monitor for
+  DPIA-triggering events and verify DPO notification/review.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      // High-risk processing indicators
+      log.original RLIKE "(?i).*(large.*scale.*profiling|systematic.*monitoring|special.*category|biometric|genetic|health.*data|new.*technology).*"
+      AND log.original RLIKE "(?i).*(project.*start|deploy|launch|implement|activate).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(dpo.*consult|dpo.*review|dpo.*approval|dpo.*notif|data.*protection.*officer).*"
+  | STATS high_risk_projects = COUNT(*),
+          project_types = VALUES(log.original),
+          project_owners = VALUES(user.name),
+          first_project = MIN(@timestamp)
+    BY host.name
+  | WHERE high_risk_projects > 0
+  | EVAL risk_score = CASE(
+      project_types RLIKE "(?i).*(biometric|genetic|health|children).*", 100,
+      high_risk_projects > 3, 95,
+      90
+    )
+  | KEEP host.name, high_risk_projects, project_types, project_owners, first_project, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_37
+  - article_38
+  - article_39
+  - dpo
+  - governance
+severity: high
+risk_score: 90
+references:
+  - "GDPR Article 38(1) - DPO Involvement in Data Protection Matters"
+  - "GDPR Article 39 - DPO Tasks"
+  - "GDPR Article 35 - DPIA Requirements"
+nist: ["PM-9"]
+gdpr: ["Articles 37-39"]
+pci_dss: []
+mitre_attack: []

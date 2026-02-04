@@ -1,0 +1,63 @@
+#//RULE-GDPR-34 — Biometric Template Storage Without Encryption (GDPR Article 32)
+#//Requirement: Articles 9, 32
+#//Objective: Detect unencrypted biometric template databases
+#//Data sources: Database logs, file system monitoring
+#//ECS fields used: database.name, file.path, event.action
+#//Tuning notes: Scan biometric databases; verify encryption-at-rest
+
+name: "RULE-GDPR-34: Unencrypted Biometric Template Database Detected"
+description: |
+  Identifies databases or files storing biometric templates (fingerprint hashes,
+  facial embeddings, voice models) without encryption at rest, violating GDPR
+  Article 32 security requirements for special category data. Detects biometric
+  system database files without encryption indicators, plaintext template storage,
+  or biometric data in unencrypted backups. Biometric data breaches are irreversible
+  (can't change fingerprints) making encryption critical. Monitor for .db, .sqlite,
+  .dat files in biometric system directories without encryption wrappers.
+type: esql
+params: '{}'
+schedule_interval: 6h
+index:
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM auditbeat-*, logs-*
+  | WHERE event.category == "file"
+    AND file.path RLIKE "(?i).*(biometric|fingerprint|facial|iris|voice.*print).*"
+    AND file.extension IN ("db", "sqlite", "dat", "bin", "xml", "json")
+    AND file.path NOT RLIKE "(?i).*(encrypt|vault|secure|protected|tde).*"
+  | WHERE file.size > 102400  // >100KB
+  | STATS biometric_files = COUNT(*),
+          total_size_mb = SUM(file.size) / 1048576,
+          files = VALUES(file.path),
+          directories = VALUES(file.directory)
+    BY host.name, file.directory
+  | WHERE biometric_files > 0
+  | EVAL risk_score = CASE(
+      total_size_mb > 100, 100,
+      biometric_files > 10, 95,
+      90
+    )
+  | KEEP host.name, file.directory, biometric_files, total_size_mb, files, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_9
+  - article_32
+  - biometric
+  - encryption
+  - special_category_data
+severity: critical
+risk_score: 100
+references:
+  - "GDPR Article 9 - Special Categories"
+  - "GDPR Article 32(1)(a) - Encryption"
+  - "ISO/IEC 24745 - Biometric Information Protection"
+nist: ["SC-28"]
+gdpr: ["Articles 9, 32"]
+pci_dss: ["3.4"]
+mitre_attack:
+  TA0009:
+    T1005: []

@@ -1,0 +1,65 @@
+#//RULE-GDPR-31 — AI Model Training on Personal Data Without Legal Basis (GDPR Article 6)
+#//Requirement: Article 6
+#//Objective: Detect ML training using personal data without documented purpose
+#//Data sources: ML training job logs, data pipeline logs
+#//ECS fields used: event.action, log.original, file.path
+#//Tuning notes: Monitor training data sources; verify purpose limitation compliance
+
+name: "RULE-GDPR-31: Machine Learning Training on Personal Data Without Purpose Justification"
+description: |
+  Identifies ML model training jobs using datasets containing personal data without
+  documented legal basis or purpose alignment per GDPR Article 6. Detects training
+  pipelines loading customer/user data from production databases, personal data
+  exports used for model development, or feature engineering on special category
+  attributes without DPIA. Training on personal data constitutes processing requiring
+  lawful basis. Monitor for data scientist access to PII datasets and verify against
+  approved research/analytics purposes.
+type: esql
+params: '{}'
+schedule_interval: 6h
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(train|fit|model.*build|ml.*pipeline).*"
+      AND (
+        file.path RLIKE "(?i).*(customer|user|personal|pii|gdpr).*\\.(csv|parquet|json|sql).*"
+        OR database.query RLIKE "(?i).*SELECT.*FROM.*(customer|user|profile|contact).*"
+      )
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(approved.*purpose|legal.*basis|dpia|legitimate.*interest|anonymized|pseudonymized).*"
+  | STATS training_jobs = COUNT(*),
+          datasets = VALUES(file.path),
+          data_sources = VALUES(database.name),
+          users = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE training_jobs > 0
+  | EVAL risk_score = CASE(
+      datasets RLIKE "(?i).*(production|live|customer).*", 95,
+      training_jobs > 3, 85,
+      80
+    )
+  | KEEP user.name, host.name, training_jobs, datasets, data_sources, risk_score
+  | SORT training_jobs DESC
+enabled: false
+tags:
+  - gdpr
+  - article_6
+  - ai_ml
+  - training_data
+  - purpose_limitation
+severity: high
+risk_score: 85
+references:
+  - "GDPR Article 6 - Lawfulness of Processing"
+  - "GDPR Article 5(1)(b) - Purpose Limitation"
+  - "GDPR Article 35 - DPIA for High-Risk Processing"
+nist: ["IP-2"]
+gdpr: ["Article 6"]
+pci_dss: []
+mitre_attack:
+  TA0009:
+    T1530: []

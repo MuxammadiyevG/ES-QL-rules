@@ -1,0 +1,60 @@
+#//RULE-GDPR-09 — Default Privacy Settings Violation (GDPR Article 25(2))
+#//Requirement: Article 25
+#//Objective: Detect systems defaulting to maximum data collection
+#//Data sources: Application configuration logs, user registration logs
+#//ECS fields used: event.action, log.original, user.name
+#//Tuning notes: Monitor new account defaults; verify privacy-by-default settings
+
+name: "RULE-GDPR-09: Privacy-by-Default Violation (Excessive Default Permissions)"
+description: |
+  Identifies systems where new user accounts default to maximum data sharing,
+  public profiles, or broad marketing consents, violating GDPR Article 25(2)
+  data protection by default. Detects user registrations with pre-checked consent
+  boxes, default "public" profile settings, or automatic opt-in to all communications.
+  Privacy-by-default requires minimal data processing unless user explicitly chooses
+  otherwise. Monitor account creation events and settings initialization.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.action IN ("user_created", "account_registered", "signup")
+    AND (
+      log.original RLIKE "(?i).*(default.*consent.*true|all.*marketing.*enabled|profile.*visibility.*public|share.*all.*data).*"
+      OR log.original RLIKE "(?i).*(pre.*checked|auto.*opt.*in|consent.*default.*yes).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(user.*selected|explicit.*choice|custom.*settings).*"
+  | STATS violation_count = COUNT(*),
+          users_affected = VALUES(user.name),
+          default_settings = VALUES(log.original),
+          first_violation = MIN(@timestamp)
+    BY host.name
+  | WHERE violation_count > 0
+  | EVAL risk_score = CASE(
+      violation_count > 100, 95,
+      violation_count > 50, 85,
+      violation_count > 10, 75,
+      65
+    )
+  | KEEP host.name, violation_count, users_affected, default_settings, first_violation, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_25
+  - privacy_by_design
+  - privacy_by_default
+  - consent
+severity: high
+risk_score: 85
+references:
+  - "GDPR Article 25(2) - Data Protection by Default"
+  - "GDPR Recital 78 - Default Settings"
+nist: ["IP-1"]
+gdpr: ["Article 25(2)"]
+pci_dss: []
+mitre_attack: []

@@ -1,0 +1,68 @@
+#//RULE-GDPR-04 — Processing Without Lawful Basis (GDPR Article 6)
+#//Requirement: Article 6
+#//Objective: Detect data processing without documented legal basis
+#//Data sources: Application logs, consent management logs, CRM logs
+#//ECS fields used: event.category, user.name, log.original, event.action
+#//Tuning notes: Track consent records; monitor processing without consent/contract
+
+name: "RULE-GDPR-04: Personal Data Processing Without Lawful Basis"
+description: |
+  Identifies processing of personal data (marketing emails, profiling, automated
+  decisions) without documented lawful basis required by GDPR Article 6. Detects
+  marketing communications sent to users without consent records, data sharing
+  without legitimate interest assessment, or processing after consent withdrawal.
+  Correlate processing events with consent management system and legal basis registry.
+  Critical for demonstrating accountability.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (event.dataset RLIKE "(?i).*mail.*"
+       AND log.original RLIKE "(?i).*(marketing|promotional|newsletter).*"
+       AND log.original NOT RLIKE "(?i).*(consent|opt.*in|agree).*")
+      OR
+      (event.action RLIKE "(?i).*(share|transfer|export).*data.*"
+       AND log.original RLIKE "(?i).*(personal|customer|user).*"
+       AND log.original NOT RLIKE "(?i).*(contract|legitimate.*interest|consent).*")
+      OR
+      (log.original RLIKE "(?i).*(profiling|scoring|automated.*decision).*"
+       AND log.original NOT RLIKE "(?i).*(consent|legal.*obligation|contract).*")
+    )
+  | STATS processing_events = COUNT(*),
+          users_affected = COUNT_DISTINCT(user.name),
+          processing_types = VALUES(event.action),
+          sample_logs = CONCAT_AGG(log.original, " | ")
+    BY event.dataset, host.name
+  | WHERE processing_events > 0
+  | EVAL risk_score = CASE(
+      users_affected > 1000, 100,
+      processing_types RLIKE "(?i).*(automated.*decision|profiling).*", 95,
+      users_affected > 100, 85,
+      75
+    )
+  | KEEP event.dataset, host.name, processing_events, users_affected, processing_types, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_6
+  - lawful_basis
+  - consent
+  - accountability
+severity: critical
+risk_score: 95
+references:
+  - "GDPR Article 6 - Lawfulness of Processing"
+  - "GDPR Article 7 - Conditions for Consent"
+nist: ["IP-2"]
+gdpr: ["Article 6"]
+pci_dss: ["3", "3.1"]
+mitre_attack:
+  TA0009:
+    T1213: []

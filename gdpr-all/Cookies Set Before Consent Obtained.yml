@@ -1,0 +1,62 @@
+#//RULE-GDPR-26 — Cookie Banner Missing or Non-Compliant (ePrivacy + GDPR Article 7)
+#//Requirement: ePrivacy Directive, GDPR Article 7
+#//Objective: Detect cookie placement without prior consent
+#//Data sources: Web server logs, JavaScript tracking logs
+#//ECS fields used: http.request.headers, user_agent.original, url.path
+#//Tuning notes: Monitor cookie-setting responses; verify consent timestamps
+
+name: "RULE-GDPR-26: Cookies Set Before Consent Obtained"
+description: |
+  Identifies HTTP responses setting cookies (especially tracking/analytics cookies)
+  before user consent is documented, violating ePrivacy Directive and GDPR Article 7.
+  Detects Set-Cookie headers in responses to first-time visitors without corresponding
+  consent acceptance logs. EU Cookie Law requires explicit opt-in for non-essential
+  cookies. Monitors for Google Analytics, Facebook Pixel, advertising cookies placed
+  before consent banner interaction. Excludes strictly necessary cookies (session,
+  security). High regulatory scrutiny post-Planet49 CJEU ruling.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - filebeat-nginx-access-*
+  - logs-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, logs-*
+  | WHERE event.category == "web"
+    AND http.response.headers RLIKE "(?i).*set-cookie.*(ga|_gid|_gat|fbp|fr|_fbp|doubleclick|adsense).*"
+    AND http.request.headers NOT RLIKE "(?i).*(cookie.*consent|gdpr.*accept|cookie.*accept).*"
+  | WHERE NOT url.path RLIKE "(?i).*/cookie.*(consent|policy|banner).*"
+  | STATS cookie_violations = COUNT(*),
+          cookie_types = VALUES(http.response.headers),
+          unique_visitors = COUNT_DISTINCT(source.ip),
+          urls = VALUES(url.path)
+    BY url.path, host.name
+  | WHERE cookie_violations > 0
+  | EVAL risk_score = CASE(
+      cookie_types RLIKE "(?i).*(doubleclick|facebook|google.*analytics).*", 95,
+      unique_visitors > 1000, 90,
+      cookie_violations > 100, 85,
+      75
+    )
+  | KEEP url.path, host.name, cookie_violations, unique_visitors, cookie_types, risk_score
+  | SORT cookie_violations DESC
+enabled: false
+tags:
+  - gdpr
+  - eprivacy
+  - cookies
+  - consent
+  - tracking
+severity: high
+risk_score: 85
+references:
+  - "ePrivacy Directive Article 5(3) - Cookie Consent"
+  - "GDPR Article 7 - Conditions for Consent"
+  - "CJEU Planet49 - Active Consent Required"
+nist: ["IP-1"]
+gdpr: ["Article 7"]
+pci_dss: []
+mitre_attack:
+  TA0009:
+    T1539: []

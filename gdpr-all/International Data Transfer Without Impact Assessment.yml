@@ -1,0 +1,65 @@
+#//RULE-GDPR-21 — Cross-Border Data Flow Without Transfer Impact Assessment (GDPR Article 46)
+#//Requirement: Article 46
+#//Objective: Detect international transfers without TIA documentation
+#//Data sources: Network logs, cloud service logs
+#//ECS fields used: destination.geo.country_code, network.bytes, event.action
+#//Tuning notes: Require TIA for transfers; monitor cloud region deployments
+
+name: "RULE-GDPR-21: International Data Transfer Without Impact Assessment"
+description: |
+  Identifies data transfers to third countries (non-EEA) without documented Transfer
+  Impact Assessment (TIA) as recommended post-Schrems II. Detects cloud deployments
+  to non-EU regions, database replications to international data centers, or API
+  integrations with non-EU services processing personal data. Following CJEU Schrems II
+  ruling, transfers require supplementary measures assessment. Operating without
+  TIA exposes to invalidation risk and enforcement.
+type: esql
+params: '{}'
+schedule_interval: 12h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (event.action RLIKE "(?i).*(deploy|launch|provision|create).*"
+       AND log.original RLIKE "(?i).*(cloud|aws|azure|gcp|region).*"
+       AND log.original RLIKE "(?i).*(us-|ap-|asia|america|africa).*")
+      OR
+      (event.category == "database"
+       AND database.query RLIKE "(?i).*(REPLICATE|SYNC|BACKUP).*"
+       AND log.original RLIKE "(?i).*(international|offshore|us|asia).*")
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(tia|transfer.*impact|schrems|supplementary.*measures|scc).*"
+  | STATS transfer_activities = COUNT(*),
+          destinations = VALUES(log.original),
+          first_transfer = MIN(@timestamp)
+    BY host.name
+  | WHERE transfer_activities > 0
+  | EVAL risk_score = CASE(
+      destinations RLIKE "(?i).*(us|china|russia).*", 95,
+      transfer_activities > 5, 85,
+      80
+    )
+  | KEEP host.name, transfer_activities, destinations, first_transfer, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_46
+  - international_transfer
+  - tia
+  - schrems_ii
+severity: high
+risk_score: 90
+references:
+  - "GDPR Article 46 - Transfers Subject to Appropriate Safeguards"
+  - "CJEU Schrems II - Adequacy and Safeguards"
+  - "EDPB Recommendations 01/2020 on Supplementary Measures"
+nist: ["AC-20"]
+gdpr: ["Article 46"]
+pci_dss: []
+mitre_attack:
+  TA0010:
+    T1537: []

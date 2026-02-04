@@ -1,0 +1,66 @@
+#//RULE-GDPR-17 — Undocumented Data Processing Activity (GDPR Article 30)
+#//Requirement: Article 30
+#//Objective: Detect processing activities not in Article 30 records
+#//Data sources: Application logs, database logs, API logs
+#//ECS fields used: event.action, database.name, event.category
+#//Tuning notes: Maintain processing register; correlate with documented activities
+
+name: "RULE-GDPR-17: Data Processing Activity Not in Article 30 Register"
+description: |
+  Identifies data processing activities (new databases, APIs, applications) that
+  are not documented in the Article 30 Records of Processing Activities (ROPA).
+  GDPR Article 30 requires controllers to maintain current records of all processing.
+  Detects new database creation, API endpoint deployment, or application launches
+  processing personal data without corresponding ROPA entries. Undocumented processing
+  prevents accountability and supervisory authority inspection.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE (
+      (event.category == "database"
+       AND database.query RLIKE "(?i).*(CREATE.*DATABASE|CREATE.*TABLE).*"
+       AND database.query RLIKE "(?i).*(customer|user|personal|contact|profile).*")
+      OR
+      (event.action RLIKE "(?i).*(deploy|launch|release).*"
+       AND log.original RLIKE "(?i).*(api|endpoint|service).*personal.*data.*")
+      OR
+      (event.action == "service_started"
+       AND process.name RLIKE "(?i).*(crm|hr|customer|gdpr).*")
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(ropa|record.*processing|article.*30|documented).*"
+  | STATS new_processing = COUNT(*),
+          processing_types = VALUES(event.action),
+          databases = VALUES(database.name),
+          services = VALUES(process.name),
+          first_detected = MIN(@timestamp)
+    BY host.name
+  | WHERE new_processing > 0
+  | EVAL risk_score = CASE(
+      new_processing > 5, 90,
+      new_processing > 2, 80,
+      70
+    )
+  | KEEP host.name, new_processing, processing_types, databases, services, first_detected, risk_score
+  | SORT new_processing DESC
+enabled: false
+tags:
+  - gdpr
+  - article_30
+  - ropa
+  - documentation
+  - accountability
+severity: medium
+risk_score: 75
+references:
+  - "GDPR Article 30 - Records of Processing Activities"
+  - "GDPR Article 5(2) - Accountability"
+nist: ["IP-2"]
+gdpr: ["Article 30"]
+pci_dss: []
+mitre_attack: []

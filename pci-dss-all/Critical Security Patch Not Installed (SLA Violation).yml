@@ -1,0 +1,72 @@
+#
+#EVIDENCE-PCI-05 — Anti-Virus Deployment & Evaluation (PCI 5.1, 5.1.1, 5.1.2, 5.4)
+#Requirement: 5
+#Objective: Evidence of AV deployment on all systems and periodic threat evaluations
+#Why not detectable: Requires system inventory cross-reference with AV installation
+#status, capability testing (malware detection rates), periodic risk assessments
+#for non-standard systems, and documented security policies. ES|QL cannot validate
+#software deployment completeness or threat evaluation results. Audit via asset
+#management reports and security policy review.
+#RULE-PCI-15 — Critical Security Patch Missing (PCI 6.2)
+#Requirement: 6
+#Objective: Detect systems missing critical security patches beyond SLA
+#Data sources: Windows Update logs, Linux package manager logs
+#ECS fields used: event.action, package.name, package.version, winlog.event_id
+#Tuning notes: Define critical patch age threshold (30 days); integrate with WSUS/SCCM
+
+
+name: "RULE-PCI-15: Critical Security Patch Not Installed (SLA Violation)"
+description: |
+  Identifies systems with missing critical security patches older than 30 days,
+  violating PCI DSS 6.2 requirement to install critical patches within one month
+  of release. Monitors Windows Update failures and Linux package manager logs for
+  security updates. Correlate with vulnerability scan results and patch management
+  system data. Exclude systems with documented risk acceptance.
+type: esql
+params: '{}'
+schedule_interval: 1h
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE (
+      (winlog.event_id IN ("20", "24", "25", "31") 
+       AND winlog.provider_name == "Microsoft-Windows-WindowsUpdateClient")
+      OR
+      (event.dataset RLIKE ".*package.*"
+       AND event.action == "package_check"
+       AND log.original RLIKE "(?i).*(security|critical).*update.*available.*")
+    )
+  | STATS update_failures = COUNT(*),
+          packages = VALUES(package.name),
+          last_failure = MAX(@timestamp),
+          first_failure = MIN(@timestamp)
+    BY host.name, package.name
+  | EVAL days_overdue = (NOW() - first_failure) / 86400000
+  | WHERE days_overdue > 30
+  | EVAL risk_score = CASE(
+      days_overdue > 90, 95,
+      days_overdue > 60, 85,
+      days_overdue > 30, 75,
+      60
+    )
+  | KEEP host.name, packages, update_failures, days_overdue, last_failure, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_6
+  - vulnerability_management
+  - patching
+  - compliance
+severity: high
+risk_score: 80
+references:
+  - "PCI DSS v3.1 Requirement 6.2"
+nist: ["SI-2"]
+gdpr: ["Article 32"]
+pci_dss: ["6.2"]
+mitre_attack: []

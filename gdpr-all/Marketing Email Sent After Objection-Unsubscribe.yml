@@ -1,0 +1,57 @@
+#//RULE-GDPR-45 — Objection to Direct Marketing Not Processed (GDPR Article 21(3))
+#//Requirement: Article 21
+#//Objective: Detect marketing after objection/unsubscribe
+#//Data sources: Email marketing logs, marketing automation logs
+#//ECS fields used: email.to, event.action, log.original
+#//Tuning notes: Track unsubscribe events; verify marketing suppression
+
+name: "RULE-GDPR-45: Marketing Email Sent After Objection/Unsubscribe"
+description: |
+  Identifies marketing or promotional emails sent to users after they objected to
+  direct marketing under GDPR Article 21(3). Detects emails sent to addresses on
+  unsubscribe lists, users who clicked "object to marketing" but still receive
+  campaigns, or preference center opt-outs not honored. Article 21(3) requires
+  absolute right to object to direct marketing with immediate effect. Monitor
+  email campaigns and cross-reference with suppression lists and objection records.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.dataset RLIKE "(?i).*mail.*"
+    AND email.subject RLIKE "(?i).*(newsletter|promotion|offer|deal|marketing).*"
+  | WHERE email.to IN (
+      SELECT user.email FROM logs WHERE event.action == "unsubscribe" AND @timestamp > NOW() - 30 DAYS
+    )
+  | STATS violation_emails = COUNT(*),
+          recipients = VALUES(email.to),
+          campaigns = VALUES(email.subject)
+    BY email.to, host.name
+  | WHERE violation_emails > 0
+  | EVAL risk_score = CASE(
+      violation_emails > 5, 95,
+      violation_emails > 1, 85,
+      80
+    )
+  | KEEP email.to, host.name, violation_emails, campaigns, risk_score
+  | SORT violation_emails DESC
+enabled: false
+tags:
+  - gdpr
+  - article_21
+  - direct_marketing
+  - objection
+  - unsubscribe
+severity: high
+risk_score: 90
+references:
+  - "GDPR Article 21(3) - Right to Object to Direct Marketing"
+  - "ePrivacy Directive - Marketing Consent"
+nist: ["IP-1"]
+gdpr: ["Article 21(3)"]
+pci_dss: []
+mitre_attack: []

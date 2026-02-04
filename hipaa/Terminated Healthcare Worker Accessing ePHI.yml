@@ -1,0 +1,59 @@
+#//RULE-HIPAA-02 — Terminated Employee Access to ePHI Not Revoked - §164.308(a)(3)(ii)(C)
+#//Requirement: HIPAA Security Rule §164.308(a)(3)(ii)(C) - Termination Procedures
+#//Objective: Detect ePHI access by terminated healthcare workers
+#//Data sources: HR termination logs, authentication logs, access logs
+#//ECS fields used: event.category, user.name, event.outcome, @timestamp
+#//Tuning notes: Integrate with HR system; maintain terminated employee list
+
+name: "RULE-HIPAA-02: Terminated Healthcare Worker Accessing ePHI"
+description: |
+  Identifies authentication or access to ePHI systems by terminated healthcare
+  employees, contractors, or volunteers. HIPAA §164.308(a)(3)(ii)(C) requires
+  termination procedures including immediate access removal. Detects successful
+  logins, database queries, or EHR access by users on terminated employee list
+  post-termination date. Common in healthcare due to complex access provisioning
+  across multiple clinical systems. Critical compliance gap requiring immediate
+  access revocation and incident investigation.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "authentication"
+    AND event.outcome == "success"
+    AND user.name IN ("terminated.nurse1", "former.doctor2", "separated.admin3")
+  | STATS access_count = COUNT(*),
+          systems_accessed = VALUES(host.name),
+          sources = VALUES(source.ip),
+          first_access = MIN(@timestamp),
+          last_access = MAX(@timestamp)
+    BY user.name
+  | WHERE access_count > 0
+  | EVAL risk_score = 100
+  | KEEP user.name, access_count, systems_accessed, sources, first_access, last_access, risk_score
+  | SORT first_access ASC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_308_a_3
+  - workforce_security
+  - termination
+  - ephi_access
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.308(a)(3)(ii)(C) - Termination Procedures"
+  - "45 CFR §164.312(a)(2)(iii) - Automatic Logoff"
+nist: ["AC-2"]
+gdpr: ["Article 32"]
+pci_dss: ["8.1.3"]
+hipaa: ["§164.308(a)(3)(ii)(C)"]
+mitre_attack:
+  TA0001:
+    T1078: ["T1078.001"]

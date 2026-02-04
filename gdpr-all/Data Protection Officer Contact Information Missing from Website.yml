@@ -1,0 +1,55 @@
+#//RULE-GDPR-40 — DPO Contact Information Not Published (GDPR Article 37(7))
+#//Requirement: Article 37
+#//Objective: Detect missing or outdated DPO contact details
+#//Data sources: Website monitoring logs, privacy policy logs
+#//ECS fields used: http.response.body, url.path, event.action
+#//Tuning notes: Monitor privacy policy pages; verify DPO contact accessibility
+
+name: "RULE-GDPR-40: Data Protection Officer Contact Information Missing from Website"
+description: |
+  Identifies websites or online services lacking publicly available Data Protection
+  Officer contact information as required by GDPR Article 37(7). Detects privacy
+  policies, contact pages, or legal pages missing DPO email/contact form, or
+  displaying outdated/invalid DPO contacts. Organizations subject to Article 37
+  DPO appointment must publish DPO contact details and communicate them to supervisory
+  authority. Monitor website crawls and privacy policy updates for DPO information
+  presence and validity.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - filebeat-nginx-access-*
+  - logs-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, logs-*
+  | WHERE url.path RLIKE "(?i).*(privacy|legal|contact|gdpr|data.*protection).*"
+    AND http.response.status_code == 200
+  | WHERE NOT http.response.body RLIKE "(?i).*(data.*protection.*officer|dpo|privacy.*officer).*(@|contact.*form|email).*"
+  | STATS missing_dpo_pages = COUNT(*),
+          pages = VALUES(url.path),
+          last_check = MAX(@timestamp)
+    BY host.name
+  | WHERE missing_dpo_pages > 0
+  | EVAL risk_score = CASE(
+      missing_dpo_pages > 5, 85,
+      75
+    )
+  | KEEP host.name, missing_dpo_pages, pages, last_check, risk_score
+  | SORT missing_dpo_pages DESC
+enabled: false
+tags:
+  - gdpr
+  - article_37
+  - dpo
+  - transparency
+  - contact_information
+severity: medium
+risk_score: 75
+references:
+  - "GDPR Article 37(7) - Publication of DPO Contact Details"
+  - "GDPR Article 13(1)(b) - Controller Identity and Contact"
+nist: ["PM-9"]
+gdpr: ["Article 37(7)"]
+pci_dss: []
+mitre_attack: []

@@ -1,0 +1,64 @@
+#//RULE-PCI-24 — Shared/Generic Account Usage (PCI 8.5)
+#//Requirement: 8
+#//Objective: Detect use of shared, group, or generic accounts
+#//Data sources: Windows Event Logs, Linux auditd, application logs
+#//ECS fields used: event.category, user.name, source.ip, event.action
+#//Tuning notes: Identify generic usernames; monitor for concurrent logins from same account
+
+name: "RULE-PCI-24: Shared or Generic Account Usage Detected"
+description: |
+  Identifies authentication or access using shared, group, or generic account names
+  (admin, shared, guest, etc.). PCI DSS 8.5 prohibits shared credentials to ensure
+  individual accountability. Shared accounts prevent tracing actions to specific
+  users and violate non-repudiation requirements. Detect by monitoring for generic
+  usernames and concurrent sessions from same account.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "authentication"
+    AND event.outcome == "success"
+    AND user.name RLIKE "(?i).*(shared|generic|admin|guest|operator|service|team|dept|group).*"
+  | STATS login_count = COUNT(*),
+          unique_sources = COUNT_DISTINCT(source.ip),
+          sources = VALUES(source.ip),
+          hosts = VALUES(host.name),
+          first_login = MIN(@timestamp),
+          last_login = MAX(@timestamp)
+    BY user.name
+  | WHERE login_count > 0
+  | EVAL concurrent_use = CASE(
+      unique_sources > 1, 1,
+      0
+    )
+  | EVAL risk_score = CASE(
+      concurrent_use == 1, 95,
+      login_count > 10, 85,
+      user.name RLIKE "(?i).*(shared|generic).*", 90,
+      70
+    )
+  | KEEP user.name, login_count, unique_sources, sources, concurrent_use, first_login, last_login, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_8
+  - authentication
+  - shared_account
+  - iam
+severity: high
+risk_score: 85
+references:
+  - "PCI DSS v3.1 Requirement 8.5"
+nist: ["IA-2"]
+gdpr: ["Article 32"]
+pci_dss: ["8.5"]
+mitre_attack:
+  TA0005:
+    T1078: []

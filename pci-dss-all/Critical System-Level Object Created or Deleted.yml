@@ -1,0 +1,72 @@
+#//RULE-PCI-36 — Critical System Object Deletion (PCI 10.2.7)
+#//Requirement: 10
+#//Objective: Detect creation and deletion of system-level objects
+#//Data sources: Windows Event Logs, Linux auditd
+#//ECS fields used: event.category, event.action, file.path, user.name
+#//Tuning notes: Monitor system file changes, service deletions, registry keys
+#
+name: "RULE-PCI-36: Critical System-Level Object Created or Deleted"
+description: |
+  Identifies creation and deletion of critical system-level objects including system
+  files, services, registry keys, and configuration files. PCI DSS 10.2.7 requires
+  logging system object changes for change tracking and security monitoring.
+  Unauthorized system changes may indicate malware installation, privilege escalation,
+  or sabotage. Correlate with change management tickets and authorized maintenance.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE (
+      (winlog.event_id IN ("7045", "7040")
+       AND winlog.channel == "System")
+      OR
+      (event.category == "registry"
+       AND winlog.event_data.ObjectName RLIKE ".*\\\\(CurrentVersion|Run|RunOnce|Policies)\\\\.*"
+       AND event.action IN ("created", "deleted"))
+      OR
+      (event.category == "file"
+       AND file.path RLIKE ".*/(bin|sbin|boot|etc/(passwd|shadow|sudoers|ssh)|lib|systemd).*"
+       AND event.action IN ("created", "deleted", "modified"))
+      OR
+      (file.path RLIKE ".*/systemd/system/.*\\.service"
+       AND event.action IN ("created", "deleted"))
+    )
+  | STATS change_count = COUNT(*),
+          files_affected = VALUES(file.path),
+          services = VALUES(service.name),
+          registry_keys = VALUES(winlog.event_data.ObjectName),
+          actions = VALUES(event.action)
+    BY user.name, host.name
+  | WHERE change_count > 0
+  | EVAL risk_score = CASE(
+      files_affected RLIKE "(?i).*(passwd|shadow|sudoers).*", 100,
+      registry_keys RLIKE "(?i).*(Run|RunOnce).*", 95,
+      actions RLIKE "(?i).*delet.*", 90,
+      change_count > 5, 85,
+      75
+    )
+  | KEEP user.name, host.name, change_count, files_affected, services, registry_keys, actions, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_10
+  - logging
+  - persistence
+  - system_change
+severity: high
+risk_score: 85
+references:
+  - "PCI DSS v3.1 Requirement 10.2.7"
+nist: ["AU-12"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2.7"]
+mitre_attack:
+  TA0003:
+    T1543: ["T1543.003"]

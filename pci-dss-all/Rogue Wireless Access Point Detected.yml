@@ -1,0 +1,65 @@
+#//RULE-PCI-02 — Unauthorized Wireless Access Point Detection (PCI 1.2.3)
+#//Requirement: 1
+#//Objective: Detect rogue wireless access points in cardholder environment
+#//Data sources: Linux auditd, network logs
+#//ECS fields used: event.category, network.protocol, destination.port, host.name
+#//Tuning notes: Allowlist known SSIDs/BSSIDs; requires wireless scanning tools
+
+name: "RULE-PCI-02: Rogue Wireless Access Point Detected"
+description: |
+  Identifies potential unauthorized wireless access points by detecting DHCP server
+  activity on unexpected interfaces or wireless-related processes starting without
+  authorization. PCI DSS 1.2.3 requires perimeter firewalls between wireless networks
+  and cardholder data environment. Rogue APs bypass network controls and create
+  backdoor access. Tune by maintaining inventory of authorized wireless devices.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - logs-*
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, logs-*, metricbeat-*
+  | WHERE (
+      (process.name IN ("dnsmasq", "dhcpd", "isc-dhcp-server") 
+       AND process.args RLIKE ".*(wlan|wlp|ath|ra)[0-9].*"
+       AND event.action == "started")
+      OR
+      (process.name == "hostapd" AND event.action IN ("started", "executed"))
+      (process.name == "hostapd" AND event.action IN ("started", "executed"))
+      OR
+      (event.dataset == "system.network" AND network.name RLIKE ".*(wlan|wlp).*" 
+       AND network.type == "wireless")
+    )
+  | STATS event_count = COUNT(*),
+          first_seen = MIN(@timestamp),
+          last_seen = MAX(@timestamp),
+          processes = VALUES(process.name),
+          interfaces = VALUES(network.name)
+    BY host.name, process.name
+  | WHERE event_count > 0
+  | EVAL severity_level = CASE(
+      process.name == "hostapd", "critical",
+      event_count > 3, "high",
+      "medium"
+    )
+  | KEEP host.name, processes, interfaces, event_count, first_seen, last_seen, severity_level
+enabled: false
+tags:
+  - pci_dss
+  - requirement_1
+  - network
+  - wireless
+  - rogue_device
+severity: critical
+risk_score: 95
+references:
+  - "PCI DSS v3.1 Requirement 1.2.3"
+nist: ["AC-18"]
+gdpr: ["Article 32"]
+pci_dss: ["1.1.2.3"]
+mitre_attack:
+  TA0001: 
+    T1200: []

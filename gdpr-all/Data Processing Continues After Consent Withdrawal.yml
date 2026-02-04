@@ -1,0 +1,50 @@
+#//RULE-GDPR-25 — Consent Withdrawal Not Processed (GDPR Article 7(3))
+#//Requirement: Article 7
+#//Objective: Detect continued processing after consent withdrawal
+#//Data sources: Consent management logs, application logs
+#//ECS fields used: event.action, user.name, log.original, @timestamp
+#//Tuning notes: Track consent lifecycle; verify processing stops post-withdrawal
+
+name: "RULE-GDPR-25: Data Processing Continues After Consent Withdrawal"
+description: |
+  Identifies continued processing of personal data after user withdrawal of consent,
+  violating GDPR Article 7(3) requirement that withdrawal be as easy as giving
+  consent and have immediate effect. Detects marketing emails sent post-withdrawal,
+  profiling continuing after opt-out, or data collection persisting after consent
+  revocation. Consent withdrawal must stop processing immediately unless other
+  legal basis exists. Monitor consent events and correlate with processing logs.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(consent.*withdraw|opt.*out|unsubscribe).*"
+      OR log.original RLIKE "(?i).*(withdraw.*consent|revoke.*consent|opt.*out).*"
+    )
+  | STATS withdrawal_time = MIN(@timestamp),
+          user_id = VALUES(user.name)
+    BY user.name
+  | EVAL hours_since_withdrawal = (NOW() - withdrawal_time) / 3600000
+  | WHERE hours_since_withdrawal < 72
+  | KEEP user.name, withdrawal_time, hours_since_withdrawal
+enabled: false
+tags:
+  - gdpr
+  - article_7
+  - consent
+  - withdrawal
+  - data_subject_rights
+severity: high
+risk_score: 90
+references:
+  - "GDPR Article 7(3) - Withdrawal of Consent"
+  - "GDPR Recital 42 - Easy Withdrawal"
+nist: ["IP-1"]
+gdpr: ["Article 7(3)"]
+pci_dss: []
+mitre_attack: []

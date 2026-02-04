@@ -1,0 +1,71 @@
+#//EVIDENCE-PCI-10 — Log Review, Retention, Audit Trail Details (PCI 10.1, 10.3, 10.6, 10.7, 10.8)
+#//Requirement: 10
+#//Objective: Evidence of audit trail implementation, log detail requirements, review processes, retention
+#//Why not detectable: Requires validation of audit trail linking to individual users,
+#//log entry completeness (user ID, event type, timestamp, success/failure, origination,
+#//affected resources), daily log review procedures, exception follow-up documentation,
+#//and log retention policies (1 year with 3 months online). ES|QL cannot validate
+#//procedural log review compliance, audit trail design, or retention implementation.
+#//Verified through log configuration audit, SIEM review procedures, retention policy
+#//documentation, and analyst activity records.
+#//RULE-PCI-37 — Unauthorized Wireless Access Point (PCI 11.1)
+#//Requirement: 11
+#//Objective: Detect rogue wireless access points through network scanning
+#//Data sources: Network scan logs, wireless monitoring logs
+#//ECS fields used: network.name, network.type, host.name, event.category
+#//Tuning notes: Maintain inventory of authorized APs; quarterly wireless scans
+
+name: "RULE-PCI-37: Unauthorized Wireless Access Point Discovery"
+description: |
+  Identifies wireless access points detected during network scans that are not in
+  the authorized AP inventory. PCI DSS 11.1 requires quarterly testing for wireless
+  APs and detecting unauthorized devices. Rogue APs bypass network security controls
+  and create backdoor access to cardholder environment. Correlate discoveries with
+  authorized AP database and investigate physical locations immediately.
+type: esql
+params: '{}'
+schedule_interval: 1h
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE event.category == "network"
+    AND network.type == "wireless"
+    AND (
+      log.original RLIKE "(?i).*(access.*point|ap.*detected|ssid|bssid).*"
+      OR event.action == "wireless_scan"
+    )
+  | WHERE NOT network.name IN ("Corporate_WiFi", "Guest_Network", "AuthorizedSSID1")
+  | STATS detection_count = COUNT(*),
+          ssids = VALUES(network.name),
+          bssids = VALUES(host.mac),
+          first_seen = MIN(@timestamp),
+          last_seen = MAX(@timestamp)
+    BY network.name, host.mac
+  | WHERE detection_count > 0
+  | EVAL risk_score = CASE(
+      detection_count > 10, 95,
+      ssids RLIKE "(?i).*(free|open|guest).*", 90,
+      85
+    )
+  | KEEP network.name, host.mac, detection_count, ssids, first_seen, last_seen, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_11
+  - wireless
+  - rogue_device
+  - network_security
+severity: high
+risk_score: 90
+references:
+  - "PCI DSS v3.1 Requirement 11.1"
+nist: ["SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["11.1", "11.1.1", "11.1.2"]
+mitre_attack:
+  TA0001:
+    T1200: []

@@ -1,0 +1,72 @@
+#//RULE-PCI-01 — Firewall Rule Change Detection (PCI 1.1.1, 1.1.7)
+#//Requirement: 1
+#//Objective: Detect unauthorized firewall configuration changes
+#//Data sources: Windows Event Logs (Security), Linux auditd
+#//ECS fields used: event.category, event.action, process.name, user.name, host.name
+#//Tuning notes: Allowlist known firewall admins; baseline scheduled review jobs
+
+name: "RULE-PCI-01: Unauthorized Firewall Configuration Change"
+description: |
+  Detects modifications to firewall rules or configurations on Windows and Linux systems.
+  PCI DSS requires formal approval and testing of all firewall changes (1.1.1) and periodic
+  review of rule sets (1.1.7). Unauthorized changes may indicate compromise or policy violation.
+  False positives may occur from authorized admins during maintenance windows; tune by allowlisting
+  known admin accounts and correlating with change tickets.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "configuration" 
+    AND (
+      (winlog.event_id IN ("2004", "2005", "2006", "2033") AND event.provider == "Microsoft-Windows-Windows Firewall With Advanced Security")
+      OR
+      (process.name IN ("iptables", "ip6tables", "firewall-cmd", "ufw", "nft") AND event.action IN ("executed", "started"))
+      OR
+      (file.path RLIKE ".*/(iptables|firewalld|ufw)/.*" AND event.type == "change")
+    )
+  | EVAL change_type = CASE(
+      winlog.event_id == "2004", "Rule Added",
+      winlog.event_id == "2005", "Rule Modified",
+      winlog.event_id == "2006", "Rule Deleted",
+      winlog.event_id == "2033", "Policy Changed",
+      process.name RLIKE ".*(iptables|firewall).*", "CLI Change",
+      file.path IS NOT NULL, "Config File Modified",
+      "Unknown"
+    )
+  | STATS change_count = COUNT(*), 
+          unique_users = COUNT_DISTINCT(user.name),
+          hosts = VALUES(host.name),
+          actions = VALUES(change_type)
+    BY user.name, process.name, host.name
+  | WHERE change_count > 0
+  | EVAL risk_score = CASE(
+      unique_users > 1, 85,
+      change_count > 5, 75,
+      user.name RLIKE ".*(service|system).*", 40,
+      65
+    )
+  | KEEP user.name, host.name, process.name, change_count, actions, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_1
+  - network
+  - firewall
+  - configuration_change
+severity: high
+risk_score: 75
+references:
+  - "PCI DSS v3.1 Requirement 1.1.1, 1.1.7"
+nist: ["SC-7"]
+gdpr: ["Article 32"]
+pci_dss: ["1.1.1", "1.1.7","1.1.2"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.004"]

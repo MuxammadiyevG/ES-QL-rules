@@ -1,0 +1,62 @@
+#
+#//RULE-PCI-16 — Development Code in Production (PCI 6.4.3)
+#//Requirement: 6
+#//Objective: Detect live PAN usage in development/test environments
+#//Data sources: Database logs, application logs
+#//ECS fields used: log.original, database.query, environment.name
+#//Tuning notes: Tag environments; monitor for INSERT with real PANs in non-prod
+name: "RULE-PCI-16: Production Cardholder Data in Test/Dev Environment"
+description: |
+  Identifies instances where live Primary Account Numbers or production cardholder
+  data appears in development or test environments. PCI DSS 6.4.3 prohibits use of
+  production PANs for testing/development. Detects PAN patterns in database
+  operations on systems tagged as non-production. Implement environment tagging
+  and exclude authorized data masking/tokenization test scenarios.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (event.dataset RLIKE ".*database.*"
+       AND (log.original RLIKE ".*\\b[3-6][0-9]{13,18}\\b.*"
+            OR database.query RLIKE ".*\\b[3-6][0-9]{13,18}\\b.*")
+       AND host.name RLIKE "(?i).*(dev|test|stage|qa|uat).*")
+      OR
+      (tags LIKE ["development", "testing"]
+       AND log.original RLIKE ".*card.*[3-6][0-9]{13,}.*")
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(test[_]?data|dummy|fake|token).*"
+  | STATS violation_count = COUNT(*),
+          environments = VALUES(tags),
+          queries = VALUES(database.query)
+    BY host.name
+  | WHERE violation_count > 0
+  | EVAL risk_score = CASE(
+      violation_count > 10, 95,
+      violation_count > 3, 85,
+      75
+    )
+  | KEEP host.name, environments, violation_count, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_6
+  - development
+  - data_protection
+  - separation_of_duties
+severity: critical
+risk_score: 90
+references:
+  - "PCI DSS v3.1 Requirement 6.4.3"
+nist: ["CM-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.4.3"]
+mitre_attack:
+  TA0009: 
+    T1005: []

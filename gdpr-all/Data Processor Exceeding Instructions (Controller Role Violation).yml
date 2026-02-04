@@ -1,0 +1,64 @@
+#//RULE-GDPR-22 — Data Processor Acting as Controller (GDPR Article 28)
+#//Requirement: Article 28
+#//Objective: Detect processors making independent processing decisions
+#//Data sources: Application logs, third-party API logs
+#//ECS fields used: event.action, log.original, event.category
+#//Tuning notes: Monitor processor systems; detect out-of-scope processing
+
+name: "RULE-GDPR-22: Data Processor Exceeding Instructions (Controller Role Violation)"
+description: |
+  Identifies instances where a data processor processes personal data beyond the
+  documented controller's instructions, potentially acting as a controller without
+  legal basis per GDPR Article 28(10). Detects third-party services performing
+  unexpected analytics, marketing, or profiling on customer data, or processors
+  sharing data with unapproved sub-processors. Processor overreach creates joint
+  controller liability and violates processing agreements.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (event.category == "web"
+       AND http.request.referrer RLIKE "(?i).*(vendor|partner|processor|third.*party).*"
+       AND (log.original RLIKE "(?i).*(analytics|tracking|marketing|profil).*"
+            OR url.path RLIKE "(?i).*/api/(analytics|ads|marketing)/.*"))
+      OR
+      (log.original RLIKE "(?i).*(processor|vendor|supplier).*"
+       AND log.original RLIKE "(?i).*(shar|transfer|export|send).*data.*"
+       AND log.original NOT RLIKE "(?i).*(controller.*instruc|dpa|processing.*agreement).*")
+    )
+  | STATS unauthorized_processing = COUNT(*),
+          processors = VALUES(http.request.referrer),
+          activities = VALUES(url.path)
+    BY http.request.referrer, host.name
+  | WHERE unauthorized_processing > 5
+  | EVAL risk_score = CASE(
+      activities RLIKE "(?i).*(marketing|ads|sell).*", 100,
+      unauthorized_processing > 20, 90,
+      80
+    )
+  | KEEP http.request.referrer, host.name, unauthorized_processing, processors, activities, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_28
+  - data_processor
+  - controller_relationship
+  - dpa
+severity: high
+risk_score: 90
+references:
+  - "GDPR Article 28 - Processor Obligations"
+  - "GDPR Article 28(10) - Processor as Controller"
+nist: ["SC-38"]
+gdpr: ["Article 28"]
+pci_dss: ["12.8"]
+mitre_attack:
+  TA0009:
+    T1213: []

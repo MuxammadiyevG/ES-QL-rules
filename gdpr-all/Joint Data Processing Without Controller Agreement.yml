@@ -1,0 +1,65 @@
+#//RULE-GDPR-48 — Joint Controller Agreement Missing (GDPR Article 26)
+#//Requirement: Article 26
+#//Objective: Detect joint processing without documented responsibilities
+#//Data sources: Integration logs, data sharing logs
+#//ECS fields used: event.action, log.original, destination.ip
+#//Tuning notes: Identify joint processing scenarios; verify Article 26 agreements
+
+name: "RULE-GDPR-48: Joint Data Processing Without Controller Agreement"
+description: |
+  Identifies scenarios where multiple entities jointly determine purposes and means
+  of processing (joint controllers) without documented Article 26 agreement defining
+  respective responsibilities. Detects data sharing between organizations for common
+  purposes (co-marketing, shared CRM, collaborative platforms), bi-directional data
+  syncs, or integrated systems without joint controller arrangements. Article 26
+  requires transparent arrangement of responsibilities, especially for data subject
+  rights. Monitor cross-organizational data flows and verify governance agreements.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(share|sync|integrat|collaborate).*data.*"
+      AND log.original RLIKE "(?i).*(partner|joint|shared|collaborative|co-marketing).*"
+    )
+    OR (
+      network.direction == "outbound"
+      AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+      AND log.original RLIKE "(?i).*(customer.*data|personal.*data).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(joint.*controller.*agreement|article.*26|responsibility.*arrangement|dpa).*"
+  | STATS joint_processing = COUNT(*),
+          partners = VALUES(destination.ip),
+          data_types = VALUES(log.original)
+    BY destination.ip, host.name
+  | WHERE joint_processing > 5
+  | EVAL risk_score = CASE(
+      joint_processing > 50, 90,
+      joint_processing > 20, 85,
+      80
+    )
+  | KEEP destination.ip, host.name, joint_processing, partners, data_types, risk_score
+  | SORT joint_processing DESC
+enabled: false
+tags:
+  - gdpr
+  - article_26
+  - joint_controllers
+  - data_sharing
+  - governance
+severity: high
+risk_score: 85
+references:
+  - "GDPR Article 26 - Joint Controllers"
+  - "EDPB Guidelines 07/2020 on Joint Controllers"
+nist: ["PM-9"]
+gdpr: ["Article 26"]
+pci_dss: []
+mitre_attack:
+  TA0009: 
+    T1213: []

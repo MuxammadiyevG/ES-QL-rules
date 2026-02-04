@@ -1,0 +1,64 @@
+#//RULE-GDPR-16 — High-Risk Processing Without DPIA (GDPR Article 35)
+#//Requirement: Article 35
+#//Objective: Detect high-risk processing activities without documented DPIA
+#//Data sources: Application logs, project management logs
+#//ECS fields used: event.action, log.original, event.category
+#//Tuning notes: Monitor for biometric/genetic processing, large-scale profiling, automated decisions
+
+name: "RULE-GDPR-16: High-Risk Data Processing Without DPIA"
+description: |
+  Identifies high-risk processing activities that require a Data Protection Impact
+  Assessment (DPIA) under GDPR Article 35 but lack documented assessment. Detects
+  systematic monitoring, large-scale special category data processing, automated
+  decision-making affecting legal rights, and biometric/genetic data processing.
+  Triggers include new profiling algorithms, scoring systems, or health data analytics.
+  Operating without DPIA for high-risk processing violates Article 35 and exposes
+  organization to enforcement action.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      log.original RLIKE "(?i).*(biometric|fingerprint|face.*recogni|genetic|dna|voice.*print).*processing.*start.*"
+      OR
+      (log.original RLIKE "(?i).*(profil|scor|rating|ranking).*algorithm.*"
+       AND log.original RLIKE "(?i).*(deploy|launch|enable|activate).*")
+      OR
+      log.original RLIKE "(?i).*(automat.*decision|ai.*model|machine.*learning).*production.*"
+      OR
+      log.original RLIKE "(?i).*(surveillance|tracking|monitoring).*large.*scale.*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(dpia|impact.*assessment|privacy.*assessment|article.*35).*"
+  | STATS high_risk_activities = COUNT(*),
+          activity_types = VALUES(log.original),
+          first_activity = MIN(@timestamp)
+    BY host.name
+  | WHERE high_risk_activities > 0
+  | EVAL risk_score = CASE(
+      activity_types RLIKE "(?i).*(biometric|genetic).*", 100,
+      activity_types RLIKE "(?i).*automat.*decision.*", 95,
+      90
+    )
+  | KEEP host.name, high_risk_activities, activity_types, first_activity, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_35
+  - dpia
+  - risk_assessment
+  - compliance
+severity: critical
+risk_score: 95
+references:
+  - "GDPR Article 35 - Data Protection Impact Assessment"
+  - "GDPR Article 36 - Prior Consultation"
+nist: ["RA-3"]
+gdpr: ["Article 35"]
+pci_dss: []
+mitre_attack: []

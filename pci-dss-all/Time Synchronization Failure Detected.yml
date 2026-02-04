@@ -1,0 +1,63 @@
+#//RULE-PCI-33 — System Time Synchronization Failure (PCI 10.4)
+#//Requirement: 10
+#//Objective: Detect NTP/time synchronization failures affecting audit trails
+#//Data sources: NTP logs, system logs
+#//ECS fields used: event.category, event.action, log.original
+#//Tuning notes: Monitor NTP sync failures; alert on clock drift >threshold
+
+name: "RULE-PCI-33: Time Synchronization Failure Detected"
+description: |
+  Identifies failures in time synchronization services (NTP, Windows Time) that
+  could impact audit log accuracy and forensic investigation. PCI DSS 10.4 requires
+  correct and consistent time across all critical systems using industry-accepted
+  time sources. Time drift prevents accurate correlation of security events across
+  systems. Monitor for NTP sync failures, large clock adjustments, and service errors.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE (
+      (winlog.event_id IN ("12", "36", "37", "47")
+       AND winlog.provider_name == "Microsoft-Windows-Time-Service")
+      OR
+      (process.name IN ("ntpd", "chronyd", "systemd-timesyncd")
+       AND log.original RLIKE "(?i).*(error|fail|unreachable|no.*server).*")
+      OR
+      (event.action == "time_change"
+       AND log.original RLIKE "(?i).*(adjust|skew|drift).*")
+    )
+  | STATS failure_count = COUNT(*),
+          services = VALUES(process.name),
+          errors = VALUES(log.original),
+          first_failure = MIN(@timestamp),
+          last_failure = MAX(@timestamp)
+    BY host.name
+  | WHERE failure_count > 2
+  | EVAL risk_score = CASE(
+      failure_count > 10, 80,
+      failure_count > 5, 70,
+      60
+    )
+  | KEEP host.name, failure_count, services, first_failure, last_failure, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_10
+  - logging
+  - time_sync
+  - ntp
+severity: medium
+risk_score: 65
+references:
+  - "PCI DSS v3.1 Requirement 10.4"
+nist: ["AU-8"]
+gdpr: [""]
+pci_dss: ["10.4", "10.4.1", "10.4.2"]
+mitre_attack: []

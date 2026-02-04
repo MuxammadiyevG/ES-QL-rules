@@ -1,0 +1,76 @@
+#//EVIDENCE-PCI-04 — Encryption Transmission Policies (PCI 4.3)
+#//Requirement: 4
+#//Objective: Documentation of encryption policies and procedures
+#//Why not detectable: Requires review of documented security policies covering
+#//transmission encryption standards, approved protocols/ciphers, key exchange
+#//mechanisms, and operational procedures. ES|QL cannot validate policy documentation
+#//completeness. Verified through policy artifact review.
+#//RULE-PCI-13 — Anti-Virus Software Disabled (PCI 5.2, 5.3)
+#//Requirement: 5
+#//Objective: Detect anti-virus/anti-malware software being stopped or disabled
+#//Data sources: Windows Event Logs, Linux auditd
+#//ECS fields used: event.action, service.name, process.name, winlog.event_id
+#//Tuning notes: Allowlist authorized maintenance windows; monitor service state changes
+
+
+name: "RULE-PCI-13: Anti-Virus Software Disabled or Stopped"
+description: |
+  Identifies when anti-virus or anti-malware services are stopped, disabled, or
+  uninstalled on systems. PCI DSS 5.2/5.3 requires active anti-virus mechanisms
+  that cannot be disabled by users. Service termination may indicate malware
+  attempting to evade detection or unauthorized administrative action. Exclude
+  scheduled maintenance windows and correlate with change tickets.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE (
+      (winlog.event_id IN ("7036", "7040")  // Service stopped/disabled
+       AND service.name RLIKE "(?i).*(defender|antivirus|malware|endpoint|symantec|mcafee|sophos|trend).*"
+       AND event.outcome != "success")
+      OR
+      (process.name IN ("clamd", "freshclam", "clamav", "rkhunter")
+       AND event.action IN ("process_stopped", "killed"))
+      OR
+      (event.action RLIKE "(?i).*(uninstall|remove).*"
+       AND process.args RLIKE "(?i).*(defender|antivirus|malware).*")
+    )
+  | STATS event_count = COUNT(*),
+          services = VALUES(service.name),
+          processes = VALUES(process.name),
+          users = VALUES(user.name),
+          first_seen = MIN(@timestamp)
+    BY host.name, user.name
+  | WHERE event_count > 0
+  | EVAL risk_score = CASE(
+      event.action RLIKE "(?i).*uninstall.*", 95,
+      user.name NOT RLIKE "(?i).*(admin|system).*", 90,
+      event_count > 1, 80,
+      70
+    )
+  | KEEP host.name, user.name, services, processes, event_count, first_seen, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_5
+  - malware
+  - antivirus
+  - defense_evasion
+severity: critical
+risk_score: 90
+references:
+  - "PCI DSS v3.1 Requirement 5.2, 5.3"
+nist: ["SI-3"]
+gdpr: ["Article 32"]
+pci_dss:
+  requirement: ["5.2", "5.3"]
+mitre_attack:
+  TA0005: 
+    T1562: ["T1562.001"]

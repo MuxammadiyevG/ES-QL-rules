@@ -1,0 +1,57 @@
+#//RULE-GDPR-28 — Email Marketing Without Double Opt-In (ePrivacy)
+#//Requirement: ePrivacy Directive
+#//Objective: Detect single opt-in marketing subscriptions
+#//Data sources: Email marketing platform logs, subscription logs
+#//ECS fields used: event.action, email.to, log.original
+#//Tuning notes: Monitor subscription flow; verify confirmation email sent/clicked
+
+name: "RULE-GDPR-28: Marketing Subscription Without Double Opt-In Verification"
+description: |
+  Identifies email marketing subscriptions added without double opt-in (confirmation
+  email) verification, violating ePrivacy best practices and increasing spam risk.
+  While GDPR doesn't mandate double opt-in, it's considered best practice for
+  demonstrable consent. Detects subscription events where confirmation email is
+  not sent or confirmation link not clicked within reasonable timeframe. Single
+  opt-in subscriptions are vulnerable to typos, fake addresses, and consent disputes.
+type: esql
+params: '{}'
+schedule_interval: 1h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.action IN ("subscription_created", "newsletter_signup", "email_subscribed")
+    AND log.original NOT RLIKE "(?i).*(confirmation.*sent|double.*opt.*in|verify.*email|activation.*link).*"
+  | STATS single_optin_count = COUNT(*),
+          subscribers = VALUES(email.to),
+          subscription_sources = VALUES(url.path),
+          first_subscription = MIN(@timestamp)
+    BY host.name
+  | WHERE single_optin_count > 10
+  | EVAL hours_without_confirmation = (NOW() - first_subscription) / 3600000
+  | WHERE hours_without_confirmation > 24  // No confirmation in 24h
+  | EVAL risk_score = CASE(
+      single_optin_count > 100, 85,
+      single_optin_count > 50, 75,
+      65
+    )
+  | KEEP host.name, single_optin_count, hours_without_confirmation, subscription_sources, risk_score
+  | SORT single_optin_count DESC
+enabled: false
+tags:
+  - gdpr
+  - eprivacy
+  - email_marketing
+  - consent
+  - double_optin
+severity: medium
+risk_score: 70
+references:
+  - "ePrivacy Directive - Marketing Communications"
+  - "GDPR Article 7(1) - Demonstrable Consent"
+nist: ["IP-1"]
+gdpr: ["ePrivacy, Article 7"]
+pci_dss: []
+mitre_attack: []

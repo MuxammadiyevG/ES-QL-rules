@@ -1,0 +1,73 @@
+#//EVIDENCE-PCI-03 — Data Retention, Key Management, Encryption Policies (PCI 3.1, 3.5, 3.6, 3.7)
+#//Requirement: 3
+#//Objective: Evidence of data retention policy, encryption key lifecycle procedures
+#//Why not detectable: Requires audit of documented retention policies, key management
+#//procedures (generation, distribution, rotation, retirement), encryption standards,
+#//and access controls to cryptographic keys. ES|QL cannot verify policy implementation
+#//or procedural compliance. Validated through document review and key custodian interviews.
+#//RULE-PCI-10 — Unencrypted Cardholder Data Transmission (PCI 4.1)
+#//Requirement: 4
+#//Objective: Detect cardholder data sent over unencrypted connections
+#//Data sources: Network traffic logs, web access logs
+#//ECS fields used: network.protocol, destination.port, http.request.body, tls.established
+#//Tuning notes: Monitor HTTP traffic for PAN patterns; exclude internal secure networks
+
+name: "RULE-PCI-10: Cardholder Data Transmitted Without Encryption"
+description: |
+  Identifies transmission of potential cardholder data over unencrypted channels
+  (HTTP, plain FTP, unencrypted email). PCI DSS 4.1 requires strong cryptography
+  (TLS, IPSec, SSH) for cardholder data transmission over open/public networks.
+  Detects HTTP POST/GET with PAN-like patterns or file transfers without TLS.
+  Exclude internal trusted networks and verify TLS version/cipher strength.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-*
+  - filebeat-nginx-access-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-nginx-access-*
+  | WHERE event.category == "network" OR event.category == "web"
+  | WHERE (
+      (network.protocol == "http" 
+       AND destination.port IN (80, 8080)
+       AND (http.request.body RLIKE ".*[3-6][0-9]{13,18}.*" 
+            OR url.query RLIKE ".*card.*[0-9]{13,}.*"))
+      OR
+      (destination.port == 21 
+       AND network.protocol == "ftp"
+       AND tls.established != true)
+    )
+  | WHERE NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+  | STATS transmission_count = COUNT(*),
+          sources = VALUES(source.ip),
+          destinations = VALUES(destination.ip),
+          protocols = VALUES(network.protocol),
+          urls = VALUES(url.path)
+    BY destination.ip, destination.port
+  | WHERE transmission_count > 0
+  | EVAL risk_score = CASE(
+      destination.port == 80 AND urls RLIKE "(?i).*(payment|checkout|card).*", 100,
+      transmission_count > 10, 90,
+      75
+    )
+  | KEEP destination.ip, destination.port, transmission_count, protocols, urls, sources, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_4
+  - encryption
+  - network
+  - data_transmission
+severity: critical
+risk_score: 95
+references:
+  - "PCI DSS v3.1 Requirement 4.1"
+nist: ["SC-8"]
+gdpr: ["Article 32"]
+pci_dss: ["4.1"]
+mitre_attack:
+  TA0009: 
+    T1040: []

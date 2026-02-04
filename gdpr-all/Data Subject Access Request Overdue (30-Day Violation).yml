@@ -1,0 +1,61 @@
+#//RULE-GDPR-06 — Data Subject Access Request Not Fulfilled (GDPR Article 15)
+#//Requirement: Article 15
+#//Objective: Detect DSARs not responded to within 30-day deadline
+#//Data sources: Ticketing system logs, DSAR management logs
+#//ECS fields used: event.category, event.action, @timestamp, log.original
+#//Tuning notes: Track DSAR ticket lifecycle; alert on overdue requests
+
+name: "RULE-GDPR-06: Data Subject Access Request Overdue (30-Day Violation)"
+description: |
+  Identifies Data Subject Access Requests (DSARs) that have not been fulfilled
+  within the GDPR Article 15 mandatory 30-day response period (extendable to 90
+  days in complex cases with notification). Monitors DSAR ticketing systems for
+  requests in "open" or "pending" status beyond deadline. Failure to respond timely
+  violates data subject rights and risks regulatory penalties. Escalate overdue
+  requests to privacy team immediately.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.category == "web" OR event.category == "iam"
+    AND (
+      log.original RLIKE "(?i).*(dsar|data.*subject.*access|gdpr.*request|subject.*access.*request).*"
+      OR event.action RLIKE "(?i).*(dsar|access.*request).*"
+    )
+    AND log.original RLIKE "(?i).*(open|pending|in.*progress).*"
+    AND log.original NOT RLIKE "(?i).*(completed|fulfilled|closed|responded).*"
+  | STATS request_age_days = (NOW() - MIN(@timestamp)) / 86400000,
+          ticket_status = VALUES(log.original),
+          first_request = MIN(@timestamp),
+          requestor = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE request_age_days > 30
+  | EVAL risk_score = CASE(
+      request_age_days > 90, 100,
+      request_age_days > 60, 95,
+      request_age_days > 45, 85,
+      75
+    )
+  | KEEP user.name, host.name, request_age_days, first_request, ticket_status, risk_score
+  | SORT request_age_days DESC
+enabled: false
+tags:
+  - gdpr
+  - article_15
+  - data_subject_rights
+  - dsar
+  - compliance
+severity: high
+risk_score: 85
+references:
+  - "GDPR Article 15 - Right of Access by Data Subject"
+  - "GDPR Article 12(3) - Response Timelines"
+nist: ["IP-4"]
+gdpr: ["Article 15"]
+pci_dss: []
+mitre_attack: [] 

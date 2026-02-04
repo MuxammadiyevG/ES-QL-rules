@@ -1,0 +1,69 @@
+#//EVIDENCE-PCI-08 — User ID Management, Password Policies, Auth Documentation (PCI 8.1, 8.2, 8.4, 8.6, 8.7, 8.8)
+#//Requirement: 8
+#//Objective: Evidence of user ID policies, password management, auth procedures, database access controls
+#//Why not detectable: Requires review of identity lifecycle procedures (provisioning,
+#//modification, termination), password policy documentation (length, complexity,
+#//rotation, history), user communication/training records, token/certificate assignment
+#//processes, and database access restriction configurations. ES|QL cannot validate
+#//procedural compliance or policy documentation completeness. Verified through
+#//policy review, access management system audit, and user attestation sampling.
+#//RULE-PCI-28 — Unauthorized Physical Access Attempt (PCI 9.1.1)
+#//Requirement: 9
+#//Objective: Detect unauthorized physical access to sensitive areas
+#//Data sources: Physical access control logs, badge system logs
+#//ECS fields used: event.category, event.action, user.name, event.outcome
+#//Tuning notes: Monitor badge swipes, door alarms; correlate with video surveillance
+
+name: "RULE-PCI-28: Unauthorized Physical Access Attempt to Sensitive Area"
+description: |
+  Identifies failed physical access attempts (badge swipes, door alarms) to areas
+  containing cardholder data or sensitive systems. PCI DSS 9.1.1 requires monitoring
+  individual physical access with video cameras and access controls. Failed attempts
+  may indicate tailgating, lost badges, or unauthorized access attempts. Correlate
+  with visitor logs and video review for investigation.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.category == "physical_access"
+    AND event.outcome == "failure"
+    AND (
+      event.action RLIKE "(?i).*(badge.*deny|access.*deny|door.*alarm|unauthorized).*"
+      OR log.original RLIKE "(?i).*(access.*denied|invalid.*badge|alarm.*trigger).*"
+    )
+  | STATS attempt_count = COUNT(*),
+          users = VALUES(user.name),
+          doors = VALUES(event.dataset),
+          first_attempt = MIN(@timestamp),
+          last_attempt = MAX(@timestamp)
+    BY user.name, event.dataset
+  | WHERE attempt_count > 2
+  | EVAL risk_score = CASE(
+      attempt_count > 10, 95,
+      attempt_count > 5, 85,
+      70
+    )
+  | KEEP user.name, event.dataset, attempt_count, doors, first_attempt, last_attempt, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_9
+  - physical_security
+  - access_control
+  - physical_access
+severity: high
+risk_score: 80
+references:
+  - "PCI DSS v3.1 Requirement 9.1.1"
+nist: ["PE-3"]
+gdpr: ["Article 32"]
+pci_dss: ["9.1.1"]
+mitre_attack:
+  TA0001:
+    T1200: []

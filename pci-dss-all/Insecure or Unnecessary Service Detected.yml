@@ -1,0 +1,68 @@
+#//RULE-PCI-05 — Insecure Service Enabled (PCI 2.2.2)
+#//Requirement: 2
+#//Objective: Detect unnecessary or insecure services running
+#//Data sources: Linux auditd, Windows services logs
+#//ECS fields used: event.action, process.name, service.name, network.protocol
+#//Tuning notes: Define baseline of required services per system role; review quarterly
+
+name: "RULE-PCI-05: Insecure or Unnecessary Service Detected"
+description: |
+  Identifies insecure protocols and services that should be disabled per PCI DSS 2.2.2
+  (Telnet, FTP, HTTP on sensitive systems, SNMP v1/v2, etc.). Running unnecessary
+  services increases attack surface and may violate system hardening standards.
+  Tune by defining allowed services per system type and excluding authorized legacy
+  systems with documented risk acceptance.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*, metricbeat-*
+  | WHERE (
+      (event.category == "network" 
+       AND destination.port IN (21, 23, 69, 161, 162, 512, 513, 514) 
+       AND network.direction == "inbound")
+      OR
+      (process.name IN ("telnetd", "ftpd", "rsh", "rlogin", "rexec", "snmpd")
+       AND event.action IN ("started", "process_started"))
+      OR
+      (service.name RLIKE "(?i)(telnet|ftp|snmp|remote.*registry|simple.*tcp)"
+       AND winlog.event_id == "7036" 
+       AND event.outcome == "success")
+    )
+  | STATS service_count = COUNT(*),
+          first_seen = MIN(@timestamp),
+          services = VALUES(service.name),
+          processes = VALUES(process.name),
+          ports = VALUES(destination.port)
+    BY host.name, service.name, process.name
+  | WHERE service_count > 0
+  | EVAL severity_level = CASE(
+      process.name IN ("telnetd", "rsh"), "critical",
+      destination.port IN (21, 23), "high",
+      destination.port IN (161, 162), "medium",
+      "low"
+    )
+  | KEEP host.name, services, processes, ports, service_count, first_seen, severity_level
+enabled: false
+tags:
+  - pci_dss
+  - requirement_2
+  - hardening
+  - insecure_service
+  - network
+severity: high
+risk_score: 75
+references:
+  - "PCI DSS v3.1 Requirement 2.2.2, 2.2.3"
+nist: ["CM-7"]
+gdpr: ["Article 32"]
+pci_dss: ["2.2.2","2.2.3"]
+mitre_attack:
+  TA0001: 
+    T1021: ["T1021.001"]

@@ -1,0 +1,54 @@
+#//RULE-PCI-26 — Inactive User Account Not Disabled (PCI 8.1.4)
+#//Requirement: 8
+#//Objective: Detect user accounts inactive >90 days still enabled
+#//Data sources: Active Directory logs, user account audit logs
+#//ECS fields used: event.category, user.name, event.action, @timestamp
+#//Tuning notes: Track last login timestamps; alert on accounts with no activity in 90 days
+
+name: "RULE-PCI-26: Inactive User Account Not Disabled (90 Day Violation)"
+description: |
+  Identifies enabled user accounts with no authentication activity for more than
+  90 days. PCI DSS 8.1.4 requires removing or disabling inactive accounts within
+  90 days to reduce attack surface. Dormant accounts may be compromised without
+  detection. This rule requires baseline of last login times; integrate with
+  identity management system for comprehensive tracking.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "authentication"
+    AND event.outcome == "success"
+  | STATS last_login = MAX(@timestamp),
+          login_count = COUNT(*)
+    BY user.name, host.name
+  | EVAL days_inactive = (NOW() - last_login) / 86400000
+  | WHERE days_inactive > 90
+  | WHERE NOT user.name RLIKE "(?i).*(service|system|krbtgt|admin).*"  // Exclude service accounts
+  | EVAL risk_score = CASE(
+      days_inactive > 365, 90,
+      days_inactive > 180, 80,
+      70
+    )
+  | KEEP user.name, host.name, last_login, days_inactive, login_count, risk_score
+  | SORT days_inactive DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_8
+  - iam
+  - inactive_account
+  - compliance
+severity: medium
+risk_score: 70
+references:
+  - "PCI DSS v3.1 Requirement 8.1.4"
+nist: ["AC-2"]
+gdpr: [""]
+pci_dss: ["8.1.4"]
+mitre_attack: []

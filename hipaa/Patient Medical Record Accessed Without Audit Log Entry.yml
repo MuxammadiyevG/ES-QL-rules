@@ -1,0 +1,63 @@
+#//RULE-HIPAA-07 — Patient Record Access Without Audit Trail - §164.312(b)
+#//Requirement: HIPAA Security Rule §164.312(b) - Audit Controls
+#//Objective: Detect patient record access not logged in audit system
+#//Data sources: EHR/EMR access logs, database logs, audit trail logs
+#//ECS fields used: event.action, user.name, log.original, event.category
+#//Tuning notes: Verify comprehensive audit trail; correlate with compliance reports
+
+name: "RULE-HIPAA-07: Patient Medical Record Accessed Without Audit Log Entry"
+description: |
+  Identifies access to patient medical records (chart opens, document views, lab
+  results, imaging studies) that are not reflected in audit trail systems, indicating
+  audit control bypass or logging failure. HIPAA §164.312(b) requires examining
+  activity in systems containing ePHI. Detects discrepancies between application
+  usage logs and formal audit trails, database queries on patient tables without
+  corresponding audit entries, or bulk record access without tracking. Critical
+  for HIPAA compliance investigations and breach detection.
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(chart.*open|record.*view|patient.*access|document.*view|lab.*result|imaging.*view).*"
+      OR database.query RLIKE "(?i).*SELECT.*FROM.*(patient|medical.*record|chart|encounter|visit).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(audit.*trail|audit.*log|access.*log|hipaa.*audit).*"
+  | STATS unaudited_access = COUNT(*),
+          users = VALUES(user.name),
+          access_types = VALUES(event.action),
+          systems = VALUES(host.name)
+    BY user.name, host.name
+  | WHERE unaudited_access > 5
+  | EVAL risk_score = CASE(
+      unaudited_access > 50, 100,
+      unaudited_access > 20, 90,
+      85
+    )
+  | KEEP user.name, host.name, unaudited_access, access_types, systems, risk_score
+  | SORT unaudited_access DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_b
+  - audit_controls
+  - patient_records
+  - audit_trail
+severity: critical
+risk_score: 95
+references:
+  - "45 CFR §164.312(b) - Audit Controls"
+  - "45 CFR §164.308(a)(5)(ii)(C) - Log-in Monitoring"
+nist: ["AU-12"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2.1"]
+hipaa: ["§164.312(b)"]
+mitre_attack:
+  TA0005:
+    T1070: []

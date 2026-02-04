@@ -1,0 +1,56 @@
+#//RULE-GDPR-47 — Legitimate Interest Assessment Not Documented (GDPR Article 6(1)(f))
+#//Requirement: Article 6
+#//Objective: Detect processing based on legitimate interest without LIA
+#//Data sources: Application logs, processing registry logs
+#//ECS fields used: log.original, event.action, event.category
+#//Tuning notes: Track legitimate interest claims; verify LIA existence
+
+name: "RULE-GDPR-47: Processing Based on Legitimate Interest Without LIA"
+description: |
+  Identifies personal data processing claimed to be based on legitimate interest
+  (GDPR Article 6(1)(f)) without documented Legitimate Interest Assessment (LIA)
+  or balancing test. Detects analytics implementations, fraud detection systems,
+  or marketing activities justified by legitimate interest without supporting
+  assessment records. Article 6(1)(f) requires controllers to balance their interests
+  against data subject rights and freedoms. Monitor for legitimate interest citations
+  and cross-check against LIA registry.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE log.original RLIKE "(?i).*(legitimate.*interest|article.*6.*1.*f|necessary.*purpose).*"
+    AND log.original RLIKE "(?i).*(process|collect|analyz|monitor).*"
+  | WHERE NOT log.original RLIKE "(?i).*(lia|legitimate.*interest.*assessment|balancing.*test|interest.*balance).*"
+  | STATS lia_missing = COUNT(*),
+          processing_types = VALUES(log.original),
+          systems = VALUES(host.name)
+    BY host.name
+  | WHERE lia_missing > 0
+  | EVAL risk_score = CASE(
+      processing_types RLIKE "(?i).*(marketing|profil|tracking).*", 90,
+      lia_missing > 5, 85,
+      80
+    )
+  | KEEP host.name, lia_missing, processing_types, risk_score
+  | SORT lia_missing DESC
+enabled: false
+tags:
+  - gdpr
+  - article_6
+  - legitimate_interest
+  - lia
+  - lawful_basis
+severity: high
+risk_score: 85
+references:
+  - "GDPR Article 6(1)(f) - Legitimate Interest"
+  - "WP29 Opinion 06/2014 on Legitimate Interest"
+nist: ["IP-2"]
+gdpr: ["Article 6(1)(f)"]
+pci_dss: []
+mitre_attack: []

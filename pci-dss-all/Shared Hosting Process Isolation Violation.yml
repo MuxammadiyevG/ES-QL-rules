@@ -1,0 +1,68 @@
+#//EVIDENCE-PCI-12 — Security Policy, Awareness, Risk Assessment, Incident Response (PCI 12.1-12.10)
+#//Requirement: 12
+#//Objective: Evidence of information security policies, awareness programs, risk assessments, incident plans
+#//Why not detectable: Requires comprehensive audit of security policy documentation,
+#//annual policy review records, risk assessment methodology and results, usage
+#//policies for critical technologies, security responsibilities assignment, awareness
+#//training records, employee acknowledgments, background screening procedures,
+#//service provider management contracts, and incident response plans/tests. ES|QL
+#//cannot validate policy completeness, training effectiveness, or procedural compliance.
+#//Verified through document review, training records audit, risk assessment reports,
+#//HR screening verification, incident response tabletop exercises, and policy
+#//attestation sampling.
+#//RULE-PCI-41 — Shared Hosting Process Isolation Violation (PCI A.1.1)
+#//Requirement: A.1
+#//Objective: Detect processes accessing other tenants' cardholder data in shared environment
+#//Data sources: System logs, process monitoring, container logs
+#//ECS fields used: process.name, process.pid, user.name, file.path
+#//Tuning notes: Monitor cross-tenant access; validate container isolation; track process permissions
+
+name: "RULE-PCI-41: Shared Hosting Tenant Isolation Violation"
+description: |
+  Identifies processes attempting to access files or resources belonging to other
+  tenants in a shared hosting environment. PCI DSS Appendix A.1.1 requires each
+  entity runs processes with access only to its own cardholder data environment.
+  Isolation violations indicate container escape, privilege escalation, or
+  misconfigured access controls. Critical for multi-tenant PCI environments.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM auditbeat-*, logs-*
+  | WHERE event.category == "file"
+    AND event.action IN ("access", "read", "open")
+    AND file.path RLIKE ".*/tenant_[0-9]+/.*"
+  | EVAL tenant_id = REPLACE(file.path, ".*/tenant_([0-9]+)/.*", "\\1")
+  | EVAL process_tenant = REPLACE(process.working_directory, ".*/tenant_([0-9]+)/.*", "\\1")
+  | WHERE tenant_id != process_tenant
+    AND user.name NOT IN ("root", "system", "backup_service")
+  | STATS violation_count = COUNT(*),
+          accessed_tenants = VALUES(tenant_id),
+          processes = VALUES(process.name),
+          files_accessed = VALUES(file.path)
+    BY process.name, user.name, host.name
+  | WHERE violation_count > 0
+  | EVAL risk_score = 100
+  | KEEP process.name, user.name, host.name, violation_count, accessed_tenants, processes, files_accessed, risk_score
+  | SORT violation_count DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_a1
+  - shared_hosting
+  - isolation
+  - multi_tenant
+severity: critical
+risk_score: 100
+references:
+  - "PCI DSS v3.1 Appendix A.1.1"
+nist: ["SC-3"]
+gdpr: ["Article 32"]
+pci_dss: ["A.1.1"]
+mitre_attack:
+  TA0004:
+    T1611: []

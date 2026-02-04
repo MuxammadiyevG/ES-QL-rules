@@ -1,0 +1,58 @@
+#//RULE-GDPR-46 — Privacy Policy Not Updated in 12+ Months (GDPR Articles 13-14)
+#//Requirement: Articles 13, 14
+#//Objective: Detect stale privacy policies and notices
+#//Data sources: Website monitoring logs, document version control
+#//ECS fields used: file.mtime, url.path, http.response.body
+#//Tuning notes: Monitor privacy policy last-modified dates; verify annual reviews
+
+name: "RULE-GDPR-46: Privacy Policy/Notice Not Updated Despite Processing Changes"
+description: |
+  Identifies privacy policies or privacy notices that have not been updated in
+  12+ months despite likely changes in processing activities, violating GDPR
+  Articles 13-14 transparency requirements. Detects stale privacy policy files,
+  outdated "last updated" timestamps in policy pages, or privacy notices predating
+  known system/processing changes. Controllers must provide current, accurate
+  information about data processing. Monitor privacy policy modification dates
+  and correlate with system deployment timeline.
+type: esql
+params: '{}'
+schedule_interval: 7d
+index:
+  - auditbeat-*
+  - filebeat-nginx-access-*
+query_language: esql
+query: |
+  FROM auditbeat-*, filebeat-nginx-access-*
+  | WHERE (
+      file.path RLIKE "(?i).*(privacy|policy|legal|terms|gdpr|data.*protection).*\\.(html|pdf|md).*"
+      OR url.path RLIKE "(?i).*(privacy|policy|legal).*"
+    )
+  | STATS last_modified = MAX(file.mtime),
+          file_age_days = (NOW() - MAX(file.mtime)) / 86400000,
+          policies = VALUES(file.path)
+    BY file.path, host.name
+  | WHERE file_age_days > 365  // Not updated in 12+ months
+  | EVAL risk_score = CASE(
+      file_age_days > 730, 85,  // >2 years
+      file_age_days > 540, 75,  // >18 months
+      70
+    )
+  | KEEP file.path, host.name, file_age_days, last_modified, policies, risk_score
+  | SORT file_age_days DESC
+enabled: false
+tags:
+  - gdpr
+  - article_13
+  - article_14
+  - transparency
+  - privacy_policy
+  - information_obligation
+severity: medium
+risk_score: 75
+references:
+  - "GDPR Article 13 - Information When Data Collected from Subject"
+  - "GDPR Article 14 - Information When Data Not Obtained from Subject"
+nist: ["IP-1"]
+gdpr: ["Articles 13-14"]
+pci_dss: []
+mitre_attack: []

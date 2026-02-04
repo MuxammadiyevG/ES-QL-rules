@@ -1,0 +1,58 @@
+#
+#//RULE-GDPR-02 — Personal Data Stored Beyond Retention Period (GDPR Article 5(1)(e) - Storage Limitation)
+#//Requirement: Article 5
+#//Objective: Detect personal data retained longer than legally permitted
+#//Data sources: Database audit logs, file system monitoring
+#//ECS fields used: file.created, file.accessed, @timestamp, database.name
+#//Tuning notes: Define retention periods per data category; monitor stale data
+
+name: "RULE-GDPR-02: Personal Data Retained Beyond Legal Retention Period"
+description: |
+  Identifies personal data stored for longer than the documented retention period
+  required by GDPR Article 5(1)(e) storage limitation. Detects database records
+  and files containing personal data that have not been accessed or updated beyond
+  retention thresholds (e.g., customer records >7 years, marketing consents >2 years).
+  Integrate with data retention schedules and flag records exceeding limits for
+  review and deletion. Excludes legally mandated archival (accounting, tax).
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE event.category == "file"
+    AND file.path RLIKE "(?i).*(customer|user|personal|contact|profile|gdpr).*\\.(db|sql|csv|json|xml).*"
+  | STATS last_access = MAX(file.accessed),
+          file_age_days = (NOW() - MAX(file.created)) / 86400000,
+          last_modified = MAX(file.mtime),
+          files = VALUES(file.path)
+    BY file.path, host.name
+  | WHERE file_age_days > 2555
+    AND last_access < NOW() - 730 DAYS
+  | WHERE NOT file.path RLIKE "(?i).*(archive|legal.*hold|tax|audit|compliance).*"
+  | EVAL risk_score = CASE(
+      file_age_days > 3650, 90,
+      file_age_days > 2920, 80,
+      70
+    )
+  | KEEP file.path, host.name, file_age_days, last_access, last_modified, risk_score
+  | SORT file_age_days DESC
+enabled: false
+tags:
+  - gdpr
+  - article_5
+  - storage_limitation
+  - data_retention
+  - privacy
+severity: high
+risk_score: 80
+references:
+  - "GDPR Article 5(1)(e) - Storage Limitation"
+  - "GDPR Article 17 - Right to Erasure"
+nist: ["SI-12"]
+gdpr: ["Article 5(1)(e)"]
+pci_dss: ["3", "3.1"]
+mitre_attack: []

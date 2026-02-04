@@ -1,0 +1,66 @@
+#//RULE-PCI-25 — No Two-Factor Authentication for Remote Access (PCI 8.3)
+#//Requirement: 8
+#//Objective: Detect remote access without multi-factor authentication
+#//Data sources: VPN logs, RDP logs, SSH logs
+#//ECS fields used: event.category, network.direction, source.ip, user.name
+#//Tuning notes: Monitor remote auth; validate MFA indicators in logs; exclude internal IPs
+
+name: "RULE-PCI-25: Remote Access Without Two-Factor Authentication"
+description: |
+  Identifies remote network access (VPN, RDP, SSH) from external sources without
+  evidence of two-factor authentication. PCI DSS 8.3 requires two-factor auth for
+  remote access by personnel and third parties. Single-factor remote auth exposes
+  network to credential theft. Validate by checking authentication method fields
+  and excluding internal network ranges.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "authentication"
+    AND event.outcome == "success"
+    AND network.direction == "inbound"
+    AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+    AND (
+      destination.port IN (22, 3389, 1194, 443, 4443)  // SSH, RDP, VPN ports
+      OR event.action RLIKE "(?i).*(vpn|remote|rdp|ssh).*"
+    )
+  | WHERE NOT (
+      winlog.event_data.AuthenticationPackageName RLIKE "(?i).*(mfa|duo|okta|2fa|otp).*"
+      OR log.original RLIKE "(?i).*(two.*factor|multi.*factor|mfa|2fa|totp).*"
+    )
+  | STATS remote_access_count = COUNT(*),
+          users = VALUES(user.name),
+          sources = VALUES(source.ip),
+          methods = VALUES(event.action)
+    BY user.name, source.ip
+  | WHERE remote_access_count > 0
+  | EVAL risk_score = CASE(
+      remote_access_count > 5, 90,
+      destination.port == 3389, 85,
+      80
+    )
+  | KEEP user.name, source.ip, remote_access_count, users, sources, methods, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_8
+  - authentication
+  - mfa
+  - remote_access
+severity: high
+risk_score: 85
+references:
+  - "PCI DSS v3.1 Requirement 8.3"
+nist: ["IA-2(1)"]
+gdpr: ["Article 32"]
+pci_dss: ["8.3"]
+mitre_attack:
+  TA0001:
+    T1133: []

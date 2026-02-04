@@ -1,0 +1,64 @@
+#//RULE-GDPR-32 — AI Model Explainability Failure (GDPR Article 13-15, 22)
+#//Requirement: Articles 13, 14, 15, 22
+#//Objective: Detect opaque AI systems without explanation capability
+#//Data sources: Application logs, model serving logs
+#//ECS fields used: event.action, log.original, http.request.body
+#//Tuning notes: Monitor explanation API availability; verify SHAP/LIME integration
+
+name: "RULE-GDPR-32: AI Decision Made Without Explainability (Right to Explanation)"
+description: |
+  Identifies AI/ML model predictions or decisions affecting users without available
+  explanation or meaningful information about the logic involved, violating GDPR
+  transparency requirements (Articles 13-15) and Article 22 safeguards. Detects
+  model inference requests where explanation endpoints are unavailable, SHAP/LIME
+  values not generated, or feature importance not logged. "Right to explanation"
+  (derived from transparency + automated decision rights) requires meaningful
+  information about algorithmic decision-making. Monitor for black-box model usage
+  in high-stakes contexts.
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.category == "web"
+    AND url.path RLIKE "(?i).*/api/(predict|score|decision|recommend).*"
+    AND http.response.status_code == 200
+  | WHERE NOT (
+      log.original RLIKE "(?i).*(shap|lime|explanation|feature.*importance|interpret).*"
+      OR url.path RLIKE "(?i).*/explain.*"
+    )
+  | STATS opaque_decisions = COUNT(*),
+          api_endpoints = VALUES(url.path),
+          affected_users = COUNT_DISTINCT(user.name),
+          models = VALUES(log.original)
+    BY url.path, host.name
+  | WHERE opaque_decisions > 10
+  | EVAL risk_score = CASE(
+      api_endpoints RLIKE "(?i).*(credit|loan|hiring|insurance).*", 100,
+      opaque_decisions > 100, 90,
+      80
+    )
+  | KEEP url.path, host.name, opaque_decisions, affected_users, api_endpoints, risk_score
+  | SORT opaque_decisions DESC
+enabled: false
+tags:
+  - gdpr
+  - article_22
+  - article_15
+  - ai_ml
+  - explainability
+  - transparency
+severity: high
+risk_score: 90
+references:
+  - "GDPR Article 22(3) - Right to Obtain Human Intervention and Explanation"
+  - "GDPR Articles 13-15 - Transparency"
+  - "WP29 Guidelines on Automated Decision-Making"
+nist: ["IA-8"]
+gdpr: ["Articles 15, 22"]
+pci_dss: []
+mitre_attack: []

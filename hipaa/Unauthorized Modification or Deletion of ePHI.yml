@@ -1,0 +1,70 @@
+#//RULE-HIPAA-08 — ePHI Data Integrity Violation - Unauthorized Modification - §164.312(c)(1)
+#//Requirement: HIPAA Security Rule §164.312(c)(1) - Integrity
+#//Objective: Detect unauthorized modifications to ePHI
+#//Data sources: Database audit logs, file integrity monitoring, EHR logs
+#//ECS fields used: event.action, database.query, file.path, user.name
+#//Tuning notes: Monitor UPDATE/DELETE operations; track unauthorized changes
+
+name: "RULE-HIPAA-08: Unauthorized Modification or Deletion of ePHI"
+description: |
+  Identifies unauthorized modifications, updates, or deletions to electronic Protected
+  Health Information in violation of HIPAA §164.312(c)(1) integrity controls.
+  Detects database UPDATE/DELETE operations on patient records by unauthorized
+  users, file modifications in medical record directories, bulk data changes, or
+  deletion of clinical documentation. ePHI integrity is critical for patient safety
+  and legal/regulatory compliance. Monitor for data manipulation patterns and
+  correlate with authorized change management procedures.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE (
+      (event.category == "database"
+       AND database.query RLIKE "(?i).*(UPDATE|DELETE|DROP|TRUNCATE).*"
+       AND database.query RLIKE "(?i).*(patient|medical|chart|encounter|diagnosis|medication|allergy|vital|lab|radiology).*")
+      OR
+      (event.category == "file"
+       AND event.action IN ("modified", "deleted", "renamed")
+       AND file.path RLIKE "(?i).*(patient|medical.*record|ehr|emr|phi|clinical).*")
+    )
+  | WHERE NOT user.name RLIKE "(?i).*(system|service|backup|etl|integration|authorized.*admin).*"
+  | STATS modification_events = COUNT(*),
+          users = VALUES(user.name),
+          operations = VALUES(event.action),
+          targets = VALUES(database.name),
+          files = VALUES(file.path)
+    BY user.name, host.name
+  | WHERE modification_events > 0
+  | EVAL risk_score = CASE(
+      operations RLIKE "(?i).*(DELETE|DROP|TRUNCATE).*", 100,
+      modification_events > 10, 95,
+      modification_events > 3, 90,
+      85
+    )
+  | KEEP user.name, host.name, modification_events, operations, targets, files, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_c
+  - integrity
+  - data_modification
+  - ephi
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.312(c)(1) - Integrity"
+  - "45 CFR §164.308(a)(1)(ii)(B) - Risk Management"
+nist: ["SI-7"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2.1"]
+hipaa: ["§164.312(c)(1)"]
+mitre_attack:
+  TA0040:
+    T1565: ["T1565.001"]

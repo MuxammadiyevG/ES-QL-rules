@@ -1,0 +1,75 @@
+#//RULE-HIPAA-11 — Weak Encryption for ePHI Transmission - §164.312(e)(2)(ii)
+#//Requirement: HIPAA Security Rule §164.312(e)(2)(ii) - Encryption
+#//Objective: Detect use of deprecated or weak encryption protocols/ciphers
+#//Data sources: Network logs, TLS handshake logs
+#//ECS fields used: tls.version, tls.cipher, network.protocol
+#//Tuning notes: Alert on TLS <1.2, weak ciphers (RC4, DES, 3DES, MD5)
+
+name: "RULE-HIPAA-11: Weak or Deprecated Encryption for ePHI Transmission"
+description: |
+  Identifies use of weak or deprecated encryption protocols and ciphers for ePHI
+  transmission, failing to meet HIPAA §164.312(e)(2)(ii) encryption standard.
+  Detects TLS versions <1.2 (SSL 2.0/3.0, TLS 1.0/1.1), weak cipher suites (RC4,
+  DES, 3DES, export ciphers), or NULL encryption in healthcare data exchanges.
+  NIST and OCR recommend TLS 1.2+ with strong ciphers for HIPAA compliance. Weak
+  encryption is vulnerable to cryptographic attacks (BEAST, POODLE, FREAK). Monitor
+  TLS negotiations and enforce modern cryptography standards.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE network.protocol RLIKE "(?i).*(tls|ssl|https).*"
+    AND (
+      tls.version IN ("1.0", "1.1", "SSLv2", "SSLv3")
+      OR tls.cipher RLIKE "(?i).*(rc4|des|3des|export|null|anon|adh|md5).*"
+    )
+    AND (
+      host.name RLIKE "(?i).*(emr|ehr|phi|patient|clinical|medical).*"
+      OR destination.port IN (443, 636, 989, 990)  // HTTPS, LDAPS, FTPS
+    )
+  | STATS weak_crypto_connections = COUNT(*),
+          tls_versions = VALUES(tls.version),
+          ciphers = VALUES(tls.cipher),
+          destinations = VALUES(destination.ip),
+          hosts = VALUES(host.name)
+    BY tls.version, tls.cipher
+  | WHERE weak_crypto_connections > 0
+  | EVAL severity_level = CASE(
+      tls.version IN ("SSLv2", "SSLv3"), "critical",
+      tls.cipher RLIKE "(?i).*(null|export|anon).*", "critical",
+      tls.version IN ("1.0", "1.1"), "high",
+      "medium"
+    )
+  | EVAL risk_score = CASE(
+      severity_level == "critical", 100,
+      severity_level == "high", 85,
+      70
+    )
+  | KEEP tls.version, tls.cipher, weak_crypto_connections, destinations, severity_level, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_e_2
+  - encryption
+  - tls
+  - weak_crypto
+severity: critical
+risk_score: 95
+references:
+  - "45 CFR §164.312(e)(2)(ii) - Encryption"
+  - "NIST SP 800-52 Rev. 2 - TLS Guidance"
+  - "OCR Cybersecurity Newsletter - Encryption Standards"
+nist: ["SC-8"]
+gdpr: ["Article 32"]
+pci_dss: ["4.1"]
+hipaa: ["§164.312(e)(2)(ii)"]
+mitre_attack:
+  TA0040:
+    T1040: []

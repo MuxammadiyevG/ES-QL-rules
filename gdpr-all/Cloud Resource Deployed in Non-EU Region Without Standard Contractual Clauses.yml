@@ -1,0 +1,61 @@
+#//RULE-GDPR-36 — Personal Data in Non-EU Cloud Region Without SCCs (GDPR Article 46)
+#//Requirement: Article 46
+#//Objective: Detect cloud deployments outside EU without transfer safeguards
+#//Data sources: Cloud provider API logs, infrastructure deployment logs
+#//ECS fields used: cloud.region, event.action, log.original
+#//Tuning notes: Monitor cloud resource creation; verify SCC/BCR coverage
+
+name: "RULE-GDPR-36: Cloud Resource Deployed in Non-EU Region Without Standard Contractual Clauses"
+description: |
+  Identifies cloud infrastructure resources (VMs, databases, storage buckets)
+  deployed in non-EU/EEA regions without documented Standard Contractual Clauses
+  (SCCs), Binding Corporate Rules (BCRs), or other Article 46 safeguards. Detects
+  AWS/Azure/GCP resource creation in US, Asia-Pacific, or other third-country
+  regions processing EU personal data. Post-Schrems II, cloud deployments require
+  transfer mechanisms and supplementary measures assessment. Monitor IaC deployments
+  and cloud API calls for region parameters.
+type: esql
+params: '{}'
+schedule_interval: 1h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.action RLIKE "(?i).*(create|deploy|provision|launch).*"
+    AND log.original RLIKE "(?i).*(vm|instance|database|bucket|storage|container).*"
+    AND cloud.region NOT IN ("eu-west-1", "eu-west-2", "eu-west-3", "eu-central-1", "eu-north-1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-north1", "northeurope", "westeurope", "germanywestcentral", "francecentral", "uksouth", "ukwest", "switzerlandnorth")  // EU regions
+  | WHERE NOT log.original RLIKE "(?i).*(scc|standard.*contractual.*clauses|bcr|binding.*corporate.*rules|adequacy.*decision|article.*46).*"
+  | STATS non_eu_deployments = COUNT(*),
+          regions = VALUES(cloud.region),
+          resources = VALUES(log.original),
+          deployers = VALUES(user.name)
+    BY cloud.region, host.name
+  | WHERE non_eu_deployments > 0
+  | EVAL risk_score = CASE(
+      regions IN ("us-east-1", "us-west-2", "ap-southeast-1", "cn-north-1"), 100,  // High-risk regions
+      non_eu_deployments > 5, 95,
+      90
+    )
+  | KEEP cloud.region, host.name, non_eu_deployments, regions, resources, deployers, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_46
+  - cloud
+  - international_transfer
+  - sccs
+severity: critical
+risk_score: 95
+references:
+  - "GDPR Article 46 - Transfers with Appropriate Safeguards"
+  - "GDPR Article 45 - Adequacy Decisions"
+  - "EU Commission SCCs 2021"
+nist: ["AC-20"]
+gdpr: ["Article 46"]
+pci_dss: []
+mitre_attack:
+  TA0042:
+    T1583.006: []

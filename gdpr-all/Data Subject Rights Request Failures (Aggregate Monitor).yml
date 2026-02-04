@@ -1,0 +1,60 @@
+#//RULE-GDPR-23 — Data Subject Rights Request Processing Failure (GDPR Articles 15-22)
+#//Requirement: Articles 15-22
+#//Objective: Aggregate all data subject rights violations
+#//Data sources: DSAR system logs, application logs
+#//ECS fields used: event.action, user.name, log.original, @timestamp
+#//Tuning notes: Monitor DSAR workflow; track response times for all rights
+
+name: "RULE-GDPR-23: Data Subject Rights Request Failures (Aggregate Monitor)"
+description: |
+  Comprehensive monitoring of all data subject rights (DSR) requests under GDPR
+  Articles 15-22 (access, rectification, erasure, restriction, portability, objection,
+  automated decision-making). Detects failures, delays, or denials across all DSR
+  types. Aggregates access delays >30 days, erasure non-compliance, portability
+  format errors, and objection processing failures. Provides unified view of DSR
+  compliance health and identifies systemic issues in rights fulfillment processes.
+type: esql
+params: '{}'
+schedule_interval: 12h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE log.original RLIKE "(?i).*(dsar|data.*subject.*right|gdpr.*request|access.*request|erasure|portability|rectification|objection).*"
+    AND (
+      log.original RLIKE "(?i).*(fail|error|deny|reject|timeout|overdue).*"
+      OR (@timestamp < NOW() - 30 DAYS AND log.original RLIKE "(?i).*(pending|open|in.*progress).*")
+    )
+  | STATS request_failures = COUNT(*),
+          failure_types = VALUES(log.original),
+          oldest_request = MIN(@timestamp),
+          users_affected = VALUES(user.name)
+    BY event.action, host.name
+  | WHERE request_failures > 0
+  | EVAL days_overdue = (NOW() - oldest_request) / 86400000
+  | EVAL risk_score = CASE(
+      days_overdue > 90, 100,
+      days_overdue > 60, 95,
+      request_failures > 10, 90,
+      85
+    )
+  | KEEP event.action, host.name, request_failures, days_overdue, oldest_request, users_affected, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - articles_15_22
+  - data_subject_rights
+  - dsar
+  - compliance_aggregate
+severity: high
+risk_score: 90
+references:
+  - "GDPR Articles 15-22 - Data Subject Rights"
+  - "GDPR Article 12 - Transparent Information and Communication"
+nist: ["IP-4"]
+gdpr: ["Articles 15-22"]
+pci_dss: []
+mitre_attack: []

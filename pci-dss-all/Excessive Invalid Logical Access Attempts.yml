@@ -1,0 +1,63 @@
+#//RULE-PCI-34 — Excessive Failed Access Attempts (PCI 10.2.4)
+#//Requirement: 10
+#//Objective: Log and detect invalid logical access attempts
+#//Data sources: Windows Event Logs, Linux auditd, application logs
+#//ECS fields used: event.category, event.outcome, user.name, source.ip
+#//Tuning notes: Aggregate failed auth/access across all systems; threshold 5-10 failures
+
+name: "RULE-PCI-34: Excessive Invalid Logical Access Attempts"
+description: |
+  Detects multiple invalid logical access attempts across systems, indicating
+  potential credential guessing, authorization bypass attempts, or reconnaissance.
+  PCI DSS 10.2.4 requires logging invalid logical access attempts for security
+  monitoring. Patterns include failed file access, unauthorized API calls, and
+  permission denied errors. Correlate with authentication failures and monitor
+  for successful access after failures (privilege escalation).
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+  - filebeat-nginx-access-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*, filebeat-nginx-access-*
+  | WHERE event.outcome == "failure"
+    AND (
+      event.category IN ("authentication", "file", "network")
+      OR http.response.status_code IN (401, 403, 405)
+    )
+    AND @timestamp > NOW() - 15 MINUTES
+  | STATS failure_count = COUNT(*),
+          event_types = VALUES(event.category),
+          resources = VALUES(file.path),
+          status_codes = VALUES(http.response.status_code),
+          users = VALUES(user.name)
+    BY source.ip, user.name
+  | WHERE failure_count > 10
+  | EVAL risk_score = CASE(
+      failure_count > 50, 90,
+      failure_count > 25, 80,
+      70
+    )
+  | KEEP source.ip, user.name, failure_count, event_types, resources, status_codes, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_10
+  - logging
+  - access_control
+  - failed_access
+severity: medium
+risk_score: 70
+references:
+  - "PCI DSS v3.1 Requirement 10.2.4"
+nist: ["AU-12"]
+gdpr: [""]
+pci_dss: ["10.2.4"]
+mitre_attack:
+  TA0007:
+    T1083: []

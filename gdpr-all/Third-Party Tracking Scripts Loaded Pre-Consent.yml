@@ -1,0 +1,62 @@
+#//RULE-GDPR-27 — Third-Party Tracking Script Without Consent (ePrivacy)
+#//Requirement: ePrivacy Directive
+#//Objective: Detect embedded tracking scripts loading before consent
+#//Data sources: Web server logs, CDN logs, JavaScript execution logs
+#//ECS fields used: http.request.referrer, url.path, http.response.body
+#//Tuning notes: Monitor third-party script loads; verify consent sequence
+
+name: "RULE-GDPR-27: Third-Party Tracking Scripts Loaded Pre-Consent"
+description: |
+  Identifies third-party tracking scripts (Google Tag Manager, Facebook Pixel,
+  Hotjar, Mixpanel, advertising networks) loading on page load before user consent,
+  violating ePrivacy requirements. Detects script tags for analytics/advertising
+  services in initial HTML response or early JavaScript execution without consent
+  cookie present. Modern consent management requires scripts to load only post-consent.
+  Monitors CDN requests to tracking domains and correlates with consent events.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - filebeat-nginx-access-*
+  - logs-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, logs-*
+  | WHERE event.category == "web"
+    AND (
+      url.path RLIKE "(?i).*(googletagmanager|google-analytics|facebook\\.net|hotjar|mixpanel|segment\\.io|amplitude|heap|fullstory).*"
+      OR http.request.referrer RLIKE "(?i).*(doubleclick|adsense|adroll|criteo|outbrain|taboola).*"
+    )
+  | WHERE NOT http.request.headers RLIKE "(?i).*(consent.*cookie|gdpr.*accept|cookie.*consent.*=.*true).*"
+  | STATS tracking_loads = COUNT(*),
+          trackers = VALUES(url.path),
+          unique_users = COUNT_DISTINCT(source.ip),
+          referrers = VALUES(http.request.referrer)
+    BY url.domain, host.name
+  | WHERE tracking_loads > 10
+  | EVAL risk_score = CASE(
+      trackers RLIKE "(?i).*(facebook|google|doubleclick).*", 90,
+      unique_users > 500, 85,
+      tracking_loads > 100, 80,
+      75
+    )
+  | KEEP url.domain, host.name, tracking_loads, unique_users, trackers, risk_score
+  | SORT tracking_loads DESC
+enabled: false
+tags:
+  - gdpr
+  - eprivacy
+  - tracking
+  - third_party
+  - consent
+severity: high
+risk_score: 85
+references:
+  - "ePrivacy Directive - Terminal Equipment Access"
+  - "GDPR Article 7 - Consent"
+nist: ["IP-1"]
+gdpr: ["ePrivacy Directive"]
+pci_dss: []
+mitre_attack:
+  TA0009:
+    T1189: []

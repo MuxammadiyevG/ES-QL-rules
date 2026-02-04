@@ -1,0 +1,71 @@
+#//EVIDENCE-PCI-02 — System Hardening Standards & Inventory (PCI 2.2, 2.4, 2.5)
+#//Requirement: 2
+#//Objective: Evidence of configuration standards, system inventory, and documented procedures
+#//Why not detectable: Requires manual review of hardening baselines (CIS benchmarks),
+#//system component inventory databases, and operational procedure documentation.
+#//ES|QL cannot validate policy compliance against industry standards or verify
+#//documentation completeness. Audit through artifact review and configuration scans.
+#//RULE-PCI-07 — Unencrypted PAN Storage Detected (PCI 3.4)
+#//Requirement: 3
+#//Objective: Detect potential unencrypted PAN (Primary Account Number) in logs/files
+#//Data sources: File integrity monitoring, application logs
+#//ECS fields used: file.path, event.action, log.original, process.name
+#//Tuning notes: Use regex for PAN patterns; exclude tokenization systems; high false positive risk
+
+name: "RULE-PCI-07: Potential Unencrypted PAN in Logs or Files"
+description: |
+  Detects patterns resembling unencrypted Primary Account Numbers (PANs) in log files
+  or file system events. PCI DSS 3.4 requires PANs to be unreadable anywhere stored.
+  This rule uses regex to identify 13-19 digit sequences matching card BINs but has
+  high false positive potential (timestamps, IDs). Tune aggressively by excluding
+  known safe paths and correlating with tokenization system activity.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - auditbeat-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*, filebeat-*
+  | WHERE (
+      (log.original RLIKE ".*\\b[3-6][0-9]{12,18}\\b.*"
+       AND event.category IN ("web", "database", "file"))
+      OR
+      (file.path RLIKE ".*(card|payment|pan|cc|credit).*\\.(log|txt|csv|xml|json)"
+       AND event.action IN ("created", "modified")
+       AND file.path NOT RLIKE ".*(token|encrypt|vault).*")
+    )
+  | WHERE NOT file.path RLIKE ".*/var/log/(audit|secure|messages).*"
+  | STATS event_count = COUNT(*),
+          files = VALUES(file.path),
+          processes = VALUES(process.name),
+          sample_log = CONCAT_AGG(log.original, " | ")
+    BY host.name, file.path
+  | WHERE event_count > 0
+  | EVAL risk_score = CASE(
+      file.path RLIKE "(?i).*(backup|dump|export).*", 90,
+      event_count > 10, 75,
+      60
+    )
+  | KEEP host.name, files, event_count, processes, risk_score
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - pci_dss
+  - requirement_3
+  - data_protection
+  - pan
+  - encryption
+severity: critical
+risk_score: 85
+references:
+  - "PCI DSS v3.1 Requirement 3.4"
+nist: ["SC-28"]
+gdpr: ["Article 32"]
+pci_dss: ["3.4"]
+mitre_attack:
+  TA0001: 
+    T1005: []

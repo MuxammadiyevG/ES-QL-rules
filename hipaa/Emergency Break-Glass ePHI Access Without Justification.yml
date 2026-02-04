@@ -1,0 +1,65 @@
+#//RULE-HIPAA-04 — Emergency Access Without Documentation - §164.312(a)(2)(ii)
+#//Requirement: HIPAA Security Rule §164.312(a)(2)(ii) - Emergency Access Procedure
+#//Objective: Detect break-glass access without proper logging/justification
+#//Data sources: Emergency access logs, privileged account logs
+#//ECS fields used: event.action, user.name, log.original, event.category
+#//Tuning notes: Monitor emergency accounts; require justification documentation
+
+name: "RULE-HIPAA-04: Emergency Break-Glass ePHI Access Without Justification"
+description: |
+  Identifies use of emergency access procedures (break-glass accounts) to access
+  ePHI without documented justification or oversight as required by HIPAA
+  §164.312(a)(2)(ii). Detects activation of emergency admin accounts, privileged
+  access during off-hours, or break-glass credential usage without corresponding
+  incident tickets or emergency documentation. Emergency access must be necessary
+  for patient care and documented. Monitor for break-glass account usage and
+  cross-reference with emergency logs and clinical justifications.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE (
+      user.name RLIKE "(?i).*(emergency|break.*glass|admin.*emergency|critical.*access|override).*"
+      OR event.action RLIKE "(?i).*(emergency.*access|break.*glass|privileged.*override).*"
+    )
+    AND event.outcome == "success"
+  | WHERE NOT log.original RLIKE "(?i).*(justification|emergency.*ticket|patient.*emergency|critical.*incident|documented).*"
+  | STATS emergency_access = COUNT(*),
+          systems_accessed = VALUES(host.name),
+          access_times = VALUES(@timestamp),
+          users = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE emergency_access > 0
+  | EVAL risk_score = CASE(
+      emergency_access > 5, 95,
+      emergency_access > 1, 90,
+      85
+    )
+  | KEEP user.name, host.name, emergency_access, systems_accessed, access_times, risk_score
+  | SORT emergency_access DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_a_2
+  - emergency_access
+  - break_glass
+  - accountability
+severity: high
+risk_score: 90
+references:
+  - "45 CFR §164.312(a)(2)(ii) - Emergency Access Procedure"
+  - "45 CFR §164.308(a)(5)(ii)(C) - Access Monitoring"
+nist: ["AC-6"]
+gdpr: []
+pci_dss: []
+hipaa: ["§164.312(a)(2)(ii)"]
+mitre_attack:
+  TA0004:
+    T1078: ["T1078.003"]

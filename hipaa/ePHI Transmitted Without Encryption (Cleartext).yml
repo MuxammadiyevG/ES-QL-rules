@@ -1,0 +1,75 @@
+#//RULE-HIPAA-10 — ePHI Transmitted Over Unencrypted Connection - §164.312(e)(1)
+#//Requirement: HIPAA Security Rule §164.312(e)(1) - Transmission Security
+#//Objective: Detect unencrypted ePHI transmissions over networks
+#//Data sources: Network logs, web access logs, email logs
+#//ECS fields used: network.protocol, destination.port, tls.version, http.request.body
+#//Tuning notes: Monitor for HTTP (not HTTPS), plain FTP, unencrypted email with PHI
+
+name: "RULE-HIPAA-10: ePHI Transmitted Without Encryption (Cleartext)"
+description: |
+  Identifies transmission of electronic Protected Health Information over unencrypted
+  network connections in violation of HIPAA §164.312(e)(1) encryption addressable
+  requirement. Detects HTTP (port 80) traffic containing PHI patterns (MRN, patient
+  names, diagnosis codes), plain FTP transfers of medical records, SMTP email with
+  PHI content, or HL7 messages over non-TLS connections. Unencrypted transmission
+  exposes ePHI to network sniffing and man-in-the-middle attacks. Monitor for
+  cleartext protocols and verify TLS usage for all ePHI exchanges.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+  - filebeat-nginx-access-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-nginx-access-*, filebeat-*
+  | WHERE (
+      (network.protocol == "http"
+       AND destination.port IN (80, 8080)
+       AND (http.request.body RLIKE "(?i).*(patient|mrn|diagnosis|medication|dob|ssn).*"
+            OR url.query RLIKE "(?i).*(patient.*id|medical.*record|chart).*"))
+      OR
+      (destination.port == 21
+       AND network.protocol == "ftp"
+       AND tls.established != true)
+      OR
+      (destination.port IN (25, 110)
+       AND email.body RLIKE "(?i).*(patient|medical.*record|diagnosis|lab.*result).*")
+    )
+  | WHERE NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+  | STATS cleartext_transmissions = COUNT(*),
+          protocols = VALUES(network.protocol),
+          destinations = VALUES(destination.ip),
+          data_volume_mb = SUM(network.bytes) / 1048576,
+          urls = VALUES(url.path)
+    BY destination.ip, destination.port
+  | WHERE cleartext_transmissions > 0
+  | EVAL risk_score = CASE(
+      protocols IN ("http", "ftp"), 100,
+      data_volume_mb > 10, 95,
+      cleartext_transmissions > 10, 90,
+      85
+    )
+  | KEEP destination.ip, destination.port, cleartext_transmissions, data_volume_mb, protocols, urls, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_e
+  - transmission_security
+  - encryption
+  - cleartext
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.312(e)(1) - Transmission Security"
+  - "45 CFR §164.312(a)(2)(iv) - Encryption and Decryption"
+nist: ["SC-8"]
+gdpr: ["Article 32"]
+pci_dss: ["4.1"]
+hipaa: ["§164.312(e)(1)"]
+mitre_attack:
+  TA0040:
+    T1040: []

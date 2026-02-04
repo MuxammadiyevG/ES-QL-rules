@@ -1,0 +1,63 @@
+#//RULE-GDPR-15 — Unauthorized International Data Transfer (GDPR Chapter V)
+#//Requirement: Articles 44-50
+#//Objective: Detect personal data transfers to non-adequate countries without safeguards
+#//Data sources: Network logs, file transfer logs, email logs
+#//ECS fields used: destination.ip, destination.geo.country_code, network.bytes
+#//Tuning notes: Maintain list of adequate countries; monitor transfers to restricted jurisdictions
+
+name: "RULE-GDPR-15: Personal Data Transfer to Non-Adequate Third Country"
+description: |
+  Identifies transfers of personal data to countries without EU adequacy decisions
+  or appropriate safeguards (SCCs, BCRs, derogations) as required by GDPR Chapter V.
+  Detects large file transfers, database exports, or email attachments sent to IP
+  addresses in non-adequate jurisdictions (e.g., Russia, China, most non-EEA countries).
+  Unauthorized international transfers violate GDPR Articles 44-46 and risk data
+  subject privacy. Verify transfer mechanisms and impact assessments.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE network.direction == "outbound"
+    AND destination.ip IS NOT NULL
+    AND network.bytes > 1048576  
+    AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+  | WHERE destination.geo.country_code NOT IN ("AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "GB", "NO", "IS", "LI", "CH", "IL", "JP", "NZ", "CA", "KR", "AR", "UY")  // EEA + adequate countries
+  | STATS transfer_count = COUNT(*),
+          total_mb = SUM(network.bytes) / 1048576,
+          countries = VALUES(destination.geo.country_code),
+          destinations = VALUES(destination.ip),
+          users = VALUES(user.name)
+    BY destination.geo.country_code, user.name
+  | WHERE transfer_count > 0
+  | EVAL risk_score = CASE(
+      countries IN ("CN", "RU", "IR", "KP"), 100,  
+      total_mb > 1000, 95,
+      transfer_count > 10, 90,
+      85
+    )
+  | KEEP destination.geo.country_code, user.name, transfer_count, total_mb, destinations, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - chapter_v
+  - international_transfer
+  - data_protection
+  - cross_border
+severity: critical
+risk_score: 95
+references:
+  - "GDPR Article 44 - General Principle for Transfers"
+  - "GDPR Article 45 - Adequacy Decisions"
+  - "GDPR Article 46 - Appropriate Safeguards"
+nist: ["AC-20"]
+gdpr: ["Article 44-46"]
+pci_dss: []
+mitre_attack:
+  TA0010: 
+    T1041: []

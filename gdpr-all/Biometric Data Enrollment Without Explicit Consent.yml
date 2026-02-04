@@ -1,0 +1,61 @@
+#//RULE-GDPR-33 — Biometric Data Collection Without Explicit Consent (GDPR Article 9(2)(a))
+#//Requirement: Article 9
+#//Objective: Detect biometric enrollment without explicit consent
+#//Data sources: Biometric system logs, access control logs
+#//ECS fields used: event.action, log.original, event.category
+#//Tuning notes: Monitor biometric enrollment events; verify consent records
+
+name: "RULE-GDPR-33: Biometric Data Enrollment Without Explicit Consent"
+description: |
+  Identifies collection of biometric data (fingerprints, facial recognition, iris
+  scans, voice prints) without documented explicit consent as required by GDPR
+  Article 9(2)(a). Detects biometric enrollment events in access control systems,
+  authentication platforms, or time-tracking systems where consent records are
+  absent. Biometric data is special category requiring higher protection. Explicit
+  consent must be freely given, specific, informed, and unambiguous. Monitor for
+  bulk enrollment campaigns and verify individual consent artifacts.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE event.action RLIKE "(?i).*(enroll|register|capture|scan).*"
+    AND log.original RLIKE "(?i).*(fingerprint|face.*recognition|facial|iris|retina|voice.*print|biometric).*"
+  | WHERE NOT log.original RLIKE "(?i).*(explicit.*consent|consent.*form|agreement.*signed|article.*9.*consent).*"
+  | STATS enrollments = COUNT(*),
+          users_enrolled = COUNT_DISTINCT(user.name),
+          biometric_types = VALUES(log.original),
+          enrollment_dates = VALUES(@timestamp)
+    BY host.name
+  | WHERE enrollments > 0
+  | EVAL risk_score = CASE(
+      users_enrolled > 100, 100,
+      biometric_types RLIKE "(?i).*(facial|face.*recognition).*", 95,
+      enrollments > 10, 90,
+      85
+    )
+  | KEEP host.name, enrollments, users_enrolled, biometric_types, risk_score
+  | SORT enrollments DESC
+enabled: false
+tags:
+  - gdpr
+  - article_9
+  - biometric
+  - special_category_data
+  - consent
+severity: critical
+risk_score: 100
+references:
+  - "GDPR Article 9(2)(a) - Explicit Consent for Special Categories"
+  - "GDPR Article 4(14) - Biometric Data Definition"
+  - "WP29 Opinion on Biometric Data"
+nist: ["IA-3"]
+gdpr: ["Article 9"]
+pci_dss: []
+mitre_attack:
+  TA0009:
+    T1119: []

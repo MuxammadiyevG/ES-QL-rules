@@ -1,0 +1,62 @@
+
+#//RULE-GDPR-12 — Missing Security Audit Trail (GDPR Article 32(1)(d))
+#//Requirement: Article 32
+#//Objective: Detect gaps in audit logging for personal data access
+#//Data sources: System logs, database audit logs
+#//ECS fields used: event.category, event.action, @timestamp
+#//Tuning notes: Verify comprehensive audit trail; detect logging service failures
+
+name: "RULE-GDPR-12: Audit Logging Gap for Personal Data Access"
+description: |
+  Identifies periods where audit logging is disabled or not functioning for systems
+  processing personal data, violating GDPR Article 32(1)(d) requirement for processes
+  to test, assess, and evaluate security effectiveness. Detects gaps in database
+  audit logs, missing file access logs, or extended periods without security events.
+  Logging gaps prevent breach detection and accountability. Monitor for log service
+  interruptions and suspicious quiet periods.
+type: esql
+params: '{}'
+schedule_interval: 1h
+index:
+  - logs-*
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, winlogbeat-*, auditbeat-*
+  | WHERE event.category IN ("database", "file", "authentication", "iam")
+    AND @timestamp > NOW() - 2 HOURS
+  | STATS event_count = COUNT(*),
+          event_types = VALUES(event.category),
+          last_event = MAX(@timestamp)
+    BY host.name, event.category
+  | EVAL hours_since_last_event = (NOW() - last_event) / 3600000
+  | WHERE hours_since_last_event > 4  // No events in 4+ hours (suspicious)
+    OR event_count < 10  
+  | EVAL risk_score = CASE(
+      hours_since_last_event > 24, 100,
+      hours_since_last_event > 12, 90,
+      event_count < 5, 85,
+      75
+    )
+  | KEEP host.name, event.category, event_count, hours_since_last_event, last_event, risk_score
+  | SORT hours_since_last_event DESC
+enabled: false
+tags:
+  - gdpr
+  - article_32
+  - audit_logging
+  - monitoring
+  - security
+severity: high
+risk_score: 85
+references:
+  - "GDPR Article 32(1)(d) - Testing and Evaluation"
+  - "GDPR Article 30 - Records of Processing Activities"
+nist: ["AU-6"]
+gdpr: ["Article 32(1)(d)"]
+pci_dss: ["10.1", "10.2"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.002"]
+

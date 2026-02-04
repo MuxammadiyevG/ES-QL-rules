@@ -1,0 +1,71 @@
+#//RULE-HIPAA-09 — ePHI Transmitted Without Integrity Verification - §164.312(c)(2)
+#//Requirement: HIPAA Security Rule §164.312(c)(2) - Mechanism to Authenticate ePHI
+#//Objective: Detect ePHI transmissions without checksums/digital signatures
+#//Data sources: Network logs, file transfer logs, HL7 interface logs
+#//ECS fields used: network.protocol, network.bytes, file.hash, event.action
+#//Tuning notes: Monitor HL7/FHIR interfaces; verify message integrity mechanisms
+
+name: "RULE-HIPAA-09: ePHI Data Transfer Without Integrity Verification"
+description: |
+  Identifies transmission of ePHI without integrity verification mechanisms (checksums,
+  hash values, digital signatures) as recommended by HIPAA §164.312(c)(2). Detects
+  HL7 message transfers without MLLP checksums, FHIR API calls without integrity
+  headers, file transfers of medical records without hash verification, or clinical
+  data exchanges lacking digital signatures. Integrity verification prevents data
+  corruption and tampering during transmission. Monitor healthcare interfaces and
+  file transfer protocols for integrity controls.
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (network.protocol RLIKE "(?i).*(hl7|mllp).*"
+       AND log.original NOT RLIKE "(?i).*(checksum|hash|digest|signature).*")
+      OR
+      (event.action RLIKE "(?i).*(transfer|send|transmit|export).*"
+       AND file.path RLIKE "(?i).*(patient|medical|ehr|phi|clinical|ccda|ccd).*"
+       AND file.hash.sha256 IS NULL)
+      OR
+      (url.path RLIKE "(?i).*/fhir/.*"
+       AND http.request.headers NOT RLIKE "(?i).*(digest|signature|integrity).*")
+    )
+    AND network.bytes > 10240
+  | STATS unverified_transfers = COUNT(*),
+          protocols = VALUES(network.protocol),
+          files = VALUES(file.name),
+          data_volume_mb = SUM(network.bytes) / 1048576,
+          destinations = VALUES(destination.ip)
+    BY host.name, destination.ip
+  | WHERE unverified_transfers > 5
+  | EVAL risk_score = CASE(
+      data_volume_mb > 100, 90,
+      unverified_transfers > 50, 85,
+      80
+    )
+  | KEEP host.name, destination.ip, unverified_transfers, data_volume_mb, protocols, files, risk_score
+  | SORT unverified_transfers DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_c_2
+  - integrity
+  - data_transmission
+  - hl7_fhir
+severity: high
+risk_score: 85
+references:
+  - "45 CFR §164.312(c)(2) - Mechanism to Authenticate ePHI"
+  - "45 CFR §164.312(e)(2)(i) - Integrity Controls for Transmission"
+nist: ["SC-8"]
+gdpr: ["Article 32"]
+pci_dss: ["4.1"]
+hipaa: ["§164.312(c)(2)"]
+mitre_attack:
+  TA0040:
+    T1565: ["T1565.002"]

@@ -1,0 +1,60 @@
+#//RULE-GDPR-37 — Multi-Region Data Replication Without Geo-Fencing (GDPR Chapter V)
+#//Requirement: Articles 44-46
+#//Objective: Detect automatic data replication to non-adequate countries
+#//Data sources: Database replication logs, cloud sync logs
+#//ECS fields used: destination.geo.country_code, event.action, database.name
+#//Tuning notes: Monitor database replication; enforce geo-restrictions
+
+name: "RULE-GDPR-37: Database Auto-Replication to Non-Adequate Third Countries"
+description: |
+  Identifies automatic database replication, backup, or synchronization to geographic
+  regions outside EU/EEA or countries without adequacy decisions, violating GDPR
+  transfer restrictions. Detects multi-region database clusters with replicas in
+  US/Asia, cloud backup policies storing in non-EU regions, or CDN configurations
+  caching personal data globally. Automatic replication may bypass transfer safeguards
+  and create shadow copies in jurisdictions with inadequate protections. Verify
+  geo-fencing policies and data residency controls.
+type: esql
+params: '{}'
+schedule_interval: 6h
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE event.action RLIKE "(?i).*(replicat|sync|backup|mirror|copy).*"
+    AND log.original RLIKE "(?i).*(database|db|storage|data).*"
+    AND destination.geo.country_code NOT IN ("AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "GB", "NO", "IS", "LI", "CH", "IL", "JP", "NZ", "CA", "KR", "AR", "UY")
+  | STATS replication_events = COUNT(*),
+          destination_countries = VALUES(destination.geo.country_code),
+          databases = VALUES(database.name),
+          data_volume_mb = SUM(network.bytes) / 1048576
+    BY destination.geo.country_code, database.name
+  | WHERE replication_events > 0
+  | EVAL risk_score = CASE(
+      destination_countries IN ("CN", "RU", "IN", "BR"), 100,
+      data_volume_mb > 1000, 95,
+      replication_events > 10, 90,
+      85
+    )
+  | KEEP destination.geo.country_code, database.name, replication_events, data_volume_mb, destination_countries, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - chapter_v
+  - data_replication
+  - international_transfer
+  - geo_fencing
+severity: critical
+risk_score: 95
+references:
+  - "GDPR Articles 44-46 - International Transfers"
+  - "EDPB Guidelines on Supplementary Measures"
+nist: ["SC-7"]
+gdpr: ["Articles 44-46"]
+pci_dss: []
+mitre_attack:
+  TA0010:
+    T1567: ["T1567.002"]

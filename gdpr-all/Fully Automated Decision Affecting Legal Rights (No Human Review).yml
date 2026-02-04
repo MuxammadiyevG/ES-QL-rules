@@ -1,0 +1,64 @@
+#//RULE-GDPR-29 — AI Model Making Legal Decisions Without Human Review (GDPR Article 22(1))
+#//Requirement: Article 22
+#//Objective: Detect fully automated decisions affecting legal rights
+#//Data sources: ML model inference logs, decision system logs
+#//ECS fields used: event.action, log.original, event.category
+#//Tuning notes: Tag high-stakes decisions; monitor for human-in-loop bypass
+
+name: "RULE-GDPR-29: Fully Automated Decision Affecting Legal Rights (No Human Review)"
+description: |
+  Identifies fully automated decisions based solely on automated processing that
+  produce legal effects or similarly significantly affect individuals, violating
+  GDPR Article 22(1) prohibition unless Article 22(2) exceptions apply. Detects
+  ML model decisions on credit approval, loan rejection, employment termination,
+  insurance pricing, or legal eligibility without documented human review. High-stakes
+  automated decisions require human intervention, explainability, or explicit consent.
+  Monitors decision logs for absence of human reviewer ID or manual override capability.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      log.original RLIKE "(?i).*(decision|approval|reject|deny|terminate|eligibility).*"
+      AND log.original RLIKE "(?i).*(ml.*model|algorithm|automated|ai.*decision|scoring).*"
+      AND log.original RLIKE "(?i).*(credit|loan|hiring|insurance|termination|benefit|welfare).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(human.*review|manual.*check|reviewed.*by|override|analyst.*id).*"
+  | STATS automated_decisions = COUNT(*),
+          decision_types = VALUES(log.original),
+          affected_users = COUNT_DISTINCT(user.name),
+          first_decision = MIN(@timestamp)
+    BY host.name
+  | WHERE automated_decisions > 0
+  | EVAL risk_score = CASE(
+      decision_types RLIKE "(?i).*(terminat|deny|reject).*", 100,
+      decision_types RLIKE "(?i).*(credit|loan|insurance).*", 95,
+      automated_decisions > 10, 90,
+      85
+    )
+  | KEEP host.name, automated_decisions, affected_users, decision_types, first_decision, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_22
+  - ai_ml
+  - automated_decision
+  - human_review
+severity: critical
+risk_score: 100
+references:
+  - "GDPR Article 22(1) - Automated Individual Decision-Making"
+  - "GDPR Article 22(3) - Right to Human Intervention"
+  - "EU AI Act - High-Risk AI Systems"
+nist: ["IA-8"]
+gdpr: ["Article 22"]
+pci_dss: []
+mitre_attack:
+  TA0040:
+    T1498: []

@@ -1,0 +1,62 @@
+#//RULE-GDPR-08 — Data Portability Request Denied (GDPR Article 20)
+#//Requirement: Article 20
+#//Objective: Detect failures to provide data in portable format
+#//Data sources: Application logs, export logs, API logs
+#//ECS fields used: event.action, http.response.status_code, user.name
+#//Tuning notes: Monitor data export failures; validate structured format (JSON/CSV)
+
+name: "RULE-GDPR-08: Data Portability Request Failed or Denied"
+description: |
+  Identifies failures to fulfill data portability requests under GDPR Article 20,
+  including export errors, format conversion failures, or denied requests without
+  legal basis. Monitors API endpoints for data export failures (HTTP 500/403 errors),
+  incomplete exports, or exports in non-machine-readable formats. Data portability
+  enables users to move data between services; blocking this right violates GDPR
+  and harms competition.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - filebeat-nginx-access-*
+  - logs-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, logs-*
+  | WHERE event.category == "web"
+    AND (
+      url.path RLIKE "(?i).*/api/(export|download|portability|data.*request).*"
+      OR http.request.body RLIKE "(?i).*(export.*data|download.*profile|portability.*request).*"
+    )
+    AND (
+      http.response.status_code IN (403, 500, 503)
+      OR log.original RLIKE "(?i).*(export.*fail|conversion.*error|timeout|denied).*"
+    )
+  | STATS failure_count = COUNT(*),
+          status_codes = VALUES(http.response.status_code),
+          errors = VALUES(log.original),
+          users = VALUES(user.name)
+    BY user.name, url.path
+  | WHERE failure_count > 0
+  | EVAL risk_score = CASE(
+      failure_count > 3, 90,
+      status_codes RLIKE ".*403.*", 85,
+      75
+    )
+  | KEEP user.name, url.path, failure_count, status_codes, errors, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_20
+  - data_portability
+  - data_subject_rights
+  - api
+severity: high
+risk_score: 80
+references:
+  - "GDPR Article 20 - Right to Data Portability"
+  - "GDPR Recital 68 - Portable Format"
+nist: ["IP-4"]
+gdpr: ["Article 20"]
+pci_dss: []
+mitre_attack: []

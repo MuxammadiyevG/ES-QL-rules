@@ -1,0 +1,64 @@
+#
+#//RULE-PCI-21 — Unauthorized Access to Cardholder Data (PCI 7.1)
+#//Requirement: 7
+#//Objective: Detect access to CDE systems by users without documented need-to-know
+#//Data sources: Windows Event Logs, Linux auditd, database audit logs
+#//ECS fields used: event.category, user.name, destination.ip, event.action
+#//Tuning notes: Define CDE asset list; maintain authorized user registry; monitor access patterns
+
+name: "RULE-PCI-21: Unauthorized Access to Cardholder Data Environment"
+description: |
+  Detects authentication or access attempts to cardholder data environment systems
+  by users not on the authorized access list. PCI DSS 7.1 limits access to CDE to
+  only individuals whose job requires it. Unauthorized access may indicate lateral
+  movement, credential compromise, or insider threat. Maintain current authorized
+  user list and exclude service accounts with documented justification.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "authentication"
+    AND event.outcome == "success"
+    AND (
+      CIDR_MATCH(destination.ip, "10.100.0.0/16", "192.168.10.0/24")
+      OR host.name RLIKE "(?i).*(cde|cardholder|payment|db.*prod).*"
+    )
+  | WHERE NOT user.name RLIKE "(?i).*(svc.*payment|cde.*admin|authorized.*user).*"  // Allowlist
+  | STATS access_count = COUNT(*),
+          first_access = MIN(@timestamp),
+          last_access = MAX(@timestamp),
+          sources = VALUES(source.ip),
+          systems = VALUES(destination.ip)
+    BY user.name, destination.ip
+  | WHERE access_count > 0
+  | EVAL risk_score = CASE(
+      access_count > 10, 95,
+      user.name RLIKE "(?i).*(test|temp|guest).*", 90,
+      access_count > 3, 80,
+      70
+    )
+  | KEEP user.name, destination.ip, access_count, first_access, last_access, sources, systems, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_7
+  - access_control
+  - cde_access
+  - lateral_movement
+severity: high
+risk_score: 85
+references:
+  - "PCI DSS v3.1 Requirement 7.1"
+nist: ["AC-3"]
+gdpr: ["Article 32"]
+pci_dss: ["7.1", "7.1.1"]
+mitre_attack:
+  TA0008:
+    T1021: []

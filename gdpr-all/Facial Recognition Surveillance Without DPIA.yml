@@ -1,0 +1,65 @@
+#//RULE-GDPR-35 — Facial Recognition in Public Spaces (GDPR Articles 9, 35)
+#//Requirement: Articles 9, 35
+#//Objective: Detect facial recognition deployment without DPIA
+#//Data sources: Video surveillance logs, facial recognition system logs
+#//ECS fields used: event.action, log.original, event.category
+#//Tuning notes: Monitor facial recognition activations; verify DPIA completion
+
+name: "RULE-GDPR-35: Facial Recognition Surveillance Without DPIA"
+description: |
+  Identifies deployment or activation of facial recognition systems in public or
+  semi-public spaces without documented Data Protection Impact Assessment (DPIA)
+  as required by GDPR Article 35 for high-risk processing. Detects facial recognition
+  software initialization, camera feed processing for face matching, or systematic
+  monitoring via biometric identification. Facial recognition in public is considered
+  high-risk by EDPB requiring DPIA, legal basis review, and potentially supervisory
+  authority consultation. Monitor for system deployment events and cross-check
+  against DPIA registry.
+type: esql
+params: '{}'
+schedule_interval: 12h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(deploy|activate|enable|start).*"
+      AND log.original RLIKE "(?i).*(facial.*recognition|face.*matching|biometric.*identification|face.*detection.*surveillance).*"
+    )
+    OR (
+      log.original RLIKE "(?i).*(camera.*feed|video.*stream).*"
+      AND log.original RLIKE "(?i).*(face.*analysis|biometric.*processing|recognition.*active).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(dpia.*completed|impact.*assessment|article.*35|supervisory.*authority.*consulted).*"
+  | STATS deployments = COUNT(*),
+          systems = VALUES(log.original),
+          locations = VALUES(host.name),
+          first_deployment = MIN(@timestamp)
+    BY host.name
+  | WHERE deployments > 0
+  | EVAL risk_score = 100  
+  | KEEP host.name, deployments, systems, first_deployment, risk_score
+  | SORT deployments DESC
+enabled: false
+tags:
+  - gdpr
+  - article_35
+  - article_9
+  - facial_recognition
+  - dpia
+  - surveillance
+severity: critical
+risk_score: 100
+references:
+  - "GDPR Article 35 - DPIA for High-Risk Processing"
+  - "GDPR Article 9 - Biometric Data"
+  - "EDPB Guidelines on Video Surveillance"
+  - "EU AI Act - Prohibited Real-Time Biometric Identification"
+nist: ["RA-3"]
+gdpr: ["Articles 9, 35"]
+pci_dss: []
+mitre_attack:
+  TA0009:
+    T1212: []

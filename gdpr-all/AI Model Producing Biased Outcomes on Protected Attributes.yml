@@ -1,0 +1,61 @@
+#//RULE-GDPR-30 — AI Model Bias Detected in Protected Categories (GDPR Article 9 + Article 22)
+#//Requirement: Articles 9, 22
+#//Objective: Detect discriminatory outcomes from ML models
+#//Data sources: ML model output logs, fairness metric logs
+#//ECS fields used: log.original, event.action, event.category
+#//Tuning notes: Implement fairness monitoring; track disparate impact metrics
+
+name: "RULE-GDPR-30: AI Model Producing Biased Outcomes on Protected Attributes"
+description: |
+  Identifies machine learning models producing statistically significant disparate
+  impact on protected categories (race, gender, age, religion, disability) in violation
+  of GDPR Articles 9 (special category data) and 22 (automated decision-making).
+  Detects fairness metric alerts, bias audit failures, or significantly different
+  approval/rejection rates across demographic groups. Biased AI systems risk
+  discrimination claims and regulatory action. Requires integration with ML fairness
+  monitoring tools (e.g., Fairlearn, AI Fairness 360). Critical for Article 22 compliance.
+type: esql
+params: '{}'
+schedule_interval: 1h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.category == "ml_model"
+    AND (
+      log.original RLIKE "(?i).*(bias.*detect|fairness.*alert|disparate.*impact|discrimination.*warning).*"
+      OR log.original RLIKE "(?i).*(demographic.*parity|equal.*opportunity|equalized.*odds).*violation.*"
+    )
+  | STATS bias_alerts = COUNT(*),
+          affected_models = VALUES(log.original),
+          protected_attributes = VALUES(event.action),
+          first_alert = MIN(@timestamp)
+    BY host.name
+  | WHERE bias_alerts > 0
+  | EVAL risk_score = CASE(
+      protected_attributes RLIKE "(?i).*(race|gender|religion|disability).*", 100,
+      bias_alerts > 5, 95,
+      90
+    )
+  | KEEP host.name, bias_alerts, affected_models, protected_attributes, first_alert, risk_score
+  | SORT bias_alerts DESC
+enabled: false
+tags:
+  - gdpr
+  - article_22
+  - article_9
+  - ai_ml
+  - bias
+  - discrimination
+severity: critical
+risk_score: 100
+references:
+  - "GDPR Article 9 - Special Categories"
+  - "GDPR Article 22 - Automated Decisions"
+  - "EU AI Act - Prohibited AI Practices"
+nist: ["IA-8"]
+gdpr: ["Articles 9, 22"]
+pci_dss: []
+mitre_attack: []

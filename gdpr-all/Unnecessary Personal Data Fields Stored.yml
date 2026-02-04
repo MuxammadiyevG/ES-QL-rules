@@ -1,0 +1,56 @@
+#//RULE-GDPR-20 — Data Minimization Violation - Retention of Unnecessary Data (GDPR Article 5(1)(c))
+#//Requirement: Article 5
+#//Objective: Detect storage of data not necessary for processing purpose
+#//Data sources: Database logs, file system monitoring
+#//ECS fields used: database.query, file.path, event.action
+#//Tuning notes: Define minimal datasets; monitor for bloat/scope creep
+
+name: "RULE-GDPR-20: Unnecessary Personal Data Fields Stored"
+description: |
+  Identifies database schemas or file structures storing personal data fields that
+  are not necessary for the documented processing purpose, violating GDPR Article
+  5(1)(c) data minimization. Detects tables with excessive columns (50+ fields),
+  collection of "nice-to-have" demographics, or retention of expired marketing
+  preferences. Data minimization reduces breach impact and privacy risk. Review
+  schemas against purpose specifications and DPIAs.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+query_language: esql
+query: |
+  FROM logs-*
+  | WHERE event.category == "database"
+    AND database.query RLIKE "(?i).*CREATE.*TABLE.*"
+  | EVAL column_count = LENGTH(database.query) - LENGTH(REPLACE(database.query, ",", "")) + 1
+  | WHERE column_count > 30  // Tables with >30 columns (customize threshold)
+    AND database.query RLIKE "(?i).*(customer|user|contact|personal).*"
+  | STATS excessive_schemas = COUNT(*),
+          tables = VALUES(database.name),
+          column_counts = VALUES(column_count)
+    BY database.name, host.name
+  | WHERE excessive_schemas > 0
+  | EVAL risk_score = CASE(
+      column_count > 50, 85,
+      column_count > 40, 75,
+      65
+    )
+  | KEEP database.name, host.name, excessive_schemas, tables, column_counts, risk_score
+  | SORT column_count DESC
+enabled: false
+tags:
+  - gdpr
+  - article_5
+  - data_minimization
+  - database
+  - privacy_by_design
+severity: medium
+risk_score: 70
+references:
+  - "GDPR Article 5(1)(c) - Data Minimisation"
+  - "GDPR Article 25 - Data Protection by Design"
+nist: ["IP-1"]
+gdpr: ["Article 5(1)(c)"]
+pci_dss: ["3.1"]
+mitre_attack: []

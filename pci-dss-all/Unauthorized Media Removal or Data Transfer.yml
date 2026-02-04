@@ -1,0 +1,65 @@
+#//RULE-PCI-29 — Media Removed Without Authorization (PCI 9.6, 9.7)
+#//Requirement: 9
+#//Objective: Detect removal of media containing cardholder data without approval
+#//Data sources: Data Loss Prevention logs, file transfer logs
+#//ECS fields used: event.category, event.action, file.path, destination.ip
+#//Tuning notes: Monitor USB/external drive usage; track media movement logs
+
+name: "RULE-PCI-29: Unauthorized Media Removal or Data Transfer"
+description: |
+  Identifies file transfers to removable media (USB drives) or external destinations
+  potentially containing cardholder data without documented approval. PCI DSS 9.6/9.7
+  requires strict control over media distribution and storage. Unauthorized transfers
+  risk data exfiltration. Monitor for large file copies to USB devices and external
+  IPs, correlate with media tracking logs and management approvals.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category IN ("file", "network")
+    AND (
+      (file.path RLIKE ".*[D-Z]:\\\\.*"
+       AND event.action IN ("created", "modified")
+       AND file.size > 1048576)
+      OR
+      (network.direction == "outbound"
+       AND network.bytes > 10485760
+       AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+    )
+  | WHERE NOT user.name RLIKE "(?i).*(backup|admin.*approved).*"
+  | STATS transfer_count = COUNT(*),
+          total_bytes = SUM(file.size),
+          files = VALUES(file.name),
+          destinations = VALUES(destination.ip)
+    BY user.name, host.name
+  | WHERE transfer_count > 0
+  | EVAL risk_score = CASE(
+      total_bytes > 104857600, 95, 
+      transfer_count > 10, 85,
+      70
+    )
+  | KEEP user.name, host.name, transfer_count, total_bytes, files, destinations, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_9
+  - data_protection
+  - media_control
+  - exfiltration
+severity: high
+risk_score: 85
+references:
+  - "PCI DSS v3.1 Requirement 9.6, 9.7"
+nist: ["MP-2"]
+gdpr: ["Article 32"]
+pci_dss: ["9.6", "9.7"]
+mitre_attack:
+  TA0010: 
+  T1052: ["T1052.001"]

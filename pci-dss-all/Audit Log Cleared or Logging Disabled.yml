@@ -1,0 +1,79 @@
+#//EVIDENCE-PCI-09 — Physical Security Policies, Visitor Logs, Media Destruction (PCI 9.2-9.5, 9.8, 9.9)
+#//Requirement: 9
+#//Objective: Evidence of physical security procedures, visitor management, media handling
+#//Why not detectable: Requires review of facility access procedures, visitor badge
+#//systems, escort protocols, visitor logs, media inventory records, secure destruction
+#//certificates, and POS device inspection schedules. ES|QL cannot validate physical
+#//security policies, media destruction methods, or device tampering inspections.
+#//Verified through facility walk-throughs, procedure documentation review, and
+#//visitor/media log audits.
+#//RULE-PCI-30 — Audit Log Cleared or Disabled (PCI 10.2.6, 10.5)
+#//Requirement: 10
+#//Objective: Detect tampering with audit trails and logging systems
+#//Data sources: Windows Event Logs, Linux auditd
+#//ECS fields used: event.category, event.action, winlog.event_id, user.name
+#//Tuning notes: Monitor log service stop/clear events; allowlist authorized log rotation
+
+name: "RULE-PCI-30: Audit Log Cleared or Logging Disabled"
+description: |
+  Detects when audit logs are cleared, logging services are stopped, or log files
+  are deleted. PCI DSS 10.2.6 requires logging initialization/stopping of audit
+  logs, and 10.5 mandates securing logs from alteration. Log tampering is common
+  anti-forensics technique to hide malicious activity. Exclude authorized log
+  rotation/archival processes and investigate immediately for potential compromise.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE (
+      (winlog.event_id == "1102" AND winlog.channel == "Security")
+      OR
+      (winlog.event_id == "7036" 
+       AND service.name RLIKE "(?i).*(event.*log|audit).*"
+       AND winlog.event_data.param1 == "stopped")
+      OR
+      (process.name IN ("auditd", "rsyslog", "syslog-ng")
+       AND event.action IN ("stopped", "killed", "process_stopped"))
+      OR
+      (event.action == "deleted"
+       AND file.path RLIKE ".*/var/log/(audit|secure|auth|syslog|messages).*")
+    )
+  | STATS tampering_events = COUNT(*),
+          users = VALUES(user.name),
+          actions = VALUES(event.action),
+          services = VALUES(service.name),
+          files = VALUES(file.path)
+    BY host.name, user.name
+  | WHERE tampering_events > 0
+  | EVAL risk_score = CASE(
+      winlog.event_id == "1102", 100,
+      actions RLIKE "(?i).*delete.*", 95,
+      actions RLIKE "(?i).*stop.*", 90,
+      85
+    )
+  | KEEP host.name, user.name, tampering_events, actions, services, files, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_10
+  - logging
+  - defense_evasion
+  - audit_tampering
+severity: critical
+risk_score: 100
+references:
+  - "PCI DSS v3.1 Requirement 10.2.6, 10.5"
+nist: ["AU-6"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2.6", "10.5.2", "10.5.3"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.001"]
+

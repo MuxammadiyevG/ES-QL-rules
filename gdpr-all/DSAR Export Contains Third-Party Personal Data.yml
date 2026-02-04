@@ -1,0 +1,59 @@
+#//RULE-GDPR-49 — Data Subject Request Response Contains Other Individuals' Data (GDPR Article 15)
+#//Requirement: Article 15
+#//Objective: Detect DSAR responses exposing third-party information
+#//Data sources: DSAR export logs, file generation logs
+#//ECS fields used: file.path, file.size, event.action
+#//Tuning notes: Scan DSAR exports; detect multiple user IDs in single export
+
+name: "RULE-GDPR-49: DSAR Export Contains Third-Party Personal Data"
+description: |
+  Identifies Data Subject Access Request (DSAR) exports that inadvertently include
+  personal data of other individuals beyond the requesting data subject, violating
+  data minimization and creating secondary privacy breach. Detects export files
+  containing multiple email addresses, user IDs, or customer records when single
+  user requested their data. Common in database exports without proper filtering
+  or joined tables. Exposing third-party data in DSAR responses is serious compliance
+  failure. Monitor export queries and file contents for data leakage.
+type: esql
+params: '{}'
+schedule_interval: 6h
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE event.action RLIKE "(?i).*(dsar.*export|access.*request.*fulfill|subject.*data.*export).*"
+    AND file.extension IN ("csv", "json", "xml", "xlsx", "sql")
+  | WHERE file.size > 1048576  
+  | STATS export_count = COUNT(*),
+          file_sizes_mb = SUM(file.size) / 1048576,
+          export_files = VALUES(file.path),
+          users = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE file_sizes_mb > 10 
+  | EVAL risk_score = CASE(
+      file_sizes_mb > 100, 100,
+      file_sizes_mb > 50, 95,
+      90
+    )
+  | KEEP user.name, host.name, export_count, file_sizes_mb, export_files, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_15
+  - dsar
+  - data_minimization
+  - third_party_exposure
+severity: critical
+risk_score: 100
+references:
+  - "GDPR Article 15 - Right of Access"
+  - "GDPR Article 5(1)(c) - Data Minimisation"
+nist: ["IP-4"]
+gdpr: ["Article 15"]
+pci_dss: []
+mitre_attack:
+  TA0009: 
+    T1005: []

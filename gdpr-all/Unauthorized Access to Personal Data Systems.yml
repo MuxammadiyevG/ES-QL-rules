@@ -1,0 +1,69 @@
+#//RULE-GDPR-10 — Inadequate Access Controls to Personal Data (GDPR Article 32(1)(b))
+#//Requirement: Article 32
+#//Objective: Detect unauthorized access to personal data systems
+#//Data sources: Authentication logs, database logs, file access logs
+#//ECS fields used: event.category, user.name, event.outcome, source.ip
+#//Tuning notes: Monitor unauthorized access attempts; track privilege escalation
+
+name: "RULE-GDPR-10: Unauthorized Access to Personal Data Systems"
+description: |
+  Identifies unauthorized access attempts or successful unauthorized access to
+  systems processing personal data, violating GDPR Article 32(1)(b) requirement
+  for ensuring ongoing confidentiality. Detects failed authentication to HR/CRM
+  databases, privilege escalation to data admin roles, and access from unexpected
+  geographic locations. Unauthorized access indicates inadequate security controls
+  and potential data breach. Correlate with user behavior baselines and geolocation.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "authentication"
+    AND (
+      (event.outcome == "failure"
+       AND destination.ip RLIKE ".*(10\\.200\\.|192\\.168\\.50\\.).*")  // CDE/PII systems (customize)
+      OR
+      (event.outcome == "success"
+       AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+       AND user.name NOT IN ("vpn_user", "remote_admin"))
+    )
+  | STATS access_attempts = COUNT(*),
+          success_count = COUNT_IF(event.outcome == "success"),
+          failure_count = COUNT_IF(event.outcome == "failure"),
+          sources = VALUES(source.ip),
+          users = VALUES(user.name)
+    BY source.ip, user.name
+  | WHERE access_attempts > 5
+  | EVAL risk_score = CASE(
+      success_count > 0 AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"), 100,
+      failure_count > 20, 90,
+      success_count > 0, 85,
+      75
+    )
+  | KEEP source.ip, user.name, access_attempts, success_count, failure_count, sources, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - article_32
+  - access_control
+  - confidentiality
+  - security
+severity: high
+risk_score: 85
+references:
+  - "GDPR Article 32(1)(b) - Confidentiality, Integrity, Availability"
+  - "GDPR Article 32(2) - Risk Assessment"
+nist: ["AC-3"]
+gdpr: ["Article 32(1)(b)"]
+pci_dss: ["7.1"]
+mitre_attack:
+  TA0001: 
+    T1078: []
+
+

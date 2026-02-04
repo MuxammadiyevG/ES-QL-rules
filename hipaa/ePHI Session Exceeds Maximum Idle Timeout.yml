@@ -1,0 +1,61 @@
+#//RULE-HIPAA-05 — Automatic Logoff Not Configured - §164.312(a)(2)(iii)
+#//Requirement: HIPAA Security Rule §164.312(a)(2)(iii) - Automatic Logoff
+#//Objective: Detect long-duration sessions without timeout
+#//Data sources: Session logs, application logs, workstation logs
+#//ECS fields used: event.action, event.duration, user.name, @timestamp
+#//Tuning notes: Define max session duration (15-30 min); monitor idle sessions
+
+name: "RULE-HIPAA-05: ePHI Session Exceeds Maximum Idle Timeout"
+description: |
+  Identifies user sessions to ePHI systems that remain active beyond maximum
+  allowable idle timeout period without automatic logoff, violating HIPAA
+  §164.312(a)(2)(iii) addressable requirement. Detects EHR/EMR sessions idle for
+  >15 minutes (industry standard), workstation logins without screen lock, or
+  clinical application sessions exceeding policy limits. Prolonged idle sessions
+  increase unauthorized access risk in shared clinical environments. Monitor session
+  duration and idle time, especially on shared workstations.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - winlogbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, logs-*
+  | WHERE event.category == "session"
+    AND (
+      host.name RLIKE "(?i).*(emr|ehr|workstation|clinical|nurse.*station).*"
+      OR event.dataset RLIKE "(?i).*(epic|cerner|meditech).*"
+    )
+    AND event.action IN ("session_idle", "session_active")
+  | STATS session_duration_min = MAX(event.duration) / 60000000, 
+          last_activity = MAX(@timestamp),
+          sessions = VALUES(event.id)
+    BY user.name, host.name
+  | WHERE session_duration_min > 15  
+  | EVAL risk_score = CASE(
+      session_duration_min > 60, 90,  
+      session_duration_min > 30, 80,
+      70
+    )
+  | KEEP user.name, host.name, session_duration_min, last_activity, sessions, risk_score
+  | SORT session_duration_min DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_312_a_2
+  - automatic_logoff
+  - session_timeout
+  - workstation_security
+severity: medium
+risk_score: 75
+references:
+  - "45 CFR §164.312(a)(2)(iii) - Automatic Logoff"
+  - "45 CFR §164.310(b) - Workstation Use"
+nist: ["AC-11"]
+gdpr: []
+pci_dss: ["8.1.8"]
+hipaa: ["§164.312(a)(2)(iii)"]
+mitre_attack: []

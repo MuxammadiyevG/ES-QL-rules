@@ -1,0 +1,59 @@
+#
+#//RULE-PCI-14 — Anti-Virus Definition Outdated (PCI 5.2)
+#//Requirement: 5
+#//Objective: Detect systems with outdated anti-virus signatures
+#//Data sources: Anti-virus logs, system logs
+#//ECS fields used: event.category, log.original, @timestamp
+#//Tuning notes: Define acceptable signature age (e.g., 7 days); monitor update failures
+
+name: "RULE-PCI-14: Outdated Anti-Virus Definitions Detected"
+description: |
+  Identifies systems where anti-virus signature definitions have not been updated
+  within acceptable timeframe (typically 7 days). PCI DSS 5.2 requires current
+  anti-virus mechanisms. Outdated signatures reduce malware detection effectiveness.
+  This rule monitors AV update logs and signature timestamps. Tune threshold based
+  on organizational policy and network connectivity constraints.
+type: esql
+params: '{}'
+schedule_interval: 1h
+index:
+  - logs-*
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM logs-*, winlogbeat-*
+  | WHERE event.category == "process" 
+    AND (
+      log.original RLIKE "(?i).*(signature|definition).*update.*(fail|error).*"
+      OR (winlog.event_id IN ("1116", "1117", "2000", "2001")  
+          AND event.outcome != "success")
+    )
+  | STATS update_failures = COUNT(*),
+          last_attempt = MAX(@timestamp),
+          hosts_affected = VALUES(host.name)
+    BY host.name
+  | EVAL days_since_update = (NOW() - last_attempt) / 86400000  
+  | WHERE days_since_update > 7 OR update_failures > 3
+  | EVAL risk_score = CASE(
+      days_since_update > 30, 90,
+      days_since_update > 14, 75,
+      update_failures > 10, 70,
+      60
+    )
+  | KEEP host.name, update_failures, last_attempt, days_since_update, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - requirement_5
+  - malware
+  - antivirus
+  - configuration
+severity: medium
+risk_score: 65
+references:
+  - "PCI DSS v3.1 Requirement 5.2"
+nist: ["SI-3"]
+gdpr: [""]
+pci_dss: ["5.2"]
+mitre_attack: []
