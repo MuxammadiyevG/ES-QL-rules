@@ -1,0 +1,66 @@
+#//RULE-HIPAA-18 — Confidential Communications Request Not Honored - §164.522(b)
+#//Requirement: HIPAA Privacy Rule §164.522(b) - Confidential Communications
+#//Objective: Detect communications sent to non-requested addresses
+#//Data sources: Patient contact preference logs, mailing system logs
+#//ECS fields used: email.to, log.original, user.name, event.action
+#//Tuning notes: Track alternative communication preferences; verify request compliance
+
+name: "RULE-HIPAA-18: PHI Sent to Non-Preferred Contact Method (Privacy Request Violation)"
+description: |
+  Identifies Protected Health Information communications sent to addresses or phone
+  numbers other than those requested by patient under HIPAA §164.522(b) confidential
+  communications requirement. Detects appointment reminders to home phone when
+  patient requested work phone only, medical bills mailed to home address when
+  patient specified PO Box, or test results emailed when patient requested secure
+  portal only. Covered entities must accommodate reasonable confidential communication
+  requests. Monitor communication channels and correlate with patient preferences.
+type: esql
+params: '{}'
+schedule_interval: 12h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (event.dataset RLIKE "(?i).*mail.*"
+       AND email.subject RLIKE "(?i).*(appointment|test.*result|medical|health|bill|invoice).*")
+      OR
+      (event.action RLIKE "(?i).*(sms|text|call|phone).*"
+       AND log.original RLIKE "(?i).*(appointment|reminder|result|prescription).*")
+      OR
+      (log.original RLIKE "(?i).*(mail.*to|send.*to|address).*"
+       AND log.original RLIKE "(?i).*(medical.*record|billing|statement).*")
+    )
+    AND log.original NOT RLIKE "(?i).*(preferred.*method|requested.*contact|alternative.*address|164.*522).*"
+  | STATS communication_violations = COUNT(*),
+          contact_methods = VALUES(log.original),
+          recipients = VALUES(email.to)
+    BY user.name, host.name
+  | WHERE communication_violations > 3
+  | EVAL risk_score = CASE(
+      communication_violations > 10, 85,
+      communication_violations > 5, 75,
+      65
+    )
+  | KEEP user.name, host.name, communication_violations, contact_methods, recipients, risk_score
+  | SORT communication_violations DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - section_164_522_b
+  - patient_rights
+  - confidential_communications
+  - patient_preferences
+severity: medium
+risk_score: 70
+references:
+  - "45 CFR §164.522(b) - Confidential Communications"
+  - "45 CFR §164.502 - Uses and Disclosures"
+nist: ["IP-1"]
+gdpr: []
+pci_dss: []
+hipaa: ["§164.522(b)"]
+mitre_attack: []

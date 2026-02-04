@@ -1,0 +1,74 @@
+#//RULE-HIPAA-14 — Patient Authorization Missing for PHI Use - §164.508
+#//Requirement: HIPAA Privacy Rule §164.508 - Uses/Disclosures Requiring Authorization
+#//Objective: Detect PHI used for marketing, research, or sale without authorization
+#//Data sources: Marketing system logs, research database logs, data sale logs
+#//ECS fields used: event.action, log.original, database.name, user.name
+#//Tuning notes: Monitor marketing campaigns; track research protocols; verify IRB approvals
+
+name: "RULE-HIPAA-14: PHI Used for Marketing/Research Without Patient Authorization"
+description: |
+  Identifies use of Protected Health Information for marketing communications,
+  research studies, or sale of PHI without valid patient authorization as required
+  by HIPAA §164.508. Detects patient data exports to marketing platforms (Mailchimp,
+  Salesforce), PHI queries by research databases without IRB protocol numbers,
+  commercial data sharing agreements, or targeted advertising using health data.
+  Marketing and research use of PHI requires explicit written authorization except
+  for treatment alternatives or health-related benefits. Monitor for unauthorized
+  secondary uses of patient information.
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (event.action RLIKE "(?i).*(export|sync|upload).*"
+       AND log.original RLIKE "(?i).*(mailchimp|salesforce|hubspot|marketing|campaign).*"
+       AND log.original RLIKE "(?i).*(patient|member|subscriber|contact).*")
+      OR
+      (database.name RLIKE "(?i).*(research|study|trial|clinical).*"
+       AND database.query RLIKE "(?i).*SELECT.*FROM.*(patient|subject).*"
+       AND log.original NOT RLIKE "(?i).*(irb|protocol|authorization|consent|waiver).*")
+      OR
+      (event.action RLIKE "(?i).*(sale|sell|commercial|monetiz).*"
+       AND log.original RLIKE "(?i).*(phi|patient.*data|health.*information).*")
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(hipaa.*authorization|164.*508|signed.*consent|patient.*approval).*"
+  | STATS unauthorized_uses = COUNT(*),
+          use_types = VALUES(event.action),
+          systems = VALUES(database.name),
+          destinations = VALUES(url.domain)
+    BY host.name, user.name
+  | WHERE unauthorized_uses > 0
+  | EVAL risk_score = CASE(
+      use_types RLIKE "(?i).*(sale|sell|commercial).*", 100,
+      unauthorized_uses > 5, 95,
+      90
+    )
+  | KEEP host.name, user.name, unauthorized_uses, use_types, destinations, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - section_164_508
+  - authorization
+  - marketing
+  - research
+  - data_sale
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.508 - Uses and Disclosures Requiring Authorization"
+  - "45 CFR §164.501 - Marketing Definition"
+  - "45 CFR §164.502(a)(5)(ii) - Research Exception"
+nist: ["IP-1"]
+gdpr: ["Article 6"]
+pci_dss: ["7.1"]
+hipaa: ["§164.508"]
+mitre_attack:
+  TA0009:
+    T1213: []

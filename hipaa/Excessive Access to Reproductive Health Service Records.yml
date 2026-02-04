@@ -1,0 +1,68 @@
+#//RULE-HIPAA-38 — Reproductive Health Services Access Logged - Privacy Concern
+#//Requirement: HIPAA Privacy Rule - Sensitive Services
+#//Objective: Detect potential privacy violations for reproductive health access
+#//Data sources: EHR access logs, appointment scheduling logs
+#//ECS fields used: event.action, log.original, service.type, diagnosis.code
+#//Tuning notes: Flag sensitive services; monitor for inappropriate access patterns
+
+name: "RULE-HIPAA-38: Excessive Access to Reproductive Health Service Records"
+description: |
+  Identifies patterns of access to reproductive health service records (abortion,
+  contraception, fertility, STD treatment) that may indicate privacy violations,
+  especially post-Dobbs decision with state-level legal implications. Detects
+  unusual access volumes to OB/GYN charts, reproductive procedure documentation
+  viewed by non-clinical staff, or access to sensitive diagnosis codes (Z30-Z33,
+  O00-O08) without clear clinical need. While HIPAA doesn't specifically restrict
+  these records, heightened sensitivity requires monitoring for potential misuse,
+  unauthorized disclosure, or state law violations. Monitor reproductive health
+  access patterns carefully.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+query_language: esql
+query: |
+  FROM logs-*
+  | WHERE event.action RLIKE "(?i).*(record.*access|chart.*view|appointment.*view).*"
+    AND (
+      log.original RLIKE "(?i).*(reproductive|abortion|contraception|pregnancy.*termination|ob.*gyn|fertility|std|hiv|planned.*parenthood).*"
+      OR diagnosis.code RLIKE ".*(Z30|Z31|Z32|Z33|O00|O01|O02|O03|O04|O07|O08|A50-A64).*"
+    )
+  | WHERE NOT user.role IN ("obgyn", "physician", "nurse_practitioner", "certified_nurse_midwife")
+  | STATS sensitive_access = COUNT(*),
+          accessing_users = VALUES(user.name),
+          user_roles = VALUES(user.role),
+          unique_patients = COUNT_DISTINCT(patient.id),
+          service_types = VALUES(diagnosis.code)
+    BY user.name, host.name
+  | WHERE sensitive_access > 20 OR unique_patients > 10
+  | EVAL risk_score = CASE(
+      user_roles RLIKE "(?i).*(admin|billing|legal|compliance).*", 95,
+      unique_patients > 50, 90,
+      sensitive_access > 100, 85,
+      80
+    )
+  | KEEP user.name, host.name, sensitive_access, unique_patients, user_roles, service_types, risk_score
+  | SORT sensitive_access DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - reproductive_health
+  - sensitive_services
+  - privacy_protection
+  - minimum_necessary
+severity: high
+risk_score: 90
+references:
+  - "45 CFR §164.502 - Uses and Disclosures"
+  - "45 CFR §164.514(d) - Minimum Necessary"
+  - "State Privacy Laws - Reproductive Health"
+nist: ["AC-3"]
+gdpr: ["Article 9"]
+pci_dss: []
+hipaa: ["§164.502, §164.514(d)"]
+mitre_attack:
+  TA0009:
+    T1530: []

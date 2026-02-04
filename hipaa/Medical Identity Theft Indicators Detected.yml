@@ -1,0 +1,71 @@
+#//RULE-HIPAA-40 — Medical Identity Theft Indicators - Fraudulent PHI Access
+#//Requirement: HIPAA Security Rule - Access Controls & Monitoring
+#//Objective: Detect medical identity theft through anomalous access patterns
+#//Data sources: EHR access logs, billing system logs, pharmacy logs
+#//ECS fields used: patient.id, user.name, event.action, geo.location
+#//Tuning notes: Detect impossible travel; monitor for identity fraud patterns
+
+name: "RULE-HIPAA-40: Medical Identity Theft Indicators Detected"
+description: |
+  Identifies potential medical identity theft through anomalous access patterns
+  including impossible travel (same patient accessed from distant locations within
+  short timeframe), simultaneous treatment at multiple facilities, duplicate services,
+  or inconsistent demographic information. Medical identity theft involves fraudulent
+  use of patient identity to obtain medical services, prescriptions, or insurance
+  benefits. Detects geographic impossibilities, age/gender mismatches with services,
+  or prescription fraud patterns. Critical for patient safety and financial integrity.
+  Monitor for identity fraud indicators and investigate anomalies promptly.
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+  - logs-*
+query_language: esql
+query: |
+  FROM logs-*
+  | WHERE event.action RLIKE "(?i).*(check.*in|appointment|prescription|service.*provided).*"
+    AND patient.id IS NOT NULL
+  | STATS access_locations = COUNT_DISTINCT(geo.city),
+          access_count = COUNT(*),
+          locations = VALUES(geo.city),
+          facilities = VALUES(host.name),
+          services = VALUES(event.action),
+          time_span_hours = (MAX(@timestamp) - MIN(@timestamp)) / 3600000
+    BY patient.id
+  | WHERE (
+      (access_locations > 1 AND time_span_hours < 6)  // Multiple cities in 6 hours
+      OR access_count > 10
+    )
+  | EVAL risk_score = CASE(
+      access_locations > 3, 100,  // 3+ locations = impossible travel
+      time_span_hours < 2 AND access_locations > 1, 95,
+      access_count > 20, 90,
+      85
+    )
+  | KEEP patient.id, access_locations, access_count, time_span_hours, locations, facilities, services, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - fraud
+  - medical_identity_theft
+  - patient_safety
+  - anomaly_detection
+  - impossible_travel
+severity: critical
+risk_score: 95
+references:
+  - "HIPAA Security Rule - Access Controls"
+  - "45 CFR §164.308(a)(3) - Workforce Security"
+  - "Federal Trade Commission - Medical Identity Theft"
+nist: "IR-4"
+gdpr: ""
+pci_dss:
+  requirement: ""
+  controls: []
+hipaa:
+  security_rule: "§164.312(a)"
+  privacy_rule: ""
+mitre_attack:
+  tactic: "Impact"
+  technique: "T1498"

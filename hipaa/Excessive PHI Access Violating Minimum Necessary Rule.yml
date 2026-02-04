@@ -1,0 +1,71 @@
+#//RULE-HIPAA-13 — Minimum Necessary Standard Violation - §164.502(b), §164.514(d)
+#//Requirement: HIPAA Privacy Rule §164.502(b) - Minimum Necessary
+#//Objective: Detect excessive PHI access beyond job requirements
+#//Data sources: EHR access logs, database query logs, file access logs
+#//ECS fields used: event.action, user.name, database.query, log.original
+#//Tuning notes: Define role-based data access limits; monitor bulk queries
+
+name: "RULE-HIPAA-13: Excessive PHI Access Violating Minimum Necessary Rule"
+description: |
+  Identifies access to Protected Health Information that exceeds the minimum necessary
+  for the user's job function, violating HIPAA §164.502(b) and §164.514(d). Detects
+  bulk patient record queries by non-clinical staff, access to unassigned patient
+  charts by providers, administrative users viewing sensitive clinical data, or
+  SELECT * queries on patient tables. Minimum necessary limits PHI access to only
+  what's needed for specific job duties. Monitor for access pattern anomalies and
+  correlate with user roles and job responsibilities.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE (
+      (event.category == "database"
+       AND database.query RLIKE "(?i).*SELECT.*\\*.*FROM.*(patient|medical|encounter|visit).*"
+       AND user.name NOT RLIKE "(?i).*(physician|doctor|nurse|clinician|provider).*")
+      OR
+      (event.action RLIKE "(?i).*(chart.*view|record.*access|document.*open).*"
+       AND user.name RLIKE "(?i).*(billing|admin|clerk|receptionist|scheduler).*"
+       AND log.original RLIKE "(?i).*(diagnosis|medication|lab|radiology|notes).*")
+      OR
+      (event.action RLIKE "(?i).*patient.*access.*"
+       AND event.category IN ("database", "web"))
+    )
+  | STATS access_count = COUNT(*),
+          unique_patients = COUNT_DISTINCT(log.original),
+          access_types = VALUES(event.action),
+          queries = VALUES(database.query)
+    BY user.name, host.name
+  | WHERE access_count > 50 OR unique_patients > 20
+  | EVAL risk_score = CASE(
+      access_count > 200, 100,
+      unique_patients > 100, 95,
+      access_count > 100, 90,
+      85
+    )
+  | KEEP user.name, host.name, access_count, unique_patients, access_types, risk_score
+  | SORT access_count DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - section_164_502_b
+  - section_164_514_d
+  - minimum_necessary
+  - excessive_access
+severity: high
+risk_score: 90
+references:
+  - "45 CFR §164.502(b) - Minimum Necessary Standard"
+  - "45 CFR §164.514(d) - Minimum Necessary Requirements"
+nist: ["AC-6"]
+gdpr: ["Article 5(1)(c)"]
+pci_dss: ["7.1"]
+hipaa: ["§164.502(b), §164.514(d)"]
+mitre_attack:
+  TA0005:
+    T1530: []

@@ -1,0 +1,85 @@
+#//RULE-HIPAA-29 — Breach Threshold Analysis - Unsecured PHI Exposure - §164.402
+#//Requirement: HIPAA Breach Notification Rule §164.402 - Breach Definition
+#//Objective: Detect PHI exposure incidents meeting breach criteria
+#//Data sources: Security incident logs, data loss prevention logs, access logs
+#//ECS fields used: event.severity, event.action, network.bytes, user.name
+#//Tuning notes: Assess risk factors; track breach threshold evaluations
+
+name: "RULE-HIPAA-29: Unsecured PHI Exposure Meeting Breach Threshold"
+description: |
+  Identifies incidents involving acquisition, access, use, or disclosure of unsecured
+  Protected Health Information that compromise security or privacy, meeting HIPAA
+  Breach Notification Rule §164.402 breach definition. Detects unauthorized PHI
+  access affecting >500 individuals, unencrypted PHI data exfiltration, lost/stolen
+  devices with PHI, or email misdirection of patient information. Breach determination
+  requires risk assessment of nature/extent of PHI, unauthorized person, actual
+  acquisition, and mitigation. Monitor for incidents requiring notification and
+  perform breach threshold analysis using 4-factor test.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-*
+  - winlogbeat-*
+  - auditbeat-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, winlogbeat-*, auditbeat-*, filebeat-*
+  | WHERE (
+      (event.action RLIKE "(?i).*(unauthorized.*access|breach|compromise).*"
+       AND log.original RLIKE "(?i).*(patient|phi|medical.*record).*")
+      OR
+      (network.direction == "outbound"
+       AND network.bytes > 10485760  // >10MB
+       AND log.original RLIKE "(?i).*(patient|phi|ssn|diagnosis).*"
+       AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+      OR
+      (event.action RLIKE "(?i).*(lost|stolen|missing).*"
+       AND log.original RLIKE "(?i).*(laptop|tablet|phone|device|media).*phi.*")
+      OR
+      (event.dataset RLIKE "(?i).*mail.*"
+       AND log.original RLIKE "(?i).*(wrong.*recipient|misdirected|incorrect.*address).*phi.*")
+    )
+  | STATS breach_indicators = COUNT(*),
+          indicator_types = VALUES(event.action),
+          data_volume_mb = SUM(network.bytes) / 1048576,
+          affected_systems = VALUES(host.name),
+          users_involved = VALUES(user.name)
+    BY host.name
+  | WHERE breach_indicators > 0
+  | EVAL estimated_individuals = CASE(
+      data_volume_mb > 1000, ">500",
+      data_volume_mb > 100, "100-500",
+      data_volume_mb > 10, "10-100",
+      "<10"
+    )
+  | EVAL risk_score = CASE(
+      estimated_individuals == ">500", 100,
+      indicator_types RLIKE "(?i).*(exfiltrat|stolen|lost).*", 95,
+      breach_indicators > 5, 90,
+      85
+    )
+  | KEEP host.name, breach_indicators, indicator_types, data_volume_mb, estimated_individuals, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - breach_notification
+  - section_164_402
+  - breach_definition
+  - unsecured_phi
+  - data_breach
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.402 - Definitions (Breach)"
+  - "45 CFR §164.404 - Notification to Individuals"
+  - "OCR Breach Notification Rule Guidance"
+nist: ["IR-6"]
+gdpr: ["Article 33"]
+pci_dss: []
+hipaa: ["§164.402"]
+mitre_attack:
+  TA0010: 
+    T1041: []

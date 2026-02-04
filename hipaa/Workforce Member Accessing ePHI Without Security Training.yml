@@ -1,0 +1,68 @@
+#//RULE-HIPAA-26 — Workforce Member Without Security Training - §164.308(a)(5)
+#//Requirement: HIPAA Security Rule §164.308(a)(5) - Security Awareness and Training
+#//Objective: Detect workforce members accessing ePHI without completed training
+#//Data sources: LMS logs, training records, authentication logs
+#//ECS fields used: user.name, event.action, @timestamp, log.original
+#//Tuning notes: Track training completion dates; require annual refresher training
+
+name: "RULE-HIPAA-26: Workforce Member Accessing ePHI Without Security Training"
+description: |
+  Identifies workforce members (employees, contractors, volunteers) accessing ePHI
+  systems without documented completion of HIPAA security awareness training as
+  required by §164.308(a)(5). Detects authentication to EHR/EMR by users without
+  training records in past 12 months, new hires accessing PHI before orientation
+  completion, or expired training certifications. Security training must cover
+  password management, malware protection, login monitoring, and security reminders.
+  Monitor for access-to-training-status correlation and ensure all workforce members
+  receive appropriate security training before ePHI access.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, winlogbeat-*, auditbeat-*
+  | WHERE event.category == "authentication"
+    AND event.outcome == "success"
+    AND (
+      host.name RLIKE "(?i).*(emr|ehr|phi|patient|clinical).*"
+      OR destination.ip RLIKE ".*(10\\.100\\.|192\\.168\\.50\\.).*"  // ePHI systems
+    )
+  | WHERE user.name NOT IN (
+      "trained.user1", "certified.doctor2", "trained.nurse3"
+    )
+  | STATS untrained_access_count = COUNT(*),
+          systems_accessed = VALUES(host.name),
+          first_access = MIN(@timestamp),
+          last_access = MAX(@timestamp)
+    BY user.name
+  | WHERE untrained_access_count > 0
+  | EVAL risk_score = CASE(
+      untrained_access_count > 50, 100,
+      untrained_access_count > 20, 90,
+      untrained_access_count > 5, 85,
+      80
+    )
+  | KEEP user.name, untrained_access_count, systems_accessed, first_access, last_access, risk_score
+  | SORT untrained_access_count DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_308_a_5
+  - security_training
+  - workforce_security
+  - awareness
+severity: high
+risk_score: 85
+references:
+  - "45 CFR §164.308(a)(5) - Security Awareness and Training"
+  - "45 CFR §164.530(b) - Training Requirements"
+nist: ["AT-2"]
+gdpr: []
+pci_dss: ["12.6"]
+hipaa: ["§164.308(a)(5)","§164.530(b)"]
+mitre_attack: []

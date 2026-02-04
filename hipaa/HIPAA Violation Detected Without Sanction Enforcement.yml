@@ -1,0 +1,65 @@
+#//RULE-HIPAA-24 — Sanction Policy Not Enforced - §164.308(a)(1)(ii)(C)
+#//Requirement: HIPAA Security Rule §164.308(a)(1)(ii)(C) - Sanction Policy
+#//Objective: Detect HIPAA violations without disciplinary action
+#//Data sources: HR logs, incident response logs, policy violation logs
+#//ECS fields used: event.action, log.original, user.name, @timestamp
+#//Tuning notes: Track violations and corresponding sanctions; monitor enforcement
+
+name: "RULE-HIPAA-24: HIPAA Violation Detected Without Sanction Enforcement"
+description: |
+  Identifies confirmed HIPAA policy violations (unauthorized PHI access, security
+  breaches, privacy violations) that do not result in documented sanctions or
+  disciplinary actions as required by §164.308(a)(1)(ii)(C). Detects incident
+  investigation closures without corrective action records, repeat offenders without
+  escalating discipline, or policy violations marked "closed" without HR involvement.
+  Sanction policy demonstrates organizational commitment to compliance and deters
+  future violations. Monitor for violation-to-sanction correlation and ensure
+  workforce accountability.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      log.original RLIKE "(?i).*(hipaa.*violation|unauthorized.*phi.*access|privacy.*breach|security.*incident|policy.*violation).*"
+      AND log.original RLIKE "(?i).*(confirmed|substantiated|upheld|validated).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(sanction|disciplinary.*action|termination|suspension|warning|corrective.*action|hr.*notified|personnel.*action).*"
+  | STATS violations_without_sanction = COUNT(*),
+          violators = VALUES(user.name),
+          violation_types = VALUES(log.original),
+          first_violation = MIN(@timestamp),
+          last_violation = MAX(@timestamp)
+    BY user.name, host.name
+  | WHERE violations_without_sanction > 0
+  | EVAL days_without_action = (NOW() - first_violation) / 86400000
+  | EVAL risk_score = CASE(
+      violations_without_sanction > 3, 100,  
+      days_without_action > 30, 95,
+      violations_without_sanction > 1, 90,
+      85
+    )
+  | KEEP user.name, host.name, violations_without_sanction, days_without_action, violation_types, risk_score
+  | SORT violations_without_sanction DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_308_a_1
+  - sanction_policy
+  - enforcement
+  - workforce_accountability
+severity: high
+risk_score: 90
+references:
+  - "45 CFR §164.308(a)(1)(ii)(C) - Sanction Policy"
+  - "45 CFR §164.530(e)(1) - Sanctions for Privacy Violations"
+nist: ["PS-8"]
+gdpr: []
+pci_dss: []
+hipaa: ["§164.308(a)(1)(ii)(C)","§164.530(e)"]
+mitre_attack: []

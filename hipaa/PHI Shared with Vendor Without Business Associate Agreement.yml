@@ -1,0 +1,71 @@
+#//RULE-HIPAA-33 — Business Associate Agreement (BAA) Missing - §164.504(e)
+#//Requirement: HIPAA Privacy Rule §164.504(e) - Business Associate Contracts
+#//Objective: Detect PHI sharing with vendors without executed BAA
+#//Data sources: Data sharing logs, API logs, vendor integration logs
+#//ECS fields used: destination.ip, url.domain, network.bytes, event.action
+#//Tuning notes: Maintain BAA registry; monitor new vendor integrations
+
+name: "RULE-HIPAA-33: PHI Shared with Vendor Without Business Associate Agreement"
+description: |
+  Identifies Protected Health Information transmitted to or processed by third-party
+  vendors without executed Business Associate Agreement (BAA) as required by HIPAA
+  §164.504(e). Detects PHI sent to cloud services, SaaS platforms, vendors, or
+  contractors not in BAA registry, new API integrations with patient data, or data
+  sharing agreements lacking HIPAA compliance provisions. BAA must be in place
+  BEFORE any PHI access by Business Associate. Vendors without BAAs cannot legally
+  receive or process PHI. Monitor for new vendor data flows and verify BAA coverage.
+type: esql
+params: '{}'
+schedule_interval: 12h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (network.direction == "outbound"
+       AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+       AND (log.original RLIKE "(?i).*(patient|phi|medical|health.*record).*"
+            OR url.path RLIKE "(?i).*/api/(patient|chart|clinical).*"))
+      OR
+      (event.action RLIKE "(?i).*(api.*call|webhook|integration|sync).*"
+       AND log.original RLIKE "(?i).*(patient.*data|phi|medical).*")
+    )
+  | WHERE NOT url.domain IN ("approved-baa-vendor1.com", "signed-ba2.health", "baa-vendor3.io")  // BAA registry
+  | STATS phi_sharing_events = COUNT(*),
+          vendors = VALUES(url.domain),
+          data_volume_mb = SUM(network.bytes) / 1048576,
+          api_endpoints = VALUES(url.path)
+    BY url.domain, host.name
+  | WHERE phi_sharing_events > 5
+  | EVAL risk_score = CASE(
+      data_volume_mb > 100, 100,
+      phi_sharing_events > 50, 95,
+      phi_sharing_events > 20, 90,
+      85
+    )
+  | KEEP url.domain, host.name, phi_sharing_events, data_volume_mb, vendors, api_endpoints, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - section_164_504_e
+  - business_associate
+  - baa
+  - vendor_management
+  - hitech_act
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.504(e) - Business Associate Contracts"
+  - "45 CFR §164.308(b)(1) - BA Contract Requirements"
+  - "HITECH Act §13404 - BA Liability"
+nist: ["SA-9"]
+gdpr: ["Article 28"]
+pci_dss: ["12.8"]
+hipaa: ["§164.308(b)","§164.504(e)"]
+mitre_attack:
+  TA0010:
+    T1567: ["T1567.002"]

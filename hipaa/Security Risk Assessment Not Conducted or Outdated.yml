@@ -1,0 +1,64 @@
+#//RULE-HIPAA-23 — Risk Analysis Not Performed or Outdated - §164.308(a)(1)(ii)(A)
+#//Requirement: HIPAA Security Rule §164.308(a)(1)(ii)(A) - Risk Analysis
+#//Objective: Detect lack of current security risk assessment
+#//Data sources: Risk assessment logs, security documentation logs
+#//ECS fields used: event.action, log.original, @timestamp, file.mtime
+#//Tuning notes: Track risk assessment completion dates; require annual updates
+
+name: "RULE-HIPAA-23: Security Risk Assessment Not Conducted or Outdated"
+description: |
+  Identifies absence of security risk assessment or risk analysis not performed
+  within required timeframe (annually recommended) as mandated by HIPAA §164.308(a)(1)(ii)(A).
+  Detects risk assessment documentation files older than 12 months, no documented
+  risk analysis for new systems/locations, or risk management program activity gaps.
+  Comprehensive risk analysis is foundational HIPAA requirement - OCR's #1 cited
+  violation. Monitor for risk assessment reports, vulnerability scan results, and
+  security assessment documentation. Failure to conduct risk analysis indicates
+  systemic compliance failure.
+type: esql
+params: '{}'
+schedule_interval: 7d
+index:
+  - logs-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, auditbeat-*
+  | WHERE (
+      file.path RLIKE "(?i).*(risk.*assessment|risk.*analysis|security.*assessment|hipaa.*risk|vulnerability.*assessment|164.*308).*"
+      OR event.action RLIKE "(?i).*(risk.*analysis|security.*assessment).*"
+    )
+  | STATS last_assessment = MAX(file.mtime),
+          assessment_age_days = (NOW() - MAX(file.mtime)) / 86400000,
+          assessment_files = VALUES(file.path),
+          assessors = VALUES(user.name)
+    BY host.name
+  | WHERE assessment_age_days > 365 OR last_assessment IS NULL
+  | EVAL risk_score = CASE(
+      assessment_age_days > 730, 100,  
+      assessment_age_days > 540, 95,   
+      assessment_age_days > 365, 90,
+      last_assessment IS NULL, 100,
+      85
+    )
+  | KEEP host.name, assessment_age_days, last_assessment, assessment_files, risk_score
+  | SORT assessment_age_days DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_308_a_1
+  - risk_analysis
+  - risk_management
+  - compliance
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.308(a)(1)(ii)(A) - Risk Analysis"
+  - "OCR Cybersecurity Newsletter - Risk Analysis"
+  - "NIST 800-30 - Risk Assessment Guide"
+nist: ["RA-3"]
+gdpr: ["Article 32(2)"]
+pci_dss: ["12.2"]
+hipaa: ["§164.308(a)(1)(ii)(A)"]
+mitre_attack: []

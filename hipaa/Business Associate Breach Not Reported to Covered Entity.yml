@@ -1,0 +1,65 @@
+#//RULE-HIPAA-32 — Business Associate Breach Not Reported to Covered Entity - §164.410
+#//Requirement: HIPAA Breach Notification §164.410 - BA Notification to CE
+#//Objective: Detect BA breaches not reported to covered entity
+#//Data sources: Business associate incident logs, vendor communication logs
+#//ECS fields used: event.action, log.original, @timestamp, url.domain
+#//Tuning notes: Monitor vendor systems; track BA breach notifications received
+
+name: "RULE-HIPAA-32: Business Associate Breach Not Reported to Covered Entity"
+description: |
+  Identifies breaches occurring at Business Associate (vendor, contractor, subcontractor)
+  organizations that have not been reported to the Covered Entity within HIPAA
+  §164.410 required timeframe (without unreasonable delay, no later than 60 days).
+  Detects security incidents at BA systems processing CE's PHI, vendor breach
+  notifications not received, or BA incident reports delayed beyond reasonable
+  period. BAs must notify CEs of breaches to enable CE's notification obligations
+  to individuals, HHS, and media. Monitor for BA incident disclosures and verify
+  timely reporting chain.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      // Vendor/BA system incidents
+      (url.domain RLIKE "(?i).*(vendor|partner|contractor|cloud|saas).*"
+       OR host.name RLIKE "(?i).*(vendor|ba|third.*party).*")
+      AND log.original RLIKE "(?i).*(breach|security.*incident|phi.*compromis|data.*breach).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(covered.*entity.*notif|ce.*report|customer.*alert|164.*410|breach.*report.*sent).*"
+  | STATS incident_age_days = (NOW() - MIN(@timestamp)) / 86400000,
+          ba_incidents = COUNT(*),
+          ba_names = VALUES(url.domain),
+          incident_details = VALUES(log.original),
+          discovery_date = MIN(@timestamp)
+    BY url.domain, host.name
+  | WHERE incident_age_days > 60
+  | EVAL risk_score = CASE(
+      incident_age_days > 120, 100,
+      ba_incidents > 3, 95,
+      90
+    )
+  | KEEP url.domain, host.name, ba_incidents, incident_age_days, discovery_date, incident_details, risk_score
+  | SORT incident_age_days DESC
+enabled: false
+tags:
+  - hipaa
+  - breach_notification
+  - section_164_410
+  - business_associate
+  - vendor_management
+  - breach_reporting
+severity: critical
+risk_score: 95
+references:
+  - "45 CFR §164.410 - Notification by Business Associate"
+  - "45 CFR §164.504(e)(2)(ii)(C) - BAA Breach Notification Clause"
+nist: ["IR-6"]
+gdpr: []
+pci_dss: ["12.8"]
+hipaa: ["§164.410"]
+mitre_attack: []

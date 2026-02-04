@@ -31,7 +31,6 @@ query: |
        AND event.category == "process"
        AND process.name IN ("net.exe", "sc.exe", "reg.exe", "wmic.exe", "powershell.exe"))
       OR
-      // Privileged user actions
       (event.category == "iam"
        AND user.name RLIKE "(?i).*(root|administrator|admin).*"
        AND event.action RLIKE "(?i).*(add|delete|modify|change).*")

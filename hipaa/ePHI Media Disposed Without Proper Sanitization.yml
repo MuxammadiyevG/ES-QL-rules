@@ -1,0 +1,68 @@
+#//RULE-HIPAA-22 — Media Disposal Without Sanitization - §164.310(d)(2)(i)
+#//Requirement: HIPAA Security Rule §164.310(d)(2)(i) - Disposal
+#//Objective: Detect improper disposal of media containing ePHI
+#//Data sources: Asset disposal logs, device retirement logs, sanitization logs
+#//ECS fields used: event.action, log.original, asset.type, event.category
+#//Tuning notes: Track asset lifecycle; verify wiping/destruction certificates
+
+name: "RULE-HIPAA-22: ePHI Media Disposed Without Proper Sanitization"
+description: |
+  Identifies disposal or retirement of hardware and media containing ePHI without
+  documented sanitization procedures as required by HIPAA §164.310(d)(2)(i). Detects
+  hard drives, servers, workstations, backup tapes, or mobile devices decommissioned
+  without wiping certificates, shredding documentation, or degaussing records.
+  Improper media disposal can lead to ePHI breaches when discarded devices are
+  accessed by unauthorized parties. Monitor asset disposal workflow and verify
+  NIST 800-88 compliant sanitization for all retired media.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(dispose|retire|decommission|discard|surplus).*"
+      AND log.original RLIKE "(?i).*(server|hard.*drive|laptop|workstation|tape|backup|storage|device|media).*"
+    )
+    AND (
+      log.original RLIKE "(?i).*(emr|ehr|phi|patient|medical|clinical).*"
+      OR host.name RLIKE "(?i).*(emr|ehr|clinical|patient).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(wipe|sanitize|shred|degauss|destroy|nist.*800.*88|certificate).*"
+  | STATS disposal_events = COUNT(*),
+          devices = VALUES(log.original),
+          asset_types = VALUES(asset.type),
+          first_disposal = MIN(@timestamp)
+    BY host.name
+  | WHERE disposal_events > 0
+  | EVAL risk_score = CASE(
+      devices RLIKE "(?i).*(server|storage|backup).*", 100,
+      disposal_events > 3, 95,
+      90
+    )
+  | KEEP host.name, disposal_events, devices, asset_types, first_disposal, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_310_d_2
+  - media_disposal
+  - sanitization
+  - data_destruction
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.310(d)(2)(i) - Disposal"
+  - "NIST SP 800-88 - Media Sanitization Guidelines"
+  - "OCR Guidance on Disposal of PHI"
+nist: ["MP-6"]
+gdpr: ["Article 32"]
+pci_dss: ["9.8"]
+hipaa: ["§164.310(d)(2)(i)"]
+mitre_attack:
+  TA0009:
+    T1005: []

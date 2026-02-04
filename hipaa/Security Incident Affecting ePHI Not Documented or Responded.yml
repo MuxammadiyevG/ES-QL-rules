@@ -1,0 +1,73 @@
+#//RULE-HIPAA-25 — Security Incident Not Logged or Reviewed - §164.308(a)(6)
+#//Requirement: HIPAA Security Rule §164.308(a)(6) - Security Incident Procedures
+#//Objective: Detect security incidents without proper documentation or response
+#//Data sources: SIEM logs, incident response system, security event logs
+#//ECS fields used: event.severity, event.category, event.action, @timestamp
+#//Tuning notes: Monitor high-severity security events; track incident response workflow
+
+name: "RULE-HIPAA-25: Security Incident Affecting ePHI Not Documented or Responded"
+description: |
+  Identifies security incidents affecting systems with ePHI that are not properly
+  identified, reported, documented, or responded to per HIPAA §164.308(a)(6) security
+  incident procedures. Detects high-severity security alerts (malware, unauthorized
+  access, data exfiltration) on ePHI systems without corresponding incident tickets,
+  security events not escalated to incident response team, or incidents closed
+  without investigation. HIPAA requires identifying and responding to suspected or
+  known security incidents. Monitor for security event to incident workflow gaps.
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+  - logs-*
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM logs-*, winlogbeat-*, auditbeat-*
+  | WHERE event.severity IN ("high", "critical")
+    AND event.category IN ("malware", "intrusion_detection", "authentication", "file")
+    AND (
+      host.name RLIKE "(?i).*(emr|ehr|phi|patient|clinical|medical).*"
+      OR log.original RLIKE "(?i).*(ephi|protected.*health|patient.*data).*"
+    )
+    AND (
+      event.action RLIKE "(?i).*(malware.*detect|unauthorized.*access|suspicious.*activity|breach|compromise).*"
+      OR log.original RLIKE "(?i).*(security.*incident|intrusion|attack|exploit).*"
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(incident.*ticket|case.*number|ir.*team|investigated|164.*308.*a.*6|security.*response).*"
+  | STATS undocumented_incidents = COUNT(*),
+          incident_types = VALUES(event.action),
+          affected_systems = VALUES(host.name),
+          first_incident = MIN(@timestamp),
+          last_incident = MAX(@timestamp)
+    BY host.name, event.action
+  | WHERE undocumented_incidents > 0
+  | EVAL hours_without_response = (NOW() - first_incident) / 3600000
+  | EVAL risk_score = CASE(
+      incident_types RLIKE "(?i).*(malware|breach|compromise).*", 100,
+      hours_without_response > 24, 95,
+      undocumented_incidents > 5, 90,
+      85
+    )
+  | KEEP host.name, event.action, undocumented_incidents, hours_without_response, incident_types, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_308_a_6
+  - security_incident
+  - incident_response
+  - ephi
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.308(a)(6) - Security Incident Procedures"
+  - "45 CFR §164.308(a)(6)(ii) - Response and Reporting"
+nist: ["IR-4"]
+gdpr: ["Article 33"]
+pci_dss: ["12.10"]
+hipaa: ["§164.308(a)(6)"]
+mitre_attack:
+  TA0005: 
+    T1562: []

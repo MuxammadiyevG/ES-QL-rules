@@ -1,0 +1,75 @@
+#//RULE-HIPAA-12 — PHI Disclosed Without Authorization - §164.502(a)
+#//Requirement: HIPAA Privacy Rule §164.502(a) - Uses and Disclosures
+#//Objective: Detect unauthorized PHI disclosures outside permitted exceptions
+#//Data sources: Email logs, file transfer logs, fax logs, API logs
+#//ECS fields used: email.to, destination.ip, file.path, event.action
+#//Tuning notes: Maintain authorized recipient list; monitor external disclosures
+
+name: "RULE-HIPAA-12: PHI Disclosed to Unauthorized External Party"
+description: |
+  Identifies disclosure of Protected Health Information to external parties without
+  patient authorization or HIPAA-permitted exception under §164.502(a). Detects
+  emails containing PHI sent to non-healthcare domains, file transfers of medical
+  records to unauthorized IPs, fax transmissions with patient data to unverified
+  numbers, or API data exports to third parties without Business Associate Agreements.
+  PHI disclosures require authorization except for treatment, payment, healthcare
+  operations, or specific regulatory exceptions. Monitor outbound PHI flows and
+  correlate with authorized disclosure registry.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (event.dataset RLIKE "(?i).*mail.*"
+       AND email.to NOT RLIKE "(?i).*(hospital|clinic|health|medical|physician|doctor|insurance|gov|medicare|medicaid)\\..*"
+       AND (email.subject RLIKE "(?i).*(patient|medical.*record|diagnosis|lab.*result|prescription|discharge.*summary).*"
+            OR email.body RLIKE "(?i).*(patient.*name|mrn|dob|ssn|diagnosis).*"))
+      OR
+      (event.action RLIKE "(?i).*(transfer|send|upload|export).*"
+       AND file.path RLIKE "(?i).*(patient|medical|phi|record|chart|ccda).*"
+       AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+      OR
+      (url.path RLIKE "(?i).*/api/(export|patient|records).*"
+       AND NOT destination.ip RLIKE ".*(authorized.*partner|baa.*vendor).*")
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(authorization|consent|baa|business.*associate|hipaa.*exception|tpo).*"
+  | STATS unauthorized_disclosures = COUNT(*),
+          recipients = VALUES(email.to),
+          destinations = VALUES(destination.ip),
+          data_types = VALUES(file.name),
+          users = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE unauthorized_disclosures > 0
+  | EVAL risk_score = CASE(
+      unauthorized_disclosures > 10, 100,
+      recipients NOT RLIKE "(?i).*(health|medical|clinic).*", 95,
+      unauthorized_disclosures > 3, 90,
+      85
+    )
+  | KEEP user.name, host.name, unauthorized_disclosures, recipients, destinations, data_types, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - section_164_502
+  - phi_disclosure
+  - unauthorized_access
+  - data_breach
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.502(a) - Uses and Disclosures of PHI"
+  - "45 CFR §164.508 - Uses/Disclosures Requiring Authorization"
+nist: ["AC-4"]
+gdpr: ["Article 6"]
+pci_dss: []
+hipaa: ["§164.502(a)"]
+mitre_attack:
+  TA0010:
+    T1048: ["T1048.003"]

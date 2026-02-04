@@ -1,0 +1,67 @@
+#//RULE-HIPAA-39 — Substance Abuse Treatment Records - 42 CFR Part 2 Violation
+#//Requirement: 42 CFR Part 2 - Confidentiality of Substance Use Disorder Records
+#//Objective: Detect unauthorized access to substance abuse treatment records
+#//Data sources: EHR audit logs, substance abuse program records
+#//ECS fields used: event.action, program.type, diagnosis.code, user.name
+#//Tuning notes: Identify Part 2 programs; require specific patient consent
+
+name: "RULE-HIPAA-39: Substance Abuse Treatment Record Accessed Without Consent (42 CFR Part 2)"
+description: |
+  Identifies access to substance use disorder treatment records protected under
+  42 CFR Part 2, which provides stricter confidentiality than HIPAA. Detects access
+  to federally-assisted substance abuse program records without patient consent,
+  SUD diagnosis disclosure (F10-F19 ICD-10 codes) to non-authorized parties, or
+  addiction treatment documentation shared without specific authorization. 42 CFR
+  Part 2 requires patient consent for nearly all disclosures, even to other healthcare
+  providers. Monitor Part 2 program access and verify consent documentation for
+  all disclosures.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+query_language: esql
+query: |
+  FROM logs-*
+  | WHERE event.action RLIKE "(?i).*(record.*access|disclosure|chart.*view).*"
+    AND (
+      program.type IN ("substance_abuse", "addiction_treatment", "opioid_treatment", "methadone_clinic")
+      OR log.original RLIKE "(?i).*(substance.*abuse|addiction|opioid.*treatment|methadone|buprenorphine|sud|42.*cfr.*part.*2).*"
+      OR diagnosis.code RLIKE ".*(F10|F11|F12|F13|F14|F15|F16|F17|F18|F19).*"  // SUD diagnosis codes
+    )
+  | WHERE NOT log.original RLIKE "(?i).*(patient.*consent|42.*cfr.*authorization|signed.*consent|part.*2.*consent).*"
+  | STATS part2_violations = COUNT(*),
+          accessing_users = VALUES(user.name),
+          programs = VALUES(program.type),
+          patients_affected = COUNT_DISTINCT(patient.id)
+    BY user.name, host.name
+  | WHERE part2_violations > 0
+  | EVAL risk_score = CASE(
+      part2_violations > 10, 100,
+      patients_affected > 5, 95,
+      90
+    )
+  | KEEP user.name, host.name, part2_violations, patients_affected, programs, risk_score
+  | SORT part2_violations DESC
+enabled: false
+tags:
+  - hipaa
+  - part_2
+  - 42_cfr_part_2
+  - substance_abuse
+  - sud
+  - addiction_treatment
+  - special_protection
+severity: critical
+risk_score: 100
+references:
+  - "42 CFR Part 2 - Confidentiality of SUD Records"
+  - "SAMHSA Part 2 Guidance"
+  - "45 CFR §164.502 - HIPAA Coordination"
+nist: ["AC-3"]
+gdpr: ["Article 9"]
+pci_dss: []
+hipaa: ["Coordinates with 42 CFR Part 2"]
+mitre_attack:
+  TA0009:
+    T1530: []

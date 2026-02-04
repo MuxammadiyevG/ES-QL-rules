@@ -1,0 +1,69 @@
+#//RULE-HIPAA-36 — VIP/Celebrity Patient Snooping - Unauthorized Access
+#//Requirement: HIPAA Privacy Rule §164.502(a) - Unauthorized Access
+#//Objective: Detect inappropriate access to high-profile patient records
+#//Data sources: EHR audit logs, VIP patient flagging system
+#//ECS fields used: event.action, user.name, log.original, patient.id
+#//Tuning notes: Flag VIP patients; monitor access patterns; require legitimate relationship
+
+name: "RULE-HIPAA-36: Unauthorized Access to VIP/Celebrity Patient Records"
+description: |
+  Identifies inappropriate access to medical records of VIP patients, celebrities,
+  public figures, or high-profile individuals without legitimate treatment relationship
+  or authorization. HIPAA §164.502(a) prohibits access without authorized purpose.
+  Detects chart opens of flagged VIP patients by staff not assigned to their care,
+  unusual access volumes to celebrity records, or access outside clinical departments.
+  "Snooping" on famous patients is common HIPAA violation. Monitor VIP patient
+  access patterns and correlate with care team assignments and clinical necessity.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+query_language: esql
+query: |
+  FROM logs-*
+  | WHERE event.action RLIKE "(?i).*(chart.*open|record.*access|patient.*view).*"
+    AND (
+      log.original RLIKE "(?i).*(vip.*patient|celebrity|public.*figure|confidential.*patient|restricted.*access).*"
+      OR patient.tags IN ["vip", "celebrity", "restricted"]
+    )
+  | WHERE NOT (
+      user.name RLIKE "(?i).*(assigned.*provider|care.*team|authorized.*clinician).*"
+      OR log.original RLIKE "(?i).*(treatment.*team|legitimate.*relationship).*"
+    )
+  | STATS unauthorized_access = COUNT(*),
+          accessing_users = VALUES(user.name),
+          user_departments = VALUES(user.department),
+          access_times = VALUES(@timestamp)
+    BY user.name, patient.id
+  | WHERE unauthorized_access > 0
+  | EVAL risk_score = CASE(
+      unauthorized_access > 5, 100,
+      user_departments NOT RLIKE "(?i).*(clinical|nursing|physician).*", 95,
+      unauthorized_access > 1, 90,
+      85
+    )
+  | KEEP user.name, patient.id, unauthorized_access, user_departments, accessing_users, risk_score
+  | SORT unauthorized_access DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - section_164_502
+  - unauthorized_access
+  - vip_patient
+  - snooping
+  - celebrity
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.502(a) - Uses and Disclosures - General Rules"
+  - "45 CFR §164.514(d) - Minimum Necessary"
+  - "OCR Resolution Agreements - Snooping Cases"
+nist: ["AC-3"]
+gdpr: ["Article 32"]
+pci_dss: []
+hipaa: ["§164.502(a)"]
+mitre_attack:
+  TA0009:
+    T1530: []

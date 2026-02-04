@@ -1,0 +1,69 @@
+#//RULE-HIPAA-19 — Unauthorized Physical Access to ePHI Areas - §164.310(a)(1)
+#//Requirement: HIPAA Security Rule §164.310(a)(1) - Facility Access Controls
+#//Objective: Detect unauthorized physical access to areas with ePHI systems
+#//Data sources: Physical access control logs, badge system logs
+#//ECS fields used: event.category, event.action, user.name, event.outcome
+#//Tuning notes: Monitor server rooms, data centers, medical records areas; track badge swipes
+
+name: "RULE-HIPAA-19: Unauthorized Physical Access to ePHI Facility Areas"
+description: |
+  Identifies unauthorized physical access attempts or successful unauthorized entry
+  to facility areas containing ePHI systems including server rooms, data centers,
+  medical records storage, workstation areas, and network equipment rooms. HIPAA
+  §164.310(a)(1) requires facility access controls to limit physical access to
+  ePHI. Detects failed badge swipes to restricted areas, door forced open alarms,
+  after-hours access by non-authorized personnel, or tailgating incidents. Physical
+  security breaches can lead to ePHI theft or system compromise.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE event.category == "physical_access"
+    AND (
+      event.outcome == "failure"
+      OR event.action RLIKE "(?i).*(door.*alarm|forced.*entry|tailgate|unauthorized).*"
+    )
+    AND (
+      log.original RLIKE "(?i).*(server.*room|data.*center|medical.*records|network.*closet|secure.*area|restricted).*"
+      OR event.dataset RLIKE "(?i).*(badge|access.*control|security.*system).*"
+    )
+  | STATS access_attempts = COUNT(*),
+          users = VALUES(user.name),
+          locations = VALUES(log.original),
+          first_attempt = MIN(@timestamp),
+          last_attempt = MAX(@timestamp)
+    BY user.name, event.dataset
+  | WHERE access_attempts > 2
+  | EVAL risk_score = CASE(
+      event.action RLIKE "(?i).*(forced|alarm|tailgate).*", 100,
+      access_attempts > 10, 95,
+      access_attempts > 5, 90,
+      85
+    )
+  | KEEP user.name, event.dataset, access_attempts, locations, first_attempt, last_attempt, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_310_a
+  - physical_security
+  - facility_access
+  - physical_access
+severity: high
+risk_score: 90
+references:
+  - "45 CFR §164.310(a)(1) - Facility Access Controls"
+  - "45 CFR §164.310(a)(2)(iii) - Access Control and Validation Procedures"
+nist: ["PE-3"]
+gdpr: ["Article 32"]
+pci_dss: ["9.1.1"]
+hipaa: ["§164.310(a)(1)"]
+mitre_attack:
+  TA0001:
+    T1200: []

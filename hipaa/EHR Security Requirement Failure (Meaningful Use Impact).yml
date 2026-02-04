@@ -1,0 +1,72 @@
+#//RULE-HIPAA-34 — EHR Meaningful Use Security Violation - HITECH Act
+#//Requirement: HITECH Act - EHR Meaningful Use Security Requirements
+#//Objective: Detect security violations impacting meaningful use attestation
+#//Data sources: EHR audit logs, meaningful use reporting logs
+#//ECS fields used: event.action, log.original, user.name
+#//Tuning notes: Monitor meaningful use criteria; track security objectives compliance
+
+name: "RULE-HIPAA-34: EHR Security Requirement Failure (Meaningful Use Impact)"
+description: |
+  Identifies failures in Electronic Health Record security requirements that impact
+  Meaningful Use attestation and HITECH Act incentive program eligibility. Detects
+  missing encryption on patient portals, audit log gaps in certified EHR systems,
+  patient electronic access requests not fulfilled, or secure messaging failures.
+  Meaningful Use requires protecting ePHI through encryption, audit controls, and
+  patient engagement capabilities. Security violations can result in loss of Medicare/
+  Medicaid incentive payments and attestation failures. Monitor EHR security
+  posture and meaningful use objective compliance.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      (url.path RLIKE "(?i).*/patient.*portal/.*"
+       AND network.protocol == "http"
+       AND destination.port == 80)
+      OR
+      (event.dataset RLIKE "(?i).*(epic|cerner|athena|allscripts).*"
+       AND log.original RLIKE "(?i).*(audit.*disabled|logging.*off|tracking.*disabled).*")
+      OR
+      (event.action RLIKE "(?i).*patient.*access.*request.*"
+       AND log.original RLIKE "(?i).*(denied|rejected|unfulfilled).*")
+      OR
+      (log.original RLIKE "(?i).*(secure.*message|direct.*message|hisp).*"
+       AND log.original RLIKE "(?i).*(fail|error|unencrypt).*")
+    )
+  | STATS mu_violations = COUNT(*),
+          violation_types = VALUES(event.action),
+          affected_systems = VALUES(host.name),
+          first_violation = MIN(@timestamp)
+    BY host.name
+  | WHERE mu_violations > 0
+  | EVAL risk_score = CASE(
+      violation_types RLIKE "(?i).*audit.*disabled.*", 100,
+      mu_violations > 10, 95,
+      90
+    )
+  | KEEP host.name, mu_violations, violation_types, affected_systems, first_violation, risk_score
+  | SORT mu_violations DESC
+enabled: false
+tags:
+  - hipaa
+  - hitech_act
+  - meaningful_use
+  - ehr
+  - certified_ehr
+  - incentive_program
+severity: high
+risk_score: 90
+references:
+  - "HITECH Act - Meaningful Use Requirements"
+  - "45 CFR §170.315 - Security Certification Criteria"
+  - "CMS EHR Incentive Programs"
+nist: ["SA-4"]
+gdpr: []
+pci_dss: []
+hipaa: ["§164.312"]
+mitre_attack: []

@@ -1,0 +1,63 @@
+#//RULE-HIPAA-15 — Patient Access Request Not Fulfilled - §164.524
+#//Requirement: HIPAA Privacy Rule §164.524 - Right of Access
+#//Objective: Detect patient medical record requests not fulfilled within 30 days
+#//Data sources: Patient portal logs, medical records request logs, ticketing systems
+#//ECS fields used: event.action, user.name, @timestamp, log.original
+#//Tuning notes: Track request lifecycle; monitor 30-day deadline compliance
+
+name: "RULE-HIPAA-15: Patient Access to Medical Records Request Overdue"
+description: |
+  Identifies patient requests for access to their medical records that have not
+  been fulfilled within the HIPAA §164.524 mandatory 30-day deadline (extendable
+  once by 30 days with written explanation). Detects open medical record requests
+  in patient portals, pending chart copy requests, or access requests stuck in
+  processing status beyond timeframe. Timely access to medical records is fundamental
+  patient right. Monitor request timestamps and status changes to ensure compliance
+  and avoid civil monetary penalties.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(medical.*record.*request|chart.*request|access.*request|record.*copy).*"
+      OR log.original RLIKE "(?i).*(patient.*portal.*request|designated.*record.*set|164.*524).*"
+    )
+    AND log.original RLIKE "(?i).*(pending|open|in.*progress|submitted).*"
+    AND log.original NOT RLIKE "(?i).*(completed|fulfilled|provided|delivered|closed).*"
+  | STATS request_age_days = (NOW() - MIN(@timestamp)) / 86400000,
+          request_status = VALUES(log.original),
+          first_request = MIN(@timestamp),
+          patient = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE request_age_days > 30
+  | EVAL risk_score = CASE(
+      request_age_days > 90, 100,  // >90 days = severe violation
+      request_age_days > 60, 95,   // Beyond extension period
+      request_age_days > 45, 85,
+      75
+    )
+  | KEEP user.name, host.name, request_age_days, first_request, request_status, risk_score
+  | SORT request_age_days DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - section_164_524
+  - patient_rights
+  - access_request
+  - medical_records
+severity: high
+risk_score: 90
+references:
+  - "45 CFR §164.524 - Access of Individuals to PHI"
+  - "45 CFR §164.524(b)(2) - 30-Day Timeframe"
+nist: ["IP-4"]
+gdpr: ["Article 15"]
+pci_dss: ["7.1"]
+hipaa: ["§164.524"]
+mitre_attack: []

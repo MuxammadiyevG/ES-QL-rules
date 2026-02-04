@@ -1,0 +1,68 @@
+#//RULE-HIPAA-37 — Psychotherapy Notes Access Without Special Authorization - §164.508(a)(2)
+#//Requirement: HIPAA Privacy Rule §164.508(a)(2) - Psychotherapy Notes
+#//Objective: Detect access to psychotherapy notes without patient authorization
+#//Data sources: EHR audit logs, mental health records access logs
+#//ECS fields used: event.action, log.original, user.name, record.type
+#//Tuning notes: Identify psychotherapy notes in EHR; require separate authorization
+
+name: "RULE-HIPAA-37: Psychotherapy Notes Accessed Without Patient Authorization"
+description: |
+  Identifies access to psychotherapy notes without specific patient authorization
+  as required by HIPAA §164.508(a)(2). Psychotherapy notes have heightened privacy
+  protection beyond general mental health records. Detects chart access to behavioral
+  health notes by non-treating providers, psychotherapy documentation viewed for
+  TPO purposes (not allowed), or mental health session notes accessed by administrative
+  staff. Psychotherapy notes require separate patient authorization even when other
+  PHI access is permitted. Monitor mental health record access and verify authorization
+  documentation.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-*
+query_language: esql
+query: |
+  FROM logs-*
+  | WHERE event.action RLIKE "(?i).*(record.*access|note.*view|document.*open).*"
+    AND (
+      log.original RLIKE "(?i).*(psychotherapy.*note|behavioral.*health.*note|mental.*health.*session|counseling.*note|therapy.*session).*"
+      OR record.type IN ("psychotherapy_notes", "therapy_notes", "mental_health_notes")
+    )
+  | WHERE NOT (
+      user.name RLIKE "(?i).*(treating.*therapist|counselor|psychiatrist|psychologist).*"
+      OR log.original RLIKE "(?i).*(patient.*authorization|164.*508.*authorization|signed.*consent).*"
+    )
+  | STATS unauthorized_access = COUNT(*),
+          accessing_users = VALUES(user.name),
+          user_roles = VALUES(user.role),
+          patients_affected = COUNT_DISTINCT(patient.id)
+    BY user.name, host.name
+  | WHERE unauthorized_access > 0
+  | EVAL risk_score = CASE(
+      patients_affected > 10, 100,
+      user_roles RLIKE "(?i).*(admin|billing|clerk).*", 95,
+      unauthorized_access > 5, 90,
+      85
+    )
+  | KEEP user.name, host.name, unauthorized_access, patients_affected, user_roles, risk_score
+  | SORT unauthorized_access DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - section_164_508
+  - psychotherapy_notes
+  - mental_health
+  - special_authorization
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.508(a)(2) - Psychotherapy Notes"
+  - "45 CFR §164.501 - Definitions (Psychotherapy Notes)"
+nist: ["AC-3"]
+gdpr: ["Article 9"]
+pci_dss: []
+hipaa: ["§164.508(a)(2)"]
+mitre_attack:
+  TA0009:
+    T1530: []

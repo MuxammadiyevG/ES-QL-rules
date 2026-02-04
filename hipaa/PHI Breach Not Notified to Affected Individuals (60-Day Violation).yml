@@ -1,0 +1,61 @@
+#//RULE-HIPAA-30 — Breach Notification to Individuals Not Sent - §164.404
+#//Requirement: HIPAA Breach Notification Rule §164.404 - Notification to Individuals
+#//Objective: Detect breaches not notified to affected individuals within 60 days
+#//Data sources: Breach notification logs, incident management logs, communication logs
+#//ECS fields used: event.action, @timestamp, log.original, email.to
+#//Tuning notes: Track breach confirmation to notification timeline; monitor 60-day deadline
+
+name: "RULE-HIPAA-30: PHI Breach Not Notified to Affected Individuals (60-Day Violation)"
+description: |
+  Identifies confirmed breaches of unsecured PHI where affected individuals have
+  not been notified within HIPAA §164.404 mandatory 60-day deadline. Detects breach
+  incidents in confirmed status without corresponding notification campaign records,
+  patient notification emails not sent, or breach disclosure letters not mailed.
+  Individual notification must be without unreasonable delay and no later than 60
+  days following breach discovery. Failure to notify timely violates patient rights
+  and triggers regulatory penalties. Monitor breach lifecycle and notification
+  execution.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      log.original RLIKE "(?i).*(breach.*confirmed|phi.*breach|security.*incident.*substantiated).*"
+      OR event.action RLIKE "(?i).*(breach.*discovery|incident.*confirmed).*"
+    )
+    AND log.original NOT RLIKE "(?i).*(individual.*notif|patient.*notif|letter.*sent|email.*campaign|164.*404|breach.*notice).*"
+  | STATS breach_age_days = (NOW() - MIN(@timestamp)) / 86400000,
+          breach_details = VALUES(log.original),
+          discovery_date = MIN(@timestamp)
+    BY host.name
+  | WHERE breach_age_days > 60
+  | EVAL risk_score = CASE(
+      breach_age_days > 120, 100,
+      breach_age_days > 90, 95,
+      90
+    )
+  | KEEP host.name, breach_age_days, discovery_date, breach_details, risk_score
+  | SORT breach_age_days DESC
+enabled: false
+tags:
+  - hipaa
+  - breach_notification
+  - section_164_404
+  - individual_notification
+  - patient_rights
+  - compliance
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.404 - Notification to Individuals"
+  - "45 CFR §164.404(b) - 60-Day Timeframe"
+nist: ["IR-6"]
+gdpr: ["Article 34"]
+pci_dss: []
+hipaa: ["§164.404"]
+mitre_attack: []

@@ -1,0 +1,68 @@
+#//RULE-HIPAA-35 — Patient Portal Downtime Exceeds Access Requirement - HITECH §13405(e)
+#//Requirement: HITECH Act §13405(e) - Patient Access to Health Information
+#//Objective: Detect excessive patient portal downtime impacting access rights
+#//Data sources: Patient portal availability logs, uptime monitoring logs
+#//ECS fields used: event.action, event.duration, @timestamp, http.response.status_code
+#//Tuning notes: Monitor portal availability; track downtime incidents; require 99% SLA
+
+name: "RULE-HIPAA-35: Patient Portal Extended Downtime (Access Violation)"
+description: |
+  Identifies Extended downtime or unavailability of patient portals providing
+  electronic access to health information, violating HITECH Act §13405(e) timely
+  access requirements. Detects patient portal HTTP 503/504 errors sustained for
+  hours, scheduled maintenance during business hours without patient notification,
+  or cumulative downtime exceeding acceptable thresholds (>1% monthly). Patients
+  must have timely electronic access to their health information. Excessive downtime
+  denies this right and may trigger ONC certification issues. Monitor portal SLA
+  and availability metrics.
+type: esql
+params: '{}'
+schedule_interval: 1h
+index:
+  - filebeat-nginx-access-*
+  - logs-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, logs-*
+  | WHERE url.path RLIKE "(?i).*/patient.*portal/.*"
+    AND (
+      http.response.status_code IN (503, 504, 500)
+      OR event.action RLIKE "(?i).*(service.*unavailable|gateway.*timeout|portal.*down).*"
+    )
+  | STATS downtime_events = COUNT(*),
+          error_codes = VALUES(http.response.status_code),
+          first_error = MIN(@timestamp),
+          last_error = MAX(@timestamp),
+          duration_hours = (MAX(@timestamp) - MIN(@timestamp)) / 3600000
+    BY host.name
+  | WHERE duration_hours > 2 OR downtime_events > 100
+  | EVAL risk_score = CASE(
+      duration_hours > 24, 100,  // >24h downtime
+      duration_hours > 12, 90,
+      duration_hours > 4, 80,
+      downtime_events > 500, 85,
+      70
+    )
+  | KEEP host.name, downtime_events, duration_hours, first_error, last_error, error_codes, risk_score
+  | SORT duration_hours DESC
+enabled: false
+tags:
+  - hipaa
+  - hitech_act
+  - section_13405_e
+  - patient_portal
+  - patient_access
+  - availability
+severity: high
+risk_score: 85
+references:
+  - "HITECH Act §13405(e) - Timely Access to Health Information"
+  - "45 CFR §164.524 - Access to PHI"
+  - "ONC Certification Requirements"
+nist: ["CP-2"]
+gdpr: ["Article 15"]
+pci_dss: ["12.8"]
+hipaa: ["§164.524"]
+mitre_attack:
+  TA0040:
+    T1499: []

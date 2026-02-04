@@ -1,0 +1,61 @@
+#//RULE-HIPAA-17 — Accounting of Disclosures Request Not Fulfilled - §164.528
+#//Requirement: HIPAA Privacy Rule §164.528 - Accounting of Disclosures
+#//Objective: Detect unfulfilled requests for disclosure accounting
+#//Data sources: Patient portal logs, disclosure tracking logs
+#//ECS fields used: event.action, user.name, @timestamp, log.original
+#//Tuning notes: Monitor disclosure accounting system; track 60-day response deadline
+
+name: "RULE-HIPAA-17: Accounting of PHI Disclosures Request Not Fulfilled"
+description: |
+  Identifies patient requests for accounting of PHI disclosures that have not been
+  fulfilled within HIPAA §164.528 60-day deadline (extendable once by 30 days with
+  written notice). Detects pending accounting requests, disclosure reports not
+  generated, or incomplete disclosure histories provided to patients. Patients have
+  right to receive list of PHI disclosures made in past 6 years (except for TPO,
+  to patient, pursuant to authorization, etc.). Monitor disclosure tracking system
+  and ensure timely, complete accounting provision.
+type: esql
+params: '{}'
+schedule_interval: 24h
+index:
+  - logs-*
+  - filebeat-*
+query_language: esql
+query: |
+  FROM logs-*, filebeat-*
+  | WHERE (
+      event.action RLIKE "(?i).*(accounting.*request|disclosure.*list|phi.*disclosure.*history).*"
+      OR log.original RLIKE "(?i).*(164.*528|accounting.*of.*disclosure).*"
+    )
+    AND log.original RLIKE "(?i).*(pending|processing|requested|open).*"
+    AND log.original NOT RLIKE "(?i).*(provided|completed|delivered|fulfilled).*"
+  | STATS request_age_days = (NOW() - MIN(@timestamp)) / 86400000,
+          request_info = VALUES(log.original),
+          first_request = MIN(@timestamp)
+    BY user.name, host.name
+  | WHERE request_age_days > 60
+  | EVAL risk_score = CASE(
+      request_age_days > 120, 90,
+      request_age_days > 90, 80,
+      70
+    )
+  | KEEP user.name, host.name, request_age_days, first_request, request_info, risk_score
+  | SORT request_age_days DESC
+enabled: false
+tags:
+  - hipaa
+  - privacy_rule
+  - section_164_528
+  - patient_rights
+  - accounting_of_disclosures
+  - disclosure_tracking
+severity: medium
+risk_score: 75
+references:
+  - "45 CFR §164.528 - Accounting of Disclosures"
+  - "45 CFR §164.528(b)(1) - 60-Day Timeframe"
+nist: ["IP-4"]
+gdpr: ["Article 15"]
+pci_dss: []
+hipaa: ["§164.528"]
+mitre_attack: []

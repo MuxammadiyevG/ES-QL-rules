@@ -1,0 +1,76 @@
+#//RULE-HIPAA-21 — Removable Media with ePHI Not Encrypted - §164.310(d)(1)
+#//Requirement: HIPAA Security Rule §164.310(d)(1) - Device and Media Controls
+#//Objective: Detect unencrypted ePHI on removable media
+#//Data sources: USB device logs, file transfer logs, endpoint protection logs
+#//ECS fields used: file.path, event.action, file.extension, device.type
+#//Tuning notes: Monitor USB insertions; scan for PHI patterns on removable drives
+
+name: "RULE-HIPAA-21: ePHI Copied to Unencrypted Removable Media"
+description: |
+  Identifies Protected Health Information copied to removable media (USB drives,
+  external hard drives, CDs, DVDs) without encryption, violating HIPAA §164.310(d)(1)
+  device and media controls. Detects large file transfers to removable drives,
+  patient data files on USB devices, database exports to external storage, or
+  medical images burned to unencrypted discs. Unencrypted portable media creates
+  high breach risk during loss or theft. Monitor removable device usage and enforce
+  encryption policies for all ePHI on portable media.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*, logs-*
+  | WHERE event.category == "file"
+    AND event.action IN ("created", "modified", "copied")
+    AND (
+      file.path RLIKE ".*[D-Z]:\\\\.*"  // Windows removable drives
+      OR file.path RLIKE ".*/media/.*"  // Linux removable media
+      OR device.type IN ("usb", "external_drive", "removable")
+    )
+    AND (
+      file.path RLIKE "(?i).*(patient|medical|phi|record|chart|dicom|hl7|ccda).*"
+      OR file.extension IN ("dcm", "hl7", "xml", "db", "sql", "csv")
+    )
+    AND file.path NOT RLIKE "(?i).*(encrypt|bitlocker|veracrypt|secure).*"
+  | WHERE file.size > 102400  // >100KB
+  | STATS file_transfers = COUNT(*),
+          total_size_mb = SUM(file.size) / 1048576,
+          files = VALUES(file.name),
+          devices = VALUES(device.type),
+          users = VALUES(user.name)
+    BY user.name, host.name
+  | WHERE file_transfers > 0
+  | EVAL risk_score = CASE(
+      total_size_mb > 100, 100,
+      file_transfers > 10, 95,
+      total_size_mb > 10, 90,
+      85
+    )
+  | KEEP user.name, host.name, file_transfers, total_size_mb, files, devices, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_310_d
+  - device_media_controls
+  - removable_media
+  - encryption
+  - data_loss_prevention
+severity: critical
+risk_score: 100
+references:
+  - "45 CFR §164.310(d)(1) - Device and Media Controls"
+  - "45 CFR §164.312(a)(2)(iv) - Encryption"
+  - "OCR Guidance on Removable Media"
+nist: ["MP-5"]
+gdpr: ["Article 32"]
+pci_dss: ["9.6"]
+hipaa: ["§164.310(d)(1)"]
+mitre_attack:
+  TA0010:
+    T1052: ["T1052.001"]

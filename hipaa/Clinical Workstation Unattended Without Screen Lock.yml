@@ -1,0 +1,62 @@
+#//RULE-HIPAA-20 — Workstation Left Unattended Without Screen Lock - §164.310(b), §164.310(c)
+#//Requirement: HIPAA Security Rule §164.310(b)(c) - Workstation Security
+#//Objective: Detect unattended workstations without automatic screen lock
+#//Data sources: Workstation logs, screen lock events, session logs
+#//ECS fields used: event.action, event.duration, user.name, host.name
+#//Tuning notes: Monitor idle time; enforce screen lock policies; track unlock events
+
+name: "RULE-HIPAA-20: Clinical Workstation Unattended Without Screen Lock"
+description: |
+  Identifies clinical workstations accessing ePHI that remain unlocked and unattended
+  for extended periods, violating HIPAA §164.310(b) workstation use and §164.310(c)
+  workstation security requirements. Detects workstations with active EHR sessions
+  idle >10 minutes without screen lock, shared nursing stations without automatic
+  lock, or mobile devices (laptops, tablets) without timeout settings. Unattended
+  workstations in clinical areas pose significant unauthorized access risk. Monitor
+  workstation idle time and lock status, especially in high-traffic areas.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - winlogbeat-*
+  - logs-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, logs-*
+  | WHERE (
+      host.name RLIKE "(?i).*(workstation|clinical|nurse.*station|exam.*room|ws).*"
+      OR process.name RLIKE "(?i).*(epic|cerner|meditech|emr|ehr).*"
+    )
+    AND event.action IN ("session_idle", "screen_active", "workstation_idle")
+    AND event.action NOT IN ("screen_locked", "session_locked")
+  | STATS idle_duration_min = MAX(event.duration) / 60000000,
+          last_activity = MAX(@timestamp),
+          sessions = VALUES(event.id)
+    BY user.name, host.name
+  | WHERE idle_duration_min > 10  // >10 min idle without lock
+  | EVAL risk_score = CASE(
+      idle_duration_min > 30, 90,
+      idle_duration_min > 20, 80,
+      70
+    )
+  | KEEP user.name, host.name, idle_duration_min, last_activity, sessions, risk_score
+  | SORT idle_duration_min DESC
+enabled: false
+tags:
+  - hipaa
+  - security_rule
+  - section_164_310_b
+  - section_164_310_c
+  - workstation_security
+  - screen_lock
+  - physical_security
+severity: medium
+risk_score: 75
+references:
+  - "45 CFR §164.310(b) - Workstation Use"
+  - "45 CFR §164.310(c) - Workstation Security"
+nist: ["AC-11"]
+gdpr: []
+pci_dss: ["8.1.8"]
+hipaa: ["§164.310(b)(c)"]
+mitre_attack: []
