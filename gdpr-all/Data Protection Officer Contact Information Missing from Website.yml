@@ -5,7 +5,7 @@
 #//ECS fields used: http.response.body, url.path, event.action
 #//Tuning notes: Monitor privacy policy pages; verify DPO contact accessibility
 
-name: "RULE-GDPR-40: Data Protection Officer Contact Information Missing from Website"
+name: "Data Protection Officer Contact Information Missing from Website"
 description: |
   Identifies websites or online services lacking publicly available Data Protection
   Officer contact information as required by GDPR Article 37(7). Detects privacy

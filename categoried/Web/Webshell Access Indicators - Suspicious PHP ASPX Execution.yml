@@ -1,0 +1,53 @@
+name: "Webshell Access Indicators - Suspicious PHP/ASPX Execution"
+description: |
+  This rule detects potential webshell access by identifying requests to suspicious file names commonly associated with webshells (shell.php, cmd.php, upload.php, r57.php, c99.php, webshell.aspx) or requests with webshell-like parameters (cmd=, exec=, command=). Webshells provide persistent remote access to compromised web servers.
+  
+#  Webshells are a critical post-exploitation tool that provides attackers with command execution capabilities on web servers. Detecting webshell access helps identify active compromise.
+#  
+#  False positives may occur with legitimate admin panels or management scripts named similarly. Focus on unusual file locations (uploads directory, temp folders) or external source IPs.
+#  
+#  Triage steps: (1) Identify the webshell file path and source IP, (2) Immediately isolate the web server from the network, (3) Review web server logs for initial compromise vector, (4) Remove the webshell file and perform full system scan.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for webshell indicators in request paths and parameters
+  | WHERE event.original RLIKE "(?i)(shell\\.php|cmd\\.php|upload\\.php|r57\\.php|c99\\.php|b374k|wso\\.php|webshell|backdoor\\.php|/uploads/.*\\.php|cmd=|exec=|command=|&cmd|\\?cmd)"
+  | STATS 
+      webshell_count = COUNT(*),
+      unique_paths = COUNT_DISTINCT(SUBSTRING(event.original, 0, 100)),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE webshell_count >= 1
+  | EVAL risk_score = CASE(
+      webshell_count >= 5, 98,
+      webshell_count >= 3, 95,
+      92
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Webshell
+  - Persistence
+  - Command Execution
+  - Post-Exploitation
+severity: critical
+risk_score: 95
+references:
+  - "https://attack.mitre.org/techniques/T1505/003/"
+  - "https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload"
+nist: ["AU-6", "SI-4"]
+gdpr: ["Article 32", "Article 33"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0003:
+    T1505: ["T1505.003"]

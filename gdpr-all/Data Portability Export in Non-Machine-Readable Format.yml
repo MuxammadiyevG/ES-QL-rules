@@ -5,7 +5,7 @@
 #//ECS fields used: file.extension, http.response.headers, event.action
 #//Tuning notes: Monitor export file formats; require structured data (JSON/CSV/XML)
 
-name: "RULE-GDPR-44: Data Portability Export in Non-Machine-Readable Format"
+name: "Data Portability Export in Non-Machine-Readable Format"
 description: |
   Identifies data portability exports provided in non-structured or non-machine-readable
   formats (PDF, images, plain text) instead of structured formats (JSON, CSV, XML)

@@ -5,7 +5,7 @@
 #//ECS fields used: file.path, file.extension, event.category
 #//Tuning notes: Scan for plaintext PII files; validate database encryption status
 
-name: "RULE-GDPR-03: Unencrypted Personal Data Storage Detected"
+name: "Unencrypted Personal Data Storage Detected"
 description: |
   Identifies files and databases storing personal data without encryption at rest,
   violating GDPR Article 32(1)(a) requirement for pseudonymisation and encryption.

@@ -5,7 +5,7 @@
 #//ECS fields used: event.severity, event.category, event.action, @timestamp
 #//Tuning notes: Monitor high-severity security events; track incident response workflow
 
-name: "RULE-HIPAA-25: Security Incident Affecting ePHI Not Documented or Responded"
+name: "Security Incident Affecting ePHI Not Documented or Responded"
 description: |
   Identifies security incidents affecting systems with ePHI that are not properly
   identified, reported, documented, or responded to per HIPAA §164.308(a)(6) security

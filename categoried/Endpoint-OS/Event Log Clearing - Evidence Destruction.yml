@@ -1,0 +1,53 @@
+name: "Event Log Clearing - Evidence Destruction"
+description: |
+  This rule detects attempts to clear Windows event logs using wevtutil, PowerShell Clear-EventLog, or Event Viewer API calls. Log clearing is a common defense evasion and anti-forensics technique used to hide attacker activity.
+  
+#  Event log clearing indicates active defense evasion and suggests an adversary is attempting to cover their tracks. This behavior often occurs after initial compromise or before exfiltration.
+#  
+#  False positives may occur with scheduled log rotation, system maintenance scripts, or administrative cleanup. Baseline normal log management activities.
+#  
+#  Triage steps: (1) Identify which logs were cleared and by whom, (2) Check if log clearing is part of scheduled maintenance, (3) Review backup logs or SIEM for activities prior to clearing, (4) Investigate the host for compromise indicators.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for log clearing indicators: Event ID 1102 or command line patterns
+  | WHERE winlog.event_id == "1102"
+         OR cmd RLIKE "(?i)(wevtutil.*cl|wevtutil.*clear-log|Clear-EventLog|Remove-EventLog)"
+  | STATS 
+      clear_count = COUNT(*),
+      logs_cleared = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE clear_count >= 1
+  | EVAL risk_score = CASE(
+      clear_count >= 5, 95,
+      clear_count >= 3, 90,
+      85
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Event Log
+  - Log Clearing
+  - Defense Evasion
+  - Anti-Forensics
+severity: critical
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1070/001/"
+nist: ["AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.5"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.001"]

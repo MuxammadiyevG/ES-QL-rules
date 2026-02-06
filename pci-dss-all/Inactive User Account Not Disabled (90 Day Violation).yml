@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, user.name, event.action, @timestamp
 #//Tuning notes: Track last login timestamps; alert on accounts with no activity in 90 days
 
-name: "RULE-PCI-26: Inactive User Account Not Disabled (90 Day Violation)"
+name: "Inactive User Account Not Disabled (90 Day Violation)"
 description: |
   Identifies enabled user accounts with no authentication activity for more than
   90 days. PCI DSS 8.1.4 requires removing or disabling inactive accounts within

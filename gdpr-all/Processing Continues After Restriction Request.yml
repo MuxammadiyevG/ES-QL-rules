@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, user.name, log.original
 #//Tuning notes: Track restriction markers; monitor processing after restriction
 
-name: "RULE-GDPR-43: Processing Continues After Restriction Request"
+name: "Processing Continues After Restriction Request"
 description: |
   Identifies continued processing of personal data after data subject requested
   restriction of processing under GDPR Article 18. Detects database queries,

@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, http.request.body, database.query, log.original
 #//Tuning notes: Monitor for health, biometric, genetic data; require explicit consent
 
-name: "RULE-GDPR-05: Special Category Personal Data Processed Without Safeguards"
+name: "Special Category Personal Data Processed Without Safeguards"
 description: |
   Identifies processing of special categories of personal data (health, biometric,
   genetic, racial/ethnic origin, political opinions, religious beliefs, sexual

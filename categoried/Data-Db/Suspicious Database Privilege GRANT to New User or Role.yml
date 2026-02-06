@@ -1,0 +1,53 @@
+name: "Suspicious Database Privilege GRANT to New User or Role"
+description: |
+  This rule detects suspicious GRANT statements in database command lines or event originals that assign elevated privileges (DBA, SYSDBA, ALTER, CREATE, DROP) to users or roles. Adversaries may escalate privileges to access sensitive data or maintain persistence.
+  
+#  Unauthorized privilege grants represent immediate privilege escalation and potential data breach risk. Monitoring GRANT operations is essential for access control integrity.
+#  
+#  False positives may occur during legitimate user onboarding or application deployments. Correlate with change management and HR systems.
+#  
+#  Triage steps: (1) Identify the user/role receiving privileges, (2) Verify if the GRANT is documented and approved, (3) Check if the granting user has authority to assign these privileges, (4) Revoke unauthorized grants immediately.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - winlogbeat-*
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, winlogbeat-*, metricbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for GRANT statements with elevated privileges
+  | WHERE cmd RLIKE "(?i)grant.*(dba|sysdba|all|alter|create|drop|execute|delete|insert|update|select).*to"
+  | STATS 
+      grant_count = COUNT(*),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE grant_count >= 1
+  | EVAL risk_score = CASE(
+      grant_count >= 5, 90,
+      grant_count >= 3, 80,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Database
+  - Privilege Escalation
+  - GRANT
+  - Persistence
+severity: high
+risk_score: 78
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+nist: ["AC-1", "AC-14", "AC-16", "AC-2", "AC-24", "AC-3", "AC-5", "AC-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["7.1"]
+mitre_attack:
+  TA0004:
+    T1098: ["T1098.003"]

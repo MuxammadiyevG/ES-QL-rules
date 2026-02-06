@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, event.duration, user.name, host.name
 #//Tuning notes: Monitor idle time; enforce screen lock policies; track unlock events
 
-name: "RULE-HIPAA-20: Clinical Workstation Unattended Without Screen Lock"
+name: "Clinical Workstation Unattended Without Screen Lock"
 description: |
   Identifies clinical workstations accessing ePHI that remain unlocked and unattended
   for extended periods, violating HIPAA §164.310(b) workstation use and §164.310(c)

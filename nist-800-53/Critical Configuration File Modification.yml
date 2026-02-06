@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, registry.path, file.path, user.name
 #//Tuning notes: Allowlist known configuration management tools (Ansible, Puppet), change windows
 
-name: "RULE-NIST-12: Critical Configuration File Modification"
+name: "Critical Configuration File Modification"
 description: |
   Detects unauthorized changes to critical system configuration files and registry keys.
   Modifications to security policy, firewall rules, or service configurations may indicate privilege escalation.

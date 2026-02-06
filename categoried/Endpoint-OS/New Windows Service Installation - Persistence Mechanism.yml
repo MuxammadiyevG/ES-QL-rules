@@ -1,0 +1,53 @@
+name: "New Windows Service Installation - Persistence Mechanism"
+description: |
+  This rule detects the creation of new Windows services using sc.exe create, New-Service PowerShell cmdlet, or Event ID 7045. Adversaries commonly install malicious services for persistence, privilege escalation, or to maintain access after reboot.
+  
+#  Service installation is a powerful persistence technique that survives system reboots. Monitoring new service creation helps detect malware attempting to establish long-term access.
+#  
+#  False positives are common with legitimate software installations, system updates, or IT deployments. Focus on unusual service names, executable paths in temp directories, or services installed by non-administrative users.
+#  
+#  Triage steps: (1) Identify the service name, executable path, and installing user, (2) Verify if the service is part of legitimate software installation, (3) Check the executable file for malware indicators, (4) Disable and delete unauthorized services immediately.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for service creation: Event ID 7045 or sc.exe/New-Service commands
+  | WHERE winlog.event_id == "7045"
+         OR cmd RLIKE "(?i)(sc\\.exe.*create|New-Service)"
+  | STATS 
+      service_count = COUNT(*),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE service_count >= 1
+  | EVAL risk_score = CASE(
+      service_count >= 3, 85,
+      service_count >= 2, 75,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Windows Service
+  - Persistence
+  - Privilege Escalation
+  - Service Installation
+severity: medium
+risk_score: 72
+references:
+  - "https://attack.mitre.org/techniques/T1543/003/"
+nist: ["IA-1", "IA-12", "IA-2", "IA-4", "IA-5", "IA-8", "PE-2", "PS-3", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0003:
+    T1543: ["T1543.003"]

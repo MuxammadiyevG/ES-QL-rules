@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, event.action, process.name, user.name, host.name
 #//Tuning notes: Allowlist known firewall admins; baseline scheduled review jobs
 
-name: "RULE-PCI-01: Unauthorized Firewall Configuration Change"
+name: "Unauthorized Firewall Configuration Change"
 description: |
   Detects modifications to firewall rules or configurations on Windows and Linux systems.
   PCI DSS requires formal approval and testing of all firewall changes (1.1.1) and periodic

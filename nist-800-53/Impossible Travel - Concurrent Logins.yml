@@ -6,7 +6,7 @@
 #//ECS fields used: event.outcome, user.name, source.ip, source.geo.location
 #//Tuning notes: Requires GeoIP enrichment, adjust time/distance threshold, allowlist VPN exit nodes
 
-name: "RULE-NIST-05: Impossible Travel - Concurrent Logins"
+name: "Impossible Travel - Concurrent Logins"
 description: |
   Detects successful logins from geographically distant locations within physically impossible timeframe.
   Indicates credential compromise when same user authenticates from locations >500km apart in <1 hour.

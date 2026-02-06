@@ -1,0 +1,58 @@
+name: "MFA Fatigue - Repeated Authentication Prompts with Eventual Success"
+description: |
+  This rule detects potential MFA fatigue attacks where an adversary repeatedly triggers authentication prompts (often denied by the user) followed by eventual success. Attackers exploit user frustration to gain unauthorized access by sending numerous push notifications until the user approves.
+#  
+#  This is important because MFA fatigue is a common initial access technique targeting human psychology rather than technical controls. A high volume of failed authentication attempts from the same source followed by success may indicate compromise.
+#  
+#  False positives may occur with legitimate users experiencing connectivity issues or mistyping credentials multiple times before success. Review the source IP geolocation, user context, and time of day.
+#  
+#  Triage steps: (1) Verify if the source IP is known/expected for this user, (2) Check if multiple authentication methods were attempted, (3) Correlate with help desk tickets, (4) Interview the user to confirm legitimate activity.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL usert = COALESCE(user.target.name, winlog.event_data.TargetUserName)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Focus on authentication events
+  | WHERE event.category == "authentication" OR winlog.event_id IN ("4624", "4625", "4648")
+  | EVAL outcome_normalized = COALESCE(event.outcome, "unknown")
+  | STATS 
+      total_attempts = COUNT(*),
+      failure_count = COUNT_DISTINCT(CASE(outcome_normalized == "failure", @timestamp, null)),
+      success_count = COUNT_DISTINCT(CASE(outcome_normalized == "success", @timestamp, null)),
+      sample_events = VALUES(SUBSTRING(event.original, 0, 160))
+    BY hostn, usert, srcip
+  // MFA fatigue: many failures followed by at least one success
+  | WHERE failure_count >= 8 AND success_count >= 1 AND total_attempts >= 10
+  | EVAL risk_score = CASE(
+      failure_count >= 15, 85,
+      failure_count >= 10, 70,
+      60
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Authentication
+  - MFA Fatigue
+  - Initial Access
+  - Credential Access
+severity: high
+risk_score: 75
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+  - "https://www.microsoft.com/en-us/security/blog/2022/11/16/token-tactics-how-to-prevent-detect-and-respond-to-cloud-token-theft/"
+nist: ["AC-14", "IA-1", "IA-10", "IA-11", "IA-2", "IA-3", "IA-5", "IA-8", "IA-9", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["8.2"]
+mitre_attack:
+  TA0001:
+    T1078: ["T1078.004"]

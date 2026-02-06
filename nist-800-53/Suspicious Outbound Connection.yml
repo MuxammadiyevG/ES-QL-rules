@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, destination.ip, destination.port, network.protocol, process.name
 #//Tuning notes: Requires geo-IP enrichment, allowlist known cloud services, CDN providers
 #
-name: "RULE-NIST-17: Suspicious Outbound Connection"
+name: "Suspicious Outbound Connection"
 description: |
   Detects outbound network connections to unusual destinations or ports from unexpected processes.
   Connections to non-standard ports (>10000), Tor exit nodes, or from system processes indicate compromise.

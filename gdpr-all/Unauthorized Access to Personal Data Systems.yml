@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, user.name, event.outcome, source.ip
 #//Tuning notes: Monitor unauthorized access attempts; track privilege escalation
 
-name: "RULE-GDPR-10: Unauthorized Access to Personal Data Systems"
+name: "Unauthorized Access to Personal Data Systems"
 description: |
   Identifies unauthorized access attempts or successful unauthorized access to
   systems processing personal data, violating GDPR Article 32(1)(b) requirement
@@ -21,31 +21,58 @@ index:
   - auditbeat-*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
-  | WHERE event.category == "authentication"
-    AND (
-      (event.outcome == "failure"
-       AND destination.ip RLIKE ".*(10\\.200\\.|192\\.168\\.50\\.).*")  // CDE/PII systems (customize)
-      OR
-      (event.outcome == "success"
-       AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
-       AND user.name NOT IN ("vpn_user", "remote_admin"))
-    )
-  | STATS access_attempts = COUNT(*),
-          success_count = COUNT_IF(event.outcome == "success"),
-          failure_count = COUNT_IF(event.outcome == "failure"),
-          sources = VALUES(source.ip),
-          users = VALUES(user.name)
-    BY source.ip, user.name
-  | WHERE access_attempts > 5
-  | EVAL risk_score = CASE(
-      success_count > 0 AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"), 100,
-      failure_count > 20, 90,
-      success_count > 0, 85,
-      75
-    )
-  | KEEP source.ip, user.name, access_attempts, success_count, failure_count, sources, risk_score
-  | SORT risk_score DESC
+    // Oxirgi 5 daqiqa
+    FROM winlogbeat-*, auditbeat-*
+    | WHERE @timestamp >= NOW() - 5 minutes
+  
+    // Authentication eventlar
+    | WHERE event.category == "authentication"
+  
+    // source.ip bo‘lmasa korelyatsiya qiyin
+    | WHERE source.ip IS NOT NULL
+  
+    // "Sensitive system"ni ECS-only holatda host naming/dataset orqali taxmin qilamiz:
+    // (masalan hr/crm/pii/payroll/customer kabi hostlar)
+    | WHERE host.name RLIKE "(?i).*(hr|crm|payroll|customer|profile|pii|identity|idm|db|sql).*"
+  
+    // Failure va Success flag
+    | EVAL is_success = CASE(event.outcome == "success", 1, 0)
+    | EVAL is_failure = CASE(event.outcome == "failure", 1, 0)
+  
+    // Public IP success flag (RFC1918 emas)
+    | EVAL success_from_public = CASE(
+        event.outcome == "success"
+        AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"),
+        1, 0
+      )
+  
+    // IP+user bo‘yicha agregatsiya (credential stuffing/bruteforce uchun juda yaxshi)
+    | STATS
+        attempts = COUNT(*),
+        success_count = SUM(is_success),
+        failure_count = SUM(is_failure),
+        public_success = SUM(success_from_public),
+        hosts = VALUES(host.name),
+        actions = VALUES(event.action)
+      BY user.name, source.ip
+  
+    // Trigger:
+    // 1) 5 daqiqada 8+ urinish va kamida 1 ta success => bruteforce + success
+    // 2) Public IP dan success bo‘lsa va urinishlar ko‘p bo‘lsa
+    | WHERE (attempts >= 8 AND success_count >= 1)
+        OR (public_success >= 1 AND attempts >= 3)
+        OR (failure_count >= 15)
+  
+    | EVAL risk_score = CASE(
+        public_success >= 1 AND success_count >= 1, 100,
+        success_count >= 1 AND failure_count >= 10, 95,
+        failure_count >= 25, 90,
+        success_count >= 1, 85,
+        75
+      )
+  
+    | KEEP user.name, source.ip, attempts, success_count, failure_count, public_success, hosts, actions, risk_score
+    | SORT risk_score DESC
 enabled: false
 tags:
   - gdpr

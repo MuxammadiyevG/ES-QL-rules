@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, user.name
 #//Tuning notes: Monitor new account defaults; verify privacy-by-default settings
 
-name: "RULE-GDPR-09: Privacy-by-Default Violation (Excessive Default Permissions)"
+name: "Privacy-by-Default Violation (Excessive Default Permissions)"
 description: |
   Identifies systems where new user accounts default to maximum data sharing,
   public profiles, or broad marketing consents, violating GDPR Article 25(2)

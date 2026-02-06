@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, network.protocol, destination.port, host.name
 #//Tuning notes: Allowlist known SSIDs/BSSIDs; requires wireless scanning tools
 
-name: "RULE-PCI-02: Rogue Wireless Access Point Detected"
+name: "Rogue Wireless Access Point Detected"
 description: |
   Identifies potential unauthorized wireless access points by detecting DHCP server
   activity on unexpected interfaces or wireless-related processes starting without

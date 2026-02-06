@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, network.protocol, source.ip, destination.port, user.name
 #//Tuning notes: Adjust threshold for VPN vs direct RDP, allowlist known jump hosts
 
-name: "RULE-NIST-04: Remote Access Brute Force Detection"
+name: "Remote Access Brute Force Detection"
 description: |
   Detects brute force attacks against RDP (port 3389) and SSH (port 22) services.
   Multiple failed authentication attempts from single source indicate automated credential stuffing.

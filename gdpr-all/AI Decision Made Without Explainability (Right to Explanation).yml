@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, http.request.body
 #//Tuning notes: Monitor explanation API availability; verify SHAP/LIME integration
 
-name: "RULE-GDPR-32: AI Decision Made Without Explainability (Right to Explanation)"
+name: "AI Decision Made Without Explainability (Right to Explanation)"
 description: |
   Identifies AI/ML model predictions or decisions affecting users without available
   explanation or meaningful information about the logic involved, violating GDPR
@@ -22,26 +22,73 @@ index:
   - filebeat-*
 query_language: esql
 query: |
+  // So‘nggi 30 daqiqa ichidagi loglarni olamiz
   FROM filebeat-*
-  | WHERE event.category == "web"
-    AND url.path RLIKE "(?i).*/api/(predict|score|decision|recommend).*"
-    AND http.response.status_code == 200
-  | WHERE NOT (
-      log.original RLIKE "(?i).*(shap|lime|explanation|feature.*importance|interpret).*"
-      OR url.path RLIKE "(?i).*/explain.*"
+  | WHERE @timestamp >= NOW() - 30 minutes
+
+  // Faqat web / network eventlar
+  | WHERE event.category IN ("web", "network")
+
+  // HTTP so‘rovlar
+  | WHERE http.request.method IN ("GET", "POST")
+
+  // trace.id bo‘lmasa korrelyatsiya qilib bo‘lmaydi
+  | WHERE trace.id IS NOT NULL
+
+  // Predict va Explain endpointlarini birga olamiz
+  | WHERE (
+      url.path RLIKE "(?i).*/api/(predict|score|decision|recommend).*"
+      OR url.path RLIKE "(?i).*/api/(explain|interpret|reason|feature-importance).*"
     )
-  | STATS opaque_decisions = COUNT(*),
-          api_endpoints = VALUES(url.path),
-          affected_users = COUNT_DISTINCT(user.name),
-          models = VALUES(log.original)
-    BY url.path, host.name
-  | WHERE opaque_decisions > 10
+
+  // Predict endpoint flag
+  | EVAL is_predict = CASE(
+      url.path RLIKE "(?i).*/api/(predict|score|decision|recommend).*", 1,
+      0
+    )
+
+  // Explain endpoint flag
+  | EVAL is_explain = CASE(
+      url.path RLIKE "(?i).*/api/(explain|interpret|reason|feature-importance).*", 1,
+      0
+    )
+
+  // trace.id bo‘yicha predict va explain sonini hisoblaymiz
+  | STATS
+      predict_count = SUM(is_predict),
+      explain_count = SUM(is_explain),
+      predict_paths = VALUES(CASE(is_predict == 1, url.path, NULL)),
+      explain_paths = VALUES(CASE(is_explain == 1, url.path, NULL)),
+      affected_users = COUNT_DISTINCT(user.id),
+      source_ips = COUNT_DISTINCT(source.ip),
+      hosts = VALUES(host.name)
+    BY trace.id
+
+  // Agar predict bor, lekin explain umuman bo‘lmasa — MUAMMO
+  | WHERE predict_count >= 1 AND explain_count == 0
+
+  // Endi buni host darajasida jamlaymiz (real anomaliya uchun)
+  | STATS
+      opaque_decisions = SUM(predict_count),
+      affected_traces = COUNT(*),
+      affected_users = SUM(affected_users),
+      source_ips = SUM(source_ips),
+      predict_endpoints = VALUES(predict_paths)
+    BY hosts
+
+  // Threshold — yakka holat emas, tizimli muammo bo‘lishi kerak
+  | WHERE opaque_decisions >= 20 OR affected_traces >= 10
+
+  // Risk score hisoblash
   | EVAL risk_score = CASE(
-      api_endpoints RLIKE "(?i).*(credit|loan|hiring|insurance).*", 100,
-      opaque_decisions > 100, 90,
+      opaque_decisions >= 200, 95,
+      opaque_decisions >= 100, 90,
+      affected_traces >= 50, 90,
       80
     )
-  | KEEP url.path, host.name, opaque_decisions, affected_users, api_endpoints, risk_score
+
+  // Faqat kerakli fieldlarni chiqaramiz
+  | KEEP hosts, opaque_decisions, affected_traces, affected_users, source_ips, predict_endpoints, risk_score
   | SORT opaque_decisions DESC
 enabled: false
 tags:

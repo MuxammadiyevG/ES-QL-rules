@@ -1,0 +1,72 @@
+name: "Server-Side Request Forgery (SSRF) Metadata Probing"
+description: |
+  This rule detects SSRF attacks targeting cloud metadata services (AWS, Azure, GCP) and internal IP ranges. Attackers exploit SSRF to access instance metadata endpoints (169.254.169.254, metadata.google.internal) to steal credentials, enumerate infrastructure, or pivot to internal services. The rule triggers when 3+ requests to metadata endpoints or internal IPs are detected within 10 minutes from a single source.
+
+#**Why it matters:**
+#SSRF can lead to credential theft, data exfiltration, and cloud infrastructure compromise:
+#- OWASP Top 10 #10 (SSRF) - enables access to internal resources and cloud credentials
+#- NIST SP 800-53 SC-7 requires boundary protection against unauthorized network access
+#- Cloud security best practices mandate blocking metadata endpoint access from applications#
+#**False Positives:**
+#- Legitimate cloud services or SDKs accessing metadata for configuration
+#- Monitoring tools querying instance metadata for inventory or tagging
+#- Container orchestration systems (Kubernetes, ECS) accessing metadata
+#- Cloud-init or startup scripts performing legitimate metadata queries#
+#**Triage Steps:**
+#1. Identify the application or service making the SSRF request
+#2. Check if metadata access is required for legitimate functionality
+#3. Review what data was accessed from metadata endpoints
+#4. Verify if any credentials or tokens were exposed
+#5. Implement SSRF protections: allowlists, DNS rebinding prevention, metadata endpoint blocking
+#6. Rotate any exposed credentials or IAM roles
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - filebeat-nginx-access-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*
+  // Time window: last 10 minutes
+  | WHERE @timestamp >= NOW() - 10 minutes
+  // Extract request data
+  | EVAL srcip = COALESCE(source.ip, "")
+  | EVAL uri = event.original
+  | WHERE srcip IS NOT NULL AND uri IS NOT NULL
+  // SSRF pattern detection: cloud metadata endpoints and internal IPs
+  | WHERE uri RLIKE ".*(169\\.254\\.169\\.254|metadata\\.google\\.internal|metadata\\.azure|fd00:ec2::254|localhost|127\\.0\\.0\\.|0\\.0\\.0\\.0|10\\.|172\\.1[6-9]\\.|172\\.2[0-9]\\.|172\\.3[0-1]\\.|192\\.168\\.).*"
+  // Aggregate by source IP
+  | STATS 
+      request_count = COUNT(*),
+      unique_targets = COUNT_DISTINCT(SUBSTRING(uri, 0, 160)),
+      sample_requests = VALUES(SUBSTRING(uri, 0, 160))
+    BY srcip
+  // Threshold: 3+ SSRF probing attempts
+  | WHERE unique_targets >= 3
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      request_count >= 20, 95,
+      request_count >= 10, 85,
+      75
+    )
+  | KEEP srcip, request_count, unique_targets, risk_score, sample_requests
+enabled: false
+tags:
+  - Web Security
+  - SSRF
+  - OWASP
+  - Cloud Security
+  - Metadata Access
+severity: high
+risk_score: 80
+references:
+  - "https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"
+  - "https://attack.mitre.org/techniques/T1071/"
+nist: ["SC-7", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5.10", "11.4"]
+mitre_attack:
+  TA0001:
+    T1190: []
+  TA0011:
+    T1071: ["T1071.001"]

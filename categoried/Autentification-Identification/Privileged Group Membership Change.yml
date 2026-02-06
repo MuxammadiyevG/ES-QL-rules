@@ -1,0 +1,77 @@
+name: "Privileged Group Membership Change"
+description: |
+  This rule monitors for additions to high-privilege Windows security groups including Domain Admins, Enterprise Admins, Administrators, Schema Admins, and other sensitive groups. It triggers when Event ID 4728/4732/4756 (group membership addition) occurs for these critical groups. Any modification to privileged groups represents a significant security event that requires immediate investigation.
+
+#**Why it matters:**
+#Unauthorized privilege escalation is a primary attack objective:
+#- NIST SP 800-53 AC-2 requires monitoring of privileged account creation and modification
+#- PCI DSS 7.1/7.2 mandates strict control and logging of privileged access changes
+#- GDPR Article 32 requires protection mechanisms against unauthorized privilege elevation#
+#**False Positives:**
+#- Legitimate administrative actions during onboarding or role changes
+#- Scheduled group policy updates or automation scripts with proper authorization
+#- IT service accounts performing routine directory maintenance
+#- Disaster recovery or incident response activities#
+#**Triage Steps:**
+#1. Identify who performed the modification (SubjectUserName) and verify authorization
+#2. Identify who was added to the group (TargetUserName) and their role
+#3. Check if the change was made through a change management ticket
+#4. Review recent activity from both the modifier and the newly privileged account
+#5. Verify no other suspicious group modifications occurred in the same timeframe
+#6. If unauthorized, immediately revoke the privilege and investigate compromise scope
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  // Time window: last 5 minutes
+  | WHERE @timestamp >= NOW() - 5 minutes
+  // Group membership changes (Add to Group events)
+  | WHERE event.code IN ("4728", "4732", "4756") 
+  // Extract group name from event data
+  | EVAL group_name = winlog.event_data.TargetUserName
+  // Filter for privileged groups
+  | WHERE group_name RLIKE ".*(Domain Admins|Enterprise Admins|Schema Admins|Administrators|Backup Operators|Account Operators|Server Operators|Print Operators|DnsAdmins).*"
+  // Extract who made the change and who was added
+  | EVAL modifier = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL added_user = winlog.event_data.MemberName
+  | EVAL hostname = COALESCE(host.name, winlog.computer_name)
+  | WHERE modifier IS NOT NULL AND added_user IS NOT NULL
+  // Aggregate and score
+  | STATS 
+      change_count = COUNT(*),
+      affected_groups = VALUES(group_name),
+      added_users = VALUES(added_user),
+      first_seen = MIN(@timestamp)
+    BY modifier, hostname
+  // Any privileged group change is high risk
+  | WHERE change_count >= 1
+  // Risk scoring based on frequency
+  | EVAL risk_score = CASE(
+      change_count >= 5, 95,
+      change_count >= 3, 85,
+      80
+    )
+  | KEEP modifier, hostname, change_count, affected_groups, added_users, first_seen, risk_score
+enabled: false
+tags:
+  - Privilege Escalation
+  - Active Directory
+  - Group Membership
+  - Persistence
+severity: critical
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+  - "https://docs.microsoft.com/windows/security/threat-protection/auditing/event-4728"
+nist: ["AC-2", "AC-6", "AU-2"]
+gdpr: ["Article 32"]
+pci_dss: ["7.1", "7.2", "10.2.5"]
+mitre_attack:
+  TA0004:
+    T1098: []
+  TA0003:
+    T1078: ["T1078.002"]

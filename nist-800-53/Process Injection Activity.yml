@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, process.name, process.target, winlog.event_data.GrantedAccess
 #//Tuning notes: Requires Sysmon, allowlist legitimate debugging tools, baseline normal process relationships
 
-name: "RULE-NIST-35: Process Injection Activity"
+name: "Process Injection Activity"
 description: |
   Detects process injection patterns where one process opens another with suspicious access rights.
   Access rights 0x1F0FFF, 0x1FFFFF indicate full process control for code injection.

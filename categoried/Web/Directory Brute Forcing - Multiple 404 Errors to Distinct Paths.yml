@@ -1,0 +1,55 @@
+
+name: "Directory Brute Forcing - Multiple 404 Errors to Distinct Paths"
+description: |
+  This rule detects directory and file brute forcing attempts by identifying a high volume of HTTP 404 (Not Found) errors from the same source IP targeting many distinct paths. This pattern indicates automated scanning tools probing for hidden directories or files.
+  
+#  Directory brute forcing is a reconnaissance technique used to discover hidden admin panels, backup files, or vulnerable endpoints. Detecting this activity helps identify attackers mapping your web application.
+#  
+#  False positives may occur with broken links, web crawlers, or misconfigured applications. Focus on high volumes of 404s with sequential or dictionary-based path patterns.
+#  
+#  Triage steps: (1) Identify the source IP and check for known scanner signatures, (2) Review the requested paths for patterns (wordlists, sequential scanning), (3) Check if any requests succeeded (200 response) after the scanning, (4) Block the source IP and review application for exposed sensitive paths.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Heuristic: look for 404 status codes in event.original
+  | WHERE event.original RLIKE "(?i)(\\s404\\s|status.*404|not.*found)"
+  | STATS 
+      not_found_count = COUNT(*),
+      unique_paths = COUNT_DISTINCT(SUBSTRING(event.original, 0, 100)),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  // Threshold: 20+ 404s to many different paths suggests scanning
+  | WHERE not_found_count >= 20 AND unique_paths >= 15
+  | EVAL risk_score = CASE(
+      not_found_count >= 50, 90,
+      not_found_count >= 30, 80,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Directory Brute Force
+  - HTTP 404
+  - Reconnaissance
+  - Web Scanning
+severity: high
+risk_score: 75
+references:
+  - "https://attack.mitre.org/techniques/T1083/"
+  - "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/07-Test_File_Extensions_Handling_for_Sensitive_Information"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0007:
+    T1083: []

@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, event.outcome, user.name, source.ip
 #//Tuning notes: Aggregate failed auth/access across all systems; threshold 5-10 failures
 
-name: "RULE-PCI-34: Excessive Invalid Logical Access Attempts"
+name: "Excessive Invalid Logical Access Attempts"
 description: |
   Detects multiple invalid logical access attempts across systems, indicating
   potential credential guessing, authorization bypass attempts, or reconnaissance.

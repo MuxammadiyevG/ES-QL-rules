@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, user.name, event.outcome, @timestamp
 #//Tuning notes: Integrate with HR system; maintain terminated user list; alert on post-termination logins
 
-name: "RULE-PCI-27: Authentication by Terminated User Account"
+name: "Authentication by Terminated User Account"
 description: |
   Detects successful authentication using accounts belonging to terminated employees.
   PCI DSS 8.1.3 requires immediate revocation of access for terminated users.

@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, destination.ip
 #//Tuning notes: Identify joint processing scenarios; verify Article 26 agreements
 
-name: "RULE-GDPR-48: Joint Data Processing Without Controller Agreement"
+name: "Joint Data Processing Without Controller Agreement"
 description: |
   Identifies scenarios where multiple entities jointly determine purposes and means
   of processing (joint controllers) without documented Article 26 agreement defining

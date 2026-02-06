@@ -4,7 +4,7 @@
 #//ECS fields used: event.category, http.request.body, database.query, url.query
 #//Tuning notes: Define minimal dataset per purpose; monitor over-collection patterns
 
-name: "RULE-GDPR-01: Excessive Personal Data Collection Detected"
+name: "Excessive Personal Data Collection Detected"
 description: |
   Identifies collection of personal data fields that exceed the minimum necessary
   for the stated processing purpose, violating GDPR Article 5(1)(c) data minimization

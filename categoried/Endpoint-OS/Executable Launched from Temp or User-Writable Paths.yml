@@ -1,0 +1,77 @@
+name: "Executable Launched from Temp or User-Writable Paths"
+description: |
+  This rule detects process execution from temporary or user-writable directories such as C:\Users\*\AppData\Local\Temp, C:\Windows\Temp, /tmp, /var/tmp, and Downloads folders. Attackers frequently stage malware in these locations because they don't require administrative privileges and are often excluded from application whitelisting. The rule triggers when 5+ processes are executed from these paths on a single host within 30 minutes.
+
+#  **Why it matters:**
+#  Temp directory execution is a common malware staging technique:
+#  - MITRE ATT&CK T1204/T1059 document user execution and scripting in temp locations
+#  - NIST SP 800-53 SI-3 requires malware protection including monitoring of suspicious execution locations
+#  - Temp folders are prime targets for initial access and persistence establishment
+#
+#  **False Positives:**
+#  - Legitimate installers unpacking to temp directories before execution
+#  - Software updates downloading to AppData\Local\Temp before installation
+#  - Browser-launched executables or plugins from Downloads folder
+#  - Build processes or development tools creating temporary executables
+#
+#  **Triage Steps:**
+#  1. Identify the executable name and hash - check VirusTotal or threat intelligence
+#  2. Review process command line for suspicious arguments or obfuscation
+#  3. Check parent process - was it spawned by Office, browser, or user action?
+#  4. Verify if the executable made network connections post-launch
+#  5. Investigate file creation, registry modification, or scheduled task creation
+#  6. Quarantine the host and perform full malware scan if indicators suggest compromise
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  // Time window: last 30 minutes
+  | WHERE @timestamp >= NOW() - 30 minutes
+  // Process creation events
+  | WHERE event.code == "4688" OR event.code == "1" OR event.action == "exec"
+  // Extract executable path
+  | EVAL exepath = COALESCE(process.executable, winlog.event_data.NewProcessName, process.command_line)
+  | EVAL hostname = COALESCE(host.name, winlog.computer_name)
+  | EVAL username = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | WHERE exepath IS NOT NULL AND hostname IS NOT NULL
+  // Temp/user-writable path detection
+  | WHERE exepath RLIKE ".*(\\\\AppData\\\\Local\\\\Temp\\\\|\\\\AppData\\\\Roaming\\\\|\\\\Windows\\\\Temp\\\\|\\\\Users\\\\.*\\\\Downloads\\\\|/tmp/|/var/tmp/|/dev/shm/).*"
+  // Aggregate by host
+  | STATS 
+      exec_count = COUNT(*),
+      unique_exes = COUNT_DISTINCT(exepath),
+      users = COUNT_DISTINCT(username),
+      sample_paths = VALUES(SUBSTRING(exepath, 0, 150))
+    BY hostname
+  // Threshold: 5+ executions from temp paths
+  | WHERE exec_count >= 5
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      exec_count >= 20, 85,
+      exec_count >= 10, 75,
+      65
+    )
+  | KEEP hostname, exec_count, unique_exes, users, risk_score, sample_paths
+enabled: false
+tags:
+  - Malware
+  - Execution
+  - Temp Directory
+  - Initial Access
+severity: medium
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1204/"
+  - "https://attack.mitre.org/techniques/T1059/"
+nist: ["SI-3", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["5.1", "10.2.7"]
+mitre_attack:
+  TA0002:
+    T1059: []
+    T1204: ["T1204.002"]

@@ -1,0 +1,55 @@
+name: "Deserialization Attack - Java/PHP Object Injection"
+description: |
+  This rule detects potential deserialization attacks by identifying serialized object patterns in HTTP requests. Common indicators include Java serialized objects (rO0AB, aced0005), PHP serialized objects (O:), Python pickle objects, and .NET ViewState manipulation.
+  
+#  Deserialization vulnerabilities allow attackers to execute arbitrary code by crafting malicious serialized objects. These attacks affect multiple platforms and frameworks.
+#  
+#  False positives may occur with legitimate serialized data transmission in APIs or session management. Focus on unusual object types or external sources.
+#  
+#  Triage steps: (1) Identify the source IP and serialized payload, (2) Determine which framework/language is being targeted, (3) Check application logs for deserialization errors or successful exploitation, (4) Implement input validation and use safe deserialization libraries.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for serialized object patterns
+  | WHERE event.original RLIKE "(?i)(rO0AB|aced0005|java\\.lang\\.Runtime|ProcessBuilder|O:[0-9]+:\"|a:[0-9]+:\\{|\\x80\\x03|__reduce__|__wakeup)"
+  // Also check for .NET ViewState exploitation
+  | WHERE event.original RLIKE "(?i)(__VIEWSTATE|/wEPDw|YTozOntzOjQ)"
+  | STATS 
+      deser_count = COUNT(*),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE deser_count >= 1
+  | EVAL risk_score = CASE(
+      deser_count >= 5, 95,
+      deser_count >= 3, 90,
+      85
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Deserialization
+  - Object Injection
+  - RCE
+  - Java
+  - PHP
+severity: critical
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://owasp.org/www-community/vulnerabilities/Deserialization_of_untrusted_data"
+nist: ["CM-7", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0001:
+    T1190: []

@@ -15,7 +15,7 @@
 #//ECS fields used: network.name, network.type, host.name, event.category
 #//Tuning notes: Maintain inventory of authorized APs; quarterly wireless scans
 
-name: "RULE-PCI-37: Unauthorized Wireless Access Point Discovery"
+name: "Unauthorized Wireless Access Point Discovery"
 description: |
   Identifies wireless access points detected during network scans that are not in
   the authorized AP inventory. PCI DSS 11.1 requires quarterly testing for wireless

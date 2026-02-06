@@ -5,7 +5,7 @@
 #//ECS fields used: source.ip, destination.ip, network.direction, event.category
 #//Tuning notes: Define CDE IP ranges; allowlist authorized DMZ traffic
 
-name: "RULE-PCI-03: Direct Internet to CDE Connection Attempt"
+name: "Direct Internet to CDE Connection Attempt"
 description: |
   Detects network connections originating from public Internet IP addresses directly
   to systems in the cardholder data environment, bypassing DMZ controls. PCI DSS 1.3.3

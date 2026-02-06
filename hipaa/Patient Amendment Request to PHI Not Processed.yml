@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, user.name, @timestamp, log.original
 #//Tuning notes: Track amendment workflow; monitor 60-day processing deadline
 
-name: "RULE-HIPAA-16: Patient Amendment Request to PHI Not Processed"
+name: "Patient Amendment Request to PHI Not Processed"
 description: |
   Identifies patient requests to amend their Protected Health Information that
   have not been acted upon within HIPAA §164.526 required timeframe (60 days,

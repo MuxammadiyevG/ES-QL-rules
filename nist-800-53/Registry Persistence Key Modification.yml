@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, registry.path, registry.value, user.name
 #//Tuning notes: Allowlist known software installers, baseline normal startup programs
 
-name: "RULE-NIST-32: Registry Persistence Key Modification"
+name: "Registry Persistence Key Modification"
 description: |
   Detects modifications to registry keys commonly used for persistence (Run, RunOnce, Startup).
   Attackers leverage auto-start registry keys to execute malware on system boot or user login.

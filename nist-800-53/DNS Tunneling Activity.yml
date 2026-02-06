@@ -6,7 +6,7 @@
 #//ECS fields used: dns.question.name, dns.question.type, source.ip
 #//Tuning notes: Baseline normal DNS query patterns, adjust subdomain entropy threshold
 
-name: "RULE-NIST-23: DNS Tunneling Activity"
+name: "DNS Tunneling Activity"
 description: |
   Detects abnormally long DNS queries or high volume of unique subdomains indicating DNS tunneling.
   Attackers encode data in subdomain labels to bypass traditional firewall controls.

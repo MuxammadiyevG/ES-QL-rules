@@ -5,7 +5,7 @@
 #//ECS fields used: file.path, file.size, event.action
 #//Tuning notes: Scan DSAR exports; detect multiple user IDs in single export
 
-name: "RULE-GDPR-49: DSAR Export Contains Third-Party Personal Data"
+name: "DSAR Export Contains Third-Party Personal Data"
 description: |
   Identifies Data Subject Access Request (DSAR) exports that inadvertently include
   personal data of other individuals beyond the requesting data subject, violating

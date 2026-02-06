@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, event.category
 #//Tuning notes: Monitor processor systems; detect out-of-scope processing
 
-name: "RULE-GDPR-22: Data Processor Exceeding Instructions (Controller Role Violation)"
+name: "Data Processor Exceeding Instructions (Controller Role Violation)"
 description: |
   Identifies instances where a data processor processes personal data beyond the
   documented controller's instructions, potentially acting as a controller without

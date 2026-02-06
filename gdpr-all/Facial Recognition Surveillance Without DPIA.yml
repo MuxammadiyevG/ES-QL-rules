@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, event.category
 #//Tuning notes: Monitor facial recognition activations; verify DPIA completion
 
-name: "RULE-GDPR-35: Facial Recognition Surveillance Without DPIA"
+name: "Facial Recognition Surveillance Without DPIA"
 description: |
   Identifies deployment or activation of facial recognition systems in public or
   semi-public spaces without documented Data Protection Impact Assessment (DPIA)

@@ -1,0 +1,70 @@
+name: "Single Account Brute Force with Success"
+description: |
+  This rule detects targeted brute force attacks against individual user accounts where an attacker eventually succeeds. It identifies scenarios where a single username receives 20+ failed authentication attempts from one or more source IPs within 15 minutes, followed by at least one successful logon. This pattern indicates persistent targeting of a specific account that culminated in compromise.
+
+#**Why it matters:**
+#Successful account compromise through brute force represents a critical security incident:
+#- NIST SP 800-53 AC-7 mandates detection and response to repeated unsuccessful login attempts
+#- GDPR Article 32 requires timely detection of personal data breaches
+#- PCI DSS 8.2.4/8.2.5 requires immediate investigation of compromised credentials#
+#**False Positives:**
+#- Users who genuinely forgot passwords and eventually remember the correct one
+#- Accounts with recently changed passwords where users try old credentials
+#- Service accounts accessed by multiple automated systems with credential rotation issues
+#- VPN or remote access scenarios where network delays cause duplicate authentication attempts#
+#**Triage Steps:**
+#1. Identify the compromised account and verify if it has privileged access
+#2. Review all activity from the account after the successful authentication
+#3. Check source IPs of failed vs. successful attempts - same or different?
+#4. Force password reset and session termination for the affected account
+#5. Search for lateral movement, data access, or configuration changes post-compromise
+#6. Review account's recent access patterns for anomalies
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  // Time window: last 15 minutes
+  | WHERE @timestamp >= NOW() - 15 minutes
+  // Authentication events only
+  | WHERE event.code IN ("4625", "4624") AND event.provider == "Microsoft-Windows-Security-Auditing"
+  // Extract username and outcome
+  | EVAL username = COALESCE(user.target.name, winlog.event_data.TargetUserName)
+  | EVAL is_failure = CASE(event.code == "4625", 1, 0)
+  | EVAL is_success = CASE(event.code == "4624", 1, 0)
+  | WHERE username IS NOT NULL
+  // Aggregate per username
+  | STATS 
+      total_attempts = COUNT(*),
+      failed_count = SUM(is_failure),
+      success_count = SUM(is_success),
+      source_ips = COUNT_DISTINCT(COALESCE(source.ip, winlog.event_data.IpAddress))
+    BY username
+  // Threshold: 20+ failures AND at least 1 success
+  | WHERE failed_count >= 20 AND success_count >= 1
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      failed_count >= 100, 95,
+      failed_count >= 50, 85,
+      75
+    )
+  | KEEP username, failed_count, success_count, total_attempts, source_ips, risk_score
+enabled: false
+tags:
+  - Authentication
+  - Brute Force
+  - Account Compromise
+  - Credential Access
+severity: critical
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1110/001/"
+nist: ["AC-7", "AU-2", "IA-5"]
+gdpr: ["Article 32", "Article 33"]
+pci_dss: ["8.2.4", "8.2.5", "10.2.4", "10.2.5"]
+mitre_attack:
+  TA0006:
+    T1110: ["T1110.001"]

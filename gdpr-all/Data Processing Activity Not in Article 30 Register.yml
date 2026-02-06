@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, database.name, event.category
 #//Tuning notes: Maintain processing register; correlate with documented activities
 
-name: "RULE-GDPR-17: Data Processing Activity Not in Article 30 Register"
+name: "Data Processing Activity Not in Article 30 Register"
 description: |
   Identifies data processing activities (new databases, APIs, applications) that
   are not documented in the Article 30 Records of Processing Activities (ROPA).

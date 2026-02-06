@@ -6,7 +6,7 @@
 #//ECS fields used: event.category, log.original, @timestamp
 #//Tuning notes: Define acceptable signature age (e.g., 7 days); monitor update failures
 
-name: "RULE-PCI-14: Outdated Anti-Virus Definitions Detected"
+name: "Outdated Anti-Virus Definitions Detected"
 description: |
   Identifies systems where anti-virus signature definitions have not been updated
   within acceptable timeframe (typically 7 days). PCI DSS 5.2 requires current

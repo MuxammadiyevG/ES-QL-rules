@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, service.name, process.name, event.code
 #//Tuning notes: Maintain list of protected security services, allowlist legitimate maintenance
 
-name: "RULE-NIST-34: Security Software Disabled"
+name: "Security Software Disabled"
 description: |
   Detects stopping, disabling, or termination of security services (AV, EDR, logging).
   Attackers commonly disable security controls before malware deployment or data theft.

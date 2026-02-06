@@ -1,0 +1,79 @@
+name: "Web Application 5xx Error Spike After Probing"
+description: |
+  This rule correlates nginx access logs and error logs to detect exploitation attempts that cause server-side errors. It identifies scenarios where a source IP generates 3+ requests with attack patterns (from previous rules' signatures), followed by 5+ HTTP 5xx server errors within a 15-minute window. This correlation indicates that attack payloads are reaching the application layer and causing unexpected server behavior.
+
+#  **Why it matters:**
+#  Server error spikes following attack probing indicate successful vulnerability triggering:
+#  - PCI DSS 10.2.4/10.2.6 requires monitoring for security-relevant failures and errors
+#  - NIST SP 800-53 SI-4 mandates monitoring for signs of compromise including error patterns
+#  - GDPR Article 32 requires detection mechanisms for unauthorized processing attempts
+#
+#  **False Positives:**
+#  - Application deployment or update causing legitimate errors coinciding with scanning
+#  - Infrastructure issues (database downtime, service crashes) during security testing
+#  - Aggressive monitoring tools overwhelming the application
+#  - Legitimate users triggering application bugs during normal usage
+#
+#  **Triage Steps:**
+#  1. Correlate error timestamps with access log patterns from the same IP
+#  2. Review nginx error logs for specific error messages and stack traces
+#  3. Identify which application endpoints are generating 5xx errors
+#  4. Check if errors indicate successful injection or just application crashes
+#  5. Review application and database logs for evidence of data access or modification
+#  6. Patch the vulnerability causing errors and implement input validation
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  // Time window: last 15 minutes
+  | WHERE @timestamp >= NOW() - 15 minutes
+  // Extract source IP
+  | EVAL srcip = COALESCE(source.ip, "")
+  | WHERE srcip IS NOT NULL
+  // Identify attack patterns in access logs
+  | EVAL has_attack_pattern = CASE(
+      event.dataset == "nginx.access" AND event.original RLIKE ".*(UNION |SELECT |<script|onerror=|\\.\\./|/etc/passwd|;|&&|\\$\\().*", 1,
+      0
+    )
+  // Identify 5xx errors
+  | EVAL is_error = CASE(
+      event.dataset == "nginx.error" OR event.original RLIKE ".* 5[0-9]{2} .*", 1,
+      0
+    )
+  // Aggregate by source IP
+  | STATS 
+      attack_requests = SUM(has_attack_pattern),
+      error_count = SUM(is_error),
+      total_requests = COUNT(*),
+      sample_logs = VALUES(SUBSTRING(event.original, 0, 100))
+    BY srcip
+  // Threshold: 3+ attack patterns AND 5+ errors
+  | WHERE attack_requests >= 3 AND error_count >= 5
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      error_count >= 20, 90,
+      error_count >= 10, 80,
+      70
+    )
+  | KEEP srcip, attack_requests, error_count, total_requests, risk_score, sample_logs
+enabled: false
+tags:
+  - Web Security
+  - Exploitation
+  - Error Correlation
+  - Application Security
+severity: high
+risk_score: 80
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+nist: ["AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2.4", "10.2.6", "11.4"]
+mitre_attack:
+  TA0001:
+    T1190: []

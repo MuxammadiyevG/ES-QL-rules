@@ -14,7 +14,7 @@
 #//ECS fields used: event.category, event.action, winlog.event_id, user.name
 #//Tuning notes: Monitor log service stop/clear events; allowlist authorized log rotation
 
-name: "RULE-PCI-30: Audit Log Cleared or Logging Disabled"
+name: "Audit Log Cleared or Logging Disabled"
 description: |
   Detects when audit logs are cleared, logging services are stopped, or log files
   are deleted. PCI DSS 10.2.6 requires logging initialization/stopping of audit

@@ -12,7 +12,7 @@
 #//ECS fields used: network.protocol, destination.port, http.request.body, tls.established
 #//Tuning notes: Monitor HTTP traffic for PAN patterns; exclude internal secure networks
 
-name: "RULE-PCI-10: Cardholder Data Transmitted Without Encryption"
+name: "Cardholder Data Transmitted Without Encryption"
 description: |
   Identifies transmission of potential cardholder data over unencrypted channels
   (HTTP, plain FTP, unencrypted email). PCI DSS 4.1 requires strong cryptography

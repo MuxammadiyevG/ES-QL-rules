@@ -14,7 +14,7 @@
 #//ECS fields used: event.category, event.action, user.name, event.outcome
 #//Tuning notes: Monitor badge swipes, door alarms; correlate with video surveillance
 
-name: "RULE-PCI-28: Unauthorized Physical Access Attempt to Sensitive Area"
+name: "Unauthorized Physical Access Attempt to Sensitive Area"
 description: |
   Identifies failed physical access attempts (badge swipes, door alarms) to areas
   containing cardholder data or sensitive systems. PCI DSS 9.1.1 requires monitoring

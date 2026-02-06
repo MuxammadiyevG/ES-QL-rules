@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, user.name, source.ip, host.name
 #//Tuning notes: Identify generic/shared accounts; monitor concurrent access
 
-name: "RULE-HIPAA-03: Shared or Generic Account Accessing ePHI"
+name: "Shared or Generic Account Accessing ePHI"
 description: |
   Identifies use of shared, generic, or group accounts to access ePHI systems,
   violating HIPAA §164.312(a)(2)(i) requirement for unique user identification.

@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, event.action, user.name, group.name
 #//Tuning notes: Monitor sudo usage, group membership changes, privilege assignment
 
-name: "RULE-PCI-35: Privilege Escalation or Authentication Mechanism Change"
+name: "Privilege Escalation or Authentication Mechanism Change"
 description: |
   Identifies privilege escalation events including creation of new privileged accounts,
   elevation of existing user privileges, and changes to authentication mechanisms

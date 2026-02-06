@@ -5,7 +5,7 @@
 #//ECS fields used: destination.ip, destination.geo.country_code, network.bytes
 #//Tuning notes: Maintain list of adequate countries; monitor transfers to restricted jurisdictions
 
-name: "RULE-GDPR-15: Personal Data Transfer to Non-Adequate Third Country"
+name: "Personal Data Transfer to Non-Adequate Third Country"
 description: |
   Identifies transfers of personal data to countries without EU adequacy decisions
   or appropriate safeguards (SCCs, BCRs, derogations) as required by GDPR Chapter V.

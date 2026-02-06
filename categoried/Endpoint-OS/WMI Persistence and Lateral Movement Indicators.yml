@@ -1,0 +1,80 @@
+name: "WMI Persistence and Lateral Movement Indicators"
+description: |
+  This rule detects Windows Management Instrumentation (WMI) abuse for persistence and lateral movement. It identifies WMI event subscriptions (Event Consumers, Event Filters), remote WMI process creation, and suspicious WMI queries. Attackers use WMI for fileless persistence and remote command execution. The rule triggers when 3+ WMI persistence or lateral movement indicators are detected on a host within 15 minutes.
+
+#  **Why it matters:**
+#  WMI abuse enables stealthy persistence and lateral movement:
+#  - MITRE ATT&CK T1047/T1546.003 document WMI command execution and event subscription
+#  - NIST SP 800-53 CM-3 requires monitoring of WMI repository changes
+#  - WMI activity is difficult to detect without specific monitoring
+#
+#  **False Positives:**
+#  - System Center Configuration Manager (SCCM) using WMI for inventory and deployment
+#  - Legitimate monitoring tools querying system information via WMI
+#  - IT automation scripts using WMI for remote management
+#  - Windows system maintenance tasks creating temporary WMI subscriptions
+#
+#  **Triage Steps:**
+#  1. Identify WMI consumer names and filter criteria to understand trigger conditions
+#  2. Review WMI repository for suspicious permanent event subscriptions
+#  3. Check if WMI was used for remote execution - identify source and target hosts
+#  4. Correlate with process creation logs to see what payloads were executed
+#  5. Investigate user context - SYSTEM, admin, or standard user?
+#  6. Remove malicious WMI subscriptions using: Get-WmiObject -Class __EventFilter/Consumer
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  // Time window: last 15 minutes
+  | WHERE @timestamp >= NOW() - 15 minutes
+  // WMI-related events (Sysmon Event ID 19, 20, 21 or process creation of WMI tools)
+  | WHERE event.code IN ("19", "20", "21", "4688")
+  // Extract command line
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  | EVAL hostname = COALESCE(host.name, winlog.computer_name)
+  | WHERE hostname IS NOT NULL
+  // WMI abuse patterns
+  | WHERE (
+      cmd RLIKE ".*(wmic.*process call create|wmic.*/node:|winrm|winrs|WMI.*Consumer|WMI.*Filter|ActiveScriptEventConsumer|CommandLineEventConsumer|__EventFilter|Set-WmiInstance).*" OR
+      event.code IN ("19", "20", "21")
+    )
+  // Aggregate by host
+  | STATS 
+      wmi_activity_count = COUNT(*),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 150))
+    BY hostname
+  // Threshold: 3+ WMI persistence/lateral indicators
+  | WHERE wmi_activity_count >= 3
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      wmi_activity_count >= 10, 95,
+      wmi_activity_count >= 5, 85,
+      75
+    )
+  | KEEP hostname, wmi_activity_count, risk_score, sample_commands
+enabled: false
+tags:
+  - WMI
+  - Persistence
+  - Lateral Movement
+  - Windows
+  - Fileless Malware
+severity: high
+risk_score: 80
+references:
+  - "https://attack.mitre.org/techniques/T1047/"
+  - "https://attack.mitre.org/techniques/T1546/003/"
+nist: ["AU-2", "CM-3", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2.2", "10.2.7"]
+mitre_attack:
+  TA0002:
+    T1047: []
+  TA0003:
+    T1546: ["T1546.003"]
+  TA0008:
+    T1021: ["T1021.006"]

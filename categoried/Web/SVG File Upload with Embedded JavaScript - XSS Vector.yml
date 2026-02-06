@@ -1,0 +1,55 @@
+name: "SVG File Upload with Embedded JavaScript - XSS Vector"
+description: |
+  This rule detects SVG file uploads containing embedded JavaScript or event handlers that can be used for stored XSS attacks. SVG files can contain <script> tags, event attributes, or data URLs with JavaScript.
+  
+  Malicious SVG uploads can lead to stored XSS, allowing attackers to steal cookies, hijack sessions, or perform actions on behalf of other users.
+  
+  False positives may occur with legitimate interactive SVG files. Review SVG content carefully before blocking.
+  
+  Triage steps: (1) Analyze the uploaded SVG file contents, (2) Check for <script> tags, event handlers (onload, onclick), or data URLs, (3) Sanitize or reject SVG uploads with executable content, (4) Implement CSP to mitigate XSS impact.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for SVG uploads
+  | WHERE event.original RLIKE "(?i)(/upload|multipart/form-data)"
+  | WHERE event.original RLIKE "(?i)(filename=.*\\.svg|image/svg)"
+  // Check for JavaScript in SVG content (requires request body logging)
+  | WHERE event.original RLIKE "(?i)(<script|onload=|onclick=|onerror=|data:text/html|javascript:|eval\\()"
+  | STATS 
+      svg_count = COUNT(*),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE svg_count >= 1
+  | EVAL risk_score = CASE(
+      svg_count >= 5, 85,
+      svg_count >= 3, 80,
+      75
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - SVG Upload
+  - Stored XSS
+  - JavaScript Injection
+  - File Upload
+severity: high
+risk_score: 78
+references:
+  - "https://attack.mitre.org/techniques/T1189/"
+  - "https://owasp.org/www-community/attacks/xss/#stored-xss-attacks"
+nist: ["AU-6", "IR-4", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0001:
+    T1189: []

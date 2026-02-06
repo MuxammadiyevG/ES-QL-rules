@@ -1,0 +1,57 @@
+
+name: "Server-Side Request Forgery (SSRF) Advanced Patterns"
+description: |
+  This rule detects advanced SSRF attempts beyond basic metadata service probing, including localhost/internal IP references, DNS rebinding indicators, cloud metadata endpoints (AWS, Azure, GCP), webhook abuse, and URL scheme manipulation (file://, gopher://, dict://).
+  
+#  SSRF vulnerabilities allow attackers to make the server perform requests to internal resources, cloud metadata services, or other systems, potentially leading to credential theft, internal network scanning, or RCE.
+#  
+#  False positives may occur with legitimate webhooks, API integrations, or internal service calls. Focus on external sources and unusual URL schemes.
+#  
+#  Triage steps: (1) Identify the source IP and SSRF payload, (2) Determine which internal resource is being targeted, (3) Check application logs for successful SSRF exploitation, (4) Implement URL whitelisting and disable unnecessary URL schemes.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for SSRF patterns (beyond basic metadata already covered in earlier rules)
+  | WHERE event.original RLIKE "(?i)(localhost|127\\.0\\.0\\.1|\\[::1\\]|0\\.0\\.0\\.0|169\\.254\\.|10\\.|172\\.(1[6-9]|2[0-9]|3[01])\\.|192\\.168\\.)"
+  // Check for URL scheme manipulation
+  | WHERE event.original RLIKE "(?i)(file://|gopher://|dict://|ftp://|tftp://|jar://|netdoc://|ldap://)"
+  // Also catch URL-encoded variants
+  | WHERE event.original RLIKE "(?i)(%66ile://|%67opher://|localhost%2F|127%2E0%2E0%2E1)"
+  | STATS 
+      ssrf_count = COUNT(*),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE ssrf_count >= 2
+  | EVAL risk_score = CASE(
+      ssrf_count >= 5, 90,
+      ssrf_count >= 3, 85,
+      78
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - SSRF
+  - URL Scheme Abuse
+  - Internal Network Access
+  - Exploitation
+severity: high
+risk_score: 84
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"
+nist: ["CM-7", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0001:
+    T1190: []

@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, user.name, log.original, @timestamp
 #//Tuning notes: Track consent lifecycle; verify processing stops post-withdrawal
 
-name: "RULE-GDPR-25: Data Processing Continues After Consent Withdrawal"
+name: "Data Processing Continues After Consent Withdrawal"
 description: |
   Identifies continued processing of personal data after user withdrawal of consent,
   violating GDPR Article 7(3) requirement that withdrawal be as easy as giving

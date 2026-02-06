@@ -1,0 +1,58 @@
+name: "Anomalous Logon Time - Off-Hours Access by Privileged User"
+description: |
+  This rule detects successful logons by privileged users (Administrators, Domain Admins) during off-hours (e.g., nights, weekends) which may indicate compromised credentials or insider threat activity. Adversaries often operate outside business hours to evade detection.
+  
+#  Off-hours access by privileged accounts is a key indicator of compromise, especially when combined with other anomalies like unusual source IPs or lateral movement.
+#  
+#  False positives may occur with legitimate maintenance windows, on-call administrators, or global teams. Establish baselines for expected off-hours activity.
+#  
+#  Triage steps: (1) Verify if the user is on-call or performing scheduled maintenance, (2) Check source IP geolocation, (3) Review subsequent activity for lateral movement or data access, (4) Contact the user to confirm legitimacy.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL usert = COALESCE(user.target.name, winlog.event_data.TargetUserName)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Event ID 4624 = successful logon
+  | WHERE winlog.event_id == "4624" AND event.outcome == "success"
+  // Heuristic: privileged user naming patterns
+  | WHERE usert RLIKE "(?i)(admin|root|administrator|domain.*admin|da-|adm-)"
+  // Extract hour of day from @timestamp
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  // Off-hours: before 6 AM or after 8 PM (adjust as needed)
+  | WHERE hour_of_day < 6 OR hour_of_day >= 20
+  | STATS 
+      logon_count = COUNT(*),
+      unique_hosts = COUNT_DISTINCT(hostn),
+      sample_events = VALUES(SUBSTRING(event.original, 0, 160))
+    BY usert, srcip
+  | WHERE logon_count >= 1
+  | EVAL risk_score = CASE(
+      logon_count >= 5, 85,
+      logon_count >= 3, 75,
+      65
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Off-Hours Access
+  - Privileged User
+  - Initial Access
+  - Insider Threat
+severity: medium
+risk_score: 70
+references:
+  - "https://attack.mitre.org/tactics/TA0001/"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0001:
+    T1078: ["T1078.002"]

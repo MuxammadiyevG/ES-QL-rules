@@ -1,0 +1,52 @@
+
+name: "User-Agent Anomaly - Known Scanner or Empty User-Agent"
+description: |
+  This rule detects suspicious User-Agent strings commonly associated with automated scanners, exploit tools, or missing User-Agents. Common patterns include sqlmap, nikto, nmap, burp, metasploit, curl, wget with default agents, or completely empty User-Agent headers.
+  
+#  Attackers and automated tools often use distinctive User-Agent strings or omit them entirely. Monitoring User-Agents helps identify scanning and exploitation attempts.
+#  
+#  False positives may occur with legitimate automation scripts, monitoring tools, or API clients. Whitelist known good automation and focus on external sources.
+#  
+#  Triage steps: (1) Identify the source IP and User-Agent string, (2) Review the requests made by this client, (3) Check for exploitation patterns in request parameters, (4) Block known scanner User-Agents at WAF or web server level.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for known scanner User-Agents or empty User-Agent
+  | WHERE event.original RLIKE "(?i)(sqlmap|nikto|nmap|nessus|openvas|burp|metasploit|masscan|zap|acunetix|w3af|havij|curl/|wget/|python-requests|user-agent:\\s*-|\"-\"\\s*$)"
+  | STATS 
+      request_count = COUNT(*),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE request_count >= 3
+  | EVAL risk_score = CASE(
+      request_count >= 10, 85,
+      request_count >= 5, 75,
+      65
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - User-Agent
+  - Web Scanner
+  - Reconnaissance
+  - Exploitation Tools
+severity: medium
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0007:
+    T1046: []

@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, event.action, file.path, user.name
 #//Tuning notes: Monitor system file changes, service deletions, registry keys
 #
-name: "RULE-PCI-36: Critical System-Level Object Created or Deleted"
+name: "Critical System-Level Object Created or Deleted"
 description: |
   Identifies creation and deletion of critical system-level objects including system
   files, services, registry keys, and configuration files. PCI DSS 10.2.7 requires

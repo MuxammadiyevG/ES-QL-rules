@@ -1,0 +1,54 @@
+
+name: "Database Schema Modification - DROP TABLE or ALTER TABLE Detected"
+description: |
+  This rule detects database schema modification commands such as DROP TABLE, DROP DATABASE, ALTER TABLE, or TRUNCATE TABLE in process command lines or event originals. Adversaries may destroy data or modify schemas to cover tracks or cause disruption.
+  
+#  Unauthorized schema modifications can lead to data loss, service disruption, or evidence destruction. Monitoring DDL operations is critical for data integrity.
+#  
+#  False positives may occur during application deployments, migrations, or legitimate database maintenance. Correlate with change management schedules.
+#  
+#  Triage steps: (1) Identify the user executing the DDL command, (2) Verify if the change is documented and approved, (3) Check if backups exist before modification, (4) Roll back unauthorized changes if possible.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - winlogbeat-*
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, winlogbeat-*, metricbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for destructive DDL commands
+  | WHERE cmd RLIKE "(?i)(drop\\s+(table|database|schema|index|view)|truncate\\s+table|alter\\s+table.*(drop|rename))"
+  | STATS 
+      ddl_count = COUNT(*),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE ddl_count >= 1
+  | EVAL risk_score = CASE(
+      ddl_count >= 5, 90,
+      ddl_count >= 3, 80,
+      75
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Database
+  - Schema Modification
+  - Impact
+  - Data Destruction
+severity: high
+risk_score: 80
+references:
+  - "https://attack.mitre.org/techniques/T1485/"
+nist: ["CP-4", "CP-6", "CP-9", "SI-4"]
+gdpr: ["Article 32", "Article 33"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0040:
+    T1485: []

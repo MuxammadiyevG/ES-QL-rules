@@ -1,0 +1,53 @@
+
+name: "Server-Side Template Injection (SSTI) Probing"
+description: |
+  This rule detects potential Server-Side Template Injection (SSTI) attempts by identifying template engine syntax in URL parameters or request bodies. Common patterns include {{7*7}}, ${7*7}, <%= 7*7 %>, or template-specific syntax for Jinja2, Twig, Freemarker, etc.
+  
+#  SSTI vulnerabilities allow attackers to execute arbitrary code on the server by injecting malicious template expressions. Early detection prevents remote code execution.
+#  
+#  False positives may occur with legitimate template syntax in content or documentation. Focus on injection attempts in user-controlled parameters.
+#  
+#  Triage steps: (1) Identify the source IP and injection payload, (2) Check if the application uses a template engine, (3) Test for successful SSTI exploitation, (4) Implement input validation and template engine sandboxing.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for SSTI payloads in requests
+  | WHERE event.original RLIKE "(?i)(\\{\\{.*\\*.*\\}\\}|\\$\\{.*\\*.*\\}|<%=.*\\*.*%>|\\{\\{.*config|\\{\\{.*request|%7B%7B.*%7D%7D)"
+  | STATS 
+      ssti_count = COUNT(*),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE ssti_count >= 1
+  | EVAL risk_score = CASE(
+      ssti_count >= 5, 95,
+      ssti_count >= 3, 90,
+      85
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - SSTI
+  - Template Injection
+  - Exploitation
+  - Remote Code Execution
+severity: critical
+risk_score: 92
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://portswigger.net/web-security/server-side-template-injection"
+nist: ["CM-7", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0001:
+    T1190: []

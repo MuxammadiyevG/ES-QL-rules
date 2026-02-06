@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, event.action, user.name, event.outcome
 #//Tuning notes: Monitor server rooms, data centers, medical records areas; track badge swipes
 
-name: "RULE-HIPAA-19: Unauthorized Physical Access to ePHI Facility Areas"
+name: "Unauthorized Physical Access to ePHI Facility Areas"
 description: |
   Identifies unauthorized physical access attempts or successful unauthorized entry
   to facility areas containing ePHI systems including server rooms, data centers,

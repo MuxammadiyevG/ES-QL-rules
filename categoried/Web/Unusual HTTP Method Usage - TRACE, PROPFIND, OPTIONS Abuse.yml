@@ -1,0 +1,52 @@
+name: "Unusual HTTP Method Usage - TRACE, PROPFIND, OPTIONS Abuse"
+description: |
+  This rule detects usage of unusual or potentially dangerous HTTP methods such as TRACE, PROPFIND, OPTIONS, PUT, DELETE, CONNECT, or custom methods. These methods are rarely used in normal web traffic and may indicate exploitation attempts, WebDAV abuse, or reconnaissance.
+  
+#  Unusual HTTP methods can be leveraged for information disclosure (TRACE), file manipulation (PUT/DELETE), or WebDAV exploitation (PROPFIND). Monitoring method usage helps detect abnormal client behavior.
+#  
+#  False positives may occur with WebDAV clients, REST APIs using PUT/DELETE legitimately, or development/testing activities. Baseline expected HTTP methods per application.
+#  
+#  Triage steps: (1) Identify the source IP and HTTP method used, (2) Check if the application supports the method legitimately, (3) Review the request payload and target URL, (4) Block unauthorized methods at the web server or WAF level.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Heuristic: look for unusual methods in access logs (usually at start of line after IP)
+  | WHERE event.original RLIKE "(?i)(\\s(TRACE|PROPFIND|OPTIONS|PUT|DELETE|CONNECT|PATCH|HEAD|TRACK|DEBUG)\\s)"
+  | STATS 
+      method_count = COUNT(*),
+      unique_methods = COUNT_DISTINCT(SUBSTRING(event.original, 0, 50)),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE method_count >= 3
+  | EVAL risk_score = CASE(
+      method_count >= 10, 85,
+      method_count >= 5, 75,
+      65
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - HTTP Methods
+  - Unusual Methods
+  - Web Reconnaissance
+  - WebDAV
+severity: medium
+risk_score: 68
+references:
+  - "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/06-Test_HTTP_Methods"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0007:
+    T1083: []

@@ -6,7 +6,7 @@
 #//ECS fields used: event.category, user.name, process.name, event.action
 #//Tuning notes: Monitor sudo/runas commands; track privileged process executions
 
-name: "RULE-PCI-31: Privileged Command Execution by Administrator"
+name: "Privileged Command Execution by Administrator"
 description: |
   Identifies execution of privileged commands and processes by root, Administrator,
   or sudo-elevated users. PCI DSS 10.2.2 requires logging all actions by users with

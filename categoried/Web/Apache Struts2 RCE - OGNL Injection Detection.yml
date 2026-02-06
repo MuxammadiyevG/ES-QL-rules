@@ -1,0 +1,56 @@
+name: "Apache Struts2 RCE - OGNL Injection Detection"
+description: |
+  This rule detects attempts to exploit Apache Struts2 vulnerabilities through OGNL (Object-Graph Navigation Language) injection. Multiple CVEs affect Struts2 including CVE-2017-5638, CVE-2018-11776, and others. Attackers inject OGNL expressions in HTTP headers or parameters to achieve remote code execution.
+  
+#  Struts2 vulnerabilities have been exploited in major data breaches. OGNL injection allows complete server compromise and is actively exploited in the wild.
+#  
+#  False positives may occur with legitimate OGNL usage in Struts2 applications or security testing. Verify exploitation attempts carefully.
+#  
+#  Triage steps: (1) Identify the source IP and injection payload, (2) Check if the application uses vulnerable Struts2 versions, (3) Search for webshells or backdoors, (4) Update Struts2 to latest patched version, (5) Review system for compromise indicators.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for OGNL injection patterns
+  | WHERE event.original RLIKE "(?i)(%23|#)(context|_memberAccess|ognl|struts|@java|ProcessBuilder|Runtime\\.getRuntime|exec\\(|cmd=)"
+  // Also catch URL-encoded variants
+  | WHERE event.original RLIKE "(?i)(%2523|%23_memberAccess|%23context|redirect:|redirectAction:)"
+  | STATS 
+      exploit_count = COUNT(*),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE exploit_count >= 1
+  | EVAL risk_score = CASE(
+      exploit_count >= 5, 95,
+      exploit_count >= 3, 92,
+      88
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Apache Struts2
+  - OGNL Injection
+  - RCE
+  - CVE-2017-5638
+  - Critical
+severity: critical
+risk_score: 92
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://nvd.nist.gov/vuln/detail/CVE-2017-5638"
+  - "https://cwiki.apache.org/confluence/display/WW/S2-057"
+nist: ["AU-6", "SI-4"]
+gdpr: ["Article 32", "Article 33"]
+pci_dss: ["6.2"]
+mitre_attack:
+  TA0001:
+    T1190: []

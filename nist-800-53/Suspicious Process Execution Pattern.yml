@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, process.name, process.command_line, process.parent.name
 #//Tuning notes: Baseline normal administrative activity, adjust command-line pattern matching
 
-name: "RULE-NIST-16: Suspicious Process Execution Pattern"
+name: "Suspicious Process Execution Pattern"
 description: |
   Detects execution of processes with suspicious command-line arguments or parent-child relationships.
   Common attack patterns: PowerShell download cradles, wscript/cscript execution, unusual parent processes.

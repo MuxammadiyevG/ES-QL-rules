@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, user.name, source.ip, host.name
 #//Tuning notes: Allowlist known service accounts, adjust concurrent login threshold
 #
-name: "RULE-NIST-11: Shared Account Concurrent Usage"
+name: "Shared Account Concurrent Usage"
 description: |
   Detects multiple concurrent logins from same user account from different source IPs.
   Shared accounts violate individual accountability and non-repudiation requirements.

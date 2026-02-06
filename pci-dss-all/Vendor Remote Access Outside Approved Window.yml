@@ -15,7 +15,7 @@
 #//ECS fields used: event.category, user.name, source.ip, event.action
 #//Tuning notes: Track vendor account usage; monitor for always-on vendor connections
 
-name: "RULE-PCI-39: Vendor Remote Access Outside Approved Window"
+name: "Vendor Remote Access Outside Approved Window"
 description: |
   Identifies vendor or business partner remote access connections that remain active
   outside approved maintenance windows or without proper activation/deactivation.

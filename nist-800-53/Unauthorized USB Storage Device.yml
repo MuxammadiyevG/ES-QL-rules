@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, event.action, observer.serial_number, user.name
 #//Tuning notes: Allowlist approved USB devices by serial number, exceptions for authorized users
 
-name: "RULE-NIST-33: Unauthorized USB Storage Device"
+name: "Unauthorized USB Storage Device"
 description: |
   Detects connection of USB mass storage devices to workstations or servers.
   Removable media introduces risk of data exfiltration and malware introduction (BadUSB, autorun).

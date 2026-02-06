@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, user.name, source.ip, event.action
 #//Tuning notes: Identify generic usernames; monitor for concurrent logins from same account
 
-name: "RULE-PCI-24: Shared or Generic Account Usage Detected"
+name: "Shared or Generic Account Usage Detected"
 description: |
   Identifies authentication or access using shared, group, or generic account names
   (admin, shared, guest, etc.). PCI DSS 8.5 prohibits shared credentials to ensure

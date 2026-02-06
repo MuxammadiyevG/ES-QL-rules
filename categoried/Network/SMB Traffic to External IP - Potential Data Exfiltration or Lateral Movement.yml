@@ -1,0 +1,57 @@
+name: "SMB Traffic to External IP - Potential Data Exfiltration or Lateral Movement"
+description: |
+  This rule detects SMB (Server Message Block) traffic directed to external IP addresses, which is highly anomalous in most environments. SMB should typically remain internal; external SMB may indicate data exfiltration, lateral movement attempts, or exploitation.
+  
+#  SMB to external IPs is a strong indicator of malicious activity, as legitimate SMB traffic is almost always internal. Detection helps prevent data theft and lateral movement.
+#  
+#  False positives are rare but may occur with VPN users or specific cloud integrations. Verify all external SMB connections carefully.
+#  
+#  Triage steps: (1) Identify the source host and user, (2) Check the destination IP geolocation and reputation, (3) Determine what data was transferred if possible, (4) Block the external SMB connection and investigate for compromise.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - metricbeat-*
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, metricbeat-*, winlogbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  | EVAL dstport = COALESCE(source.port, winlog.event_data.IpPort)
+  // Look for SMB ports (445, 139)
+  | WHERE dstport IN ("445", "139")
+         OR event.original RLIKE "(?i)(smb|port\\s+(445|139)|\\\\\\\\[0-9])"
+  // Exclude internal IP ranges
+  | WHERE NOT event.original RLIKE "(?i)(10\\.|172\\.(1[6-9]|2[0-9]|3[01])\\.|192\\.168\\.)"
+  | STATS 
+      connection_count = COUNT(*),
+      sample_events = VALUES(SUBSTRING(event.original, 0, 160))
+    BY hostn, srcip
+  | WHERE connection_count >= 1
+  | EVAL risk_score = CASE(
+      connection_count >= 5, 95,
+      connection_count >= 3, 90,
+      85
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - SMB
+  - External Connection
+  - Data Exfiltration
+  - Lateral Movement
+severity: critical
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1021/002/"
+  - "https://attack.mitre.org/techniques/T1041/"
+nist: ["AU-6", "SI-4"]
+gdpr: ["Article 32", "Article 33"]
+pci_dss: ["1.3"]
+mitre_attack:
+  TA0010:
+    T1041: []

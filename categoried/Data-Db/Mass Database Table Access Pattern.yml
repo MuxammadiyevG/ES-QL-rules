@@ -1,0 +1,76 @@
+name: "Mass Database Table Access Pattern"
+description: |
+  This rule identifies potential data exfiltration by detecting mass access to database-related tables or keywords in logs. It uses heuristic pattern matching in event.original to find indicators like "SELECT * FROM users", "customer", "payment", "credit_card", or bulk query patterns. The rule triggers when 20+ database access operations with sensitive table indicators are detected from a single user or host within 20 minutes.
+
+#  **Why it matters:**
+#  Mass data access often precedes data breaches and exfiltration:
+#  - GDPR Article 32/33 requires detection of unauthorized personal data access
+#  - PCI DSS 10.2.1/10.3 mandates monitoring of access to cardholder data
+#  - NIST SP 800-53 AU-2 requires auditing of data access patterns
+#
+#  **False Positives:**
+#  - Legitimate business intelligence queries and reporting jobs
+#  - Database backup operations accessing multiple tables
+#  - ETL processes extracting data for analytics or data warehouse
+#  - Application initialization or health checks querying system tables
+#
+#  **Triage Steps:**
+#  1. Identify the user or application performing mass access
+#  2. Review query patterns - are they SELECT *, bulk exports, or filtered queries?
+#  3. Check data volume accessed and whether it was transferred externally
+#  4. Verify if access aligns with user's job responsibilities and normal behavior
+#  5. Investigate any data export commands (INTO OUTFILE, COPY TO, bcp)
+#  6. Review network logs for large data transfers following database access
+type: esql
+params: '{}'
+schedule_interval: 20m
+index:
+  - auditbeat-*
+  - winlogbeat-*
+  - filebeat-nginx-access-*
+query_language: esql
+query: |
+  FROM auditbeat-*, winlogbeat-*, filebeat-nginx-access-*
+  // Time window: last 20 minutes
+  | WHERE @timestamp >= NOW() - 20 minutes
+  // Extract user and host
+  | EVAL username = COALESCE(user.name, winlog.event_data.SubjectUserName, "")
+  | EVAL hostname = COALESCE(host.name, winlog.computer_name, "")
+  | WHERE hostname IS NOT NULL
+  // Database access heuristic patterns in logs
+  | WHERE event.original RLIKE ".*(SELECT \\* FROM|SELECT.*FROM users|FROM customers|FROM payments|FROM credit_card|FROM user_data|FROM personal_info|FROM patient|FROM employee|pg_dump|mysqldump|sqlcmd|bcp ).*"
+  // Aggregate by user and host
+  | STATS 
+      access_count = COUNT(*),
+      unique_patterns = COUNT_DISTINCT(SUBSTRING(event.original, 0, 160)),
+      sample_queries = VALUES(SUBSTRING(event.original, 0, 160))
+    BY username, hostname
+  // Threshold: 20+ database access operations with sensitive indicators
+  | WHERE access_count >= 20
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      access_count >= 100, 95,
+      access_count >= 50, 85,
+      75
+    )
+  | KEEP username, hostname, access_count, unique_patterns, risk_score, sample_queries
+enabled: false
+tags:
+  - Data Access
+  - Database
+  - Exfiltration
+  - Privacy
+  - PII Access
+severity: high
+risk_score: 80
+references:
+  - "https://attack.mitre.org/techniques/T1213/"
+  - "https://attack.mitre.org/techniques/T1530/"
+nist: ["AC-3", "AU-2", "AU-6"]
+gdpr: ["Article 32", "Article 33"]
+pci_dss: ["10.2.1", "10.3"]
+mitre_attack:
+  TA0009:
+    T1213: []
+  TA0010:
+    T1530: []

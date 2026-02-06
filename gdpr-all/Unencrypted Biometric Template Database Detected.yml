@@ -5,7 +5,7 @@
 #//ECS fields used: database.name, file.path, event.action
 #//Tuning notes: Scan biometric databases; verify encryption-at-rest
 
-name: "RULE-GDPR-34: Unencrypted Biometric Template Database Detected"
+name: "Unencrypted Biometric Template Database Detected"
 description: |
   Identifies databases or files storing biometric templates (fingerprint hashes,
   facial embeddings, voice models) without encryption at rest, violating GDPR

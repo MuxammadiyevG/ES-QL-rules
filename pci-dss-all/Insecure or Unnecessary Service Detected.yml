@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, process.name, service.name, network.protocol
 #//Tuning notes: Define baseline of required services per system role; review quarterly
 
-name: "RULE-PCI-05: Insecure or Unnecessary Service Detected"
+name: "Insecure or Unnecessary Service Detected"
 description: |
   Identifies insecure protocols and services that should be disabled per PCI DSS 2.2.2
   (Telnet, FTP, HTTP on sensitive systems, SNMP v1/v2, etc.). Running unnecessary

@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, file.path, file.size, user.name
 #//Tuning notes: Monitor file creation on local drives; detect PAN patterns; track USB usage
 
-name: "RULE-PCI-40: Cardholder Data Copied to Local or Removable Media"
+name: "Cardholder Data Copied to Local or Removable Media"
 description: |
   Identifies potential cardholder data being copied to local hard drives, USB drives,
   or removable media by remote access users. PCI DSS 12.3.10 prohibits copying CHD

@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, user.name, @timestamp, log.original
 #//Tuning notes: Monitor disclosure accounting system; track 60-day response deadline
 
-name: "RULE-HIPAA-17: Accounting of PHI Disclosures Request Not Fulfilled"
+name: "Accounting of PHI Disclosures Request Not Fulfilled"
 description: |
   Identifies patient requests for accounting of PHI disclosures that have not been
   fulfilled within HIPAA §164.528 60-day deadline (extendable once by 30 days with

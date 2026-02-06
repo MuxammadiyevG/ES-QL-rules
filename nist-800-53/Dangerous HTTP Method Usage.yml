@@ -6,7 +6,7 @@
 #//ECS fields used: http.request.method, url.path, http.response.status_code
 #//Tuning notes: Allowlist RESTful APIs that legitimately use PUT/DELETE
 
-name: "RULE-NIST-30: Dangerous HTTP Method Usage"
+name: "Dangerous HTTP Method Usage"
 description: |
   Detects usage of potentially dangerous HTTP methods (PUT, DELETE, TRACE, CONNECT, OPTIONS).
   PUT/DELETE can modify/delete resources if improperly configured, TRACE enables XST attacks.

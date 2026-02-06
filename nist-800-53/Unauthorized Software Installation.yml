@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, process.name, process.command_line, file.path
 #//Tuning notes: Requires approved software catalog, allowlist enterprise deployment tools
 
-name: "RULE-NIST-14: Unauthorized Software Installation"
+name: "Unauthorized Software Installation"
 description: |
   Detects execution of software installers or package managers by non-administrative users.
   MSI installers, apt/yum/dnf package installations, or direct executable downloads indicate policy violation.

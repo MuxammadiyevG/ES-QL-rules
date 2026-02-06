@@ -1,0 +1,55 @@
+
+name: "Web Authentication Brute Force - Multiple 401/403 Errors"
+description: |
+  This rule detects potential web authentication brute force attacks by identifying multiple HTTP 401 (Unauthorized) or 403 (Forbidden) responses from the same source IP within a short time window. This pattern suggests credential guessing attempts against web login pages.
+  
+#  Web authentication brute force is a common initial access technique targeting web applications. Early detection allows for blocking malicious sources before successful compromise.
+#  
+#  False positives may occur with users repeatedly mistyping passwords, API clients with incorrect credentials, or automated tools with authentication issues. Focus on high error counts and unfamiliar source IPs.
+#  
+#  Triage steps: (1) Identify the source IP and check geolocation/reputation, (2) Review the target URL paths being accessed, (3) Check if any 200 responses followed the 401s (successful login), (4) Block the source IP and review authentication logs.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Heuristic: look for 401/403 status codes in event.original
+  | WHERE event.original RLIKE "(?i)(\\s401\\s|\\s403\\s|status.*401|status.*403|unauthorized|forbidden)"
+  | STATS 
+      auth_fail_count = COUNT(*),
+      unique_paths = COUNT_DISTINCT(SUBSTRING(event.original, 0, 100)),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  // Threshold: 15+ authentication failures from one IP
+  | WHERE auth_fail_count >= 15
+  | EVAL risk_score = CASE(
+      auth_fail_count >= 30, 90,
+      auth_fail_count >= 20, 80,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Web Authentication
+  - Brute Force
+  - HTTP 401
+  - HTTP 403
+severity: high
+risk_score: 78
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+  - "https://owasp.org/www-community/attacks/Brute_force_attack"
+nist: ["AC-14", "IA-1", "IA-10", "IA-11", "IA-2", "IA-3", "IA-5", "IA-8", "IA-9", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["8.2"]
+mitre_attack:
+  TA0001:
+    T1110: ["T1110.001"]

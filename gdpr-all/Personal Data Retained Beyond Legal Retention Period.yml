@@ -6,7 +6,7 @@
 #//ECS fields used: file.created, file.accessed, @timestamp, database.name
 #//Tuning notes: Define retention periods per data category; monitor stale data
 
-name: "RULE-GDPR-02: Personal Data Retained Beyond Legal Retention Period"
+name: "Personal Data Retained Beyond Legal Retention Period"
 description: |
   Identifies personal data stored for longer than the documented retention period
   required by GDPR Article 5(1)(e) storage limitation. Detects database records

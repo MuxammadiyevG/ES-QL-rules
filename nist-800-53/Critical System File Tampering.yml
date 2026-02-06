@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, file.path, file.hash.sha256, user.name
 #//Tuning notes: Requires FIM baseline, allowlist software update processes, patch windows
 
-name: "RULE-NIST-15: Critical System File Tampering"
+name: "Critical System File Tampering"
 description: |
   Detects modifications to critical operating system binaries and libraries.
   Changes to files in System32, /bin, /sbin, /lib indicate potential rootkit or malware infection.

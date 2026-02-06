@@ -6,7 +6,7 @@
 #//ECS fields used: url.path, url.query, http.request.method, user_agent.original, source.ip
 #//Tuning notes: Adjust pattern matching for application-specific parameters, allowlist scanners
 
-name: "RULE-NIST-24: Web Application Attack Detection"
+name: "Web Application Attack Detection"
 description: |
   Detects malicious payloads in HTTP requests indicating SQLi, XSS, command injection, or path traversal.
   URL parameters containing SQL keywords, script tags, shell commands, or directory traversal sequences flagged.

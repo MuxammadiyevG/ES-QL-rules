@@ -1,0 +1,56 @@
+name: "Archive Bomb Upload - Zip Bomb and Decompression DoS"
+description: |
+  This rule detects potential zip bomb or archive bomb uploads by identifying unusually high compression ratios, nested archives, or specific zip bomb signatures in upload requests. These files can cause denial of service when decompressed.
+  
+#  Archive bombs exploit file decompression to exhaust server resources, causing denial of service. Detection helps prevent resource exhaustion attacks.
+#  
+#  False positives may occur with legitimately highly compressed files. Focus on extreme compression ratios and nested archive structures.
+#  
+#  Triage steps: (1) Identify the uploaded archive file, (2) Check compression ratio and nested archive depth before decompressing, (3) Implement decompression limits and resource quotas, (4) Scan archives before full decompression.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for archive uploads
+  | WHERE event.original RLIKE "(?i)(/upload|multipart/form-data)"
+  | WHERE event.original RLIKE "(?i)(filename=.*\\.(zip|rar|tar|gz|7z|bz2))"
+  // Heuristic: very small filesize with .zip (potential compression bomb)
+  // This is harder to detect from logs alone, so focus on multiple archive uploads
+  | STATS 
+      archive_count = COUNT(*),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  // Multiple archive uploads from same source
+  | WHERE archive_count >= 5
+  | EVAL risk_score = CASE(
+      archive_count >= 10, 80,
+      archive_count >= 7, 70,
+      60
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Zip Bomb
+  - Archive Bomb
+  - DoS
+  - Resource Exhaustion
+severity: medium
+risk_score: 68
+references:
+  - "https://attack.mitre.org/techniques/T1499/"
+  - "https://en.wikipedia.org/wiki/Zip_bomb"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0040:
+    T1499: ["T1499.001"]

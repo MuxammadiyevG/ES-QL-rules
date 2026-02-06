@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, event.duration, @timestamp, http.response.status_code
 #//Tuning notes: Monitor portal availability; track downtime incidents; require 99% SLA
 
-name: "RULE-HIPAA-35: Patient Portal Extended Downtime (Access Violation)"
+name: "Patient Portal Extended Downtime (Access Violation)"
 description: |
   Identifies Extended downtime or unavailability of patient portals providing
   electronic access to health information, violating HITECH Act §13405(e) timely

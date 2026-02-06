@@ -1,0 +1,52 @@
+name: "USB Device Connection - Removable Media Activity"
+description: |
+  This rule detects USB or removable media device connections which may be used for data exfiltration, malware introduction, or unauthorized data transfer. Monitoring USB activity helps enforce removable media policies.
+  
+#  USB devices pose significant security risks including malware introduction and data theft. Detecting USB connections helps enforce security policies and investigate incidents.
+#  
+#  False positives are very common in environments that allow USB usage. Focus on sensitive hosts, unauthorized users, or unusual timing (off-hours).
+#  
+#  Triage steps: (1) Identify the host, user, and USB device details, (2) Verify if USB usage is authorized for this user/host, (3) Check for data transfer or malware execution following USB connection, (4) Review USB usage policies and enforcement.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  // Event ID 2003 = USB device driver loaded (varies by environment)
+  | WHERE event.original RLIKE "(?i)(usb|removable|storage.*device|external.*drive)"
+         OR winlog.event_id IN ("2003", "2100", "2102")
+  | STATS 
+      usb_count = COUNT(*),
+      sample_events = VALUES(SUBSTRING(event.original, 0, 160))
+    BY hostn, userp
+  | WHERE usb_count >= 1
+  | EVAL risk_score = CASE(
+      usb_count >= 5, 75,
+      usb_count >= 3, 65,
+      55
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - USB Device
+  - Removable Media
+  - Data Exfiltration
+  - Policy Violation
+severity: low
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1052/001/"
+  - "https://attack.mitre.org/techniques/T1091/"
+nist: ["AC-1", "AC-17", "AC-19", "AC-20", "SC-15", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["9.9"]
+mitre_attack:
+  TA0010:
+    T1052: ["T1052.001"]

@@ -6,7 +6,7 @@
 #//ECS fields used: log.original, user.email, user.name, source.ip
 #//Tuning notes: Scan logs for PII patterns; enforce pseudonymisation/tokenization
 
-name: "RULE-GDPR-11: Personal Identifiers in Application Logs (Pseudonymisation Failure)"
+name: "Personal Identifiers in Application Logs (Pseudonymisation Failure)"
 description: |
   Identifies personal identifiers (emails, full names, IP addresses, userIDs) logged
   in plaintext in application logs, web server logs, or analytics systems. GDPR

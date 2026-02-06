@@ -1,0 +1,76 @@
+name: "Suspicious Outbound Connection to Rare Port"
+description: |
+  This rule identifies outbound network connections to uncommon high ports (1024-65535) from workstations or application servers. It focuses on detecting command-and-control (C2) channels, data exfiltration tunnels, and reverse shells that often use non-standard ports to evade detection. The rule triggers when a host initiates 15+ connections to ports outside the common service range within 20 minutes.
+
+#  **Why it matters:**
+#  Unusual outbound ports often indicate malware communication or data exfiltration:
+#  - NIST SP 800-53 SC-7 requires monitoring of network boundary traffic for anomalies
+#  - PCI DSS 1.2.1 mandates restriction and monitoring of outbound traffic
+#  - Unusual port usage is a strong indicator of compromise in mature environments
+#
+#  **False Positives:**
+#  - Legitimate applications using non-standard ports (game servers, P2P, custom apps)
+#  - Cloud services or CDNs utilizing ephemeral high ports
+#  - Monitoring agents or backup software connecting to central servers
+#  - Software update mechanisms downloading from diverse port ranges
+#
+#  **Triage Steps:**
+#  1. Identify the process initiating connections (correlate with process execution logs)
+#  2. Check destination IPs against threat intelligence and geolocation
+#  3. Review the frequency and volume of data transferred on these connections
+#  4. Verify if the application legitimately requires these outbound connections
+#  5. Inspect packet captures if available for protocol identification
+#  6. Block suspicious connections at firewall and investigate host for malware
+type: esql
+params: '{}'
+schedule_interval: 20m
+index:
+  - metricbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM metricbeat-*, auditbeat-*
+  // Time window: last 20 minutes
+  | WHERE @timestamp >= NOW() - 20 minutes
+  // Network connection data
+  | WHERE event.category == "network" OR event.dataset RLIKE ".*network.*"
+  // Extract host and port from logs (heuristic-based on event.original)
+  | EVAL hostname = COALESCE(host.name, "")
+  | WHERE hostname IS NOT NULL
+  // Look for high port indicators (heuristic pattern matching)
+  | WHERE event.original RLIKE ".*(:[1-9][0-9]{3,4}|port [1-9][0-9]{3,4}).*"
+  // Exclude common ports (80, 443, 22, 3389, 3306, 5432, etc.)
+  | WHERE NOT event.original RLIKE ".*(port 80[^0-9]|port 443[^0-9]|port 22[^0-9]|port 3389[^0-9]|port 3306[^0-9]|port 5432[^0-9]|:80/|:443/|:22/|:3389/|:3306/|:5432/).*"
+  // Aggregate by host
+  | STATS 
+      connection_count = COUNT(*),
+      sample_logs = VALUES(SUBSTRING(event.original, 0, 120))
+    BY hostname
+  // Threshold: 15+ connections to unusual ports
+  | WHERE connection_count >= 15
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      connection_count >= 100, 90,
+      connection_count >= 50, 80,
+      70
+    )
+  | KEEP hostname, connection_count, risk_score, sample_logs
+enabled: false
+tags:
+  - Network Security
+  - Outbound Traffic
+  - C2 Detection
+  - Exfiltration
+severity: medium
+risk_score: 75
+references:
+  - "https://attack.mitre.org/techniques/T1071/"
+  - "https://attack.mitre.org/techniques/T1041/"
+nist: ["SC-7", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["1.2.1", "10.6.1"]
+mitre_attack:
+  TA0011:
+    T1071: ["T1071.001"]
+  TA0010:
+    T1041: []

@@ -5,7 +5,7 @@
 #//ECS fields used: tls.version, tls.cipher, network.protocol, destination.port
 #//Tuning notes: Alert on TLS < 1.2, weak ciphers (RC4, DES, export); verify wireless encryption
 
-name: "RULE-PCI-12: Weak or Deprecated TLS/SSL Configuration"
+name: "Weak or Deprecated TLS/SSL Configuration"
 description: |
   Detects usage of weak TLS versions (SSL 2.0/3.0, TLS 1.0/1.1) or insecure cipher
   suites (RC4, DES, export ciphers, NULL encryption). PCI DSS 4.1 requires strong

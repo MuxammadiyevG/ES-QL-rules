@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, file.path
 #//Tuning notes: Monitor training data sources; verify purpose limitation compliance
 
-name: "RULE-GDPR-31: Machine Learning Training on Personal Data Without Purpose Justification"
+name: "Machine Learning Training on Personal Data Without Purpose Justification"
 description: |
   Identifies ML model training jobs using datasets containing personal data without
   documented legal basis or purpose alignment per GDPR Article 6. Detects training

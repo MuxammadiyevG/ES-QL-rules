@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, event.action, registry.path, file.path
 #//Tuning notes: Baseline normal audit policy changes, allowlist SCCM/GPO update windows
 #
-name: "RULE-NIST-07: Audit Policy Modification Detection"
+name: "Audit Policy Modification Detection"
 description: |
   Detects changes to system audit policy, event log settings, or auditd configuration.
   Disabling audit trails is prerequisite for many advanced attacks and APT campaigns.

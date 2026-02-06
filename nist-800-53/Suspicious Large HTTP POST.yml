@@ -6,7 +6,7 @@
 #//ECS fields used: http.request.method, http.request.body.bytes, url.path, source.ip
 #//Tuning notes: Adjust size threshold per application (consider file upload endpoints)
 
-name: "RULE-NIST-29: Suspicious Large HTTP POST"
+name: "Suspicious Large HTTP POST"
 description: |
   Detects POST requests with unusually large body sizes that may indicate file upload attacks or DoS.
   Bodies >10MB to non-upload endpoints suggest malicious file uploads (webshells, malware).

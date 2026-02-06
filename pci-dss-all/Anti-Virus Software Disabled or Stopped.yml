@@ -13,7 +13,7 @@
 #//Tuning notes: Allowlist authorized maintenance windows; monitor service state changes
 
 
-name: "RULE-PCI-13: Anti-Virus Software Disabled or Stopped"
+name: "Anti-Virus Software Disabled or Stopped"
 description: |
   Identifies when anti-virus or anti-malware services are stopped, disabled, or
   uninstalled on systems. PCI DSS 5.2/5.3 requires active anti-virus mechanisms

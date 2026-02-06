@@ -1,0 +1,52 @@
+name: "Host-Based Intrusion Prevention System (HIPS) Disabled"
+description: |
+  This rule detects attempts to disable host-based security controls such as HIPS, application whitelisting (AppLocker), or exploit protection features. Adversaries disable these controls to facilitate malware execution.
+  
+#  Disabling HIPS or application control is a critical defense evasion step that precedes malware deployment. Early detection prevents successful exploitation.
+#  
+#  False positives may occur with security software troubleshooting, policy changes, or authorized security testing. Verify with security team.
+#  
+#  Triage steps: (1) Identify which security control was disabled and by whom, (2) Verify if the action is documented and approved, (3) Check for malware deployment following the disable action, (4) Re-enable security controls immediately.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for HIPS/AppLocker/EMET disable commands
+  | WHERE cmd RLIKE "(?i)(Disable-AppLockerPolicy|Set-ProcessMitigation.*Disable|bcdedit.*nx.*AlwaysOff|reg.*add.*AppLocker.*Disabled)"
+  | STATS 
+      disable_count = COUNT(*),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE disable_count >= 1
+  | EVAL risk_score = CASE(
+      disable_count >= 3, 95,
+      disable_count >= 2, 90,
+      85
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - HIPS
+  - Defense Evasion
+  - Security Control
+  - AppLocker
+severity: critical
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1562/001/"
+nist: ["AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["5.1"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.001"]

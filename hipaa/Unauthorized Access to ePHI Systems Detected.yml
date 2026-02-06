@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, user.name, event.outcome, source.ip, destination.ip
 #//Tuning notes: Define ePHI systems; monitor role-based access violations
 
-name: "RULE-HIPAA-01: Unauthorized Access to ePHI Systems Detected"
+name: "Unauthorized Access to ePHI Systems Detected"
 description: |
   Identifies unauthorized access attempts or successful unauthorized access to
   electronic Protected Health Information (ePHI) systems including EHR/EMR databases,

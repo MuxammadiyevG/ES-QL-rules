@@ -17,7 +17,7 @@
 #//ECS fields used: process.name, process.pid, user.name, file.path
 #//Tuning notes: Monitor cross-tenant access; validate container isolation; track process permissions
 
-name: "RULE-PCI-41: Shared Hosting Tenant Isolation Violation"
+name: "Shared Hosting Tenant Isolation Violation"
 description: |
   Identifies processes attempting to access files or resources belonging to other
   tenants in a shared hosting environment. PCI DSS Appendix A.1.1 requires each

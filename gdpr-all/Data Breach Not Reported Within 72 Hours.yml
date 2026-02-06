@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, @timestamp, event.severity
 #//Tuning notes: Track incident timeline; monitor breach confirmation to notification gap
 
-name: "RULE-GDPR-14: Data Breach Not Reported Within 72 Hours"
+name: "Data Breach Not Reported Within 72 Hours"
 description: |
   Identifies confirmed personal data breaches in incident management systems that
   have not been reported to the supervisory authority within the GDPR Article 33(1)

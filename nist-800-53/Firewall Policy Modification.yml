@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, event.action, registry.path, rule.name
 #//Tuning notes: Allowlist known firewall management tools, baseline normal rule change frequency
 
-name: "RULE-NIST-22: Firewall Policy Modification"
+name: "Firewall Policy Modification"
 description: |
   Detects changes to Windows Firewall or Linux firewall rules (iptables, ufw, firewalld).
   Adding permissive inbound rules or disabling firewall entirely weakens boundary protection.

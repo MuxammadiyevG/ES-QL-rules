@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, winlog.logon.type, user.name, event.action
 #//Tuning notes: Requires MFA enforcement baseline, allowlist service accounts, legacy apps
 
-name: "RULE-NIST-10: MFA Bypass Detection"
+name: "MFA Bypass Detection"
 description: |
   Detects successful interactive logins via RDP or network logon without multi-factor authentication.
   LogonType 10 (RemoteInteractive) and Type 3 (Network) should require MFA per policy.

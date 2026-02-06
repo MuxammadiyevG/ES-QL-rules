@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, @timestamp, url.domain
 #//Tuning notes: Monitor vendor systems; track BA breach notifications received
 
-name: "RULE-HIPAA-32: Business Associate Breach Not Reported to Covered Entity"
+name: "Business Associate Breach Not Reported to Covered Entity"
 description: |
   Identifies breaches occurring at Business Associate (vendor, contractor, subcontractor)
   organizations that have not been reported to the Covered Entity within HIPAA

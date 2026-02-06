@@ -6,7 +6,7 @@
 #//ECS fields used: network.protocol, destination.port, network.transport
 #//Tuning notes: Allowlist known legacy systems, adjust for environment-specific protocols
 #
-name: "RULE-NIST-21: Plaintext Protocol Usage Detection"
+name: "Plaintext Protocol Usage Detection"
 description: |
   Detects usage of unencrypted protocols (HTTP, FTP, Telnet) when encrypted alternatives exist.
   Transmission on ports 80, 21, 23 without TLS wrapper exposes data to man-in-the-middle attacks.

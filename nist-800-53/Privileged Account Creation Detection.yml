@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, user.name, user.target.name, user.target.group, winlog.event_data.PrivilegeList
 #//Tuning notes: Allowlist known provisioning systems, baseline normal admin account creation frequency
 
-name: "RULE-NIST-01: Privileged Account Creation Detection"
+name: "Privileged Account Creation Detection"
 description: |
   Detects creation of new user accounts with immediate assignment to privileged groups (Administrators, Domain Admins, sudoers).
   This violates least privilege principles and may indicate unauthorized access or insider threat.

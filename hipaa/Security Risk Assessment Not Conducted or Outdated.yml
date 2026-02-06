@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, @timestamp, file.mtime
 #//Tuning notes: Track risk assessment completion dates; require annual updates
 
-name: "RULE-HIPAA-23: Security Risk Assessment Not Conducted or Outdated"
+name: "Security Risk Assessment Not Conducted or Outdated"
 description: |
   Identifies absence of security risk assessment or risk analysis not performed
   within required timeframe (annually recommended) as mandated by HIPAA §164.308(a)(1)(ii)(A).

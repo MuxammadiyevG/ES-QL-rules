@@ -6,7 +6,7 @@
 #//ECS fields used: event.outcome, event.code, user.name, file.path, process.name
 #//Tuning notes: Adjust threshold per environment (5-10 failures/5min), allowlist monitoring tools
 
-name: "RULE-NIST-02: Excessive Failed Privileged Access"
+name: "Excessive Failed Privileged Access"
 description: |
   Detects multiple failed attempts to access privileged files, registry keys, or execute privileged processes.
   Indicates potential unauthorized privilege escalation or lateral movement attempts.

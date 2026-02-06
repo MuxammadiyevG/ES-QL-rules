@@ -1,0 +1,52 @@
+
+name: "Scheduled Task Execution Spike - Automated Activity Anomaly"
+description: |
+  This rule detects an unusual spike in scheduled task executions across the environment, which may indicate malware using task scheduler for persistence, lateral movement campaigns, or automated attack tools deploying across multiple systems.
+  
+#  Scheduled task execution spikes can reveal coordinated malware deployment or persistent threats using task scheduler. Monitoring execution patterns helps detect automation.
+#  
+#  False positives may occur during patch deployments, software updates, or legitimate automation rollouts. Baseline normal task execution volumes.
+#  
+#  Triage steps: (1) Identify which scheduled tasks are executing frequently, (2) Review task definitions and executable paths, (3) Check if tasks were recently created or modified, (4) Investigate task executables for malware indicators.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE @timestamp >= NOW() - 20 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  // Event ID 4698 = scheduled task created, 4702 = scheduled task updated
+  | WHERE winlog.event_id IN ("4698", "4702", "200", "201")
+  | STATS 
+      task_count = COUNT(*),
+      unique_hosts = COUNT_DISTINCT(hostn),
+      sample_events = VALUES(SUBSTRING(event.original, 0, 160))
+    BY hostn
+  // Threshold: 10+ task events in 20 minutes
+  | WHERE task_count >= 10
+  | EVAL risk_score = CASE(
+      task_count >= 20, 85,
+      task_count >= 15, 75,
+      65
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Scheduled Task
+  - Persistence
+  - Automation
+  - Lateral Movement
+severity: medium
+risk_score: 68
+references:
+  - "https://attack.mitre.org/techniques/T1053/005/"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.005"]

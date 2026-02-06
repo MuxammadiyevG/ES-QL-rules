@@ -5,7 +5,7 @@
 #//ECS fields used: event.severity, event.action, network.bytes, user.name
 #//Tuning notes: Assess risk factors; track breach threshold evaluations
 
-name: "RULE-HIPAA-29: Unsecured PHI Exposure Meeting Breach Threshold"
+name: "Unsecured PHI Exposure Meeting Breach Threshold"
 description: |
   Identifies incidents involving acquisition, access, use, or disclosure of unsecured
   Protected Health Information that compromise security or privacy, meeting HIPAA

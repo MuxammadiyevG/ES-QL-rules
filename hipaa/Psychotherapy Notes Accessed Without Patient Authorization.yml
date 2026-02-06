@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, user.name, record.type
 #//Tuning notes: Identify psychotherapy notes in EHR; require separate authorization
 
-name: "RULE-HIPAA-37: Psychotherapy Notes Accessed Without Patient Authorization"
+name: "Psychotherapy Notes Accessed Without Patient Authorization"
 description: |
   Identifies access to psychotherapy notes without specific patient authorization
   as required by HIPAA §164.508(a)(2). Psychotherapy notes have heightened privacy

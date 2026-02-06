@@ -5,7 +5,7 @@
 #//ECS fields used: network.protocol, network.bytes, file.hash, event.action
 #//Tuning notes: Monitor HL7/FHIR interfaces; verify message integrity mechanisms
 
-name: "RULE-HIPAA-09: ePHI Data Transfer Without Integrity Verification"
+name: "ePHI Data Transfer Without Integrity Verification"
 description: |
   Identifies transmission of ePHI without integrity verification mechanisms (checksums,
   hash values, digital signatures) as recommended by HIPAA §164.312(c)(2). Detects

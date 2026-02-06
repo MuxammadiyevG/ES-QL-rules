@@ -5,7 +5,7 @@
 #//ECS fields used: patient.id, user.name, event.action, geo.location
 #//Tuning notes: Detect impossible travel; monitor for identity fraud patterns
 
-name: "RULE-HIPAA-40: Medical Identity Theft Indicators Detected"
+name: "Medical Identity Theft Indicators Detected"
 description: |
   Identifies potential medical identity theft through anomalous access patterns
   including impossible travel (same patient accessed from distant locations within

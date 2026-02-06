@@ -1,0 +1,53 @@
+
+name: "Firewall Rule Modification - Network Security Policy Change"
+description: |
+  This rule detects modifications to firewall rules or network security policies using tools like netsh, iptables, ufw, or PowerShell firewall cmdlets. Adversaries may disable firewall rules to allow malicious traffic or open backdoor ports.
+  
+#  Firewall tampering is a defense evasion technique that weakens network security controls. Monitoring firewall changes helps maintain network security posture.
+#  
+#  False positives may occur with legitimate network administration, security hardening, or automated configuration management. Correlate with change management records.
+#  
+#  Triage steps: (1) Identify which firewall rules were added, modified, or deleted, (2) Verify if the change is documented and approved, (3) Check if new rules allow inbound connections to suspicious ports, (4) Restore original firewall configuration if unauthorized.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for firewall modification commands
+  | WHERE cmd RLIKE "(?i)(netsh.*firewall|netsh.*advfirewall|New-NetFirewallRule|Set-NetFirewallRule|Remove-NetFirewallRule|iptables|ufw|firewall-cmd)"
+  | STATS 
+      fw_change_count = COUNT(*),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE fw_change_count >= 1
+  | EVAL risk_score = CASE(
+      fw_change_count >= 5, 85,
+      fw_change_count >= 3, 75,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Firewall
+  - Defense Evasion
+  - Network Security
+  - Policy Change
+severity: medium
+risk_score: 74
+references:
+  - "https://attack.mitre.org/techniques/T1562/004/"
+nist: ["AC-10", "AC-4", "SC-10", "SC-20", "SC-7", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["1.1"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.004"]

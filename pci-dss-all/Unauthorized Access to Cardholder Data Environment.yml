@@ -6,7 +6,7 @@
 #//ECS fields used: event.category, user.name, destination.ip, event.action
 #//Tuning notes: Define CDE asset list; maintain authorized user registry; monitor access patterns
 
-name: "RULE-PCI-21: Unauthorized Access to Cardholder Data Environment"
+name: "Unauthorized Access to Cardholder Data Environment"
 description: |
   Detects authentication or access attempts to cardholder data environment systems
   by users not on the authorized access list. PCI DSS 7.1 limits access to CDE to

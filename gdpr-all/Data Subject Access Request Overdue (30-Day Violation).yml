@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, event.action, @timestamp, log.original
 #//Tuning notes: Track DSAR ticket lifecycle; alert on overdue requests
 
-name: "RULE-GDPR-06: Data Subject Access Request Overdue (30-Day Violation)"
+name: "Data Subject Access Request Overdue (30-Day Violation)"
 description: |
   Identifies Data Subject Access Requests (DSARs) that have not been fulfilled
   within the GDPR Article 15 mandatory 30-day response period (extendable to 90

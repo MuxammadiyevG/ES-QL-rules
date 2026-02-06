@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, service.name, process.name
 #//Tuning notes: Requires approved service baseline, adjust for environment-specific services
 #
-name: "RULE-NIST-13: Unauthorized Service Installation"
+name: "Unauthorized Service Installation"
 description: |
   Detects installation or starting of new Windows services or Linux systemd units not in approved baseline.
   New services often indicate malware persistence, RAT deployment, or unauthorized software.

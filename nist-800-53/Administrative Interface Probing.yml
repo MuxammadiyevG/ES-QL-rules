@@ -6,7 +6,7 @@
 #//ECS fields used: url.path, http.response.status_code, source.ip
 #//Tuning notes: Customize admin path patterns per application, allowlist admin source IPs
 
-name: "RULE-NIST-28: Administrative Interface Probing"
+name: "Administrative Interface Probing"
 description: |
   Detects access attempts to common administrative URLs and control panels.
   Requests to /admin, /phpmyadmin, /wp-admin, /dashboard, /console endpoints from unauthorized sources.

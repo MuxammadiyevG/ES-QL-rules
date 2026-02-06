@@ -1,0 +1,56 @@
+name: "NTLM Authentication Spike - Potential NTLM Relay or Downgrade Attack"
+description: |
+  This rule detects excessive NTLM authentication events which may indicate NTLM relay attacks, pass-the-hash, or downgrade attacks forcing NTLM over Kerberos. NTLM is weaker than Kerberos and its misuse can facilitate lateral movement.
+  
+#  NTLM relay and downgrade attacks are common techniques for lateral movement and credential theft in Windows environments. Monitoring NTLM usage helps identify environments where Kerberos should be enforced.
+#  
+#  False positives are common in legacy environments where NTLM is still required. Establish baselines and focus on sudden spikes or NTLM usage from unexpected hosts.
+#  
+#  Triage steps: (1) Identify source and target hosts, (2) Check if NTLM is expected for these systems, (3) Review network traffic for SMB relay indicators, (4) Verify user account legitimacy.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Event ID 4624 with LogonType 3 (network) often uses NTLM; also look for provider_name containing NTLM
+  | WHERE (winlog.event_id == "4624" AND winlog.logon.type == "3") 
+         OR event.provider RLIKE "(?i)ntlm"
+         OR event.original RLIKE "(?i)ntlm"
+  | STATS 
+      ntlm_count = COUNT(*),
+      unique_targets = COUNT_DISTINCT(hostn),
+      sample_ips = VALUES(SUBSTRING(TO_STRING(srcip), 0, 50))
+    BY userp, srcip
+  // Threshold: more than 30 NTLM auths in 15 min from one source
+  | WHERE ntlm_count >= 30
+  | EVAL risk_score = CASE(
+      ntlm_count >= 60, 85,
+      ntlm_count >= 45, 75,
+      65
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - NTLM
+  - Lateral Movement
+  - Credential Access
+  - Relay Attack
+severity: high
+risk_score: 75
+references:
+  - "https://attack.mitre.org/techniques/T1557/001/"
+  - "https://www.microsoft.com/en-us/security/blog/2022/10/05/detecting-and-preventing-ntlm-relay-attacks/"
+nist: ["AC-14", "IA-1", "IA-10", "IA-11", "IA-2", "IA-3", "IA-5", "IA-8", "IA-9", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["8.3"]
+mitre_attack:
+  TA0008:
+    T1557: ["T1557.001"]

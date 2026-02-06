@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, user.name, log.original, @timestamp
 #//Tuning notes: Monitor DSAR workflow; track response times for all rights
 
-name: "RULE-GDPR-23: Data Subject Rights Request Failures (Aggregate Monitor)"
+name: "Data Subject Rights Request Failures (Aggregate Monitor)"
 description: |
   Comprehensive monitoring of all data subject rights (DSR) requests under GDPR
   Articles 15-22 (access, rectification, erasure, restriction, portability, objection,

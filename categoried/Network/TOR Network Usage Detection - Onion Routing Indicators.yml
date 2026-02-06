@@ -1,0 +1,56 @@
+name: "TOR Network Usage Detection - Onion Routing Indicators"
+description: |
+  This rule detects potential TOR network usage by identifying connections to known TOR ports (9001, 9030, 9050, 9051) or TOR-related keywords in event logs. TOR usage may indicate attempts to anonymize malicious traffic or evade detection.
+  
+#  TOR usage in enterprise environments is often unauthorized and can facilitate data exfiltration, C2 communication, or insider threat activity. Monitoring TOR connections helps detect evasion techniques.
+#  
+#  False positives may occur with security research, privacy tools, or specific business requirements. Document legitimate TOR usage and whitelist.
+#  
+#  Triage steps: (1) Identify the source host and user, (2) Determine which process is using TOR, (3) Verify if TOR usage is authorized, (4) Review outbound traffic for exfiltration indicators.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - metricbeat-*
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, metricbeat-*, winlogbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  | EVAL dstport = COALESCE(source.port, winlog.event_data.IpPort)
+  | EVAL procname = COALESCE(process.name, winlog.event_data.NewProcessName)
+  // Look for TOR ports or TOR-related process names/keywords
+  | WHERE dstport IN ("9001", "9030", "9050", "9051")
+         OR procname RLIKE "(?i)(tor|torbrowser|tor\\.exe)"
+         OR event.original RLIKE "(?i)(tor|onion|port\\s+(9001|9030|9050|9051))"
+  | STATS 
+      connection_count = COUNT(*),
+      sample_events = VALUES(SUBSTRING(event.original, 0, 160))
+    BY hostn, srcip, procname
+  | WHERE connection_count >= 1
+  | EVAL risk_score = CASE(
+      connection_count >= 5, 85,
+      connection_count >= 3, 75,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - TOR
+  - Anonymization
+  - Defense Evasion
+  - Network
+severity: medium
+risk_score: 72
+references:
+  - "https://attack.mitre.org/techniques/T1090/003/"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["1.3"]
+mitre_attack:
+  TA0005:
+    T1090: ["T1090.003"]

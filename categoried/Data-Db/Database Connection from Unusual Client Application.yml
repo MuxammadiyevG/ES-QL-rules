@@ -1,0 +1,55 @@
+name: "Database Connection from Unusual Client Application"
+description: |
+  This rule detects database connections from unusual or unexpected client applications by analyzing process names or command lines. Adversaries may use non-standard clients (curl, wget, custom scripts) to access databases, bypassing normal application layers.
+  
+#  Unusual database clients can indicate direct database access for exfiltration or reconnaissance, bypassing application-level security controls.
+#  
+#  False positives may occur with administrative tools, monitoring agents, or custom internal applications. Baseline normal client applications per environment.
+#  
+#  Triage steps: (1) Identify the client application and user, (2) Verify if this client is authorized for database access, (3) Review the queries executed, (4) Block unauthorized clients.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, winlogbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL procname = COALESCE(process.name, winlog.event_data.NewProcessName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for unusual database client tools
+  | WHERE procname RLIKE "(?i)(curl|wget|powershell|python|perl|ruby|nc|netcat|telnet|openssl)"
+         AND cmd RLIKE "(?i)(mysql|postgres|mssql|oracle|mongo|jdbc|odbc|port\\s+(3306|5432|1433|1521|27017))"
+  | STATS 
+      connection_count = COUNT(*),
+      unique_procs = COUNT_DISTINCT(procname),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE connection_count >= 1
+  | EVAL risk_score = CASE(
+      connection_count >= 5, 85,
+      connection_count >= 3, 75,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Database
+  - Unusual Client
+  - Initial Access
+  - Lateral Movement
+severity: medium
+risk_score: 72
+references:
+  - "https://attack.mitre.org/techniques/T1021/"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["2.2"]
+mitre_attack:
+  TA0008:
+    T1021: []

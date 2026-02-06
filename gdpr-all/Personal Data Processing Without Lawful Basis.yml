@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, user.name, log.original, event.action
 #//Tuning notes: Track consent records; monitor processing without consent/contract
 
-name: "RULE-GDPR-04: Personal Data Processing Without Lawful Basis"
+name: "Personal Data Processing Without Lawful Basis"
 description: |
   Identifies processing of personal data (marketing emails, profiling, automated
   decisions) without documented lawful basis required by GDPR Article 6. Detects

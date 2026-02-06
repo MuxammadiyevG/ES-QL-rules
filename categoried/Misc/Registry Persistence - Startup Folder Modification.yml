@@ -1,0 +1,55 @@
+
+name: "Registry Persistence - Startup Folder Modification"
+description: |
+  This rule detects file creation or modification in Windows Startup folders, which are commonly used for persistence. Adversaries place malicious executables, shortcuts, or scripts in Startup folders to ensure execution at user logon.
+  
+#  Startup folder persistence is a simple but effective technique for maintaining access. Monitoring Startup folder changes helps detect malware installation.
+#  
+#  False positives are common with legitimate software installations or user-added startup programs. Focus on unusual file types, suspicious executables, or unexpected users making changes.
+#  
+#  Triage steps: (1) Identify the file added to Startup folder and the user who added it, (2) Check the file hash and scan for malware, (3) Verify if the software is legitimate and documented, (4) Remove unauthorized Startup entries.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL filepath = COALESCE(file.path, event.original)
+  // Look for file creation in Startup folders
+  | WHERE filepath RLIKE "(?i)(\\\\Start Menu\\\\Programs\\\\Startup\\\\|AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup)"
+         OR event.original RLIKE "(?i)(Start Menu.*Startup|AppData.*Startup)"
+  | WHERE event.action RLIKE "(?i)(create|write|modify)" OR event.category == "file"
+  | STATS 
+      file_count = COUNT(*),
+      sample_files = VALUES(SUBSTRING(filepath, 0, 160))
+    BY hostn, userp
+  | WHERE file_count >= 1
+  | EVAL risk_score = CASE(
+      file_count >= 3, 85,
+      file_count >= 2, 75,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Startup Folder
+  - Persistence
+  - File Creation
+  - Autostart
+severity: medium
+risk_score: 72
+references:
+  - "https://attack.mitre.org/techniques/T1547/001/"
+nist: ["IA-1", "IA-12", "IA-2", "IA-4", "IA-5", "IA-8", "PE-2", "PS-3", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0003:
+    T1547: ["T1547.001"]

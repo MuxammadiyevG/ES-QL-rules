@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, user.name, log.original
 #//Tuning notes: Monitor age fields; verify parental consent mechanisms
 
-name: "RULE-GDPR-18: Children's Personal Data Processed Without Consent Verification"
+name: "Children's Personal Data Processed Without Consent Verification"
 description: |
   Identifies processing of personal data of children under 16 (or lower age per
   Member State law) without verifiable parental consent, violating GDPR Article 8.

@@ -1,0 +1,72 @@
+name: "Cleartext Protocol Usage on Sensitive Ports"
+description: |
+  This rule identifies usage of cleartext protocols (HTTP, FTP, Telnet) on ports commonly associated with sensitive services. Using metricbeat network metrics or auditbeat network activity, it detects connections on ports 80 (HTTP), 21 (FTP), 23 (Telnet) where encrypted alternatives should be mandated. The rule triggers when 10+ cleartext protocol connections are observed from sensitive hosts within 30 minutes.
+
+#  **Why it matters:**
+#  Cleartext protocols transmit credentials and data without encryption:
+#  - NIST SP 800-53 SC-8/SC-13 mandate encryption for data in transit
+#  - PCI DSS 4.1/4.2 prohibit transmission of cardholder data over cleartext protocols
+#  - GDPR Article 32 requires encryption of personal data during transmission
+#
+#  **False Positives:**
+#  - Internal-only monitoring systems using HTTP for health checks
+#  - Legacy systems in isolated network segments pending migration
+#  - Development environments where encryption is not yet implemented
+#  - Authorized internal file transfers over FTP within secure network zones
+#
+#  **Triage Steps:**
+#  1. Identify the hosts and services using cleartext protocols
+#  2. Verify if sensitive data (credentials, PII, financial data) is being transmitted
+#  3. Check network segmentation - are these connections internal-only or internet-facing?
+#  4. Review change management records for migration to encrypted alternatives (HTTPS, SFTP, SSH)
+#  5. Implement network-level controls to block cleartext protocols on sensitive segments
+#  6. Prioritize migration of systems based on data sensitivity and exposure
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM metricbeat-*
+  // Time window: last 30 minutes
+  | WHERE @timestamp >= NOW() - 30 minutes
+  // Network connection metrics
+  | WHERE event.dataset RLIKE ".*network.*" OR event.module == "system"
+  // Extract host and port info from event.original (metricbeat network data)
+  | EVAL hostname = COALESCE(host.name, "")
+  | WHERE hostname IS NOT NULL
+  // Heuristic: look for cleartext port indicators in logs
+  | WHERE event.original RLIKE ".*(port 80[^0-9]|port 21[^0-9]|port 23[^0-9]|:80/|:21/|:23/).*"
+  // Sensitive host patterns
+  | WHERE hostname RLIKE ".*(PROD|SQL|DB|FIN|HR|PCI|PAY).*"
+  // Aggregate by host
+  | STATS 
+      connection_count = COUNT(*),
+      sample_logs = VALUES(SUBSTRING(event.original, 0, 120))
+    BY hostname
+  // Threshold: 10+ cleartext connections
+  | WHERE connection_count >= 10
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      connection_count >= 100, 85,
+      connection_count >= 50, 75,
+      65
+    )
+  | KEEP hostname, connection_count, risk_score, sample_logs
+enabled: false
+tags:
+  - Network Security
+  - Cleartext Protocols
+  - Encryption
+  - Compliance
+severity: medium
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1040/"
+nist: ["AC-17", "SC-13", "SC-8"]
+gdpr: ["Article 32"]
+pci_dss: ["4.1", "4.2"]
+mitre_attack:
+  TA0006:
+    T1040: []

@@ -5,7 +5,7 @@
 #//ECS fields used: email.to, destination.ip, file.path, event.action
 #//Tuning notes: Maintain authorized recipient list; monitor external disclosures
 
-name: "RULE-HIPAA-12: PHI Disclosed to Unauthorized External Party"
+name: "PHI Disclosed to Unauthorized External Party"
 description: |
   Identifies disclosure of Protected Health Information to external parties without
   patient authorization or HIPAA-permitted exception under §164.502(a). Detects

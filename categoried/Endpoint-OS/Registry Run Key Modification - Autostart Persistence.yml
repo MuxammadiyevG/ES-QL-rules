@@ -1,0 +1,54 @@
+
+name: "Registry Run Key Modification - Autostart Persistence"
+description: |
+  This rule detects modifications to Windows Registry Run keys which are commonly used for persistence. Adversaries add malicious executables to Run/RunOnce keys to ensure their malware executes at system startup or user logon.
+  
+#  Registry Run keys are one of the most common persistence mechanisms in Windows environments. Monitoring these keys helps detect malware attempting to survive reboots.
+#  
+#  False positives are common with legitimate software installations that use autostart. Focus on unusual executable paths (temp directories, user-writable locations) or unknown binaries.
+#  
+#  Triage steps: (1) Identify the registry key path and value added, (2) Check the executable path and file hash, (3) Verify if the software is legitimate and documented, (4) Remove unauthorized entries and scan the executable.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for Run key modifications via reg.exe or PowerShell
+  | WHERE cmd RLIKE "(?i)(reg.*add.*(Run|RunOnce)|New-ItemProperty.*(Run|RunOnce)|Set-ItemProperty.*(Run|RunOnce))"
+         OR cmd RLIKE "(?i)(HKLM.*Software.*Microsoft.*Windows.*CurrentVersion.*Run|HKCU.*Software.*Microsoft.*Windows.*CurrentVersion.*Run)"
+  | STATS 
+      runkey_count = COUNT(*),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE runkey_count >= 1
+  | EVAL risk_score = CASE(
+      runkey_count >= 3, 85,
+      runkey_count >= 2, 75,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Registry Run Key
+  - Persistence
+  - Autostart
+  - Registry Modification
+severity: medium
+risk_score: 72
+references:
+  - "https://attack.mitre.org/techniques/T1547/001/"
+nist: ["IA-1", "IA-12", "IA-2", "IA-4", "IA-5", "IA-8", "PE-2", "PS-3", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0003:
+    T1547: ["T1547.001"]

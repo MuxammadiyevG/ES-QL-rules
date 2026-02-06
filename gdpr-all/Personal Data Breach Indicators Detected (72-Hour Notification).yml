@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, event.severity, event.type, source.ip
 #//Tuning notes: Aggregate breach indicators; correlate with incident response
 
-name: "RULE-GDPR-13: Personal Data Breach Indicators Detected (72-Hour Notification)"
+name: "Personal Data Breach Indicators Detected (72-Hour Notification)"
 description: |
   Identifies multiple indicators suggesting a personal data breach that may trigger
   GDPR Article 33 notification requirements (72-hour deadline to supervisory authority).

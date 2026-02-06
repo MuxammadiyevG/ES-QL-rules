@@ -1,0 +1,56 @@
+name: "Cross-Site WebSocket Hijacking (CSWSH)"
+description: |
+  This rule detects potential Cross-Site WebSocket Hijacking attempts by identifying WebSocket upgrade requests with suspicious origins, missing or mismatched Origin headers, or WebSocket connections from unexpected sources.
+  
+#  CSWSH allows attackers to establish unauthorized WebSocket connections and intercept or manipulate real-time communications, bypassing CSRF protections.
+#  
+#  False positives may occur with legitimate WebSocket clients, mobile applications, or cross-domain integrations. Verify Origin header validation.
+#  
+#  Triage steps: (1) Identify the source IP and Origin header, (2) Check if the Origin matches expected domains, (3) Review WebSocket traffic for unauthorized commands or data access, (4) Implement Origin header validation for WebSocket connections.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for WebSocket upgrade requests
+  | WHERE event.original RLIKE "(?i)(upgrade:\\s*websocket|connection:\\s*upgrade|sec-websocket)"
+  // Check for suspicious or missing Origin headers
+  | WHERE event.original RLIKE "(?i)(origin:\\s*null|origin:\\s*-|origin:.*http://localhost)"
+  // Also catch mismatched origins (heuristic - adjust per environment)
+  | WHERE NOT event.original RLIKE "(?i)(origin:.*yourdomain\\.com)"
+  | STATS 
+      ws_count = COUNT(*),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE ws_count >= 2
+  | EVAL risk_score = CASE(
+      ws_count >= 5, 80,
+      ws_count >= 3, 70,
+      60
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - WebSocket
+  - CSWSH
+  - Cross-Site Attack
+  - Origin Validation
+severity: medium
+risk_score: 68
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://portswigger.net/web-security/websockets/cross-site-websocket-hijacking"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0001:
+    T1190: []

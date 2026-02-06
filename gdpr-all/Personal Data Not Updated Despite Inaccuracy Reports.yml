@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, @timestamp
 #//Tuning notes: Track data age; monitor update frequency; flag stale records
 
-name: "RULE-GDPR-41: Personal Data Not Updated Despite Inaccuracy Reports"
+name: "Personal Data Not Updated Despite Inaccuracy Reports"
 description: |
   Identifies personal data records that remain unchanged despite user rectification
   requests or data quality alerts, violating GDPR Article 5(1)(d) accuracy principle

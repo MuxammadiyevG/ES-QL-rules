@@ -6,7 +6,7 @@
 #//ECS fields used: event.outcome, event.category, host.name
 #//Tuning notes: Baseline normal failure rate per host type, adjust threshold for log volume
 
-name: "RULE-NIST-08: Audit System Failure or Attack"
+name: "Audit System Failure or Attack"
 description: |
   Detects abnormal volume of failed audit events which may indicate audit system under attack,
   misconfiguration, or deliberate log flooding to hide malicious activity.

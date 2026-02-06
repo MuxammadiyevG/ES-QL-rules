@@ -5,7 +5,7 @@
 #//ECS fields used: email.to, event.action, log.original
 #//Tuning notes: Track unsubscribe events; verify marketing suppression
 
-name: "RULE-GDPR-45: Marketing Email Sent After Objection/Unsubscribe"
+name: "Marketing Email Sent After Objection/Unsubscribe"
 description: |
   Identifies marketing or promotional emails sent to users after they objected to
   direct marketing under GDPR Article 21(3). Detects emails sent to addresses on

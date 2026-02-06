@@ -1,0 +1,57 @@
+name: "Internal East-West Port Scanning - Single Source Probing Multiple Ports"
+description: |
+  This rule detects potential internal lateral movement port scanning by identifying a single source IP connecting to multiple distinct destination ports within a short time window. This pattern suggests reconnaissance for vulnerable services or lateral movement targets.
+  
+#  East-west scanning indicates active lateral movement attempts within the network. Early detection can prevent privilege escalation and data exfiltration.
+#  
+#  False positives may occur with network monitoring tools, vulnerability scanners, or legitimate service discovery. Baseline normal scanning activity and focus on unusual source hosts.
+#  
+#  Triage steps: (1) Identify the source IP and hostname, (2) Verify if the source is an authorized scanner or management system, (3) Review destination hosts and ports for sensitive services, (4) Block unauthorized scanning sources.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - metricbeat-*
+  - filebeat-nginx-access-*
+query_language: esql
+query: |
+  FROM auditbeat-*, metricbeat-*, filebeat-nginx-access-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  | EVAL dstport = COALESCE(source.port, winlog.event_data.IpPort)
+  // Focus on network connection events
+  | WHERE event.category == "network" OR event.type == "connection"
+  // Filter for internal IP ranges (adjust as needed: 10.x, 172.16-31.x, 192.168.x)
+  | WHERE srcip RLIKE "^(10\\.|172\\.(1[6-9]|2[0-9]|3[01])\\.|192\\.168\\.)"
+  | STATS 
+      connection_count = COUNT(*),
+      unique_ports = COUNT_DISTINCT(dstport),
+      sample_ports = VALUES(TO_STRING(dstport))
+    BY srcip, hostn
+  // Threshold: same source connecting to 10+ different ports
+  | WHERE unique_ports >= 10
+  | EVAL risk_score = CASE(
+      unique_ports >= 20, 90,
+      unique_ports >= 15, 80,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Port Scanning
+  - Lateral Movement
+  - Reconnaissance
+  - Network
+severity: high
+risk_score: 78
+references:
+  - "https://attack.mitre.org/techniques/T1046/"
+nist: ["AU-6", "IR-4", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.6"]
+mitre_attack:
+  TA0007:
+    T1046: []

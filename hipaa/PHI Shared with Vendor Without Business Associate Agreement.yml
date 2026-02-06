@@ -5,7 +5,7 @@
 #//ECS fields used: destination.ip, url.domain, network.bytes, event.action
 #//Tuning notes: Maintain BAA registry; monitor new vendor integrations
 
-name: "RULE-HIPAA-33: PHI Shared with Vendor Without Business Associate Agreement"
+name: "PHI Shared with Vendor Without Business Associate Agreement"
 description: |
   Identifies Protected Health Information transmitted to or processed by third-party
   vendors without executed Business Associate Agreement (BAA) as required by HIPAA

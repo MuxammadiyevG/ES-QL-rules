@@ -1,0 +1,54 @@
+name: "Database Audit Log Tampering - DROP AUDIT or Disable Logging Keywords"
+description: |
+  This rule detects attempts to tamper with database audit logs by identifying keywords such as "DROP AUDIT", "DISABLE AUDIT", "TRUNCATE audit", or similar patterns in process command lines or event originals. Adversaries disable logging to evade detection during data exfiltration or privilege escalation.
+  
+#  Audit log tampering is a critical defense evasion technique. Detecting these attempts helps maintain logging integrity and forensic visibility.
+#  
+#  False positives may occur during legitimate database maintenance or configuration changes. Verify with database administrators and change management records.
+#  
+#  Triage steps: (1) Identify the user and host executing the command, (2) Verify if the action is documented in change management, (3) Check if audit logging was successfully disabled, (4) Review database activity logs for suspicious queries prior to tampering attempt.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - winlogbeat-*
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, winlogbeat-*, metricbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for audit tampering keywords in command line or event original
+  | WHERE cmd RLIKE "(?i)(drop.*audit|disable.*audit|truncate.*audit|alter.*audit.*disable|noaudit|sp_configure.*audit|set.*audit.*off)"
+  | STATS 
+      tampering_count = COUNT(*),
+      unique_users = COUNT_DISTINCT(userp),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE tampering_count >= 1
+  | EVAL risk_score = CASE(
+      tampering_count >= 3, 95,
+      tampering_count >= 2, 85,
+      80
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Database
+  - Audit Log Tampering
+  - Defense Evasion
+  - Impact
+severity: critical
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1562/001/"
+nist: ["AU-6", "IR-4", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.5"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.001"]

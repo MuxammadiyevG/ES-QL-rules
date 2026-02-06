@@ -1,0 +1,55 @@
+name: "Multiple Failed Connection Attempts - Network Reconnaissance"
+description: |
+  This rule detects multiple failed network connection attempts from a single source, which may indicate network reconnaissance, port scanning, or connection failures during exploitation attempts.
+  
+#  Failed connection spikes can reveal reconnaissance activity or exploitation attempts. Early detection helps prevent successful compromise.
+#  
+#  False positives may occur with misconfigured applications, DNS issues, or firewall rule changes. Focus on high failure counts and unfamiliar sources.
+#  
+#  Triage steps: (1) Identify the source IP and hostname, (2) Review destination ports and hosts, (3) Check if failures are due to firewall blocks or service unavailability, (4) Block scanning sources.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, metricbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Focus on failed network events
+  | WHERE event.outcome == "failure" 
+         OR event.original RLIKE "(?i)(connection.*failed|refused|timeout|unreachable|rst)"
+  | WHERE event.category == "network" OR event.type == "connection"
+  | STATS 
+      failed_count = COUNT(*),
+      unique_destinations = COUNT_DISTINCT(event.original),
+      sample_events = VALUES(SUBSTRING(event.original, 0, 160))
+    BY hostn, srcip
+  // Threshold: 15+ failed connections
+  | WHERE failed_count >= 15
+  | EVAL risk_score = CASE(
+      failed_count >= 30, 85,
+      failed_count >= 20, 75,
+      65
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Failed Connection
+  - Reconnaissance
+  - Network Scanning
+  - Discovery
+severity: medium
+risk_score: 68
+references:
+  - "https://attack.mitre.org/techniques/T1046/"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.6"]
+mitre_attack:
+  TA0007:
+    T1046: []

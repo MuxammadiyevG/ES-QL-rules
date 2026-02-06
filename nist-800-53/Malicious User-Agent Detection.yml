@@ -6,7 +6,7 @@
 #//ECS fields used: user_agent.original, source.ip, url.path
 #//Tuning notes: Allowlist legitimate monitoring tools, adjust pattern matching for new tools
 
-name: "RULE-NIST-27: Malicious User-Agent Detection"
+name: "Malicious User-Agent Detection"
 description: |
   Detects requests with user-agents associated with attack tools, scanners, or suspicious patterns.
   Tool signatures (sqlmap, nikto, masscan), empty user-agents, or custom scripts flagged.

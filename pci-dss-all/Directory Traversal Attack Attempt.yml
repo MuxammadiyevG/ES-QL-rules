@@ -5,7 +5,7 @@
 #//ECS fields used: url.path, url.query, http.response.status_code, source.ip
 #//Tuning notes: Monitor for ../ patterns and absolute paths; correlate with 404/403 errors
 #
-name: "RULE-PCI-19: Directory Traversal Attack Attempt"
+name: "Directory Traversal Attack Attempt"
 description: |
   Identifies directory traversal (path traversal) attacks attempting to access
   files outside web root using ../ sequences or absolute paths. PCI DSS 6.5.8

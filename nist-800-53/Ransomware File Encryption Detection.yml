@@ -6,7 +6,7 @@
 #//ECS fields used: event.action, file.extension, file.path, process.name
 #//Tuning notes: Adjust file extension list for new ransomware variants, threshold for mass file ops
 
-name: "RULE-NIST-18: Ransomware File Encryption Detection"
+name: "Ransomware File Encryption Detection"
 description: |
   Detects rapid creation of files with ransomware-associated extensions or mass file renaming.
   Suspicious extensions: .encrypted, .locked, .crypt, .enc, random extensions.

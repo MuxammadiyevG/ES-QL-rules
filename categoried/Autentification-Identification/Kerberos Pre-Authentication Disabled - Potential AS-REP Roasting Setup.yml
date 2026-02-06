@@ -1,0 +1,56 @@
+
+name: "Kerberos Pre-Authentication Disabled - Potential AS-REP Roasting Setup"
+description: |
+  This rule detects changes to user accounts disabling Kerberos pre-authentication (attribute UserAccountControl change), which enables AS-REP Roasting attacks. Adversaries disable this setting to request AS-REP tickets that can be cracked offline.
+  
+#  AS-REP Roasting is a credential access technique targeting accounts without pre-authentication. Detecting configuration changes is critical to prevent offline password attacks.
+#  
+#  False positives may occur during legitimate account configuration or compatibility requirements. Verify with IT administrators.
+#  
+#  Triage steps: (1) Identify which user account was modified, (2) Check if pre-auth disable is documented/approved, (3) Re-enable pre-authentication if unauthorized, (4) Review account activity for compromise indicators.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL usert = COALESCE(user.target.name, winlog.event_data.TargetUserName)
+  // Event ID 4738 = user account was changed
+  | WHERE winlog.event_id == "4738"
+  // Look for "Do Not Require Preauth" in event details (heuristic via event.original)
+  | WHERE event.original RLIKE "(?i)(preauth|preauthentication|dont.*require.*preauth|4194304)"
+  | STATS 
+      change_count = COUNT(*),
+      affected_users = VALUES(usert),
+      sample_events = VALUES(SUBSTRING(event.original, 0, 160))
+    BY hostn, userp
+  | WHERE change_count >= 1
+  | EVAL risk_score = CASE(
+      change_count >= 3, 85,
+      change_count >= 2, 75,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Kerberos
+  - AS-REP Roasting
+  - Credential Access
+  - Account Modification
+severity: high
+risk_score: 75
+references:
+  - "https://attack.mitre.org/techniques/T1558/004/"
+  - "https://www.harmj0y.net/blog/activedirectory/roasting-as-reps/"
+nist: ["IA-1", "IA-12", "IA-2", "IA-4", "IA-5", "IA-8", "PE-2", "PS-3", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["8.7"]
+mitre_attack:
+  TA0006:
+    T1558: ["T1558.004"]

@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, event.action, file.path, process.command_line
 #//Tuning notes: Allowlist known deployment tools, baseline scheduled maintenance tasks
 
-name: "RULE-NIST-31: Suspicious Scheduled Task Creation"
+name: "Suspicious Scheduled Task Creation"
 description: |
   Detects creation of new scheduled tasks or cron jobs with suspicious characteristics.
   Tasks executing scripts from temp directories, PowerShell commands, or unusual schedules flagged.

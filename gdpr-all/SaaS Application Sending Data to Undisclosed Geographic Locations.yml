@@ -5,7 +5,7 @@
 #//ECS fields used: destination.ip, destination.geo.country_code, http.request.referrer
 #//Tuning notes: Maintain approved SaaS provider list; monitor outbound connections
 
-name: "RULE-GDPR-38: SaaS Application Sending Data to Undisclosed Geographic Locations"
+name: "SaaS Application Sending Data to Undisclosed Geographic Locations"
 description: |
   Identifies Software-as-a-Service applications transmitting personal data to
   geographic locations not disclosed in Data Processing Agreements (DPAs) or processor

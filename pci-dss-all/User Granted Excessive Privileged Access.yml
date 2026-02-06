@@ -13,7 +13,7 @@
 #//ECS fields used: event.category, user.name, group.name, event.action
 #//Tuning notes: Define role-based access matrix; monitor group membership changes
 
-name: "RULE-PCI-20: User Granted Excessive Privileged Access"
+name: "User Granted Excessive Privileged Access"
 description: |
   Identifies users added to privileged groups (Administrators, Domain Admins, root,
   sudo) without corresponding role justification. PCI DSS 7.1.2 requires restricting

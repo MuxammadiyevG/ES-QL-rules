@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, user.name, @timestamp
 #//Tuning notes: Track violations and corresponding sanctions; monitor enforcement
 
-name: "RULE-HIPAA-24: HIPAA Violation Detected Without Sanction Enforcement"
+name: "HIPAA Violation Detected Without Sanction Enforcement"
 description: |
   Identifies confirmed HIPAA policy violations (unauthorized PHI access, security
   breaches, privacy violations) that do not result in documented sanctions or

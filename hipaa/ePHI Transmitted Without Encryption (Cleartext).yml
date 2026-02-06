@@ -5,7 +5,7 @@
 #//ECS fields used: network.protocol, destination.port, tls.version, http.request.body
 #//Tuning notes: Monitor for HTTP (not HTTPS), plain FTP, unencrypted email with PHI
 
-name: "RULE-HIPAA-10: ePHI Transmitted Without Encryption (Cleartext)"
+name: "ePHI Transmitted Without Encryption (Cleartext)"
 description: |
   Identifies transmission of electronic Protected Health Information over unencrypted
   network connections in violation of HIPAA §164.312(e)(1) encryption addressable

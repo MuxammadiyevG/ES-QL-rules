@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, @timestamp
 #//Tuning notes: Monitor for 500+ individual threshold; track HHS portal submissions
 
-name: "RULE-HIPAA-31: Breach Affecting 500+ Individuals Not Reported to HHS/Media"
+name: "Breach Affecting 500+ Individuals Not Reported to HHS/Media"
 description: |
   Identifies breaches affecting 500 or more individuals that have not been reported
   to HHS Secretary (via breach portal) and prominent media outlets as required by

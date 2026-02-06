@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, winlog.logon.type, source.ip, destination.ip, user.name
 #//Tuning notes: Baseline normal admin activity, allowlist jump servers and management hosts
 #
-name: "RULE-NIST-19: Rapid Lateral Movement Activity"
+name: "Rapid Lateral Movement Activity"
 description: |
   Detects single user account authenticating to multiple distinct systems in short timeframe.
   Network logons (Type 3) to 5+ unique hosts in 15 minutes indicates lateral movement or reconnaissance.

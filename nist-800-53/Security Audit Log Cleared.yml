@@ -6,7 +6,7 @@
 #//ECS fields used: event.code, event.action, user.name, file.path
 #//Tuning notes: Allowlist scheduled maintenance windows, legitimate log rotation scripts
 
-name: "RULE-NIST-06: Security Audit Log Cleared"
+name: "Security Audit Log Cleared"
 description: |
   Detects clearing or deletion of security audit logs, a common anti-forensics technique.
   Windows Event ID 1102 (Security log cleared) is strong IOC for attacker trying to cover tracks.

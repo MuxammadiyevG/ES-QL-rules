@@ -5,7 +5,7 @@
 #//Data sources: Database logs, application logs
 #//ECS fields used: log.original, database.query, environment.name
 #//Tuning notes: Tag environments; monitor for INSERT with real PANs in non-prod
-name: "RULE-PCI-16: Production Cardholder Data in Test/Dev Environment"
+name: "Production Cardholder Data in Test/Dev Environment"
 description: |
   Identifies instances where live Primary Account Numbers or production cardholder
   data appears in development or test environments. PCI DSS 6.4.3 prohibits use of

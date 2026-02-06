@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, @timestamp, log.original, email.to
 #//Tuning notes: Track breach confirmation to notification timeline; monitor 60-day deadline
 
-name: "RULE-HIPAA-30: PHI Breach Not Notified to Affected Individuals (60-Day Violation)"
+name: "PHI Breach Not Notified to Affected Individuals (60-Day Violation)"
 description: |
   Identifies confirmed breaches of unsecured PHI where affected individuals have
   not been notified within HIPAA §164.404 mandatory 60-day deadline. Detects breach

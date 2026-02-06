@@ -1,0 +1,54 @@
+
+name: "Suspicious REVOKE Privilege Operation - Access Removal"
+description: |
+  This rule detects REVOKE statements in database command lines or event originals that remove privileges from users or roles. While legitimate for access control, adversaries may revoke privileges to disrupt operations or cover tracks.
+  
+#  Unauthorized privilege revocations can indicate sabotage, insider threat, or defense evasion. Monitoring REVOKE operations helps maintain access control integrity.
+#  
+#  False positives may occur during user offboarding or access reviews. Correlate with HR and change management systems.
+#  
+#  Triage steps: (1) Identify the user/role having privileges revoked, (2) Verify if the REVOKE is documented and approved, (3) Check if the revoking user has authority, (4) Restore privileges if unauthorized.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - winlogbeat-*
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, winlogbeat-*, metricbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for REVOKE statements
+  | WHERE cmd RLIKE "(?i)revoke.*(all|select|insert|update|delete|execute|create|drop|alter|grant).*from"
+  | STATS 
+      revoke_count = COUNT(*),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE revoke_count >= 1
+  | EVAL risk_score = CASE(
+      revoke_count >= 5, 85,
+      revoke_count >= 3, 75,
+      65
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Database
+  - REVOKE
+  - Defense Evasion
+  - Impact
+severity: medium
+risk_score: 68
+references:
+  - "https://attack.mitre.org/techniques/T1531/"
+nist: ["AC-1", "AC-14", "AC-16", "AC-2", "AC-24", "AC-3", "AC-5", "AC-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["7.1"]
+mitre_attack:
+  TA0040:
+    T1531: []

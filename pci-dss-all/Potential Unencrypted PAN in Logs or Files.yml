@@ -12,7 +12,7 @@
 #//ECS fields used: file.path, event.action, log.original, process.name
 #//Tuning notes: Use regex for PAN patterns; exclude tokenization systems; high false positive risk
 
-name: "RULE-PCI-07: Potential Unencrypted PAN in Logs or Files"
+name: "Potential Unencrypted PAN in Logs or Files"
 description: |
   Detects patterns resembling unencrypted Primary Account Numbers (PANs) in log files
   or file system events. PCI DSS 3.4 requires PANs to be unreadable anywhere stored.

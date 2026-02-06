@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, event.category
 #//Tuning notes: Monitor ML model inference; track automated decision systems
 
-name: "RULE-GDPR-19: Automated Profiling or Decision-Making Without User Notice"
+name: "Automated Profiling or Decision-Making Without User Notice"
 description: |
   Identifies automated profiling, scoring, or decision-making systems operating
   without informing data subjects of the logic, significance, and consequences as

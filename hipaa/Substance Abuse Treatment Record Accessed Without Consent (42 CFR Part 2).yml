@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, program.type, diagnosis.code, user.name
 #//Tuning notes: Identify Part 2 programs; require specific patient consent
 
-name: "RULE-HIPAA-39: Substance Abuse Treatment Record Accessed Without Consent (42 CFR Part 2)"
+name: "Substance Abuse Treatment Record Accessed Without Consent (42 CFR Part 2)"
 description: |
   Identifies access to substance use disorder treatment records protected under
   42 CFR Part 2, which provides stricter confidentiality than HIPAA. Detects access

@@ -5,7 +5,7 @@
 #//ECS fields used: url.query, http.request.body, user_agent.original, source.ip
 #//Tuning notes: Monitor for SQL syntax in parameters; correlate with WAF blocks
 
-name: "RULE-PCI-17: SQL Injection Attack Attempt"
+name: "SQL Injection Attack Attempt"
 description: |
   Identifies potential SQL injection attempts in web requests by detecting SQL
   syntax patterns in URL parameters and POST bodies. PCI DSS 6.5.1 requires

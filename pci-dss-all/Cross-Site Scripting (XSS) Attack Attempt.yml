@@ -5,7 +5,7 @@
 #//ECS fields used: url.query, http.request.body, source.ip, url.path
 #//Tuning notes: Monitor for script tags and JavaScript event handlers; exclude CDN
 
-name: "RULE-PCI-18: Cross-Site Scripting (XSS) Attack Attempt"
+name: "Cross-Site Scripting (XSS) Attack Attempt"
 description: |
   Detects potential Cross-Site Scripting attacks through web request parameters
   containing JavaScript code, HTML script tags, or event handlers. PCI DSS 6.5.7

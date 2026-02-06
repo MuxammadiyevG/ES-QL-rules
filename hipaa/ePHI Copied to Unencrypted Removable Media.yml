@@ -5,7 +5,7 @@
 #//ECS fields used: file.path, event.action, file.extension, observer.type
 #//Tuning notes: Monitor USB insertions; scan for PHI patterns on removable drives
 
-name: "RULE-HIPAA-21: ePHI Copied to Unencrypted Removable Media"
+name: "ePHI Copied to Unencrypted Removable Media"
 description: |
   Identifies Protected Health Information copied to removable media (USB drives,
   external hard drives, CDs, DVDs) without encryption, violating HIPAA §164.310(d)(1)

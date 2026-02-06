@@ -5,7 +5,7 @@
 #//ECS fields used: destination.geo.country_code, event.action, database.name
 #//Tuning notes: Monitor database replication; enforce geo-restrictions
 
-name: "RULE-GDPR-37: Database Auto-Replication to Non-Adequate Third Countries"
+name: "Database Auto-Replication to Non-Adequate Third Countries"
 description: |
   Identifies automatic database replication, backup, or synchronization to geographic
   regions outside EU/EEA or countries without adequacy decisions, violating GDPR

@@ -6,7 +6,7 @@
 #//ECS fields used: log.original, event.dataset, database.query
 #//Tuning notes: Monitor DB INSERT/UPDATE for track data keywords; coordinate with app teams
 
-name: "RULE-PCI-08: Prohibited Sensitive Authentication Data Storage"
+name: "Prohibited Sensitive Authentication Data Storage"
 description: |
   Identifies database operations or log entries suggesting storage of full magnetic
   stripe data, CVV/CVC, or PIN data after authorization. PCI DSS 3.2.x strictly

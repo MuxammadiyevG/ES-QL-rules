@@ -1,0 +1,73 @@
+name: "New Local Administrator Account Creation"
+description: |
+  This rule detects the creation of new local user accounts that are immediately or shortly after added to the local Administrators group. It correlates Event ID 4720 (user account created) with Event ID 4732 (user added to group) within a 5-minute window on the same host. This pattern is commonly used by attackers to establish persistent privileged access.
+
+#**Why it matters:**
+#Unauthorized administrative account creation is a critical persistence mechanism:
+#- NIST SP 800-53 AC-2 requires monitoring of account creation, especially privileged accounts
+#- PCI DSS 8.1.1/8.1.2 mandates strict control over administrative account provisioning
+#- GDPR Article 32 requires detection of unauthorized access control modifications#
+#**False Positives:**
+#- Legitimate IT provisioning following proper change management procedures
+#- Automated deployment scripts creating local admin accounts for software installation
+#- Disaster recovery procedures requiring emergency admin account creation
+#- Vendor/support access accounts created during authorized maintenance windows#
+#**Triage Steps:**
+#1. Identify who created the account (SubjectUserName) and verify authorization
+#2. Check if account creation follows a change management ticket
+#3. Review the new account's activity immediately after creation
+#4. Verify if the account was created from an expected administrative workstation
+#5. Check for other suspicious activity on the host before/after account creation
+#6. Disable the account if unauthorized and initiate incident response
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  // Time window: last 5 minutes
+  | WHERE @timestamp >= NOW() - 5 minutes
+  // User account created OR added to local Administrators
+  | WHERE (event.code == "4720" OR (event.code == "4732" AND winlog.event_data.TargetUserName RLIKE ".*Administrators.*"))
+  | WHERE event.provider == "Microsoft-Windows-Security-Auditing"
+  // Extract fields
+  | EVAL hostname = COALESCE(host.name, winlog.computer_name)
+  | EVAL new_username = COALESCE(user.target.name, winlog.event_data.TargetUserName)
+  | EVAL creator = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | WHERE hostname IS NOT NULL AND new_username IS NOT NULL
+  // Aggregate by host and new username
+  | STATS 
+      event_types = VALUES(event.code),
+      creators = VALUES(creator),
+      first_event = MIN(@timestamp),
+      last_event = MAX(@timestamp),
+      event_count = COUNT(*)
+    BY hostname, new_username
+  // Must have both account creation AND group addition
+  | WHERE event_types LIKE "*4720*" AND event_types LIKE "*4732*"
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      event_count >= 5, 90,
+      85
+    )
+  | KEEP hostname, new_username, creators, first_event, last_event, event_count, risk_score
+enabled: false
+tags:
+  - Persistence
+  - Privilege Escalation
+  - Account Creation
+  - Local Admin
+severity: high
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1136/001/"
+  - "https://attack.mitre.org/techniques/T1078/003/"
+nist: ["AC-2", "AC-6", "AU-2"]
+gdpr: ["Article 32"]
+pci_dss: ["8.1.1", "8.1.2", "10.2.5"]
+mitre_attack:
+  TA0003:
+    T1136: ["T1136.001"]
+    T1078: ["T1078.003"]

@@ -5,7 +5,7 @@
 #//ECS fields used: destination.geo.country_code, network.bytes, event.action
 #//Tuning notes: Require TIA for transfers; monitor cloud region deployments
 
-name: "RULE-GDPR-21: International Data Transfer Without Impact Assessment"
+name: "International Data Transfer Without Impact Assessment"
 description: |
   Identifies data transfers to third countries (non-EEA) without documented Transfer
   Impact Assessment (TIA) as recommended post-Schrems II. Detects cloud deployments

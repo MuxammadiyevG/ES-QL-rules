@@ -1,0 +1,52 @@
+name: "Shadow Copy Deletion - Ransomware Behavior"
+description: |
+  This rule detects deletion of volume shadow copies using tools like vssadmin, wmic, or PowerShell. Shadow copy deletion is a common ransomware technique to prevent file recovery.
+  
+#  Shadow copy deletion is a strong indicator of ransomware or destructive malware. Detecting this behavior allows for rapid response before encryption begins.
+#  
+#  False positives may occur with legitimate system maintenance or backup cleanup. Verify with change management and system administrators.
+#  
+#  Triage steps: (1) Identify the user and process deleting shadow copies, (2) Immediately isolate the host from the network, (3) Check for ransomware indicators (file encryption, ransom notes), (4) Restore from backups if affected.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for shadow copy deletion commands
+  | WHERE cmd RLIKE "(?i)(vssadmin.*delete.*shadows|wmic.*shadowcopy.*delete|Get-WmiObject.*Win32_Shadowcopy.*Delete|wbadmin.*delete.*catalog)"
+  | STATS 
+      deletion_count = COUNT(*),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE deletion_count >= 1
+  | EVAL risk_score = CASE(
+      deletion_count >= 3, 98,
+      deletion_count >= 2, 95,
+      92
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Shadow Copy
+  - Ransomware
+  - Data Destruction
+  - Impact
+severity: critical
+risk_score: 95
+references:
+  - "https://attack.mitre.org/techniques/T1490/"
+nist: ["AU-6", "SI-4"]
+gdpr: ["Article 32", "Article 33"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0040:
+    T1490: []

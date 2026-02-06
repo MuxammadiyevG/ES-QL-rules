@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, http.response.status_code, user.name
 #//Tuning notes: Monitor data export failures; validate structured format (JSON/CSV)
 
-name: "RULE-GDPR-08: Data Portability Request Failed or Denied"
+name: "Data Portability Request Failed or Denied"
 description: |
   Identifies failures to fulfill data portability requests under GDPR Article 20,
   including export errors, format conversion failures, or denied requests without

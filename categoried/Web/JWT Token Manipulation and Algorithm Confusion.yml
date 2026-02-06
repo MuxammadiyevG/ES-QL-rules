@@ -1,0 +1,54 @@
+name: "JWT Token Manipulation and Algorithm Confusion"
+description: |
+  This rule detects JWT (JSON Web Token) manipulation attempts by identifying suspicious JWT patterns in requests, including algorithm confusion attacks (alg:none), weak algorithms (HS256 when RS256 expected), null signature attempts, or JWT claims manipulation.
+  
+#  JWT vulnerabilities can lead to authentication bypass, privilege escalation, or session hijacking. Algorithm confusion attacks exploit improper validation to forge tokens.
+#  
+#  False positives may occur with legitimate JWT usage in APIs or authentication flows. Focus on suspicious algorithm changes or null signatures.
+#  
+#  Triage steps: (1) Identify the JWT payload and algorithm, (2) Check if algorithm validation is properly implemented, (3) Review authentication logs for unauthorized access, (4) Implement strict JWT validation and algorithm whitelisting.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-nginx-access-*
+  - filebeat-nginx-error-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*, filebeat-nginx-error-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  // Look for JWT tokens in requests (Authorization header or parameters)
+  | WHERE event.original RLIKE "(?i)(bearer\\s+eyJ|authorization:.*eyJ|token=eyJ)"
+  // Check for algorithm confusion indicators (base64 decoded patterns)
+  | WHERE event.original RLIKE "(?i)(alg.*none|alg.*:.*null|HS256.*HS384|kid.*\\.\\./)"
+  | STATS 
+      jwt_count = COUNT(*),
+      sample_requests = VALUES(SUBSTRING(event.original, 0, 160))
+    BY srcip, hostn
+  | WHERE jwt_count >= 2
+  | EVAL risk_score = CASE(
+      jwt_count >= 5, 90,
+      jwt_count >= 3, 85,
+      75
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - JWT
+  - Authentication Bypass
+  - Algorithm Confusion
+  - Token Manipulation
+severity: high
+risk_score: 82
+references:
+  - "https://attack.mitre.org/techniques/T1550/"
+  - "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/06-Session_Management_Testing/10-Testing_JSON_Web_Tokens"
+nist: ["AU-6", "IR-4", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["8.2"]
+mitre_attack:
+  TA0006:
+    T1550: []

@@ -1,0 +1,54 @@
+
+name: "Unusual Protocol on Standard Port - Potential Protocol Tunneling"
+description: |
+  This rule detects potential protocol tunneling or misuse by identifying non-standard protocol traffic on standard ports. For example, SSH traffic on port 80 (HTTP) or encrypted traffic on port 53 (DNS) may indicate tunneling to evade firewall rules.
+  
+#  Protocol tunneling is a common defense evasion technique. Detecting unusual protocol/port combinations helps identify covert communication channels.
+#  
+#  False positives may occur with legitimate port forwarding or proxy configurations. Baseline normal traffic patterns per environment.
+#  
+#  Triage steps: (1) Identify the source and destination, (2) Analyze packet payloads to confirm protocol mismatch, (3) Determine which process initiated the connection, (4) Block tunneling traffic and investigate for malware.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, metricbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  | EVAL dstport = COALESCE(source.port, winlog.event_data.IpPort)
+  // Heuristic: look for SSH on port 80/443, or encrypted/binary on DNS port 53
+  | WHERE (dstport IN ("80", "443") AND event.original RLIKE "(?i)(ssh|openssh|port\\s+22)")
+         OR (dstport == "53" AND event.original RLIKE "(?i)(ssl|tls|encrypted|base64)")
+  | STATS 
+      connection_count = COUNT(*),
+      sample_events = VALUES(SUBSTRING(event.original, 0, 160))
+    BY hostn, srcip, dstport
+  | WHERE connection_count >= 3
+  | EVAL risk_score = CASE(
+      connection_count >= 10, 90,
+      connection_count >= 5, 80,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Protocol Tunneling
+  - Defense Evasion
+  - Port Misuse
+  - Network
+severity: high
+risk_score: 78
+references:
+  - "https://attack.mitre.org/techniques/T1572/"
+nist: ["AU-12", "AU-6", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["1.3"]
+mitre_attack:
+  TA0011:
+    T1572: []

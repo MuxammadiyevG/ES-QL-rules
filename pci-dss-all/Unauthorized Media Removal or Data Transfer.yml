@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, event.action, file.path, destination.ip
 #//Tuning notes: Monitor USB/external drive usage; track media movement logs
 
-name: "RULE-PCI-29: Unauthorized Media Removal or Data Transfer"
+name: "Unauthorized Media Removal or Data Transfer"
 description: |
   Identifies file transfers to removable media (USB drives) or external destinations
   potentially containing cardholder data without documented approval. PCI DSS 9.6/9.7

@@ -1,0 +1,70 @@
+name: "Path Traversal and Local File Inclusion Attempts"
+description: |
+  This rule identifies path traversal and local file inclusion (LFI) attack attempts where attackers try to access files outside the web application's intended directory. It detects classic traversal sequences (../, ..\, %2e%2e/, encoded variations), and attempts to access sensitive system files (/etc/passwd, /etc/shadow, C:\Windows\, win.ini, boot.ini). The rule triggers when 5+ path traversal indicators are seen from a single IP within 10 minutes.
+
+#**Why it matters:**
+#Path traversal can expose sensitive configuration, credentials, and source code:
+#- OWASP Top 10 #1 (Broken Access Control) includes path traversal
+#- PCI DSS 6.5.8 requires protection against improper access control
+#- NIST SP 800-53 AC-3 mandates enforcement of authorized access to files#
+#**False Positives:**
+#- Authorized vulnerability scans from security assessment tools
+#- Legitimate application functionality that processes file paths from user input
+#- Content management systems with valid file browsing features
+#- Backup or migration scripts accessing system files through web interfaces#
+#**Triage Steps:**
+#1. Verify if source IP is from authorized security scanning infrastructure
+#2. Identify which files or paths were targeted - prioritize sensitive file access attempts
+#3. Review web server error logs for successful file access (200 OK responses)
+#4. Check application logs for exceptions or errors revealing file system structure
+#5. Test the vulnerable endpoints to confirm if path traversal is actually possible
+#6. Review web application code for insecure file handling functions
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - filebeat-nginx-access-*
+query_language: esql
+query: |
+  FROM filebeat-nginx-access-*
+  // Time window: last 10 minutes
+  | WHERE @timestamp >= NOW() - 10 minutes
+  // Extract request data
+  | EVAL srcip = COALESCE(source.ip, "")
+  | EVAL uri = event.original
+  | WHERE srcip IS NOT NULL AND uri IS NOT NULL
+  // Path traversal pattern detection
+  | WHERE uri RLIKE ".*(\\.\\.[\\/\\\\]|%2e%2e[\\/\\\\]|%252e%252e|/etc/passwd|/etc/shadow|C:\\\\Windows|win\\.ini|boot\\.ini|/proc/self|/var/log|\\.\\.%2f|\\.\\.%5c).*"
+  // Aggregate by source IP
+  | STATS 
+      request_count = COUNT(*),
+      unique_patterns = COUNT_DISTINCT(SUBSTRING(uri, 0, 160)),
+      sample_requests = VALUES(SUBSTRING(uri, 0, 160))
+    BY srcip
+  // Threshold: 5+ traversal attempts
+  | WHERE unique_patterns >= 5
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      request_count >= 40, 90,
+      request_count >= 20, 80,
+      70
+    )
+  | KEEP srcip, request_count, unique_patterns, risk_score, sample_requests
+enabled: false
+tags:
+  - Web Security
+  - Path Traversal
+  - LFI
+  - OWASP
+  - File Access
+severity: high
+risk_score: 75
+references:
+  - "https://owasp.org/www-community/attacks/Path_Traversal"
+  - "https://attack.mitre.org/techniques/T1083/"
+nist: ["AC-3", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5.8", "11.4"]
+mitre_attack:
+  TA0007:
+    T1083: []

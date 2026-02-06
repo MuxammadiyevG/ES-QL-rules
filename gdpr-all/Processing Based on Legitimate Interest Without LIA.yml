@@ -5,7 +5,7 @@
 #//ECS fields used: log.original, event.action, event.category
 #//Tuning notes: Track legitimate interest claims; verify LIA existence
 
-name: "RULE-GDPR-47: Processing Based on Legitimate Interest Without LIA"
+name: "Processing Based on Legitimate Interest Without LIA"
 description: |
   Identifies personal data processing claimed to be based on legitimate interest
   (GDPR Article 6(1)(f)) without documented Legitimate Interest Assessment (LIA)

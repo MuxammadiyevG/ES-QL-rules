@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, asset.type, event.category
 #//Tuning notes: Track asset lifecycle; verify wiping/destruction certificates
 
-name: "RULE-HIPAA-22: ePHI Media Disposed Without Proper Sanitization"
+name: "ePHI Media Disposed Without Proper Sanitization"
 description: |
   Identifies disposal or retirement of hardware and media containing ePHI without
   documented sanitization procedures as required by HIPAA §164.310(d)(2)(i). Detects

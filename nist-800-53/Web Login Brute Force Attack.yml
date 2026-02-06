@@ -6,7 +6,7 @@
 #//ECS fields used: url.path, http.response.status_code, http.request.method, source.ip
 #//Tuning notes: Adjust threshold per application login frequency, allowlist known IPs
 
-name: "RULE-NIST-25: Web Login Brute Force Attack"
+name: "Web Login Brute Force Attack"
 description: |
   Detects multiple failed authentication attempts against web application login endpoints.
   Repeated POST requests to /login, /signin, /auth URLs with 401/403 responses indicate credential stuffing.

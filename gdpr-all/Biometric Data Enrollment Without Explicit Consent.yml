@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, event.category
 #//Tuning notes: Monitor biometric enrollment events; verify consent records
 
-name: "RULE-GDPR-33: Biometric Data Enrollment Without Explicit Consent"
+name: "Biometric Data Enrollment Without Explicit Consent"
 description: |
   Identifies collection of biometric data (fingerprints, facial recognition, iris
   scans, voice prints) without documented explicit consent as required by GDPR

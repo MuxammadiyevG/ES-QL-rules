@@ -5,7 +5,7 @@
 #//ECS fields used: http.request.headers, user_agent.original, url.path
 #//Tuning notes: Monitor cookie-setting responses; verify consent timestamps
 
-name: "RULE-GDPR-26: Cookies Set Before Consent Obtained"
+name: "Cookies Set Before Consent Obtained"
 description: |
   Identifies HTTP responses setting cookies (especially tracking/analytics cookies)
   before user consent is documented, violating ePrivacy Directive and GDPR Article 7.

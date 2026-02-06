@@ -1,0 +1,57 @@
+name: "SQL Injection Indicators in Database Query Logs"
+description: |
+  This rule detects potential SQL injection patterns in database query logs or process command lines by identifying common SQLi syntax such as UNION SELECT, OR 1=1, ' OR '1'='1, sleep(), BENCHMARK(), etc. This indicates potential exploitation attempts.
+  
+#  SQL injection is a critical vulnerability exploitation technique. Detecting injection patterns in query logs helps identify active exploitation before data breach.
+#  
+#  False positives may occur with legitimate queries containing similar patterns or security testing. Focus on unexpected users or external sources.
+#  
+#  Triage steps: (1) Identify the source of the query (user, application, IP), (2) Review the full query for malicious intent, (3) Check if the query executed successfully, (4) Patch the vulnerable application and block the source.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - metricbeat-*
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, metricbeat-*, winlogbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL userp = COALESCE(user.name, winlog.event_data.SubjectUserName)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Look for SQL injection patterns
+  | WHERE cmd RLIKE "(?i)(union.*select|or\\s+1\\s*=\\s*1|'\\s*or\\s*'1'\\s*=\\s*'1|sleep\\(|benchmark\\(|pg_sleep|waitfor\\s+delay|xp_cmdshell|exec\\s*\\(|information_schema)"
+  // Filter for database-related activity
+  | WHERE event.dataset RLIKE "(?i)(mysql|postgres|mssql|oracle|mongo|db)"
+         OR cmd RLIKE "(?i)(mysql|postgres|mssql|oracle|mongo|database)"
+  | STATS 
+      sqli_count = COUNT(*),
+      sample_queries = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, userp
+  | WHERE sqli_count >= 1
+  | EVAL risk_score = CASE(
+      sqli_count >= 5, 95,
+      sqli_count >= 3, 85,
+      80
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - SQL Injection
+  - Database
+  - Exploitation
+  - Initial Access
+severity: critical
+risk_score: 88
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://owasp.org/www-community/attacks/SQL_Injection"
+nist: ["CM-7", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["6.5"]
+mitre_attack:
+  TA0001:
+    T1190: []

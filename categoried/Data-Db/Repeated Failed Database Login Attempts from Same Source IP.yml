@@ -1,0 +1,60 @@
+
+name: "Repeated Failed Database Login Attempts from Same Source IP"
+description: |
+  This rule detects multiple failed database authentication attempts from the same source IP within a short time window. This pattern suggests brute force or credential stuffing attacks targeting database accounts.
+  
+#  Database brute force attacks can lead to unauthorized access to sensitive data. Early detection allows for blocking malicious sources before successful compromise.
+#  
+#  False positives may occur with application connection pool errors or misconfigured clients. Focus on high failure counts and unfamiliar source IPs.
+#  
+#  Triage steps: (1) Identify the source IP and check reputation, (2) Verify if failed attempts are across multiple usernames (spraying) or focused on one account, (3) Block the source IP if malicious, (4) Review database access logs for successful logins from same IP.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+  - metricbeat-*
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*, metricbeat-*, winlogbeat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | EVAL hostn = COALESCE(host.name, winlog.computer_name)
+  | EVAL srcip = COALESCE(source.ip, winlog.event_data.IpAddress)
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, event.original)
+  // Heuristic: look for authentication failures in event.category or keywords in event.original
+  | WHERE (event.category == "authentication" AND event.outcome == "failure")
+         OR cmd RLIKE "(?i)(authentication.*failed|login.*failed|access.*denied|invalid.*credentials|incorrect.*password)"
+  // Additional filter for database-related events
+  | WHERE event.dataset RLIKE "(?i)(mysql|postgres|mssql|oracle|mongo|db)" 
+         OR cmd RLIKE "(?i)(mysql|postgres|mssql|oracle|mongo|database|sql)"
+  | STATS 
+      failed_count = COUNT(*),
+      unique_users = COUNT_DISTINCT(COALESCE(user.name, winlog.event_data.SubjectUserName)),
+      sample_events = VALUES(SUBSTRING(cmd, 0, 160))
+    BY hostn, srcip
+  // Threshold: 10+ failed attempts from one source IP
+  | WHERE failed_count >= 10
+  | EVAL risk_score = CASE(
+      failed_count >= 25, 90,
+      failed_count >= 15, 80,
+      70
+    )
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - Database
+  - Brute Force
+  - Authentication
+  - Initial Access
+severity: high
+risk_score: 75
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+nist: ["AC-14", "IA-1", "IA-10", "IA-11", "IA-2", "IA-3", "IA-5", "IA-8", "IA-9", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["8.2"]
+mitre_attack:
+  TA0006:
+    T1110: ["T1110.001"]

@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, service.type, diagnosis.code
 #//Tuning notes: Flag sensitive services; monitor for inappropriate access patterns
 
-name: "RULE-HIPAA-38: Excessive Access to Reproductive Health Service Records"
+name: "Excessive Access to Reproductive Health Service Records"
 description: |
   Identifies patterns of access to reproductive health service records (abortion,
   contraception, fertility, STD treatment) that may indicate privacy violations,

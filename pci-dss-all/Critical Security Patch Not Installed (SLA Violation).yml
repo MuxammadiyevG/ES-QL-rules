@@ -15,7 +15,7 @@
 #Tuning notes: Define critical patch age threshold (30 days); integrate with WSUS/SCCM
 
 
-name: "RULE-PCI-15: Critical Security Patch Not Installed (SLA Violation)"
+name: "Critical Security Patch Not Installed (SLA Violation)"
 description: |
   Identifies systems with missing critical security patches older than 30 days,
   violating PCI DSS 6.2 requirement to install critical patches within one month

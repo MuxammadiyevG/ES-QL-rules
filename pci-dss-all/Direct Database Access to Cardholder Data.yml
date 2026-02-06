@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, user.name, database.name, event.action
 #//Tuning notes: Monitor SELECT queries on CHD tables; track direct DB access
 
-name: "RULE-PCI-32: Direct Database Access to Cardholder Data"
+name: "Direct Database Access to Cardholder Data"
 description: |
   Identifies direct database access to tables containing cardholder data by individual
   users, bypassing application layer. PCI DSS 10.2.1 requires logging all individual

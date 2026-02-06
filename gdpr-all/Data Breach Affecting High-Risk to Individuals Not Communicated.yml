@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, event.severity
 #//Tuning notes: Track breach scope; monitor individual notification status
 
-name: "RULE-GDPR-42: Data Breach Affecting High-Risk to Individuals Not Communicated"
+name: "Data Breach Affecting High-Risk to Individuals Not Communicated"
 description: |
   Identifies personal data breaches likely to result in high risk to rights and
   freedoms (affecting >1000 individuals, special category data, identity theft risk)

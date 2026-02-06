@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, user.name, database.query, log.original
 #//Tuning notes: Define role-based data access limits; monitor bulk queries
 
-name: "RULE-HIPAA-13: Excessive PHI Access Violating Minimum Necessary Rule"
+name: "Excessive PHI Access Violating Minimum Necessary Rule"
 description: |
   Identifies access to Protected Health Information that exceeds the minimum necessary
   for the user's job function, violating HIPAA §164.502(b) and §164.514(d). Detects

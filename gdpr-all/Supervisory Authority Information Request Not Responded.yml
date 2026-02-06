@@ -5,7 +5,7 @@
 #//ECS fields used: email.from, email.subject, log.original, @timestamp
 #//Tuning notes: Monitor for regulator domains; flag unanswered inquiries
 #
-name: "RULE-GDPR-50: Supervisory Authority Information Request Not Responded"
+name: "Supervisory Authority Information Request Not Responded"
 description: |
   Identifies information requests or inquiries from data protection supervisory
   authorities (ICO, CNIL, EDPS, national DPAs) that have not received timely response,

@@ -1,0 +1,72 @@
+name: "Critical Host Logging Gap Detection"
+description: |
+  This rule detects prolonged silence (60+ minutes) from critical infrastructure hosts that should be continuously generating logs. It identifies hosts with sensitive naming patterns (DC, SQL, PROD, etc.) that have not sent any logs for over an hour. This gap could indicate logging service failures, agent tampering, or attacker anti-forensics activity.
+
+#  **Why it matters:**
+#  Logging gaps on critical systems impair incident detection and investigation:
+#  - NIST SP 800-53 AU-6/AU-9 require continuous audit log monitoring and protection
+#  - PCI DSS 10.5.1 mandates immediate alerting on audit log failures
+#  - GDPR Article 32 requires ability to detect and respond to security incidents
+#
+#  **False Positives:**
+#  - Scheduled maintenance windows where systems are offline
+#  - Network connectivity issues preventing log forwarding
+#  - Log rotation or disk space issues causing temporary log collection pauses
+#  - New systems not yet fully integrated into logging infrastructure
+#
+#  **Triage Steps:**
+#  1. Verify if the host is actually offline or just not sending logs
+#  2. Check network connectivity and log forwarder service status on the host
+#  3. Review recent changes to logging configuration or infrastructure
+#  4. Investigate if logging gap coincides with suspicious authentication or process activity
+#  5. Check for evidence of log deletion or tampering (e.g., Event ID 1102)
+#  6. Restore logging service and investigate root cause of the gap
+type: esql
+params: '{}'
+schedule_interval: 60m
+index:
+  - winlogbeat-*
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, auditbeat-*
+  // Time window: last 2 hours for comparison
+  | WHERE @timestamp >= NOW() - 2 hours
+  // Extract hostname
+  | EVAL hostname = COALESCE(host.name, winlog.computer_name)
+  | WHERE hostname IS NOT NULL
+  // Focus on sensitive hosts
+  | WHERE hostname RLIKE ".*(DC|DOMAIN|SQL|DB|PROD|FIN|HR|PCI|PAY).*"
+  // Aggregate by host
+  | STATS 
+      log_count = COUNT(*),
+      last_seen = MAX(@timestamp)
+    BY hostname
+  // Calculate time since last log
+  | EVAL minutes_silent = (NOW() - last_seen) / 60000
+  // Threshold: 60+ minutes of silence
+  | WHERE minutes_silent >= 60
+  // Risk scoring based on silence duration
+  | EVAL risk_score = CASE(
+      minutes_silent >= 240, 95,
+      minutes_silent >= 120, 85,
+      75
+    )
+  | KEEP hostname, minutes_silent, last_seen, log_count, risk_score
+enabled: false
+tags:
+  - Logging
+  - Defense Evasion
+  - Anti-Forensics
+  - Monitoring
+  - Critical Systems
+severity: high
+risk_score: 80
+references:
+  - "https://attack.mitre.org/techniques/T1562/002/"
+nist: ["AU-6", "AU-9", "SI-4"]
+gdpr: ["Article 32"]
+pci_dss: ["10.5.1", "10.6.1"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.002"]

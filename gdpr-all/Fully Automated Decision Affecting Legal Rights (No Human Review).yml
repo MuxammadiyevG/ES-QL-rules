@@ -5,7 +5,7 @@
 #//ECS fields used: event.action, log.original, event.category
 #//Tuning notes: Tag high-stakes decisions; monitor for human-in-loop bypass
 
-name: "RULE-GDPR-29: Fully Automated Decision Affecting Legal Rights (No Human Review)"
+name: "Fully Automated Decision Affecting Legal Rights (No Human Review)"
 description: |
   Identifies fully automated decisions based solely on automated processing that
   produce legal effects or similarly significantly affect individuals, violating

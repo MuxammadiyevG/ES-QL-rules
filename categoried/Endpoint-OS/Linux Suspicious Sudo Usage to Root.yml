@@ -1,0 +1,76 @@
+name: "Linux Suspicious Sudo Usage to Root"
+description: |
+  This rule identifies suspicious sudo usage on Linux systems where non-root users execute commands as root with potentially malicious arguments. It detects sudo commands containing shell invocations, file system modifications in sensitive directories (/etc/, /boot/, /root/), package manager abuse (apt/yum with unusual flags), or privilege persistence mechanisms (crontab, ssh key manipulation). The rule triggers when 5+ suspicious sudo commands are executed on a host within 15 minutes.
+
+#  **Why it matters:**
+#  Sudo abuse is a primary Linux privilege escalation and persistence vector:
+#  - NIST SP 800-53 AC-6 requires monitoring of privileged command execution
+#  - PCI DSS 10.2.2 mandates logging of actions by privileged accounts
+#  - Sudo access to root enables complete system compromise
+#
+#  **False Positives:**
+#  - Legitimate system administrators performing authorized maintenance
+#  - Deployment scripts or configuration management tools (Ansible, Chef, Puppet)
+#  - Package updates and security patching activities
+#  - Monitoring agents requiring root access for metric collection
+#
+#  **Triage Steps:**
+#  1. Identify the user executing sudo and verify their authorized privilege level
+#  2. Review the specific commands executed - are they expected for this user's role?
+#  3. Check if commands were executed interactively or via automated scripts
+#  4. Correlate with change management tickets or maintenance windows
+#  5. Investigate any file modifications, especially in /etc/sudoers or SSH configurations
+#  6. Review command history and bash_history for the user account
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*
+  // Time window: last 15 minutes
+  | WHERE @timestamp >= NOW() - 15 minutes
+  // Auditbeat process or command execution events
+  | WHERE event.action RLIKE ".*(exec|executed).*" OR event.category == "process"
+  // Extract command line
+  | EVAL cmd = COALESCE(process.command_line, event.original)
+  | EVAL hostname = COALESCE(host.name, "")
+  | EVAL username = COALESCE(user.name, "")
+  | WHERE cmd IS NOT NULL AND hostname IS NOT NULL
+  // Sudo usage detection
+  | WHERE cmd RLIKE "^sudo .*"
+  // Suspicious sudo patterns
+  | WHERE cmd RLIKE ".*(sudo.*-i|sudo.*bash|sudo.*sh|sudo.*su|sudo.*vim /etc/|sudo.*nano /etc/|sudo.*chmod.*sudoers|sudo.*tee.*sudoers|sudo.*crontab|sudo.*systemctl.*ssh|sudo.*mkdir /root/\\.ssh|sudo.*echo.*authorized_keys).*"
+  // Aggregate by host
+  | STATS 
+      sudo_count = COUNT(*),
+      users = COUNT_DISTINCT(username),
+      sample_commands = VALUES(SUBSTRING(cmd, 0, 150))
+    BY hostname
+  // Threshold: 5+ suspicious sudo commands
+  | WHERE sudo_count >= 5
+  // Risk scoring
+  | EVAL risk_score = CASE(
+      sudo_count >= 20, 90,
+      sudo_count >= 10, 80,
+      70
+    )
+  | KEEP hostname, sudo_count, users, risk_score, sample_commands
+enabled: false
+tags:
+  - Linux
+  - Privilege Escalation
+  - Sudo Abuse
+  - Persistence
+severity: high
+risk_score: 80
+references:
+  - "https://attack.mitre.org/techniques/T1548/003/"
+  - "https://gtfobins.github.io/"
+nist: ["AC-6", "AU-12", "AU-2"]
+gdpr: ["Article 32"]
+pci_dss: ["10.2.2", "10.2.5"]
+mitre_attack:
+  TA0004:
+    T1548: ["T1548.003"]

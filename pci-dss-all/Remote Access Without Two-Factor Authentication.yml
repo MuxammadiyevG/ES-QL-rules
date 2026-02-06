@@ -5,7 +5,7 @@
 #//ECS fields used: event.category, network.direction, source.ip, user.name
 #//Tuning notes: Monitor remote auth; validate MFA indicators in logs; exclude internal IPs
 
-name: "RULE-PCI-25: Remote Access Without Two-Factor Authentication"
+name: "Remote Access Without Two-Factor Authentication"
 description: |
   Identifies remote network access (VPN, RDP, SSH) from external sources without
   evidence of two-factor authentication. PCI DSS 8.3 requires two-factor auth for
