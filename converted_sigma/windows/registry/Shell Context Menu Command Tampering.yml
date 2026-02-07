@@ -1,0 +1,56 @@
+name: "Shell Context Menu Command Tampering"
+description: |
+  Detects registry modifications to Windows Shell context menu command handlers.
+  Attackers may tamper with shell context menu entries to achieve persistence or
+  stealthy execution by hijacking right-click actions.
+  False positives: Likely during legitimate software installation or customization
+  (e.g., PowerShell, Git, archive tools, developer utilities).
+  Triage: Identify the modified shell key and command, validate the executing binary,
+  check the modifying process and user context, and correlate with subsequent executions
+  triggered via Explorer context menu actions.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | EVAL raw = COALESCE(event.original, "")
+  /* selection: shell context menu command registry paths */
+  | WHERE raw LIKE "*\\Software\\Classes\\*"
+    AND raw LIKE "*\\shell\\*"
+    AND raw LIKE "*\\command\\*"
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      target_users = VALUES(user.target.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parent_processes = VALUES(process.parent.name),
+      cmdlines = VALUES(process.command_line),
+      originals = VALUES(raw),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  /* Low-confidence hunting rule; raise signal after-hours */
+  | EVAL risk_score = event_count * 5 + after_hours_hits * 10
+  | WHERE risk_score >= 5
+  | KEEP bucket, host.name, event_count, users, processes, executables, parent_processes, cmdlines, after_hours_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.persistence
+  - detection.threat-hunting
+severity: low
+risk_score: 20
+references:
+  - "https://mrd0x.com/sentinelone-persistence-via-menu-context/"
+nist: ["AU-6", "SI-4", "CM-6"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.a"]
+mitre_attack:
+  TA0003:
+    T1547: []

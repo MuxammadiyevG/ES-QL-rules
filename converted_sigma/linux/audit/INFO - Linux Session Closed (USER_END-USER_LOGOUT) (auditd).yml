@@ -1,0 +1,33 @@
+name: "INFO - Linux Session Closed (USER_END/USER_LOGOUT) (auditd)"
+description: |
+  Baselines session closing via auditd USER_END/USER_LOGOUT (who logged out).
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*
+  | WHERE event.dataset == "auditd"
+  | WHERE COALESCE(event.original, "") RLIKE "(?i)type=(USER_END|USER_LOGOUT)"
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      user_ids = VALUES(user.id),
+      src_ips = VALUES(source.ip),
+      pids = VALUES(process.pid),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      raws = VALUES(event.original)
+    BY host.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP bucket, host.name, event_count, users, user_ids, src_ips, pids, processes, executables, raws
+  | SORT event_count DESC
+enabled: false
+tags: ["informational", "linux", "session", "auditd", "ssh"]
+severity: informational
+risk_score: 1
+nist: ["AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.a"]
+mitre_attack: {}

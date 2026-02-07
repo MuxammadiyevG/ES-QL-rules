@@ -1,0 +1,86 @@
+name: "Non-DLL Extension File Renamed With DLL Extension"
+description: |
+  Detects rename operations where the destination filename ends with ".dll" but the source filename
+  was not already a ".dll". Malware sometimes renames payloads to .dll to blend in and evade simple
+  extension-based detections.
+  NOTE: Sigma expects SourceFilename/TargetFilename. In your field list those are not present, so this
+  rule uses:
+   - file.path as the target filename, and
+   - event.original parsing as best-effort for source filename (if present in raw event).
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  /* file rename telemetry (best-effort; depends on pipeline) */
+  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE "(?i)file"
+  /* selection: TargetFilename endswith .dll (we use file.path as target) */
+  | EVAL tgt = COALESCE(file.path, "")
+  | WHERE tgt RLIKE "(?i)\\.dll$"
+
+  /* ---- Best-effort source checks via event.original (because SourceFilename field is not available) ---- */
+  | EVAL raw = COALESCE(event.original, "")
+
+  /* filter_main_empty_source / null source */
+  | WHERE NOT (raw RLIKE "(?i)SourceFilename\\s*[:=]\\s*(''|\"\"|null)")
+
+  /* filter_main_dll: SourceFilename endswith .dll (exclude true dll->dll renames) */
+  | WHERE NOT (raw RLIKE "(?i)SourceFilename\\s*[:=].*\\.dll\\b")
+
+  /* filter_main_installers: SourceFilename endswith .tmp */
+  | WHERE NOT (raw RLIKE "(?i)SourceFilename\\s*[:=].*\\.tmp\\b")
+
+  /* filter_main_tiworker */
+  | WHERE NOT (
+      (process.executable LIKE "*:\\Windows\\WinSxS\\*" AND process.executable RLIKE "(?i)\\\\TiWorker\\.exe$")
+      OR raw RLIKE "(?i)Image\\s*[:=].*\\\\TiWorker\\.exe\\b"
+    )
+
+  /* filter_main_upgrade */
+  | WHERE NOT (
+      process.executable RLIKE "(?i):\\\\Windows\\\\System32\\\\wuauclt\\.exe$"
+      AND tgt LIKE "*:\\$WINDOWS.~BT\\Sources\\*"
+    )
+
+  /* filter_main_generic */
+  | WHERE NOT (
+      process.executable LIKE "*:\\Program Files (x86)\\*"
+      OR process.executable LIKE "*:\\Program Files\\*"
+    )
+
+  /* filter_optional_squirrel */
+  | WHERE NOT (raw RLIKE "(?i)SourceFilename\\s*[:=].*\\\\SquirrelTemp\\\\temp")
+
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parents = VALUES(process.parent.name),
+      parent_executables = VALUES(process.parent.executable),
+      target_paths = VALUES(tgt),
+      raw_samples = VALUES(raw)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+
+  | WHERE event_count >= 1
+  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, target_paths, raw_samples
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.t1036.008
+  - detection.threat-hunting
+severity: medium
+risk_score: 50
+references:
+  - "https://twitter.com/ffforward/status/1481672378639912960"
+  - "https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1036/T1036.md#atomic-test-1---system-file-copied-to-unusual-location"
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.b"]
+mitre_attack:
+  TA0005:
+    T1036: ["T1036.008"]

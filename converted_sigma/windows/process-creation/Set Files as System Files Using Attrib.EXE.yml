@@ -1,0 +1,65 @@
+name: "Set Files as System Files Using Attrib.EXE"
+description: |
+  Detects execution of attrib.exe with the "+s" flag to mark files as system files. Adversaries can set
+  the System attribute to help hide artifacts or make files look more legitimate as part of defense evasion
+  (Hidden Files and Directories).
+  False positives: Unknown (may occur in legitimate maintenance scripts, but is uncommon on endpoints).
+  Triage: Review the target path(s) in the command line, check if "+h" (hidden) is also used, validate the
+  parent process and user context, and correlate with file creation/modification events and subsequent execution
+  from the affected directory.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  /* Process creation view */
+  | WHERE event.category == "process" OR event.code IN ("1", "4688") OR event.dataset RLIKE "(?i)process"
+  /* selection_img: attrib.exe */
+  | WHERE process.name == "attrib.exe"
+     OR process.executable RLIKE "(?i)\\\\attrib\\.exe$"
+     OR COALESCE(event.original, "") RLIKE "(?i)OriginalFileName\\s*[:=]\\s*ATTRIB\\.EXE"
+  /* selection_cli: contains ' +s ' */
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, "")
+  | WHERE cmd LIKE "* +s *"
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | EVAL suspicious_path = CASE(
+      cmd RLIKE "(?i)\\\\(Users\\\\[^\\\\]+\\\\(AppData\\\\Local\\\\Temp|AppData\\\\Roaming|Downloads)|Windows\\\\Temp|ProgramData|Users\\\\Public)\\\\", true,
+      false
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      parents = VALUES(process.parent.name),
+      parent_cmdlines = VALUES(process.parent.command_line),
+      cmdlines = VALUES(cmd),
+      targets = VALUES(file.path),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
+      suspicious_path_hits = SUM(CASE(suspicious_path == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  /* Low baseline; bump if suspicious path / after-hours */
+  | EVAL risk_score = event_count * 5 + after_hours_hits * 10 + suspicious_path_hits * 10
+  | WHERE risk_score >= 5
+  | KEEP bucket, host.name, event_count, users, parents, cmdlines, after_hours_hits, suspicious_path_hits, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.t1564.001
+  - detection.threat-hunting
+severity: low
+risk_score: 20
+references:
+  - "https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1564.001/T1564.001.md#atomic-test-3---create-windows-system-file-with-attrib"
+  - "https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/attrib"
+  - "https://unit42.paloaltonetworks.com/unit42-sure-ill-take-new-combojack-malware-alters-clipboards-steal-cryptocurrency/"
+nist: ["AU-6", "SI-4"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.a"]
+mitre_attack:
+  TA0005:
+    T1564: ["T1564.001"]

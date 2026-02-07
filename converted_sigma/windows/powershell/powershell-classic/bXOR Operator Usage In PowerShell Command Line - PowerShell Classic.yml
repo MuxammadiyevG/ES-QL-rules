@@ -1,0 +1,50 @@
+name: "bXOR Operator Usage In PowerShell Command Line - PowerShell Classic"
+description: |
+  Detects PowerShell Classic start events where the command line contains the bitwise XOR operator (-bxor)
+  and the host is ConsoleHost (HostName=ConsoleHost). Attackers may use -bxor for string/byte deobfuscation
+  as an alternative to Base64-encoded commands.
+  False positives: Unknown / depends on environment (some admins/dev scripts may use -bxor).
+  Triage: Review event.original for the full command, validate parent/child process chain, check for
+  suspicious download/exec patterns (IEX, Invoke-WebRequest, Start-BitsTransfer), and correlate with
+  network connections and new files dropped.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE event.original LIKE "*HostName=ConsoleHost*"
+    AND event.original LIKE "* -bxor *"
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      cmdlines = VALUES(process.command_line),
+      originals = VALUES(event.original),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | EVAL risk_score = event_count * 10 + after_hours_hits * 10
+  | WHERE risk_score >= 10
+  | KEEP bucket, host.name, event_count, users, processes, executables, cmdlines, after_hours_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.execution
+  - attack.t1059.001
+  - detection.threat-hunting
+severity: low
+risk_score: 20
+references:
+  - "https://speakerdeck.com/heirhabarov/hunting-for-powershell-abuse?slide=46"
+  - "https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_arithmetic_operators?view=powershell-5.1"
+nist: ["AU-6", "SI-4"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.001"]

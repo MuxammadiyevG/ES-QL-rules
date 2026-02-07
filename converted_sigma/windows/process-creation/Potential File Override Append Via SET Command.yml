@@ -1,0 +1,71 @@
+name: "Potential File Override/Append Via SET Command"
+description: |
+  Detects cmd.exe usage of the internal SET command with the /p flag followed directly by "=" (set /p=),
+  which can be abused to indirectly write/append content to files when combined with redirection (>>, >).
+  Example: cmd /c >> example.txt set /p="test data" (appends "test data" to example.txt).
+  While set /p= is normally used to prompt for user input, threat actors have used this pattern in ransomware
+  campaigns to modify files stealthily.
+  False positives: Legitimate scripts that use set /p for prompting or simple file writing. Treat as hunting
+  baseline and tune by excluding known script paths and benign parent processes.
+  Triage: Review the full command line to identify target file(s), look for >> or > operators, assess the
+  parent process chain, and correlate with file modifications, persistence, or ransomware-like activity.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  /* Process creation events */
+  | WHERE event.category == "process" OR event.code IN ("1", "4688") OR event.dataset RLIKE "(?i)process"
+  /* selection_img: cmd.exe */
+  | WHERE process.name == "cmd.exe"
+     OR process.executable RLIKE "(?i)\\\\cmd\\.exe$"
+     OR COALESCE(event.original, "") RLIKE "(?i)OriginalFileName\\s*[:=]\\s*Cmd\\.Exe"
+  /* selection_cli: set /p= patterns (case-insensitive, allow spacing) */
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, "")
+  | WHERE cmd RLIKE "(?i)(/c\\s+set\\s*/p=|\"\\s*set\\s*/p=|>>\\s*.*\\s*set\\s*/p=)"
+  /* Strengthen signal: ensure this looks like file write/append via redirection */
+  | EVAL has_redirect = CASE(cmd LIKE "*>>*", true, CASE(cmd LIKE "* > *", true, false))
+  | EVAL hour_of_day = DATE_EXTRACT(\"hour\", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | EVAL suspicious_parent = CASE(
+      process.parent.name RLIKE "(?i)^(winword|excel|powerpnt|outlook|mshta|wscript|cscript|rundll32|powershell)\\.exe$", true,
+      false
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      parents = VALUES(process.parent.name),
+      parent_cmdlines = VALUES(process.parent.command_line),
+      cmdlines = VALUES(cmd),
+      redirect_hits = SUM(CASE(has_redirect == true, 1, 0)),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
+      suspicious_parent_hits = SUM(CASE(suspicious_parent == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  /* Low baseline; boost if redirection present / suspicious parent / after-hours */
+  | EVAL risk_score = event_count * 5 + redirect_hits * 10 + after_hours_hits * 10 + suspicious_parent_hits * 15
+  | WHERE risk_score >= 5
+  | KEEP bucket, host.name, event_count, users, parents, cmdlines, redirect_hits, after_hours_hits, suspicious_parent_hits, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.execution
+  - attack.defense-evasion
+  - detection.threat-hunting
+severity: low
+risk_score: 20
+references:
+  - "https://news.sophos.com/en-us/2024/08/07/sophos-mdr-hunt-tracks-mimic-ransomware-campaign-against-organizations-in-india/"
+  - "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/set_1"
+  - "https://ss64.com/nt/set.html"
+nist: ["AU-12", "SI-4", "CM-6"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.b"]
+mitre_attack:
+  TA0002:
+    T1059: []
+  TA0005:
+    T1027: []

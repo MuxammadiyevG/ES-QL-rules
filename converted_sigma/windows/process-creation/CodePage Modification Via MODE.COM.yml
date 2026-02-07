@@ -1,0 +1,56 @@
+name: "CodePage Modification Via MODE.COM"
+description: |
+  Detects a CodePage modification using the mode.com utility by matching command line patterns
+  consistent with setting console code page (e.g., "mode con cp select=...").
+  This behavior has been used by threat actors (e.g., observed in Dharma ransomware activity).
+  False positives: Unknown. Treat as hunting baseline and validate context.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE event.category == "process"
+     OR event.code IN ("1", "4688")
+     OR event.dataset RLIKE "(?i)process"
+  /* selection_img: mode.com */
+  | WHERE process.name == "mode.com"
+     OR process.executable RLIKE "(?i)\\\\mode\\.com$"
+     OR COALESCE(event.original, "") RLIKE "(?i)OriginalFileName\\s*[:=]\\s*MODE\\.COM"
+  /* selection_cli: contains all ' con ', ' cp ', ' select=' */
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, "")
+  | WHERE cmd LIKE "* con *"
+    AND cmd LIKE "* cp *"
+    AND cmd LIKE "*select=*"
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      parents = VALUES(process.parent.name),
+      parent_cmdlines = VALUES(process.parent.command_line),
+      executables = VALUES(process.executable),
+      cmdlines = VALUES(cmd),
+      pids = VALUES(process.pid)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.t1036
+  - detection.threat-hunting
+severity: low
+risk_score: 20
+references:
+  - "https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers"
+  - "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/mode"
+  - "https://strontic.github.io/xcyclopedia/library/mode.com-59D1ED51ACB8C3D50F1306FD75F20E99.html"
+  - "https://www.virustotal.com/gui/file/5e75ef02517afd6e8ba6462b19217dc4a5a574abb33d10eb0f2bab49d8d48c22/behavior"
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.b"]
+mitre_attack:
+  TA0005:
+    T1036: []

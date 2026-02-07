@@ -1,0 +1,54 @@
+name: "SMB over QUIC Via PowerShell Script"
+description: |
+  Detects PowerShell Script Block Logging events indicating a Windows SMB share mapping over QUIC
+  (New-SmbMapping with -TransportType QUIC). In many enterprise environments SMB over QUIC is uncommon,
+  and its use may indicate suspicious lateral movement or covert file access over QUIC/UDP 443.
+  Requirements: PowerShell Script Block Logging must be enabled.
+  False positives: Possible (string matching in script blocks; legitimate testing or approved SMB over QUIC deployments).
+  Triage: Review the script block for the target share/server, credentials usage, and follow-on file operations.
+  Correlate with network telemetry for QUIC/UDP 443 to the target, authentication events, and other discovery/lateral activity.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | EVAL raw = COALESCE(event.original, process.command_line, winlog.event_data.CommandLine, "")
+  /* Match both cmdlet and QUIC transport usage (order/spacing flexible) */
+  | WHERE raw RLIKE "(?i)\\bNew-SmbMapping\\b"
+    AND raw RLIKE "(?i)\\-TransportType\\s+QUIC\\b"
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      target_users = VALUES(user.target.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      cmdlines = VALUES(process.command_line),
+      originals = VALUES(COALESCE(event.original, "")),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | EVAL risk_score = event_count * 25 + after_hours_hits * 20
+  | WHERE risk_score >= 25
+  | KEEP bucket, host.name, event_count, users, processes, executables, cmdlines, after_hours_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.lateral-movement
+  - attack.t1570
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://github.com/redcanaryco/atomic-red-team/blob/74438b0237d141ee9c99747976447dc884cb1a39/atomics/T1570/T1570.md"
+  - "https://learn.microsoft.com/en-us/powershell/module/smbshare/new-smbmapping?view=windowsserver2022-ps"
+  - "https://www.trustedsec.com/blog/making-smb-accessible-with-ntlmquic/"
+nist: ["AU-6", "SI-4", "AC-6"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0008:
+    T1570: []

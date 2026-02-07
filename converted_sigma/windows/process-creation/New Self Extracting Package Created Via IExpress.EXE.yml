@@ -1,0 +1,70 @@
+name: "New Self Extracting Package Created Via IExpress.EXE"
+description: |
+  Detects creation of self-extracting packages via IExpress. Attackers have been observed leveraging
+  iexpress.exe to compile packages on the fly, often via .sed configuration files.
+  This rule matches either:
+   (1) makecab.exe spawned by iexpress.exe, or
+   (2) iexpress.exe executed with the /n flag (non-interactive build).
+  False positives: Administrators legitimately building packages using IExpress.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE event.category == "process"
+     OR event.code IN ("1", "4688")
+     OR event.dataset RLIKE "(?i)process"
+  /* Branch 1: makecab.exe child of iexpress.exe */
+  | EVAL b1 =
+      (
+        (process.name == "makecab.exe"
+          OR process.executable RLIKE "(?i)\\\\makecab\\.exe$"
+          OR COALESCE(event.original, "") RLIKE "(?i)OriginalFileName\\s*[:=]\\s*makecab\\.exe")
+        AND
+        (process.parent.name == "iexpress.exe"
+          OR process.parent.executable RLIKE "(?i)\\\\iexpress\\.exe$")
+      )
+  /* Branch 2: iexpress.exe with /n flag */
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, "")
+  | EVAL b2 =
+      (
+        (process.name == "iexpress.exe"
+          OR process.executable RLIKE "(?i)\\\\iexpress\\.exe$"
+          OR COALESCE(event.original, "") RLIKE "(?i)OriginalFileName\\s*[:=]\\s*IEXPRESS\\.exe")
+        AND cmd LIKE "* /n *"
+      )
+  | WHERE b1 == true OR b2 == true
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      parents = VALUES(process.parent.name),
+      parent_cmdlines = VALUES(process.parent.command_line),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      cmdlines = VALUES(cmd),
+      pids = VALUES(process.pid)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, host.name, event_count, users, parents, parent_cmdlines, processes, executables, cmdlines, pids
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.t1218
+  - detection.threat-hunting
+severity: medium
+risk_score: 50
+references:
+  - "https://strontic.github.io/xcyclopedia/library/iexpress.exe-D594B2A33EFAFD0EABF09E3FDC05FCEA.html"
+  - "https://en.wikipedia.org/wiki/IExpress"
+  - "https://decoded.avast.io/janvojtesek/raspberry-robins-roshtyak-a-little-lesson-in-trickery/"
+  - "https://www.virustotal.com/gui/file/602f4ae507fa8de57ada079adff25a6c2a899bd25cd092d0af7e62cdb619c93c/behavior"
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.b"]
+mitre_attack:
+  TA0005:
+    T1218: []

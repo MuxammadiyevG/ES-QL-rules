@@ -1,0 +1,70 @@
+name: "Scheduled Task Created - Registry"
+description: |
+  Detects creation of Windows Scheduled Tasks via registry modifications to TaskCache keys:
+  \Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\ and \...\TaskCache\Tree\.
+  Attackers may create scheduled tasks for persistence, execution, or privilege escalation.
+  False positives: Likely (normal Windows/admin behavior). Use as hunting baseline and tune by
+  filtering known task paths, approved management tooling, and narrowing to suspicious users/hosts/times.
+  Triage: Identify the task name/path and associated actions (schtasks.exe, TaskScheduler COM),
+  review the creating user and parent process chain, and correlate with new service creation,
+  script drops, or unusual binaries referenced by the task.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | EVAL raw = COALESCE(event.original, "")
+  /* Registry task cache keys often appear in event.original; match both TaskCache\Tasks and TaskCache\Tree */
+  | WHERE raw LIKE "*\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tasks\\*"
+     OR raw LIKE "*\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree\\*"
+  | EVAL taskcache_area = CASE(
+      raw LIKE "*\\Schedule\\TaskCache\\Tasks\\*", "TaskCache\\Tasks",
+      raw LIKE "*\\Schedule\\TaskCache\\Tree\\*", "TaskCache\\Tree",
+      "TaskCache"
+    )
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      target_users = VALUES(user.target.name),
+      processes = VALUES(process.name),
+      parent_processes = VALUES(process.parent.name),
+      cmdlines = VALUES(process.command_line),
+      originals = VALUES(raw),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
+    BY host.name, taskcache_area, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  /* Low severity baseline; bump risk a bit if after-hours spikes */
+  | EVAL risk_score = event_count * 5 + after_hours_hits * 10
+  | WHERE risk_score >= 5
+  | KEEP bucket, host.name, taskcache_area, event_count, users, processes, parent_processes, cmdlines, after_hours_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.execution
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.s0111
+  - attack.t1053.005
+  - car.2013-08-001
+  - detection.threat-hunting
+severity: low
+risk_score: 20
+references:
+  - "https://center-for-threat-informed-defense.github.io/summiting-the-pyramid/analytics/task_scheduling/"
+  - "https://posts.specterops.io/abstracting-scheduled-tasks-3b6451f6a1c5"
+nist: ["AU-6", "SI-4", "CM-6"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0002:
+    T1053: ["T1053.005"]
+  TA0003:
+    T1053: ["T1053.005"]
+  TA0004:
+    T1053: ["T1053.005"]
+  TA0005:
+    S0111: []

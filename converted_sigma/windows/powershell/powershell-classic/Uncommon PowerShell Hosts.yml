@@ -1,0 +1,66 @@
+name: "Uncommon PowerShell Hosts"
+description: |
+  Detects PowerShell execution where the host application is NOT the standard powershell.exe,
+  which may indicate an attempt to bypass detections that key on powershell.exe.
+  This rule looks for the PowerShell Classic logging artifact "HostApplication=" in event.original,
+  then excludes common legitimate hosts (System32/SysWOW64 powershell paths, sdiagnhost.exe) and
+  known benign vendor cases (Citrix ConfigSync, Hexnode Agent).
+  Notes: PowerShell logging strings can be localized on non-English Windows builds; if your logs
+  translate "HostApplication", add localized equivalents to the selection/filter logic.
+  False positives: Legitimate software embedding PowerShell, MSP tooling, Citrix/MDM automation.
+  Triage: Identify the host_application value, validate the parent process chain, check command_line,
+  correlate with remote logons (WinRM/RDP), service creation, scheduled tasks, or LOLBins activity.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE event.original LIKE "*HostApplication=*"
+  | WHERE NOT (
+    /* filter_main_ps: normal powershell hostlari (slash/backslash ikkala holat) */
+    event.original RLIKE "(?i)HostApplication=[A-Z]:[\\\\/]+Windows[\\\\/]+System32[\\\\/]+WindowsPowerShell[\\\\/]+v1\\.0[\\\\/]+powershell" OR
+    event.original RLIKE "(?i)HostApplication=[A-Z]:[\\\\/]+Windows[\\\\/]+SysWOW64[\\\\/]+WindowsPowerShell[\\\\/]+v1\\.0[\\\\/]+powershell" OR
+    event.original RLIKE "(?i)HostApplication=[A-Z]:[\\\\/]+Windows[\\\\/]+System32[\\\\/]+sdiagnhost\\.exe" OR
+    event.original RLIKE "(?i)HostApplication=[A-Z]:[\\\\/]+Windows[\\\\/]+SysWOW64[\\\\/]+sdiagnhost\\.exe" OR
+    event.original RLIKE "(?i)HostApplication=powershell"
+  )
+  | WHERE NOT (
+    /* filter_optional_*: known benign */
+    event.original LIKE "*Citrix\\ConfigSync\\ConfigSync.ps1*" OR
+    event.original LIKE "*HostApplication=C:\\Hexnode\\Hexnode Agent\\Current\\HexnodeAgent.exe*"
+  )
+  | EVAL host_application = REPLACE(event.original, ".*HostApplication=([^\\r\\n;]+).*", "$1")
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      event_count = COUNT(*),
+      hosts = VALUES(host.name),
+      users = VALUES(user.name),
+      host_apps = VALUES(host_application),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      cmdlines = VALUES(process.command_line),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | EVAL risk_score = event_count * 25 + after_hours_hits * 20
+  | WHERE risk_score >= 25
+  | KEEP bucket, host.name, event_count, users, host_apps, processes, executables, cmdlines, after_hours_hits, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.execution
+  - attack.t1059.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 50
+references:
+  - "https://threathunterplaybook.com/hunts/windows/190815-RemoteServiceInstallation/notebook.html"
+nist: ["AU-6", "SI-4"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.001"]

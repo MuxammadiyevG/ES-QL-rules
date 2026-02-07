@@ -1,0 +1,73 @@
+name: "Access To Windows Outlook Mail Files By Uncommon Applications"
+description: |
+  Detects file access requests to Windows Mail/Outlook app mailbox storage locations (Unistore/UnistoreDB)
+  by uncommon processes. This can indicate mailbox data access for theft, manipulation, or wiping.
+  Requires heavy baselining before production usage.
+  Requirements: Microsoft-Windows-Kernel-File ETW provider (or equivalent file access telemetry).
+  False positives: AV/EDR, backup tools, search/indexing tools (e.g., Everything), legit software installed
+  outside C:\, and some forensic/IR tooling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  /* file access telemetry view (best-effort; depends on your pipeline) */
+  | WHERE event.category == "file"
+     OR event.type == "access"
+     OR event.dataset RLIKE "(?i)file"
+  /* 1 of selection_*: Unistore data path OR UnistoreDB store.vol */
+  | EVAL p = COALESCE(file.path, "")
+  | WHERE (
+      p LIKE "*\\AppData\\Local\\Comms\\Unistore\\data*"
+      OR p RLIKE "(?i)\\\\AppData\\\\Local\\\\Comms\\\\UnistoreDB\\\\store\\.vol$"
+    )
+  /* filter_main_system */
+  | WHERE COALESCE(process.executable, process.name, "") != "System"
+  /* filter_main_generic: exclude common benign install paths */
+  | WHERE NOT (
+      process.executable RLIKE "(?i)^C:\\\\Program Files \\(x86\\)\\\\"
+      OR process.executable RLIKE "(?i)^C:\\\\Program Files\\\\"
+      OR process.executable RLIKE "(?i)^C:\\\\Windows\\\\System32\\\\"
+      OR process.executable RLIKE "(?i)^C:\\\\Windows\\\\SysWOW64\\\\"
+    )
+  /* filter_optional_defender */
+  | WHERE NOT (
+      process.executable RLIKE "(?i)^C:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\"
+      AND (process.executable RLIKE "(?i)\\\\MpCopyAccelerator\\.exe$" OR process.executable RLIKE "(?i)\\\\MsMpEng\\.exe$")
+    )
+  /* filter_optional_thor */
+  | WHERE NOT (
+      process.executable RLIKE "(?i)\\\\thor64?\\.exe$"
+      OR process.name IN ("thor.exe", "thor64.exe")
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parents = VALUES(process.parent.name),
+      parent_executables = VALUES(process.parent.executable),
+      file_paths = VALUES(file.path)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, file_paths
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.t1070.008
+  - detection.threat-hunting
+severity: low
+risk_score: 20
+references:
+  - "https://darkdefender.medium.com/windows-10-mail-app-forensics-39025f5418d2"
+  - "https://github.com/redcanaryco/atomic-red-team/blob/58496ee3306e6e42a7054d36a94e6eb561ee3081/atomics/T1070.008/T1070.008.md#atomic-test-4---copy-and-modify-mailbox-data-on-windows"
+nist: ["SI-4", "AU-12", "SI-7"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.b"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.008"]

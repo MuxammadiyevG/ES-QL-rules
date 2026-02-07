@@ -1,0 +1,43 @@
+name: "INFO - Linux Sudo Command (USER_CMD/EXECVE) (auditd)"
+description: |
+  Baselines sudo usage via auditd.
+  Captures via USER_CMD if explicit, otherwise via EXECVE + sudo.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*
+  | WHERE event.dataset == "auditd"
+  | WHERE
+      COALESCE(event.original, "") RLIKE "(?i)type=USER_CMD"
+      OR (
+        COALESCE(event.original, "") RLIKE "(?i)type=EXECVE"
+        AND (
+          COALESCE(process.name, "") == "sudo"
+          OR COALESCE(process.executable, "") RLIKE "(?i)/sudo$"
+          OR COALESCE(event.original, "") RLIKE "(?i)\\bsudo\\b"
+        )
+      )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      user_ids = VALUES(user.id),
+      src_ips = VALUES(source.ip),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parents = VALUES(process.parent.name),
+      raws = VALUES(event.original)
+    BY host.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP bucket, host.name, event_count, users, user_ids, src_ips, processes, executables, parents, raws
+  | SORT event_count DESC
+enabled: false
+tags: ["informational", "linux", "sudo", "auditd"]
+severity: informational
+risk_score: 1
+nist: ["AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.a"]
+mitre_attack: {}

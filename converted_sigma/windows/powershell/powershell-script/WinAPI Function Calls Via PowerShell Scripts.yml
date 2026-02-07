@@ -1,0 +1,63 @@
+name: "WinAPI Function Calls Via PowerShell Scripts"
+description: |
+  Detects PowerShell Script Block Logging events referencing common WinAPI / low-level function names frequently
+  used in offensive tradecraft (P/Invoke, reflection, in-memory execution, process injection, token manipulation,
+  credential dumping). Attackers may call these APIs from PowerShell to evade detections focused on standard cmdlets.
+  This is primarily a threat-hunting baseline and can generate noise; tune using execution context (script path,
+  parent process, user, host role) and add allowlists for known tooling.
+  Requirements: PowerShell Script Block Logging must be enabled.
+  False positives: Expected (legit security tools, admin frameworks, red team tooling, some installers).
+  Triage: Look for Add-Type / DllImport / Marshal / reflection usage, suspicious parent processes (Office, browsers,
+  wscript/cscript, mshta), unsigned script locations (Temp/Downloads/Public), and correlate with injection indicators,
+  LSASS access, new services/tasks, and outbound C2.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | EVAL raw = COALESCE(event.original, process.command_line, winlog.event_data.CommandLine, "")
+  /* Hunt for WinAPI-ish function names (case-insensitive word boundaries) */
+  | WHERE raw RLIKE "(?i)\\b(AddSecurityPackage|AdjustTokenPrivileges|CloseHandle|CreateProcessWithToken|CreateRemoteThread|CreateThread|CreateUserThread|DangerousGetHandle|DuplicateTokenEx|EnumerateSecurityPackages|FreeLibrary|GetDelegateForFunctionPointer|GetLogonSessionData|GetModuleHandle|GetProcAddress|GetProcessHandle|GetTokenInformation|ImpersonateLoggedOnUser|LoadLibrary|memcpy|MiniDumpWriteDump|OpenDesktop|OpenProcess|OpenProcessToken|OpenThreadToken|OpenWindowStation|QueueUserApc|ReadProcessMemory|RevertToSelf|RtlCreateUserThread|SetThreadToken|VirtualAlloc|VirtualFree|VirtualProtect|WaitForSingleObject|WriteInt32|WriteProcessMemory|ZeroFreeGlobalAllocUnicode)\\b"
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  /* Optional: add a mild context signal for suspicious script locations (tune as needed) */
+  | EVAL suspicious_script_path = CASE(
+      file.path RLIKE "(?i)\\\\(Users\\\\[^\\\\]+\\\\(Downloads|AppData\\\\Local\\\\Temp)|Windows\\\\Temp|ProgramData|Users\\\\Public)\\\\", true,
+      false
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      cmdlines = VALUES(process.command_line),
+      script_paths = VALUES(file.path),
+      originals = VALUES(COALESCE(event.original, "")),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
+      suspicious_path_hits = SUM(CASE(suspicious_script_path == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | EVAL risk_score = event_count * 20 + after_hours_hits * 15 + suspicious_path_hits * 10
+  | WHERE risk_score >= 25
+  | KEEP bucket, host.name, event_count, users, processes, executables, cmdlines, script_paths, after_hours_hits, suspicious_path_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.execution
+  - attack.t1059.001
+  - attack.t1106
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://speakerdeck.com/heirhabarov/hunting-for-powershell-abuse"
+nist: ["AU-6", "SI-4"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.001"]
+  TA0002_2:
+    T1106: []

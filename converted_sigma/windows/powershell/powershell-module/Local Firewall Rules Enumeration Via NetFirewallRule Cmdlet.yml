@@ -1,0 +1,59 @@
+name: "Local Firewall Rules Enumeration Via NetFirewallRule Cmdlet"
+description: |
+  Detects PowerShell module logging events indicating execution of Get-NetFirewallRule or Show-NetFirewallRule,
+  which enumerate local Windows Firewall rules. This is commonly used for administration, but attackers can use it
+  during discovery to understand allowed inbound/outbound paths and plan lateral movement or C2.
+  False positives: Legitimate admin scripts, endpoint management tooling, compliance scans.
+  Triage: Confirm the initiating user/context, review parent process chain, check for follow-on actions such as
+  firewall rule modification (New/Set-NetFirewallRule), remote service creation, suspicious network connections,
+  or execution from unusual hosts/accounts.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | EVAL raw = COALESCE(event.original, "")
+  | WHERE raw RLIKE "(?i)\\b(Get-NetFirewallRule|Show-NetFirewallRule)\\b"
+  | EVAL cmdlet = CASE(
+      raw RLIKE "(?i)\\bGet-NetFirewallRule\\b", "Get-NetFirewallRule",
+      raw RLIKE "(?i)\\bShow-NetFirewallRule\\b", "Show-NetFirewallRule",
+      "NetFirewallRule-Enum"
+    )
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      target_users = VALUES(user.target.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      cmdlines = VALUES(process.command_line),
+      originals = VALUES(raw),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
+    BY host.name, cmdlet, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | EVAL risk_score = event_count * 10 + after_hours_hits * 10
+  | WHERE risk_score >= 10
+  | KEEP bucket, host.name, cmdlet, event_count, users, processes, executables, cmdlines, after_hours_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - detection.threat-hunting
+  - attack.discovery
+  - attack.t1518.001
+  - attack.t1016
+severity: low
+risk_score: 20
+references:
+  - "https://learn.microsoft.com/en-us/powershell/module/netsecurity/get-netfirewallrule?view=windowsserver2022-ps"
+  - "https://learn.microsoft.com/en-us/powershell/module/netsecurity/show-netfirewallrule?view=windowsserver2022-ps"
+nist: ["AU-6", "SI-4"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0007:
+    T1518: ["T1518.001"]
+  TA0007_2:
+    T1016: []

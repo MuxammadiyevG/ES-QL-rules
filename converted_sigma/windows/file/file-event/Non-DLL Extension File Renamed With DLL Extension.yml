@@ -1,0 +1,74 @@
+name: "Non-DLL Extension File Renamed With DLL Extension"
+description: |
+  Detects file rename operations where the destination filename ends with ".dll" but the source file
+  did not already end with ".dll". Malware may rename payloads to .dll to blend in and evade simplistic
+  extension-based detections.
+  Requirements: Microsoft-Windows-Kernel-File Provider with rename telemetry (e.g., SourceFilename/TargetFilename).
+  False positives: Likely from installers and temporary locations. Baselining/tuning recommended.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  /* file rename telemetry (best-effort; depends on your pipeline) */
+  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE "(?i)file"
+  /* selection: TargetFilename endswith .dll */
+  | EVAL tgt = COALESCE(file.path, "")
+  | EVAL src = COALESCE(file.original.path, "")
+  | WHERE tgt RLIKE "(?i)\\.dll$"
+  /* filter_main_dll: SourceFilename endswith .dll */
+  | WHERE NOT (src RLIKE "(?i)\\.dll$")
+  /* filter_main_installers: SourceFilename endswith .tmp */
+  | WHERE NOT (src RLIKE "(?i)\\.tmp$")
+  /* filter_main_empty_source / null source */
+  | WHERE src != ""
+  /* filter_main_tiworker: Image contains \Windows\WinSxS\ and endswith \TiWorker.exe */
+  | WHERE NOT (
+      process.executable LIKE "*:\\Windows\\WinSxS\\*"
+      AND (process.executable RLIKE "(?i)\\\\TiWorker\\.exe$")
+    )
+  /* filter_main_upgrade */
+  | WHERE NOT (
+      (process.executable RLIKE "(?i):\\\\Windows\\\\System32\\\\wuauclt\\.exe$")
+      AND (tgt LIKE "*:\\$WINDOWS.~BT\\Sources\\*")
+    )
+  /* filter_main_generic: Program Files paths */
+  | WHERE NOT (
+      process.executable LIKE "*:\\Program Files (x86)\\*"
+      OR process.executable LIKE "*:\\Program Files\\*"
+    )
+  /* filter_optional_squirrel */
+  | WHERE NOT (src LIKE "*\\SquirrelTemp\\temp*")
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parents = VALUES(process.parent.name),
+      parent_executables = VALUES(process.parent.executable),
+      source_paths = VALUES(src),
+      target_paths = VALUES(tgt),
+      raw_samples = VALUES(event.original)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, source_paths, target_paths, raw_samples
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.t1036.008
+  - detection.threat-hunting
+severity: medium
+risk_score: 50
+references:
+  - "https://twitter.com/ffforward/status/1481672378639912960"
+  - "https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1036/T1036.md#atomic-test-1---system-file-copied-to-unusual-location"
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.b"]
+mitre_attack:
+  TA0005:
+    T1036: ["T1036.008"]

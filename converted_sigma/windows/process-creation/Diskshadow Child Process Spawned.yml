@@ -1,0 +1,55 @@
+name: "Diskshadow Child Process Spawned"
+description: |
+  Detects any child process spawned from Diskshadow.exe. Diskshadow can be used in interpreter/script mode
+  and may leverage the "exec" capability to launch other applications (LOLBin-style execution).
+  Attackers have used Diskshadow for VSS evasion, persistence, and to facilitate access to sensitive data
+  (e.g., NTDS/AD database extraction workflows).
+  False positives: Possible/likely if Diskshadow is legitimately used (especially interpreter mode).
+  Triage: Identify the spawned child process, check if Diskshadow was executed with script/interpreter options,
+  review the command line for "exec", and correlate with shadow copy deletion, NTDS access, and suspicious file writes.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE event.category == "process" OR event.code IN ("1", "4688") OR event.dataset RLIKE "(?i)process"
+  /* selection: parent is diskshadow.exe */
+  | WHERE process.parent.executable RLIKE "(?i)\\\\diskshadow\\.exe$"
+     OR process.parent.name == "diskshadow.exe"
+  /* filter_main_werfault: exclude WerFault child */
+  | WHERE NOT (process.executable RLIKE "(?i)\\\\Windows\\\\System32\\\\WerFault\\.exe$" OR process.name == "WerFault.exe")
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      parents = VALUES(process.parent.name),
+      parent_cmdlines = VALUES(process.parent.command_line),
+      children = VALUES(process.name),
+      child_executables = VALUES(process.executable),
+      child_cmdlines = VALUES(process.command_line),
+      pids = VALUES(process.pid)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, host.name, event_count, users, parents, parent_cmdlines, children, child_executables, child_cmdlines, pids
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.t1218
+  - attack.execution
+  - detection.threat-hunting
+severity: medium
+risk_score: 50
+references:
+  - "https://bohops.com/2018/03/26/diskshadow-the-return-of-vss-evasion-persistence-and-active-directory-database-extraction/"
+  - "https://www.ired.team/offensive-security/credential-access-and-credential-dumping/ntds.dit-enumeration"
+  - "https://medium.com/@cyberjyot/lolbin-execution-via-diskshadow-f6ff681a27a4"
+  - "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/diskshadow"
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.b"]
+mitre_attack:
+  TA0002:
+    T1218: []

@@ -1,0 +1,69 @@
+name: "Registry Set With Crypto-Classes From The 'Cryptography' PowerShell Namespace"
+description: |
+  Detects registry modifications to "\Shell\Open\Command" where the value data includes PowerShell (powershell/pwsh)
+  and references to the .NET "System.Security.Cryptography" namespace, including common CryptoServiceProvider classes.
+  This can indicate a persistence / hijack technique (Shell\Open\Command) that decrypts payloads on-the-fly for defense
+  evasion (e.g., decrypting a malicious payload before execution).
+  False positives: Rare but possible (legitimate scripts using crypto classes), though it is less common in Shell\Open\Command
+  handlers. Tune by allowlisting known-good software and correlating with suspicious parent process / low-prevalence users.
+  Triage: Identify which key is modified (file association/protocol), extract the full command data, verify parent process/user,
+  and correlate with subsequent PowerShell execution, file writes in Temp/Downloads, and any newly spawned processes.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | EVAL raw = COALESCE(event.original, "")
+  /* selection_key: \Shell\Open\Command */
+  | WHERE raw LIKE "*\\Shell\\Open\\Command*"
+  /* selection_value_img: contains powershell or pwsh */
+  | WHERE raw RLIKE "(?i)\\b(powershell|pwsh)\\b"
+  /* selection_value_namespace: System.Security.Cryptography. */
+  | WHERE raw LIKE "*System.Security.Cryptography.*"
+  /* selection_value_classes: one of the listed classes */
+  | WHERE raw RLIKE "(?i)\\.(AesCryptoServiceProvider|DESCryptoServiceProvider|DSACryptoServiceProvider|RC2CryptoServiceProvider|Rijndael|RSACryptoServiceProvider|TripleDESCryptoServiceProvider)\\b"
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      target_users = VALUES(user.target.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parent_processes = VALUES(process.parent.name),
+      parent_executables = VALUES(process.parent.executable),
+      cmdlines = VALUES(process.command_line),
+      originals = VALUES(raw),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | EVAL risk_score = event_count * 25 + after_hours_hits * 20
+  | WHERE risk_score >= 25
+  | KEEP bucket, host.name, event_count, users, processes, executables, parent_processes, parent_executables, cmdlines, after_hours_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.execution
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1059.001
+  - attack.t1027.010
+  - attack.t1547.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography?view=net-8.0"
+  - "https://squiblydoo.blog/2023/11/07/october-2023-solarmarker/"
+nist: ["AU-6", "SI-4", "CM-6"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.001"]
+  TA0005:
+    T1027: ["T1027.010"]
+    T1547: ["T1547.001"]

@@ -1,0 +1,63 @@
+name: "Potential BOINC Software Execution (UC-Berkeley Signature)"
+description: |
+  Detects process execution where the file metadata description indicates "University of California, Berkeley",
+  which is commonly associated with BOINC volunteer computing software. BOINC can be legitimately installed,
+  but in some intrusions it has been abused for unauthorized compute (crypto/mining-like behavior) or persistence.
+  False positives: Expected if BOINC is intentionally installed/used.
+  Triage: Validate the binary path and signer/publisher, confirm installation approval, check CPU usage spikes
+  (metricbeat), persistence mechanisms (services/scheduled tasks), outbound connections, and whether the parent
+  process indicates fake update chains (browser/installer from Downloads/AppData).
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+  - metricbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*, metricbeat-*
+  /* Process creation: look for UC Berkeley description in raw or structured fields */
+  | WHERE (
+      COALESCE(event.original, "") LIKE "*University of California, Berkeley*"
+      OR COALESCE(process.command_line, "") LIKE "*University of California, Berkeley*"
+    )
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | EVAL suspicious_path = CASE(
+      COALESCE(process.executable, "") RLIKE "(?i)\\\\(Users\\\\[^\\\\]+\\\\(AppData\\\\Local\\\\Temp|AppData\\\\Roaming|Downloads)|Windows\\\\Temp|ProgramData|Users\\\\Public)\\\\", true,
+      false
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parents = VALUES(process.parent.name),
+      cmdlines = VALUES(process.command_line),
+      originals = VALUES(COALESCE(event.original, "")),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
+      suspicious_path_hits = SUM(CASE(suspicious_path == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  /* Informational baseline; bump slightly if suspicious install path / after-hours */
+  | EVAL risk_score = event_count * 1 + after_hours_hits * 5 + suspicious_path_hits * 5
+  | WHERE risk_score >= 1
+  | KEEP bucket, host.name, event_count, users, processes, executables, parents, cmdlines, after_hours_hits, suspicious_path_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.execution
+  - attack.defense-evasion
+  - attack.t1553
+  - detection.threat-hunting
+severity: informational
+risk_score: 5
+references:
+  - "https://boinc.berkeley.edu/"
+  - "https://www.huntress.com/blog/fake-browser-updates-lead-to-boinc-volunteer-computing-software"
+nist: ["AU-6", "SI-4"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.a"]
+mitre_attack:
+  TA0002:
+    T1553: []

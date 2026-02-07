@@ -1,0 +1,69 @@
+name: "Potential Data Exfiltration Via Curl.EXE"
+description: |
+  Detects curl.exe execution with common upload/data submission flags that may indicate potential
+  data exfiltration or outbound data transfer (e.g., --upload-file, --form, --data* or short flags
+  -F/-T/-d). This is a hunting rule; developer/admin automation may legitimately upload data.
+  Filters: excludes localhost targets.
+  Triage: Inspect destination URL/domain, payload/file paths, parent process, user context, and
+  correlate with recent data staging (Compress-Archive), credential access, or unusual network egress.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE event.category == "process" OR event.code IN ("1", "4688") OR event.dataset RLIKE "(?i)process"
+  /* selection_img: curl.exe */
+  | WHERE process.name == "curl.exe"
+     OR process.executable RLIKE "(?i)\\\\curl\\.exe$"
+     OR COALESCE(event.original, "") LIKE "*The curl executable*"
+  /* selection_cli: upload/data flags */
+  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, "")
+  | WHERE (
+      cmd LIKE "* --form*"
+      OR cmd LIKE "* --upload-file *"
+      OR cmd LIKE "* --data *"
+      OR cmd LIKE "* --data-*"
+      OR cmd RLIKE "\\s-[FTd]\\s"
+    )
+  /* filter_optional_localhost */
+  | WHERE NOT (
+      cmd LIKE "*://localhost*"
+      OR cmd LIKE "*://127.0.0.1*"
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      parents = VALUES(process.parent.name),
+      parent_cmdlines = VALUES(process.parent.command_line),
+      executables = VALUES(process.executable),
+      cmdlines = VALUES(cmd),
+      pids = VALUES(process.pid)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.exfiltration
+  - attack.command-and-control
+  - attack.t1567
+  - attack.t1105
+  - detection.threat-hunting
+severity: medium
+risk_score: 50
+references:
+  - "https://twitter.com/d1r4c/status/1279042657508081664"
+  - "https://medium.com/@petehouston/upload-files-with-curl-93064dcccc76"
+  - "https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1105/T1105.md#atomic-test-19---curl-upload-file"
+  - "https://curl.se/docs/manpage.html"
+nist: ["SC-7", "SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.b"]
+mitre_attack:
+  TA0010:
+    T1567: []
+  TA0011:
+    T1105: []

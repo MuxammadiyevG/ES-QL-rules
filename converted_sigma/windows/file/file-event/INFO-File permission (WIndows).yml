@@ -1,0 +1,43 @@
+# 6) File Permission / Attribute Change (generic hunting)
+name: "INFO - File Permission/Attribute Change (Windows) - Hunting"
+description: |
+  Informational baseline for file permission/attribute changes. Field availability varies by telemetry.
+  Uses event.action/type and raw hints. Tune with your actual fields when available.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | WHERE event.category == "file"
+  | WHERE event.action RLIKE "(?i)permission|acl|owner|attribute|attrib|chmod"
+     OR event.type RLIKE "(?i)permission|acl|owner|attribute"
+     OR COALESCE(event.original,"") RLIKE "(?i)SecurityDescriptor|DACL|SACL|Attributes"
+  | WHERE file.path IS NOT NULL
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parents = VALUES(process.parent.name),
+      parent_executables = VALUES(process.parent.executable),
+      paths = VALUES(file.path),
+      raw_samples = VALUES(event.original)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, paths, raw_samples
+  | SORT event_count DESC
+enabled: false
+tags:
+  - informational
+  - file-monitoring
+severity: informational
+risk_score: 1
+references:
+  - "https://www.elastic.co/guide/en/ecs/current/ecs-event.html"
+nist: ["AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.a"]
+mitre_attack: {}

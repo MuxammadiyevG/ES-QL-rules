@@ -1,0 +1,32 @@
+name: "INFO - Linux Account Management (ADD_USER/DEL_USER/USER_CHAUTHTOK) (auditd)"
+description: |
+  Baselines account events such as user creation/deletion/password changes via auditd.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - auditbeat-*
+query_language: esql
+query: |
+  FROM auditbeat-*
+  | WHERE event.dataset == "auditd"
+  | WHERE COALESCE(event.original, "") RLIKE "(?i)type=(ADD_USER|DEL_USER|USER_CHAUTHTOK|USER_MGMT)"
+  | STATS
+      event_count = COUNT(*),
+      actors = VALUES(user.name),
+      actor_ids = VALUES(user.id),
+      targets = VALUES(user.target.name),
+      target_ids = VALUES(user.target.id),
+      src_ips = VALUES(source.ip),
+      raws = VALUES(event.original)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | KEEP bucket, host.name, event_count, actors, actor_ids, targets, target_ids, src_ips, raws
+  | SORT event_count DESC
+enabled: false
+tags: ["informational", "linux", "account-management", "auditd"]
+severity: informational
+risk_score: 1
+nist: ["AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.a"]
+mitre_attack: {}

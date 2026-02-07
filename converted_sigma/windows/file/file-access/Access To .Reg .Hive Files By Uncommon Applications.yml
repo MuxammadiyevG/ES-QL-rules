@@ -1,0 +1,56 @@
+name: "Access To .Reg/.Hive Files By Uncommon Applications"
+description: |
+  Detects file access to files ending with ".reg" or ".hive", commonly associated with Windows Registry
+  exports/backups. Uncommon processes accessing these files may indicate registry manipulation, persistence,
+  or defense evasion activity.
+  Requirements: Microsoft-Windows-Kernel-File ETW provider (or equivalent file access telemetry).
+  False positives: Third-party software running from user context may cause noise; heavy baselining/tuning is recommended.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  /* file access telemetry view (best-effort; depends on your pipeline) */
+  | WHERE event.category == "file"
+     OR event.type == "access"
+     OR event.dataset RLIKE "(?i)file"
+  /* selection: file endswith .hive or .reg */
+  | WHERE file.path RLIKE "(?i)\\.(hive|reg)$"
+  /* filter_main_generic: exclude common benign install paths */
+  | WHERE NOT (
+      process.executable RLIKE "(?i)^C:\\\\Program Files \\(x86\\)\\\\"
+      OR process.executable RLIKE "(?i)^C:\\\\Program Files\\\\"
+      OR process.executable RLIKE "(?i)^C:\\\\Windows\\\\System32\\\\"
+      OR process.executable RLIKE "(?i)^C:\\\\Windows\\\\SysWOW64\\\\"
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parents = VALUES(process.parent.name),
+      parent_executables = VALUES(process.parent.executable),
+      file_paths = VALUES(file.path)
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, file_paths
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.persistence
+  - attack.t1112
+  - detection.threat-hunting
+severity: low
+risk_score: 20
+references:
+  - "https://github.com/tccontre/Reg-Restore-Persistence-Mole"
+nist: ["SI-4", "AU-12", "CM-6"]
+pci_dss: ["10.2"]
+gdpr: ["Article 32.1.b"]
+mitre_attack:
+  TA0005:
+    T1112: []

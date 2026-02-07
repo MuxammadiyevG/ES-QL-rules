@@ -1,0 +1,58 @@
+name: "Potential Registry Reconnaissance Via PowerShell Script"
+description: |
+  Detects PowerShell Script Block Logging events that suggest registry reconnaissance. The pattern matches
+  common registry-enumeration cmdlets/aliases (Get-Item, Get-ChildItem, gci) used with -Path to query
+  sensitive registry locations often targeted for discovery of services, autoruns, and logon configuration:
+  - CurrentControlSet\Services
+  - CurrentVersion\Run / Run (autoruns)
+  - CurrentVersion\Policies\Explorer\Run
+  - CurrentVersion\ShellServiceObjectDelayLoad
+  - CurrentVersion\Windows\Winlogon
+  Requirements: PowerShell Script Block Logging must be enabled.
+  False positives: Possible (admin scripts, inventory/compliance tools; string matching can over-hit).
+  Triage: Review the full script block and parent process, confirm user context, and correlate with follow-on
+  credential access, persistence changes (Set-ItemProperty/New-ItemProperty), or suspicious process/network activity.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | EVAL raw = COALESCE(event.original, process.command_line, winlog.event_data.CommandLine, "")
+  /* Cmdlet/alias + -Path + targeted registry locations (spacing/order flexible; case-insensitive) */
+  | WHERE raw RLIKE "(?i)\\b(Get-Item|Get-ChildItem|gci)\\b.{1,64}\\-Path.{1,64}\\\\(currentcontrolset\\\\services|CurrentVersion\\\\Policies\\\\Explorer\\\\Run|CurrentVersion\\\\Run|CurrentVersion\\\\ShellServiceObjectDelayLoad|CurrentVersion\\\\Windows\\\\winlogon)\\\\"
+  | EVAL hour_of_day = DATE_EXTRACT(\"hour\", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      target_users = VALUES(user.target.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      cmdlines = VALUES(process.command_line),
+      originals = VALUES(COALESCE(event.original, \"\")),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | EVAL risk_score = event_count * 25 + after_hours_hits * 20
+  | WHERE risk_score >= 25
+  | KEEP bucket, host.name, event_count, users, processes, executables, cmdlines, after_hours_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - attack.discovery
+  - attack.t1012
+  - attack.t1007
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1012/T1012.md"
+nist: ["AU-6", "SI-4"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0007:
+    T1012: []
+    T1007: []

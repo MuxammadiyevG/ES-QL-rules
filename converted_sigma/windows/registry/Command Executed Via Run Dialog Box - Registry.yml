@@ -1,0 +1,67 @@
+name: "Command Executed Via Run Dialog Box - Registry"
+description: |
+  Detects potential command execution via the Windows Run dialog by monitoring writes to the
+  Explorer RunMRU registry key. This technique has been used in social engineering campaigns
+  (e.g., fake CAPTCHA “paste this command”) to trick users into executing malicious commands.
+  False positives: Likely (RunMRU is normal user behavior). This is best used for hunting and
+  should be tuned by filtering benign commands and correlating with suspicious child processes,
+  downloads, or follow-on persistence.
+  Triage: Extract the entered Run command from event.original, identify the user session, and
+  correlate with process creation shortly after (cmd/powershell/mshta/rundll32/wscript/certutil),
+  network connections, and file writes to Temp/AppData/Downloads.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM winlogbeat-*
+  | EVAL raw = COALESCE(event.original, "")
+  /* selection: RunMRU key */
+  | WHERE raw LIKE "*\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RunMRU*"
+  /* filter_main_mrulist: ignore MRUList maintenance */
+  | WHERE NOT (raw LIKE "*\\MRUList*")
+  /* filter_optional_ping: ignore simple ping usage */
+  | WHERE NOT (raw RLIKE "(?i)\\bping\\b")
+  /* filter_optional_generic: ignore common benign run commands */
+  | WHERE NOT (
+      raw RLIKE "(?i)%appdata%\\\\1\\b" OR
+      raw RLIKE "(?i)%localappdata%\\\\1\\b" OR
+      raw RLIKE "(?i)%public%\\\\1\\b" OR
+      raw RLIKE "(?i)%temp%\\\\1\\b" OR
+      raw RLIKE "(?i)\\b(calc|dxdiag|explorer|gpedit\\.msc|mmc|notepad|regedit|services\\.msc|winver)\\\\1\\b"
+    )
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      parent_processes = VALUES(process.parent.name),
+      cmdlines = VALUES(process.command_line),
+      originals = VALUES(raw),
+      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
+    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  /* Low-confidence baseline; small score unless after-hours */
+  | EVAL risk_score = event_count * 5 + after_hours_hits * 10
+  | WHERE risk_score >= 5
+  | KEEP bucket, host.name, event_count, users, processes, executables, parent_processes, cmdlines, after_hours_hits, risk_score, originals
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - detection.threat-hunting
+  - attack.execution
+severity: low
+risk_score: 20
+references:
+  - "https://www.forensafe.com/blogs/runmrukey.html"
+  - "https://medium.com/@shaherzakaria8/downloading-trojan-lumma-infostealer-through-capatcha-1f25255a0e71"
+  - "https://redcanary.com/blog/threat-intelligence/intelligence-insights-october-2024/"
+nist: ["AU-6", "SI-4"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0002:
+    T1059: []
