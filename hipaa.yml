@@ -1,0 +1,487 @@
+---
+# HIPAA (Health Insurance Portability and Accountability Act)
+# Effective Date: April 14, 2003 (Privacy Rule), April 20, 2005 (Security Rule)
+# Scope: Protected Health Information (PHI) in the United States
+# SECURITY RULE - 45 CFR Part 164, Subpart C
+Section 164.308:
+  part: Security Rule
+  name: Administrative Safeguards
+164.308.a.1:
+  section: 164.308(a)(1)
+  name: Security Management Process (R)
+  description: Implement policies and procedures to prevent, detect, contain, and
+    correct security violations
+164.308.a.1.ii.A:
+  section: 164.308(a)(1)(ii)(A)
+  name: Risk Analysis (R)
+  description: Conduct accurate and thorough assessment of potential risks and vulnerabilities
+    to confidentiality, integrity, and availability of ePHI
+164.308.a.1.ii.B:
+  section: 164.308(a)(1)(ii)(B)
+  name: Risk Management (R)
+  description: Implement security measures sufficient to reduce risks and vulnerabilities
+    to reasonable and appropriate level
+164.308.a.1.ii.C:
+  section: 164.308(a)(1)(ii)(C)
+  name: Sanction Policy (R)
+  description: Apply appropriate sanctions against workforce members who fail to comply
+    with security policies and procedures
+164.308.a.1.ii.D:
+  section: 164.308(a)(1)(ii)(D)
+  name: Information System Activity Review (R)
+  description: Implement procedures to regularly review records of information system
+    activity
+164.308.a.2:
+  section: 164.308(a)(2)
+  name: Assigned Security Responsibility (R)
+  description: Identify security official responsible for development and implementation
+    of policies and procedures
+164.308.a.3:
+  section: 164.308(a)(3)
+  name: Workforce Security (R)
+  description: Implement policies and procedures to ensure workforce members have
+    appropriate access to ePHI
+164.308.a.3.ii.A:
+  section: 164.308(a)(3)(ii)(A)
+  name: Authorization and/or Supervision (A)
+  description: Implement procedures for authorization and/or supervision of workforce
+    members who work with ePHI
+164.308.a.3.ii.B:
+  section: 164.308(a)(3)(ii)(B)
+  name: Workforce Clearance Procedure (A)
+  description: Implement procedures to determine access to ePHI is appropriate
+164.308.a.3.ii.C:
+  section: 164.308(a)(3)(ii)(C)
+  name: Termination Procedures (A)
+  description: Implement procedures for terminating access to ePHI when employment
+    ends
+164.308.a.4:
+  section: 164.308(a)(4)
+  name: Information Access Management (R)
+  description: Implement policies and procedures for authorizing access to ePHI
+164.308.a.4.ii.A:
+  section: 164.308(a)(4)(ii)(A)
+  name: Isolating Health Care Clearinghouse Functions (R)
+  description: If health care clearinghouse is part of larger organization, implement
+    policies to protect ePHI from larger organization
+164.308.a.4.ii.B:
+  section: 164.308(a)(4)(ii)(B)
+  name: Access Authorization (A)
+  description: Implement policies and procedures for granting access to ePHI
+164.308.a.4.ii.C:
+  section: 164.308(a)(4)(ii)(C)
+  name: Access Establishment and Modification (A)
+  description: Implement policies and procedures for establishing, documenting, reviewing,
+    and modifying user's right of access
+164.308.a.5:
+  section: 164.308(a)(5)
+  name: Security Awareness and Training (R)
+  description: Implement security awareness and training program for all workforce
+    members
+164.308.a.5.ii.A:
+  section: 164.308(a)(5)(ii)(A)
+  name: Security Reminders (A)
+  description: Periodic security updates
+164.308.a.5.ii.B:
+  section: 164.308(a)(5)(ii)(B)
+  name: Protection from Malicious Software (A)
+  description: Procedures for guarding against, detecting, and reporting malicious
+    software
+164.308.a.5.ii.C:
+  section: 164.308(a)(5)(ii)(C)
+  name: Log-in Monitoring (A)
+  description: Procedures for monitoring log-in attempts and reporting discrepancies
+164.308.a.5.ii.D:
+  section: 164.308(a)(5)(ii)(D)
+  name: Password Management (A)
+  description: Procedures for creating, changing, and safeguarding passwords
+164.308.a.6:
+  section: 164.308(a)(6)
+  name: Security Incident Procedures (R)
+  description: Implement policies and procedures to address security incidents
+164.308.a.6.ii:
+  section: 164.308(a)(6)(ii)
+  name: Response and Reporting (R)
+  description: Identify and respond to suspected or known security incidents; mitigate
+    harmful effects; document incidents and outcomes
+164.308.a.7:
+  section: 164.308(a)(7)
+  name: Contingency Plan (R)
+  description: Establish and implement policies and procedures for responding to emergency
+    or other occurrence
+164.308.a.7.ii.A:
+  section: 164.308(a)(7)(ii)(A)
+  name: Data Backup Plan (R)
+  description: Establish and implement procedures to create and maintain retrievable
+    exact copies of ePHI
+164.308.a.7.ii.B:
+  section: 164.308(a)(7)(ii)(B)
+  name: Disaster Recovery Plan (R)
+  description: Establish and implement procedures to restore lost data
+164.308.a.7.ii.C:
+  section: 164.308(a)(7)(ii)(C)
+  name: Emergency Mode Operation Plan (R)
+  description: Establish and implement procedures to enable continuation of critical
+    business processes while operating in emergency mode
+164.308.a.7.ii.D:
+  section: 164.308(a)(7)(ii)(D)
+  name: Testing and Revision Procedures (A)
+  description: Implement procedures for periodic testing and revision of contingency
+    plans
+164.308.a.7.ii.E:
+  section: 164.308(a)(7)(ii)(E)
+  name: Applications and Data Criticality Analysis (A)
+  description: Assess relative criticality of specific applications and data in support
+    of other contingency plan components
+164.308.a.8:
+  section: 164.308(a)(8)
+  name: Evaluation (R)
+  description: Perform periodic technical and nontechnical evaluation in response
+    to environmental or operational changes
+164.308.b.1:
+  section: 164.308(b)(1)
+  name: Business Associate Contracts and Other Arrangements (R)
+  description: Covered entity may permit business associate to create, receive, maintain,
+    or transmit ePHI only if covered entity obtains satisfactory assurances
+164.308.b.3:
+  section: 164.308(b)(3)
+  name: Written Contract or Other Arrangement (R)
+  description: Document satisfactory assurances through written contract or other
+    arrangement
+Section 164.310:
+  part: Security Rule
+  name: Physical Safeguards
+164.310.a.1:
+  section: 164.310(a)(1)
+  name: Facility Access Controls (R)
+  description: Implement policies and procedures to limit physical access to electronic
+    information systems and facility while ensuring properly authorized access
+164.310.a.2.i:
+  section: 164.310(a)(2)(i)
+  name: Contingency Operations (A)
+  description: Establish and implement procedures for allowing facility access in
+    support of data restoration under disaster recovery and emergency operations
+164.310.a.2.ii:
+  section: 164.310(a)(2)(ii)
+  name: Facility Security Plan (A)
+  description: Implement policies and procedures to safeguard facility and equipment
+    from unauthorized physical access, tampering, and theft
+164.310.a.2.iii:
+  section: 164.310(a)(2)(iii)
+  name: Access Control and Validation Procedures (A)
+  description: Implement procedures to control and validate person's access to facilities
+    based on role or function
+164.310.a.2.iv:
+  section: 164.310(a)(2)(iv)
+  name: Maintenance Records (A)
+  description: Implement policies and procedures to document repairs and modifications
+    to physical components of facility related to security
+164.310.b:
+  section: 164.310(b)
+  name: Workstation Use (R)
+  description: Implement policies and procedures specifying proper functions to be
+    performed, manner in which functions performed, and physical attributes of surroundings
+164.310.c:
+  section: 164.310(c)
+  name: Workstation Security (R)
+  description: Implement physical safeguards for all workstations that access ePHI
+    to restrict access to authorized users
+164.310.d.1:
+  section: 164.310(d)(1)
+  name: Device and Media Controls (R)
+  description: Implement policies and procedures that govern receipt and removal of
+    hardware and electronic media containing ePHI
+164.310.d.2.i:
+  section: 164.310(d)(2)(i)
+  name: Disposal (R)
+  description: Implement policies and procedures to address final disposition of ePHI
+    and/or hardware or electronic media on which it is stored
+164.310.d.2.ii:
+  section: 164.310(d)(2)(ii)
+  name: Media Re-use (R)
+  description: Implement procedures for removal of ePHI from electronic media before
+    media made available for re-use
+164.310.d.2.iii:
+  section: 164.310(d)(2)(iii)
+  name: Accountability (A)
+  description: Maintain record of movements of hardware and electronic media and any
+    person responsible
+164.310.d.2.iv:
+  section: 164.310(d)(2)(iv)
+  name: Data Backup and Storage (A)
+  description: Create retrievable, exact copy of ePHI when needed before movement
+    of equipment
+Section 164.312:
+  part: Security Rule
+  name: Technical Safeguards
+164.312.a.1:
+  section: 164.312(a)(1)
+  name: Access Control (R)
+  description: Implement technical policies and procedures that allow only authorized
+    persons to access ePHI
+164.312.a.2.i:
+  section: 164.312(a)(2)(i)
+  name: Unique User Identification (R)
+  description: Assign unique name and/or number for identifying and tracking user
+    identity
+164.312.a.2.ii:
+  section: 164.312(a)(2)(ii)
+  name: Emergency Access Procedure (R)
+  description: Establish and implement procedures for obtaining necessary ePHI during
+    emergency
+164.312.a.2.iii:
+  section: 164.312(a)(2)(iii)
+  name: Automatic Logoff (A)
+  description: Implement electronic procedures that terminate electronic session after
+    predetermined time of inactivity
+164.312.a.2.iv:
+  section: 164.312(a)(2)(iv)
+  name: Encryption and Decryption (A)
+  description: Implement mechanism to encrypt and decrypt ePHI
+164.312.b:
+  section: 164.312(b)
+  name: Audit Controls (R)
+  description: Implement hardware, software, and/or procedural mechanisms to record
+    and examine activity in information systems containing ePHI
+164.312.c.1:
+  section: 164.312(c)(1)
+  name: Integrity (R)
+  description: Implement policies and procedures to protect ePHI from improper alteration
+    or destruction
+164.312.c.2:
+  section: 164.312(c)(2)
+  name: Mechanism to Authenticate ePHI (A)
+  description: Implement electronic mechanisms to corroborate that ePHI has not been
+    altered or destroyed in unauthorized manner
+164.312.d:
+  section: 164.312(d)
+  name: Person or Entity Authentication (R)
+  description: Implement procedures to verify person or entity seeking access to ePHI
+    is the one claimed
+164.312.e.1:
+  section: 164.312(e)(1)
+  name: Transmission Security (R)
+  description: Implement technical security measures to guard against unauthorized
+    access to ePHI being transmitted over electronic communications network
+164.312.e.2.i:
+  section: 164.312(e)(2)(i)
+  name: Integrity Controls (A)
+  description: Implement security measures to ensure electronically transmitted ePHI
+    is not improperly modified without detection
+164.312.e.2.ii:
+  section: 164.312(e)(2)(ii)
+  name: Encryption (A)
+  description: Implement mechanism to encrypt ePHI whenever deemed appropriate
+# PRIVACY RULE - 45 CFR Part 164, Subpart E
+Section 164.502:
+  part: Privacy Rule
+  name: Uses and Disclosures of Protected Health Information
+164.502.a:
+  section: 164.502(a)
+  name: General Rules
+  description: Covered entity may not use or disclose PHI except as permitted or required
+    by Privacy Rule
+164.502.b:
+  section: 164.502(b)
+  name: Minimum Necessary
+  description: When using or disclosing PHI, covered entity must make reasonable efforts
+    to limit to minimum necessary
+164.502.e:
+  section: 164.502(e)
+  name: Business Associate Contracts
+  description: Covered entity may disclose PHI to business associate and may allow
+    business associate to create or receive PHI on its behalf only if covered entity
+    obtains satisfactory assurance
+164.506:
+  section: '164.506'
+  name: Uses and Disclosures to Carry Out Treatment, Payment, or Health Care Operations
+  description: Covered entity may use or disclose PHI for own treatment, payment,
+    or health care operations
+164.508:
+  section: '164.508'
+  name: Uses and Disclosures for Which Authorization Required
+  description: Covered entity must obtain authorization for use or disclosure of PHI
+    for purposes other than TPO
+164.508.a.2:
+  section: 164.508(a)(2)
+  name: Psychotherapy Notes
+  description: Authorization required for use or disclosure of psychotherapy notes
+    except for certain treatment, payment, or health care operations
+164.510:
+  section: '164.510'
+  name: Uses and Disclosures Requiring Opportunity to Agree or Object
+  description: Covered entity may use or disclose PHI if individual given opportunity
+    to agree, prohibit, or restrict disclosure
+164.512:
+  section: '164.512'
+  name: Uses and Disclosures for Which Authorization or Opportunity Not Required
+  description: Covered entity may use or disclose PHI without authorization for public
+    health, law enforcement, and other specified purposes
+164.514.d:
+  section: 164.514(d)
+  name: Minimum Necessary Requirements
+  description: Covered entity must implement policies and procedures to reasonably
+    limit uses and disclosures to minimum necessary
+164.520:
+  section: '164.520'
+  name: Notice of Privacy Practices
+  description: Covered entity must provide notice of privacy practices that describes
+    uses and disclosures of PHI and individual's rights
+164.522.a:
+  section: 164.522(a)
+  name: Right to Request Restrictions
+  description: Covered entity must permit individual to request restriction on uses
+    and disclosures of PHI
+164.522.b:
+  section: 164.522(b)
+  name: Confidential Communications
+  description: Covered entity must permit individuals to request and must accommodate
+    reasonable requests to receive communications of PHI by alternative means or at
+    alternative locations
+164.524:
+  section: '164.524'
+  name: Access of Individuals to Protected Health Information
+  description: Individual has right of access to inspect and obtain copy of PHI in
+    designated record set
+164.524.b.2:
+  section: 164.524(b)(2)
+  name: Timely Action
+  description: Covered entity must act on request for access no later than 30 days
+    after receipt of request
+164.526:
+  section: '164.526'
+  name: Amendment of Protected Health Information
+  description: Individual has right to request covered entity amend PHI in designated
+    record set
+164.528:
+  section: '164.528'
+  name: Accounting of Disclosures
+  description: Individual has right to receive accounting of disclosures of PHI made
+    by covered entity in six years prior to request
+164.530.b:
+  section: 164.530(b)
+  name: Training
+  description: Covered entity must train all workforce members on policies and procedures
+    regarding PHI
+164.530.e:
+  section: 164.530(e)
+  name: Safeguards
+  description: Covered entity must have in place appropriate administrative, technical,
+    and physical safeguards to protect privacy of PHI
+164.530.i:
+  section: 164.530(i)
+  name: Sanctions
+  description: Covered entity must apply appropriate sanctions against workforce members
+    who fail to comply with privacy policies and procedures
+164.530.j:
+  section: 164.530(j)
+  name: Documentation
+  description: Covered entity must maintain policies and procedures, communications,
+    and actions, activities, designations in written or electronic form for 6 years
+# BREACH NOTIFICATION RULE - 45 CFR Part 164, Subpart D
+Section 164.400:
+  part: Breach Notification Rule
+  name: Applicability
+164.402:
+  section: '164.402'
+  name: Definitions - Breach
+  description: Acquisition, access, use, or disclosure of PHI in manner not permitted
+    which compromises security or privacy of PHI
+164.404:
+  section: '164.404'
+  name: Notification to Individuals
+  description: Covered entity shall notify each individual whose unsecured PHI has
+    been or reasonably believed to have been breached
+164.404.b:
+  section: 164.404(b)
+  name: Timeliness of Notification
+  description: Notification shall be provided without unreasonable delay and in no
+    case later than 60 days after discovery of breach
+164.406:
+  section: '164.406'
+  name: Notification to Secretary
+  description: Covered entity shall notify Secretary of HHS of breach of unsecured
+    PHI
+164.406.a:
+  section: 164.406(a)
+  name: Breaches Involving 500 or More Individuals
+  description: Covered entity shall notify Secretary contemporaneously with notice
+    to individual and in manner specified on HHS website
+164.406.b:
+  section: 164.406(b)
+  name: Breaches Involving Less Than 500 Individuals
+  description: Covered entity shall maintain log of breaches and submit annually to
+    Secretary within 60 days of end of calendar year
+164.408:
+  section: '164.408'
+  name: Notification to Media
+  description: For breach of unsecured PHI involving more than 500 residents of State
+    or jurisdiction, covered entity shall notify prominent media outlets
+164.410:
+  section: '164.410'
+  name: Notification by Business Associate
+  description: Business associate shall notify covered entity of breach of unsecured
+    PHI without unreasonable delay and no later than 60 days
+# HITECH ACT PROVISIONS
+Section 13400:
+  part: HITECH Act
+  name: Definitions
+  description: HITECH Act strengthens HIPAA enforcement and adds new requirements
+13402:
+  section: '13402'
+  name: Notification in Case of Breach
+  description: Breach notification requirements for unsecured PHI
+13404:
+  section: '13404'
+  name: Application of Security Provisions to Business Associates
+  description: Business associates directly liable for compliance with Security Rule
+    requirements
+13405.a:
+  section: 13405(a)
+  name: Accounting of Disclosures
+  description: Individuals have right to accounting of disclosures through electronic
+    health record
+13405.d:
+  section: 13405(d)
+  name: Prohibition on Sale of PHI
+  description: Covered entity or business associate shall not receive remuneration
+    for PHI without valid authorization
+13405.e:
+  section: 13405(e)
+  name: Access to Health Information
+  description: Individual has right to obtain copy of PHI in electronic format if
+    maintained electronically
+13410.d:
+  section: 13410(d)
+  name: Tiered Increase in Civil Penalties
+  description: Establishes four tiers of violations with increasing penalty amounts
+    up to $1.5 million per year
+# 42 CFR PART 2 - SUBSTANCE USE DISORDER RECORDS
+Section 2.11:
+  part: 42 CFR Part 2
+  name: Confidentiality of Substance Use Disorder Records
+  description: Federally assisted substance use disorder programs must maintain confidentiality
+    of patient records
+2.12:
+  section: '2.12'
+  name: Applicability
+  description: Applies to records of identity, diagnosis, prognosis, or treatment
+    of patient maintained in connection with substance use disorder program
+2.13:
+  section: '2.13'
+  name: Confidentiality Restrictions and Safeguards
+  description: Records subject to regulations must be maintained in manner protecting
+    from disclosure
+2.31:
+  section: '2.31'
+  name: Consent Requirements
+  description: General prohibition on disclosure unless patient consents in writing,
+    disclosure permitted by regulations, or court order issued
+2.32:
+  section: '2.32'
+  name: Prohibition on Redisclosure
+  description: Notice to accompany disclosure that information disclosed from records
+    protected by federal law and cannot be redisclosed
+# KEY IMPLEMENTATION SPECIFICATIONS
+# (R) = Required
+# (A) = Addressable

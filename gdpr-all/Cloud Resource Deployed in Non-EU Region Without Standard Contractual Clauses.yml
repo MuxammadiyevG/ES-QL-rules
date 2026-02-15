@@ -1,3 +1,4 @@
+---
 #//RULE-GDPR-36 — Personal Data in Non-EU Cloud Region Without SCCs (GDPR Article 46)
 #//Requirement: Article 46
 #//Objective: Detect cloud deployments outside EU without transfer safeguards
@@ -6,8 +7,7 @@
 #//GDPR field validation: Verify personal data fields exist (user.email, geo.country, etc.)
 #//Tuning notes: Monitor cloud resource creation; verify SCC/BCR coverage
 #//NOTE: Requires cloud provider integration (AWS CloudTrail, Azure Activity Log, GCP Audit Log)
-
-name: "Cloud Resource Deployed in Non-EU Region Without Standard Contractual Clauses"
+name: Cloud Resource Deployed in Non-EU Region Without Standard Contractual Clauses
 description: |
   Identifies cloud infrastructure resources (VMs, databases, storage buckets)
   deployed in non-EU/EEA regions without documented Standard Contractual Clauses
@@ -19,10 +19,7 @@ description: |
 type: esql
 params: '{}'
 schedule_interval: 1h
-index:
-  - filebeat-*
-  - winlogbeat-*
-  - auditbeat-*
+index: [filebeat-*, winlogbeat-*, auditbeat-*]
 query_language: esql
 query: |
   FROM filebeat-*
@@ -44,20 +41,15 @@ query: |
   | KEEP event.original  # FIXME: cloud.region not available, host.name, non_eu_deployments, regions, resources, deployers, risk_score
   | SORT risk_score DESC
 enabled: false
-tags:
-  - gdpr
-  - article_46
-  - cloud
-  - international_transfer
-  - sccs
+tags: [gdpr, article_46, cloud, international_transfer, sccs]
 severity: critical
 risk_score: 95
 references:
-  - "GDPR Article 46 - Transfers with Appropriate Safeguards"
-  - "GDPR Article 45 - Adequacy Decisions"
-  - "EU Commission SCCs 2021"
-nist: ["AC-20"]
-gdpr: ["Article 46"]
+  - GDPR Article 46 - Transfers with Appropriate Safeguards
+  - GDPR Article 45 - Adequacy Decisions
+  - EU Commission SCCs 2021
+nist: [AC-20]
+gdpr: [Article 46]
 pci_dss: []
 mitre_attack:
   TA0042:
