@@ -1,0 +1,24 @@
+name: Nginx - Information Legacy Protocol Usage
+description: |
+  HTTP/1.0 yoki undan eski protokollar orqali kelayotgan so'rovlarni aniqlaydi.
+  Odatda eski skanerlar yoki botlar tomonidan qo'llaniladi.
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+ - "logs-nginx*"
+query_language: esql
+query: |
+  FROM logs-nginx*
+  | WHERE @timestamp >= NOW() - 1 hour
+  | WHERE NOT http.version IN ("1.1", "2.0", "3.0")
+  | STATS
+      legacy_count = COUNT(*)
+    BY source.ip, http.version, user_agent.original
+  | WHERE legacy_count >= 5
+severity: low
+risk_score: 20
+nist: ["IA-5", "SI-4"]
+pci_dss: ["2.2.3"]
+gdpr: ["32.1.d"]
+mitre_attack: []

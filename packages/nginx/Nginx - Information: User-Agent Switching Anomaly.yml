@@ -1,0 +1,25 @@
+name: Nginx - Information User-Agent Switching Anomaly
+description: |
+  Bitta IP manzili tomonidan ko'plab turli xil User-Agent'lar ishlatilishini aniqlaydi.
+  Bu odatda skanerlarning deteksiyadan qochish usuli.
+type: esql
+params: '{}'
+schedule_interval: 30m
+index:
+ - "logs-nginx*"
+query_language: esql
+query: |
+  FROM logs-nginx*
+  | WHERE @timestamp >= NOW() - 1 hour
+  | STATS
+      ua_count = COUNT_DISTINCT(user_agent.original),
+      ua_list = VALUES(user_agent.original)
+    BY source.ip
+  | WHERE ua_count >= 10
+  | KEEP source.ip, ua_count, ua_list
+severity: low
+risk_score: 20
+nist: ["SI-4"]
+pci_dss: ["10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack: []

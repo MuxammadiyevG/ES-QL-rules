@@ -1,0 +1,27 @@
+name: AD Remote PowerShell Session Started
+description: |
+  Domain Controller yoki serverlarda masofaviy PowerShell sessiyasi boshlanganini aniqlaydi (Event ID 400).
+  Hujumchilar "Living off the Land" texnikasi orqali tarmoqda harakatlanadi.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE winlog.channel == "Windows PowerShell" AND event.code == "400"
+  | EVAL hostn = winlog.computer_name
+  | EVAL details = host.hostname 
+  | KEEP @timestamp, hostn, details, event.code
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.execution
+  - attack.t1059.001
+severity: medium
+risk_score: 60
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

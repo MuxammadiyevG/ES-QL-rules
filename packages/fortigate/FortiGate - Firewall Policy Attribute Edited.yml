@@ -1,0 +1,44 @@
+name: FortiGate - Firewall Policy Attribute Edited
+description: |
+  Ushbu qoida FortiGate qurilmalarida mavjud firewall polisyalarining atributlari o'zgartirilganini aniqlaydi.
+  `firewall.policy` yo'lidagi o'zgarishlar tarmoq xavfsizligi darajasining pasayishiga yoki ruxsatsiz trafik oqimiga sabab bo'lishi mumkin.
+  
+  SOC triage bosqichlari:
+  - 'Device' (qurilma nomi) va log ichidagi 'user' (o'zgartirishni qilgan shaxs)ni aniqlang.
+  - O'zgarish qaysi 'policyid' ustida amalga oshirilganini 'message' maydonidan qidiring.
+  - Ushbu o'zgarish tasdiqlangan 'Change Management' (rejaviy ishlar) hujjatlariga mosligini tekshiring.
+  - Agar o'zgarish shubhali bo'lsa, tezda avvalgi konfiguratsiyaga qayting (rollback) va audit o'tkazing.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+- logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+    AND fortinet.fortigate.type == "event"
+    AND fortinet.fortigate.subtype == "system"
+    AND message LIKE "*logdesc=\"Object attribute configured\"*"
+    AND message LIKE "*cfgpath=\"firewall.policy\"*"
+  | EVAL Device = COALESCE(observer.name, observer.name.text, "FortiGate"),
+         Action_Type = "Firewall policy attribute edited"
+  | KEEP @timestamp, Device, Action_Type, message
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.persistence
+  - attack.defense-evasion
+  - attack.t1562.004
+  - fortigate.audit
+severity: medium
+risk_score: 60
+references:
+  - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference"
+nist: ["CM-3", "AC-17"]
+pci_dss: ["1.1.1", "10.2.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.004"]

@@ -1,0 +1,41 @@
+name: FortiGate Configuration Change Detected
+description: |
+  Ushbu qoida FortiGate qurilmalarida konfiguratsiya o'zgarishlarini (`Config-Changed`) aniqlaydi. 
+  Tizim parametrlarining o'zgarishi persistence (doimiy kirishni saqlash) yoki defense evasion (himoyani chetlab o'tish) harakatlaridan darak berishi mumkin.
+  Qonuniy holatlar: IT administratorlari tomonidan amalga oshirilgan rejaviy o'zgarishlar, backup jarayonlari yoki yangi qoidalar qo'shilishi.
+  
+  SOC triage bosqichlari:
+  - O'zgarishni amalga oshirgan `actor` (user) va manba qurilmani (`Dev`) aniqlang.
+  - O'zgarish vaqti tasdiqlangan "Change Management" bileti yoki rejaviy ishlar vaqtiga mos kelishini tekshiring.
+  - Log xabaridagi `message` qismini tahlil qilib, aynan qaysi parametr o'zgarganini ko'ring.
+  - Noqonuniy o'zgarish aniqlansa, konfiguratsiyani avvalgi holatiga qaytaring (Rollback) va administrator akkauntini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+- logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 5 minutes
+    AND fortinet.fortigate.type == "event"
+    AND fortinet.fortigate.subtype == "system"
+    AND message LIKE "*state=\"Config-Changed\"*"
+  | EVAL Dev = COALESCE(observer.name, observer.name.text, "FortiGate")
+  | KEEP @timestamp, Dev, message
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.persistence
+  - attack.defense-evasion
+  - attack.t1562.004
+  - fortinet.fortigate.config
+severity: high
+risk_score: 75
+references:
+  - "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-monitor-configuration-changes-on-FortiGate/ta-p/195383"
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

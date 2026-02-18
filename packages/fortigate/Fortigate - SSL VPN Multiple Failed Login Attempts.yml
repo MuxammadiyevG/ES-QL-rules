@@ -13,22 +13,23 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- fortigate-*
+- logs-fortinet.fortigate-firewall-*
 query_language: esql
 query: |
-  FROM filebeat-fortigate-*
+  FROM logs-fortinet.fortigate-*
   | WHERE @timestamp >= NOW() - 45 minutes
-  | WHERE fortinet.firewall.action == "ssl-login-fail"
-  | WHERE fortinet.firewall.subtype == "vpn"
+  | WHERE fortinet.fortigate.subtype == "vpn" 
+    AND event.action == "ssl-login-fail"
+  | EVAL src_ip = source.ip
   | STATS
       event_count = COUNT(*),
+      unique_users_count = COUNT_DISTINCT(user.name),
       users = VALUES(user.name),
-      reasons = VALUES(fortinet.firewall.reason),
-      tunnel_types = VALUES(fortinet.firewall.tunneltype),
-      dst_hosts = VALUES(fortinet.firewall.dst_host)
-    BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
-  | WHERE event_count >= 18
-  | KEEP bucket, source.ip, event_count, users, reasons, tunnel_types, dst_hosts
+      reasons = VALUES(fortinet.fortigate.reason),
+      dst_hosts = VALUES(fortinet.fortigate.dst_host)
+    BY src_ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE event_count >= 15
+  | KEEP bucket, src_ip, event_count, unique_users_count, users, reasons, dst_hosts
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

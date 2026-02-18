@@ -1,0 +1,33 @@
+name: Nginx - Excessive Authentication Failures
+description: |
+  Bitta manbadan ko'plab 401 va 403 xatoliklarini aniqlaydi. 
+  Bu parollarni terib ko'rish (Brute-force) yoki himoyalangan zonalarga kirishga urinish.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+ - "logs-nginx*"
+query_language: esql
+query: |
+  FROM logs-nginx*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE http.response.status_code == 401 OR http.response.status_code == 403
+  | STATS
+      fail_count = COUNT(*),
+      target_urls = VALUES(url.original)
+    BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE fail_count >= 30
+  | SORT fail_count DESC
+enabled: true
+tags:
+ - "nginx"
+ - "brute-force"
+ - "access-violation"
+severity: high
+risk_score: 70
+nist: ["AC-2", "SI-4"]
+pci_dss: ["10.2.4", "10.6.1"]
+gdpr: ["35.7.d"]
+mitre_attack:
+  TA0006:
+    T1110: []

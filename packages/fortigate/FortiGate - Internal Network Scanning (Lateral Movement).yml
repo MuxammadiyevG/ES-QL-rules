@@ -1,0 +1,40 @@
+name: FortiGate - Internal Network Scanning (Lateral Movement)
+description: |
+  Ushbu qoida bitta ichki manba IP-manzilidan qisqa vaqt ichida ko'plab turli xil ichki manzillarga ulanish urinishlarini aniqlaydi. 
+  Bu hujumchining tarmoq ichida boshqa qurbonlarni qidirayotganini (Internal Reconnaissance) anglatishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-fortinet.fortigate-*
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+    AND fortinet.fortigate.subtype == "forward"
+  | EVAL s_ip_str = TO_STRING(source.ip), 
+         d_ip_str = TO_STRING(destination.ip)
+  | WHERE s_ip_str RLIKE "10\\..*|172\\.(1[6-9]|2[0-9]|3[0-1])\\..*|192\\.168\\..*"
+    AND d_ip_str RLIKE "10\\..*|172\\.(1[6-9]|2[0-9]|3[0-1])\\..*|192\\.168\\..*"
+  | STATS 
+      unique_targets = COUNT_DISTINCT(d_ip_str),
+      total_attempts = COUNT(*),
+      last_seen = MAX(@timestamp)
+    BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE unique_targets > 20
+  | SORT unique_targets DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.discovery
+  - attack.t1046
+  - fortigate.lateral_movement
+severity: high
+risk_score: 80
+references:
+  - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference"
+nist: []
+gdpr: []
+pci_dss: []
+mitre_attack:
+  TA0007:
+    T1046: []

@@ -1,0 +1,31 @@
+name: Sensitive AD Group Membership Change
+description: |
+  Kritik AD guruhlariga (Admin, Backup, Remote Desktop) foydalanuvchi qo'shilishi yoki o'chirilishini aniqlaydi. 
+  Hujumchilar o'z huquqlarini doimiy qilish uchun ushbu guruhlardan foydalanadi.
+  SOC triage:
+  - `target_group` nomini va uning muhimlilik darajasini tekshiring.
+  - `actor` ushbu guruhni boshqarish vakolatiga egami?
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code IN ("4728", "4729", "4732", "4733", "4756", "4757")
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = winlog.event_data.SubjectUserName
+  | EVAL target_group = winlog.event_data.TargetUserName
+  | KEEP @timestamp, hostn, actor, target_group, event.code
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.privilege_escalation
+  - monitoring.critical_groups
+severity: low
+risk_score: 60
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

@@ -1,0 +1,32 @@
+name: AD User Logoff
+description: |
+  Foydalanuvchi tizimdan chiqqanligini (Logoff) aniqlaydi (Event ID 4634).
+  Bu qoida foydalanuvchining tizimda qancha vaqt bo'lganini tahlil qilish uchun yordam beradi.
+  SOC triage bosqichlari:
+  - Chiqish vaqti va kirish vaqti o'rtasidagi farqni tekshiring.
+  - Bir vaqtning o'zida ko'plab logoff hodisalari bo'lishi tizim qayta yuklanganini anglatishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4634"
+  | EVAL hostn = winlog.computer_name
+  | EVAL user = winlog.event_data.TargetUserName
+  | EVAL logon_type = winlog.event_data.LogonType
+  | KEEP @timestamp, hostn, user, logon_type
+  | SORT @timestamp DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - detection.logoff
+  - monitoring.auth_lifecycle
+severity: informational
+risk_score: 5
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

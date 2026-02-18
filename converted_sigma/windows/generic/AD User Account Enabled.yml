@@ -1,0 +1,30 @@
+name: AD User Account Enabled
+description: |
+  Ilgari o'chirilgan (disabled) foydalanuvchi hisobi qayta yoqilganligini aniqlaydi (Event ID 4722).
+  SOC triage bosqichlari:
+  - `target_user` haqiqatdan ham ishga qaytgan xodim ekanligini HR ma'lumotlari orqali tekshiring.
+  - `actor` (admin) ushbu amalni bajarish uchun asosga (ticket) ega ekanligini tasdiqlang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4722"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = winlog.event_data.SubjectUserName
+  | EVAL target_user = winlog.event_data.TargetUserName
+  | KEEP @timestamp, hostn, actor, target_user
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.persistence
+  - monitoring.account_status
+severity: medium
+risk_score: 50
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

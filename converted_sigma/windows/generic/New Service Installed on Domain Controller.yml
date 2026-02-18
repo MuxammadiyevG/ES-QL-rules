@@ -1,0 +1,29 @@
+name: New Service Installed on Domain Controller
+description: |
+  DC'larda yangi servis o'rnatilishini aniqlaydi (Event ID 7045). 
+  Hujumchilar PSEXEC kabi vositalar yordamida servis yaratib, command execution amalga oshirishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "7045"
+  | EVAL hostn = winlog.computer_name
+  | WHERE hostn RLIKE "(?i)(.*DC.*|ADDC.*|DOMAINCONTROLLER)"
+  | EVAL service_name = winlog.event_data.ServiceName
+  | EVAL extra_info = COALESCE(winlog.event_data.DisplayName, winlog.event_data.AccountName, "Check logs for details")
+  | KEEP @timestamp, hostn, service_name, extra_info, event.code
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.persistence
+  - attack.t1543.003
+severity: low
+risk_score: 50
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

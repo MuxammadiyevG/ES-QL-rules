@@ -1,0 +1,27 @@
+name: Nginx - Unusual 4xx Error Rate (Fuzzing/Scanning)
+description: |
+  Bitta IP manzilidan ko'p miqdorda mavjud bo'lmagan sahifalarga so'rov yuborilishini aniqlaydi.
+  Bu ko'pincha "dirbuster" yoki "ffuf" kabi vositalar yordamida yashirin fayllarni qidirishdir.
+type: esql
+schedule_interval: 10m
+query: |
+  FROM logs-nginx*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE data_stream.dataset == "nginx.access"
+  | WHERE http.response.status_code >= 400 AND http.response.status_code < 500
+  | STATS
+      error_count = COUNT(*),
+      unique_pages = COUNT_DISTINCT(url.original),
+      status_codes = VALUES(http.response.status_code)
+    BY source.ip, bucket = DATE_TRUNC(2 minutes, @timestamp)
+  | WHERE error_count >= 40 AND unique_pages >= 20
+  | SORT error_count DESC
+severity: medium
+risk_score: 50
+tags:
+- nginx
+- reconnaissance
+- scanning
+mitre_attack:
+  TA0043:
+    T1595: []

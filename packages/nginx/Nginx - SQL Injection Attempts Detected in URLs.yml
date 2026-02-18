@@ -13,10 +13,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- filebeat-nginx-*
+- logs-nginx*
 query_language: esql
 query: |
-  FROM filebeat-nginx-*
+  FROM logs-nginx* 
   | WHERE @timestamp >= NOW() - 45 minutes
   | WHERE data_stream.dataset == "nginx.access"
   | WHERE url.original RLIKE "(?i)(union.*select|select.*from|insert.*into|delete.*from|drop.*table|update.*set|exec.*xp_|';.*--|\\*.*from|concat.*\\(|char.*\\(|cast.*\\(|convert.*\\(|benchmark.*\\(|sleep.*\\(|waitfor.*delay|information_schema|sysobjects|syscolumns)"

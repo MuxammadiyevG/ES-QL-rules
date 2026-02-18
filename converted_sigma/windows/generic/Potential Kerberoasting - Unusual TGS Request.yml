@@ -1,0 +1,30 @@
+name: Potential Kerberoasting - Unusual TGS Request
+description: |
+  RC4 shifrlash algoritmi (0x17) yordamida ko'p miqdorda TGS (Service Ticket) so'rovlarini aniqlaydi (Event ID 4769).
+  Bu parollarni buzib kirishga urinish belgisidir.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4769"
+  | WHERE winlog.event_data.TicketEncryptionType == "0x17"
+  | WHERE NOT winlog.event_data.TargetUserName RLIKE ".*\\$$"
+  | STATS 
+      ticket_count = COUNT(*) 
+    BY winlog.event_data.IpAddress, winlog.event_data.TargetUserName, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE ticket_count > 20
+  | SORT ticket_count DESC
+enabled: false
+tags:
+  - detection.credential_access
+  - attack.t1558.003
+severity: low
+risk_score: 50
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

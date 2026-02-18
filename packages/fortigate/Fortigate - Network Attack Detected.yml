@@ -14,23 +14,25 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- fortigate-*
+- logs-fortinet.fortigate-firewall-*
 query_language: esql
 query: |
-  FROM filebeat-fortigate-*
+  FROM logs-fortinet.fortigate-*
   | WHERE @timestamp >= NOW() - 15 minutes
-  | WHERE fortinet.firewall.action == "detected"
-  | WHERE fortinet.firewall.attack IS NOT NULL
-  | WHERE fortinet.firewall.type == "anomaly" OR fortinet.firewall.subtype == "ips"
+    AND (fortinet.fortigate.subtype == "ips" OR fortinet.fortigate.subtype == "anomaly" OR fortinet.fortigate.subtype == "webfilter")
+    AND event.action=="blocked"
+  | EVAL action = event.action,
+         reason = fortinet.fortigate.msg,
+         dev_name = observer.name
   | STATS
       event_count = COUNT(*),
-      attacks = VALUES(fortinet.firewall.attack),
-      attack_ids = VALUES(fortinet.firewall.attackid),
-      severities = VALUES(fortinet.firewall.severity),
-      protocols = VALUES(network.protocol),
-      dst_ports = VALUES(destination.port)
-    BY source.ip, destination.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
-  | KEEP bucket, source.ip, destination.ip, event_count, attacks, attack_ids, severities, protocols, dst_ports
+      actions = VALUES(action),
+      reasons = VALUES(reason),
+      dst_ports = VALUES(destination.port),
+      hostnames = VALUES(fortinet.fortigate.hostname)
+    BY source.ip, destination.ip, dev_name, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, source.ip, destination.ip, dev_name, event_count, actions, reasons, dst_ports, hostnames
   | SORT event_count DESC
   | LIMIT 100
 enabled: true
@@ -43,7 +45,7 @@ severity: critical
 risk_score: 90
 references:
 - "https://www.fortinet.com/support"
-nist: ["DE-CM-1", "SI-4"]
+nist: ["DE-1", "SI-4"]
 pci_dss: ["11.4"]
 gdpr: ["35.7.d"]
 mitre_attack:

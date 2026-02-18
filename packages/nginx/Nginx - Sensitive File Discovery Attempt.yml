@@ -1,0 +1,38 @@
+name: Nginx - Sensitive File Discovery Attempt
+description: |
+  Konfiguratsiya va tizim fayllariga (.env, .git, .bak) kirish urinishlarini aniqlaydi.
+  Bu ma'lumotlarni o'g'irlash (Information Disclosure) bosqichidir.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+ - "logs-nginx*"
+query_language: esql
+query: |
+  FROM logs-nginx*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE url.original LIKE "*.env*" 
+     OR url.original LIKE "*.git*" 
+     OR url.original LIKE "*wp-config*" 
+     OR url.original LIKE "*.sql*" 
+     OR url.original LIKE "*.bak*"
+  | STATS
+      attempt_count = COUNT(*),
+      requested_files = VALUES(url.original)
+    BY source.ip
+  | WHERE attempt_count >= 1
+  | KEEP source.ip, attempt_count, requested_files
+  | SORT attempt_count DESC
+enabled: true
+tags:
+ - "nginx"
+ - "reconnaissance"
+ - "information-disclosure"
+severity: high
+risk_score: 75
+nist: ["SI-4", "SC-7"]
+pci_dss: ["10.2.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0007:
+    T1592: []

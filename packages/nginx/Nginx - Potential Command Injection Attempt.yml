@@ -1,0 +1,36 @@
+name: Nginx - Potential Command Injection Attempt
+description: |
+  URL yoki User-Agent orqali tizim buyruqlarini (ls, cat, whoami, /bin/sh) yuborish urinishlarini aniqlaydi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+ - "logs-nginx*"
+query_language: esql
+query: |
+  FROM logs-nginx*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE url.original LIKE "*/bin/*"
+     OR url.original LIKE "*whoami*"
+     OR url.original LIKE "*cat%20/etc/*"
+     OR url.original LIKE "*cmd.exe*"
+     OR url.original LIKE "*powershell*"
+  | STATS
+      injection_count = COUNT(*),
+      full_urls = VALUES(url.original)
+    BY source.ip
+  | WHERE injection_count >= 1
+  | KEEP source.ip, injection_count, full_urls
+enabled: true
+tags:
+ - "nginx"
+ - "attack.t1190"
+ - "rce"
+severity: critical
+risk_score: 90
+nist: ["SI-4", "SC-5"]
+pci_dss: ["6.5.1", "10.2.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0001:
+    T1190: []

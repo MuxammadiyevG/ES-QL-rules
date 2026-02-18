@@ -1,0 +1,30 @@
+name: AD User Account Locked Out
+description: |
+  Foydalanuvchi hisobi ko'p sonli muvaffaqiyatsiz urinishlardan keyin bloklanganini aniqlaydi (Event ID 4740).
+  SOC triage bosqichlari:
+  - `target_user` ning bloklanishiga sabab bo'lgan manba IP ni (agar mavjud bo'lsa) toping.
+  - Bu brute-force hujumi yoki eskirgan parolli servis natijasi bo'lishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4740"
+  | EVAL hostn = winlog.computer_name
+  | EVAL target_user = winlog.event_data.TargetUserName
+  | EVAL caller_process = winlog.event_data.CallerProcessName
+  | KEEP @timestamp, hostn, target_user, caller_process
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.credential_access
+  - monitoring.account_lockout
+severity: medium
+risk_score: 40
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

@@ -1,0 +1,28 @@
+name: AD Account Delegation Mapping Changed
+description: |
+  Foydalanuvchi akkauntining xavfsizlik va delegatsiya sozlamalari o'zgarganini aniqlaydi (Event ID 4738).
+  "Trusted for Delegation" bayrog'ining yoqilishi Kerberos hujumlariga (Ticket Theft) yo'l ochadi.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4738"
+  | EVAL actor = winlog.event_data.SubjectUserName
+  | EVAL target_user = winlog.event_data.TargetUserName
+  /* UserAccountControl o'zgarishlarini monitoring qilish */
+  | KEEP @timestamp, winlog.computer_name, actor, target_user, event.code
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.persistence
+  - attack.t1558
+severity: high
+risk_score: 85
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

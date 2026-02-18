@@ -13,19 +13,19 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- fortigate-*
+- logs-fortinet.fortigate-firewall-*
 query_language: esql
 query: |
-  FROM filebeat-fortigate-*
+  FROM logs-fortinet.fortigate-firewall-*
   | WHERE @timestamp >= NOW() - 45 minutes
-  | WHERE event.message RLIKE "(?i)Configuration is changed in the admin session"
-  | WHERE fortinet.firewall.subtype == "system"
+  | WHERE message RLIKE "(?i)Configuration is changed in the admin session"
+  | WHERE fortinet.fortigate.subtype == "system"
   | WHERE log.level == "alert"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
-      interfaces = VALUES(fortinet.firewall.ui),
-      vdoms = VALUES(fortinet.firewall.vd)
+      interfaces = VALUES(observer.ingress.interface.name),
+      vdoms = VALUES(fortinet.fortigate.vd)
     BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE event_count >= 18
   | KEEP bucket, source.ip, event_count, users, interfaces, vdoms

@@ -1,0 +1,44 @@
+name: FortiGate - High Volume Data Exfiltration Detection
+description: |
+  Ushbu qoida FortiGate trafik loglari asosida tashqi tarmoqqa yuborilayotgan ma'lumotlar hajmini nazorat qiladi.
+  'total_sent' (yuborilgan jami baytlar) miqdorining keskin ortishi maxfiy ma'lumotlarning o'g'irlanishi yoki botnet faoliyati belgisi bo'lishi mumkin.
+  
+  SOC triage bosqichlari:
+  - 'source.ip' qurilmasi qaysi foydalanuvchiga tegishli ekanligini aniqlang.
+  - 'total_sent' miqdorini odatdagi kunlik trafik bilan solishtiring (Baseline).
+  - 'destination.ip' va 'event.action' orqali ulanish muvaffaqiyatli bo'lgan-bo'lmaganini tekshiring.
+  - Agar 'total_sent' MB yoki GB darajasida bo'lsa va manzil shubhali bo'lsa, qurilmani tarmoqdan uzing.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | EVAL s_bytes = TO_INTEGER(source.bytes)
+  | EVAL d_bytes = TO_INTEGER(destination.bytes)
+  | STATS 
+      total_sent_bytes = SUM(COALESCE(s_bytes, 0)),
+      total_received_bytes = SUM(COALESCE(d_bytes, 0)),
+      event_count = COUNT(*)
+    BY source.ip, destination.ip, event.action
+  | WHERE event_count > 0 AND total_sent_bytes > 104857600
+  | SORT total_sent_bytes DESC
+  | LIMIT 50
+enabled: true
+tags:
+  - attack.exfiltration
+  - fortigate.traffic
+  - high_bandwidth_usage
+severity: high
+risk_score: 75
+references:
+  - "https://attack.mitre.org/techniques/T1041/"
+pci_dss: []
+gdpr: []
+nist: []
+mitre_attack:
+  TA0010:
+    T1041: []

@@ -1,0 +1,38 @@
+name: AD RDP Interactive Logon (Type 10)
+description: |
+  Ushbu qoida Active Directory muhitida foydalanuvchining RDP (Remote Desktop Protocol) orqali masofadan tizimga kirishini aniqlaydi (Event ID 4624, Logon Type 10).
+  Masofaviy kirishlar lateral movement (tarmoq bo'ylab harakatlanish) yoki ruxsatsiz kirish urinishlarini aniqlashda muhim indikator hisoblanadi.
+  Qonuniy holatlar sifatida IT administratorlarining masofaviy xizmat ko'rsatishi yoki foydalanuvchilarning masofaviy ishi uchrashi mumkin.
+  SOC triage bosqichlari:
+  - `user` va `src_ip` (manba IP) manzillarining legitimligini tekshiring.
+  - Kirish vaqti foydalanuvchining odatdagi ish soatlariga mos kelishini aniqlang.
+  - Maqsadli host (`hostn`) kritik server (masalan, Domain Controller) ekanligini tekshiring.
+  - Agar ushbu foydalanuvchi odatda ushbu hostga kirmasa, hodisani "Suspect" deb belgilang va VPN loglari bilan solishtiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4624"
+  | EVAL logon_type = winlog.event_data.LogonType
+  | WHERE logon_type == "10"
+  | EVAL hostn = winlog.computer_name
+  | EVAL user = winlog.event_data.TargetUserName
+  | EVAL src_ip = winlog.event_data.IpAddress
+  | KEEP @timestamp, user, src_ip, hostn, logon_type
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags:
+  - detection.lateral_movement
+  - monitoring.logon
+  - detection.compliance
+severity: medium
+risk_score: 50
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

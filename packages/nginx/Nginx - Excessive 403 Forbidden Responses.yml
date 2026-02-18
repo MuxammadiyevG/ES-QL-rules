@@ -1,0 +1,34 @@
+name: Nginx - Excessive 403 Forbidden Responses
+description: |
+  Bitta IP dan qisqa vaqt ichida ko'plab 403 xatoliklar qaytishini aniqlaydi.
+  Bu yashirin fayllarni brute-force qilish yoki ruxsatsiz kirishga urinish belgisidir.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index: 
+ - "logs-nginx*"
+query_language: esql
+query: |
+  FROM logs-nginx*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE http.response.status_code == 403
+  | STATS
+      forbidden_count = COUNT(*),
+      target_urls = VALUES(url.original)
+    BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE forbidden_count >= 20
+  | KEEP bucket, source.ip, forbidden_count, target_urls
+  | SORT forbidden_count DESC
+enabled: true
+tags:
+ - "nginx"
+ - "access-denied"
+ - "reconnaissance"
+severity: medium
+risk_score: 45
+nist: ["AC-2", "SI-4"]
+pci_dss: ["10.2.4", "10.6.1"]
+gdpr: ["35.7.d"]
+mitre_attack:
+  TA0043:
+    T1595: []

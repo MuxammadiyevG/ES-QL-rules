@@ -1,0 +1,29 @@
+name: Windows Security Audit Log Cleared
+description: |
+  Security loglari qo'lda tozalanganligini aniqlaydi (Event ID 1102). 
+  Bu deyarli har doim zararli yoki shubhali faoliyat belgisi hisoblanadi.
+  SOC triage:
+  - Ushbu amalni bajargan `actor` ni darhol so'roq qiling.
+  - Log o'chirilishidan oldingi oxirgi hodisalarni tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "1102" OR event.code == "104"
+  | EVAL actor = winlog.event_data.SubjectUserName
+  | KEEP @timestamp, actor, winlog.computer_name, event.code
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.defense_evasion
+  - monitoring.logs
+severity: low
+risk_score: 50
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

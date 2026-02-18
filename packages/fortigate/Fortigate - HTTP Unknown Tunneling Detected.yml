@@ -13,24 +13,25 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- fortigate-*
+- logs-fortinet.fortigate-firewall-*
 query_language: esql
 query: |
-  FROM filebeat-fortigate-*
+  FROM logs-fortinet.fortigate-*
   | WHERE @timestamp >= NOW() - 45 minutes
-  | WHERE event.message RLIKE "(?i)http_decoder: HTTP\\.Unknown\\.Tunnelling"
-  | WHERE fortinet.firewall.subtype == "ips"
+  | WHERE TO_LOWER(message) LIKE "%http_decoder: http.unknown.tunnelling%"
+  | WHERE fortinet.fortigate.subtype == "ips"
   | STATS
       event_count = COUNT(*),
       dst_ips = VALUES(destination.ip),
       dst_ports = VALUES(destination.port),
       policies = VALUES(rule.id),
-      profiles = VALUES(fortinet.firewall.profile)
+      profiles = VALUES(fortinet.fortigate.profile)
     BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE event_count >= 18
   | KEEP bucket, source.ip, event_count, dst_ips, dst_ports, policies, profiles
   | SORT event_count DESC
   | LIMIT 100
+
 enabled: true
 tags:
 - attack.command-and-control

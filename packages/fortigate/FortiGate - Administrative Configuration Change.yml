@@ -1,0 +1,55 @@
+name: FortiGate - Administrative Configuration Change
+description: |
+  Ushbu qoida FortiGate qurilmalarida admin sessiyasi orqali amalga oshirilgan har qanday konfiguratsiya o'zgarishlarini aniqlaydi. 
+  Bunga login/logout vaqtidagi status o'zgarishlari va sessiya davomidagi bevosita tahrirlashlar kiradi.
+  
+  SOC triage bosqichlari:
+  - 'Device' va 'Nima' (o'zgarish turi) maydonlari orqali hodisa ko'lamini aniqlang.
+  - 'message' ichidan o'zgarishni amalga oshirgan admin foydalanuvchi nomini qidiring.
+  - O'zgarish kutilgan va tasdiqlangan vaqtda bo'lganini (Maintenance window) tekshiring.
+  - Bir vaqtning o'zida ko'p sonli o'zgarishlar bo'lishi tizimga ruxsatsiz kirib olinganidan (Account Compromise) darak berishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+    AND fortinet.fortigate.type == "event"
+    AND fortinet.fortigate.subtype == "system"
+    AND (
+      message LIKE "*logdesc=\"Configuration changed\"*"
+      OR message LIKE "*state=\"Config-Changed\"*"
+      OR message LIKE "*msg=\"Configuration is changed in the admin session\"*"
+    )
+  | EVAL Device = COALESCE(observer.name, observer.name.text, "FortiGate")
+  | EVAL Kim = CASE(
+      message LIKE "*user=\"*", "admin-session",
+      "unknown"
+    )
+  | EVAL Nima = CASE(
+      message LIKE "*logdesc=\"Configuration changed\"*", "Configuration changed (session)",
+      message LIKE "*state=\"Config-Changed\"*", "Logout state = Config-Changed",
+      "Configuration change (other)"
+    )
+  | KEEP @timestamp, Device, Kim, Nima, message
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.persistence
+  - attack.t1078
+  - fortigate.audit
+  - configuration.management
+severity: medium
+risk_score: 55
+references:
+  - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference"
+nist: ["CM-3", "CM-5"]
+pci_dss: ["10.2.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1078: []

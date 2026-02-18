@@ -1,0 +1,59 @@
+name: PaloAlto - System Critical Severity Event (Defense Evasion + Endpoint DoS)
+description: |
+  Palo Alto NGFW tizimidan CRITICAL darajadagi system xabari aniqlandi.
+  Bu jiddiy tizim nosozligi, qurilmaga hujum yoki xizmatni to'xtatish
+  urinishining belgisi bo'lishi mumkin (T1089, T1499).
+  Qonuniy holatlar: hardware nosozligi, datacenter muammosi.
+  SOC triage bosqichlari:
+  - Darhol NOC/NetOps jamoasini xabardor qiling
+  - Qurilmaga fizik yoki remote kirish imkonini tekshiring
+  - Parallel ravishda boshqa SIEM manbalaridan korrelyatsiya qiling
+  - Qurilma backup/failover holatini tekshiring
+  - Barcha admin sessiyalarini audit qiling
+type: esql
+params: '{}'
+schedule_interval: 2m
+index:
+  - filebeat-paloalto-*
+query_language: esql
+query: |
+  FROM filebeat-paloalto-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.dataset == "panw.system"
+  | WHERE log.level == "critical"
+  | STATS
+      event_count    = COUNT(*),
+      devices        = VALUES(observer.hostname),
+      unique_devices = COUNT_DISTINCT(observer.hostname),
+      reasons        = VALUES(event.reason),
+      rule_names     = VALUES(rule.name),
+      serials        = VALUES(observer.serial_number)
+    BY observer.hostname, bucket = DATE_TRUNC(2 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP bucket, observer.hostname, event_count, unique_devices, reasons, rule_names, serials
+  | SORT event_count DESC
+  | LIMIT 50
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1089
+  - attack.impact
+  - attack.t1499
+  - paloalto
+  - system
+  - critical
+  - firewall
+severity: critical
+risk_score: 95
+references:
+  - "https://attack.mitre.org/techniques/T1089/"
+  - "https://attack.mitre.org/techniques/T1499/"
+nist: ["SI-3", "SC-5", "IR-4"]
+pci_dss: ["1.4", "10.6.1", "10.8"]
+gdpr: ["35.7.d"]
+hipaa: ["164.312.b"]
+mitre_attack:
+  TA0005:
+    T1089: []
+  TA0040:
+    T1499: []

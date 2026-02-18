@@ -1,0 +1,30 @@
+name: User Added to Privileged Group
+description: |
+  Foydalanuvchining Domain Admins yoki boshqa muhim guruhlarga qo'shilishi (Event ID 4728, 4732).
+  Bu huquqlarni oshirishning (Privilege Escalation) eng aniq belgisidir.
+  SOC triage bosqichlari:
+  - Guruh nomini (`target_group`) tekshiring.
+  - `actor` (qo'shgan user) admin huquqiga egaligini va bu amal rejalashtirilganligini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code IN ("4728", "4732", "4756")
+  | EVAL actor = winlog.event_data.SubjectUserName
+  | EVAL target_group = winlog.event_data.TargetUserName
+  | KEEP @timestamp, actor,target_group, winlog.computer_name
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.privilege_escalation
+  - monitoring.groups
+severity: low
+risk_score: 50
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

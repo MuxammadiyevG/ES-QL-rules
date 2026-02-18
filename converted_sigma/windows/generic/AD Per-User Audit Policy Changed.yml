@@ -1,0 +1,26 @@
+name: AD Per-User Audit Policy Changed
+description: |
+  Foydalanuvchilar uchun maxsus audit siyosati o'zgarganini aniqlaydi (Event ID 4712).
+  Bu ko'pincha "Defense Evasion" (loglardan qochish) texnikasi sifatida qo'llaniladi.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4712"
+  | EVAL actor = winlog.event_data.SubjectUserName
+  | KEEP @timestamp, actor, winlog.computer_name
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.defense_evasion
+  - monitoring.audit_policy
+severity: high
+risk_score: 75
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

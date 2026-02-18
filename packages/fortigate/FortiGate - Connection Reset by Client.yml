@@ -1,0 +1,46 @@
+name: FortiGate - Connection Reset by Client
+description: |
+  Ushbu qoida tarmoq ulanishining mijoz tomonidan kutilmaganda to'xtatilganini (`client-rst`) aniqlaydi. 
+  Agar bitta manba IPdan juda ko'p 'client-rst' xabarlari kelsa, bu tarmoq skanerlash yoki port scanning harakatlaridan darak berishi mumkin.
+  
+  SOC triage bosqichlari:
+  - 'source.ip' (10.10.40.34) va 'destination.ip' (3.7.245.115) o'rtasidagi trafik hajmini tekshiring.
+  - 'fortinet.fortigate.app' (SSL_TLSv1.2) va 'service.name' (HTTPS) legitimligini tasdiqlang.
+  - Agar ushbu holat qisqa vaqt ichida juda ko'p takrorlansa, manba qurilmada zararli dastur (malware) borligini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+    AND event.action == "client-rst"
+    AND fortinet.fortigate.subtype == "forward"
+  | EVAL src_ip = source.ip, 
+         dst_ip = destination.ip,
+         app = fortinet.fortigate.app,
+         policy = fortinet.fortigate.policyname
+  | STATS
+      reset_count = COUNT(*),
+      dst_ports = VALUES(destination.port),
+      apps = VALUES(app),
+      policies = VALUES(policy)
+    BY src_ip, dst_ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE reset_count >= 20
+  | KEEP bucket, src_ip, dst_ip, reset_count, dst_ports, apps, policies
+  | SORT reset_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.reconnaissance
+  - fortigate.traffic
+  - network.reset
+severity: low
+risk_score: 25
+references:
+  - "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Log-messages-with-action-client-rst-or-server-rst/ta-p/190225"
+mitre_attack:
+  TA0043:
+    T1595: []

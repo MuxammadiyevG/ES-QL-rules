@@ -1,0 +1,33 @@
+name: AD Successful User Logon
+description: |
+  Foydalanuvchi tizimga muvaffaqiyatli kirganligini aniqlaydi (Event ID 4624).
+  SOC triage bosqichlari:
+  - `user` va `src_ip` ma'lumotlarini tekshiring.
+  - `logon_type` orqali kirish usulini aniqlang (2 - Lokal, 3 - Tarmoq, 10 - RDP).
+  - Agar kirish g'ayritabiiy vaqtda yoki noodatiy qurilmadan bo'lsa, foydalanuvchi faoliyatini chuqurroq o'rganing.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4624"
+  | EVAL hostn = winlog.computer_name
+  | EVAL user = winlog.event_data.TargetUserName
+  | EVAL src_ip = winlog.event_data.IpAddress
+  | EVAL logon_type = winlog.event_data.LogonType
+  | KEEP @timestamp, hostn, user, src_ip, logon_type
+  | SORT @timestamp DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - detection.logon
+  - monitoring.auth_success
+severity: low
+risk_score: 10
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

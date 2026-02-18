@@ -1,0 +1,36 @@
+name: FortiGate - Network Flood Detection
+description: |
+  Bitta manba IPdan juda qisqa vaqt ichida haddan tashqari ko'p (5000 dan ortiq) sessiyalar ochilishini aniqlaydi. 
+  Bu Denial of Service (DoS) hujumining belgisi bo'lishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+- logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 5 minutes
+    AND fortinet.fortigate.type == "traffic"
+  | STATS 
+      session_count = COUNT(*),
+      last_seen = MAX(@timestamp)
+    BY source.ip, event.action
+  | WHERE session_count > 5000
+  | SORT session_count DESC
+  | LIMIT 50
+enabled: true
+tags:
+  - attack.impact
+  - fortigate.dos
+  - network.flood
+severity: critical
+risk_score: 90
+references:
+  - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference"
+nist: []
+gdpr: []
+pci_dss: []
+mitre_attack:
+  TA0040:
+    T1498: []

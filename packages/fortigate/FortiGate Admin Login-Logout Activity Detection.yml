@@ -1,0 +1,48 @@
+name: FortiGate Admin Login/Logout Activity Detection
+description: |
+  Ushbu qoida FortiGate qurilmalarida tizimga kirish (login) va chiqish (logout) harakatlarini monitoring qilish uchun mo'ljallangan. 
+  Admin paneli yoki CLI orqali amalga oshirilgan muvaffaqiyatli yoki muvaffaqiyatsiz urinishlarni kuzatish persistence va lateral movement xavflarini barvaqt aniqlashga yordam beradi.
+  Qonuniy holatlar: IT administratorlarining rejaviy ishlari va monitoring tizimlarining avtomatik so'rovlari.
+  
+  SOC triage bosqichlari:
+  - Hodisadagi `Dev` (qurilma nomi) va `message` ichidagi foydalanuvchini aniqlang.
+  - Login amalga oshirilgan vaqt va `srcip` (agar logda mavjud bo'lsa) legitimligini tekshiring.
+  - Bir nechta muvaffaqiyatsiz login urinishlaridan keyin muvaffaqiyatli kirish bo'lganini tekshiring (Brute force belgisi).
+  - Agar shubhali faoliyat tasdiqlansa, sessiyani uzing va administrator parolini yangilang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+    AND fortinet.fortigate.type == "event"
+    AND fortinet.fortigate.subtype == "system"
+    AND (
+        message LIKE "*login*"
+        OR message LIKE "*logout*"
+        OR message LIKE "*logged in*"
+        OR message LIKE "*logged out*"
+    )
+  | EVAL Dev = COALESCE(observer.name, observer.name.text, "FortiGate")
+  | STATS 
+      event_count = COUNT(*),
+      last_event = MAX(@timestamp)
+    BY Dev, message
+  | KEEP last_event, Dev, message, event_count
+  | SORT last_event DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - fortinet.fortigate
+  - detection.compliance
+severity: "information"
+risk_score: 50
+references:
+  - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference/"
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

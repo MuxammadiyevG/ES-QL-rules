@@ -1,0 +1,29 @@
+name: AD Group Policy Modification
+description: |
+  Group Policy obyekti yaratilishi, o'zgartirilishi yoki o'chirilishini aniqlaydi (Event ID 5136, 5137).
+  Bu butun domen xavfsizligiga ta'sir qiluvchi jiddiy hodisa hisoblanadi.
+  SOC triage:
+  - `ObjectDN` orqali qaysi GPO o'zgarganini aniqlang.
+  - O'zgarish tarkibini (masalan, yangi skript qo'shilganmi) tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code IN ("5136", "5137", "5141")
+  | EVAL actor = winlog.event_data.SubjectUserName
+  | KEEP @timestamp, actor, event.code, winlog.computer_name, event.action
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.defense_evasion
+  - monitoring.gpo
+severity: low
+risk_score: 50
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

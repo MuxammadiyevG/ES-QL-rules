@@ -1,0 +1,30 @@
+name: AD Domain Controller Login by Non-Admin
+description: |
+  Domain Controllerga oddiy (imtiyozsiz) foydalanuvchi kirganini aniqlaydi (Event ID 4624).
+  Odatda DC'larga faqat Domain Admins guruh a'zolari kirishi kerak.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4624"
+  | EVAL hostn = winlog.computer_name
+  | WHERE hostn RLIKE "(?i)(.*DC.*|ADDC.*|DOMAINCONTROLLER)"
+  | EVAL user = winlog.event_data.TargetUserName
+  /* Oddiy userlarni tekshirish - admin bo'lmaganlarni filtrlash uchun RLIKE ishlating */
+  | WHERE NOT user RLIKE "(?i)(admin.*|svc.*|system|network service|local service)"
+  | KEEP @timestamp, user, hostn, winlog.event_data.IpAddress
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.privilege_escalation
+  - monitoring.dc_security
+severity: high
+risk_score: 80
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []

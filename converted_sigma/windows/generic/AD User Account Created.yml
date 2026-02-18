@@ -1,0 +1,32 @@
+name: AD User Account Created - Persistence Check
+description: |
+  Ushbu qoida Active Directory muhitida yangi foydalanuvchi hisobi yaratilishini aniqlaydi (Event ID 4720). 
+  Hujumchilar persistence (doimiy kirish) ta'minlash uchun yangi akkauntlar yaratishi mumkin.
+  SOC triage bosqichlari:
+  - `actor` (yaratuvchi) va `target_user` (yangi user) ni aniqlang.
+  - HR yoki IT ticket tizimida ushbu user uchun ruxsat borligini tekshiring.
+  - Akkaunt naming konvensiyaga mosligini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4741"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = winlog.event_data.SubjectUserName
+  | EVAL new_computer = winlog.event_data.TargetUserName
+  | KEEP @timestamp, hostn, actor, new_computer
+  | SORT @timestamp DESC
+enabled: false
+tags:
+  - detection.persistence
+  - monitoring.user_management
+severity: low
+risk_score: 50
+nist: []
+pci_dss: []
+gdpr: []
+mitre_attack: []
