@@ -30,7 +30,7 @@ query: |
       scanner_ids = VALUES(eset_protect.event.scanner_id)
     BY host.hostname, source.ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE event_count >= 10
-  | KEEP bucket, host.hostname, source.ip, event_count, urls, processes, users, rule_ids, scanner_ids
+  | KEEP agent_id, bucket, host.hostname, source.ip, event_count, urls, processes, users, rule_ids, scanner_ids
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

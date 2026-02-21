@@ -28,7 +28,7 @@ query: |
       severities = VALUES(event.severity)
     BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE event_count >= 10
-  | KEEP bucket, source.ip, event_count, dst_ips, attacks, protection_names, protection_types, severities
+  | KEEP agent_id, bucket, source.ip, event_count, dst_ips, attacks, protection_names, protection_types, severities
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

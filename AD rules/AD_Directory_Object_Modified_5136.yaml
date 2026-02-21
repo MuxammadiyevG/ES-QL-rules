@@ -33,6 +33,7 @@ query: |
   | STATS modify_count = COUNT(*) BY hostn, actor, target_user, src_ip, attr, op
   | WHERE modify_count >= 1
   | EVAL dyn_risk = CASE(attr RLIKE "(?i)(nTSecurityDescriptor|admincount|msds-allowedtodelegateto)", 93, modify_count >= 3, 89, 84)
+  | KEEP agent_id, hostn, actor, target_user, src_ip, attr, op, modify_count, dyn_risk
   | SORT dyn_risk DESC, modify_count DESC
   | LIMIT 200
 enabled: false

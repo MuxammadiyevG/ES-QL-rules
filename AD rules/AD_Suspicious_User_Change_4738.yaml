@@ -31,6 +31,7 @@ query: |
   | STATS event_count = COUNT(*) BY hostn, actor, target_user, src_ip, changed_attrs
   | WHERE event_count >= 1
   | EVAL dyn_risk = CASE(changed_attrs RLIKE "(?i)(spn|script|delegat|trustedfor|admincount)", 90, event_count >= 3, 82, 74)
+  | KEEP agent_id, hostn, actor, target_user, src_ip, changed_attrs, event_count, dyn_risk
   | SORT dyn_risk DESC, event_count DESC
   | LIMIT 200
 enabled: false

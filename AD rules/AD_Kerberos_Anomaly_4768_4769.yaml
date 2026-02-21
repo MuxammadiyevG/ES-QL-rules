@@ -32,6 +32,7 @@ query: |
   | STATS ticket_count = COUNT(*), unique_services = COUNT_DISTINCT(svc) BY hostn, src_ip, actor, enc_type, event.code
   | WHERE ticket_count >= 20 OR unique_services >= 8 OR enc_type IN ("0x17", "0x18")
   | EVAL dyn_risk = CASE(enc_type == "0x17", 92, ticket_count >= 80 OR unique_services >= 20, 90, 84)
+  | KEEP agent_id, hostn, src_ip, actor, enc_type, event.code, ticket_count, unique_services, dyn_risk
   | SORT dyn_risk DESC, ticket_count DESC
   | LIMIT 200
 enabled: false

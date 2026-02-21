@@ -27,7 +27,7 @@ query: |
       interfaces = VALUES(observer.ingress.interface.name)
     BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE event_count >= 18
-  | KEEP bucket, source.ip, event_count, users, reasons, interfaces
+  | KEEP agent_id, bucket, source.ip, event_count, users, reasons, interfaces
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

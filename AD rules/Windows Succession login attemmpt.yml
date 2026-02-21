@@ -25,6 +25,7 @@ query: |
     BY
       username,
       host.name
+  | KEEP agent_id, failure_count, source_ips, logon_types, first_seen, last_seen
   | SORT failure_count DESC
   
   | LIMIT 200

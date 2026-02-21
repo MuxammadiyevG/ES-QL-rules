@@ -32,7 +32,7 @@ query: |
       hostnames = VALUES(fortinet.fortigate.hostname)
     BY source.ip, destination.ip, dev_name, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, source.ip, destination.ip, dev_name, event_count, actions, reasons, dst_ports, hostnames
+  | KEEP agent_id, bucket, source.ip, destination.ip, dev_name, event_count, actions, reasons, dst_ports, hostnames
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

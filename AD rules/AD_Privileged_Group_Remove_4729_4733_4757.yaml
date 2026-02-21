@@ -32,6 +32,7 @@ query: |
   | STATS remove_count = COUNT(*) BY hostn, actor, target_user, group_name, src_ip
   | WHERE remove_count >= 1
   | EVAL dyn_risk = CASE(group_name RLIKE "(?i)(Domain Admins|Enterprise Admins|Schema Admins)", 93, remove_count >= 3, 88, 82)
+  | KEEP agent_id, hostn, actor, target_user, group_name, src_ip, remove_count, dyn_risk
   | SORT dyn_risk DESC, remove_count DESC
   | LIMIT 200
 enabled: false

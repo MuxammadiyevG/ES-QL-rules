@@ -31,6 +31,7 @@ query: |
   | STATS change_count = COUNT(*) BY hostn, actor, src_ip, subcat
   | WHERE change_count >= 1
   | EVAL dyn_risk = CASE(change_count >= 5, 94, change_count >= 2, 90, 88)
+  | KEEP agent_id, hostn, actor, src_ip, subcat, change_count, dyn_risk
   | SORT dyn_risk DESC, change_count DESC
   | LIMIT 200
 enabled: false

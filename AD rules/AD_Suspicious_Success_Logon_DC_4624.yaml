@@ -34,6 +34,7 @@ query: |
   | STATS success_count = COUNT(*) BY hostn, actor, target_user, src_ip, logon_type, auth_pkg
   | WHERE success_count >= 3
   | EVAL dyn_risk = CASE(logon_type == "10", 92, success_count >= 10, 88, 82)
+  | KEEP agent_id, hostn, actor, target_user, src_ip, logon_type, auth_pkg, success_count, dyn_risk
   | SORT dyn_risk DESC, success_count DESC
   | LIMIT 200
 enabled: false

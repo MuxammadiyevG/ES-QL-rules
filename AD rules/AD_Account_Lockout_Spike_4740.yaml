@@ -28,6 +28,7 @@ query: |
   | STATS lockout_count = COUNT(*), unique_targets = COUNT_DISTINCT(target_user) BY hostn, src_ip
   | WHERE lockout_count >= 10 OR unique_targets >= 6
   | EVAL dyn_risk = CASE(lockout_count >= 30 OR unique_targets >= 15, 88, lockout_count >= 20 OR unique_targets >= 10, 80, 70)
+  | KEEP agent_id, hostn, src_ip, lockout_count, unique_targets, dyn_risk
   | SORT dyn_risk DESC, lockout_count DESC
   | LIMIT 200
 enabled: false

@@ -43,7 +43,7 @@ query: |
     BY host.hostname, process.name, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE login_count >= 1
   | KEEP
-      bucket, host.hostname, process.name, login_count,
+      agent_id, bucket, host.hostname, process.name, login_count,
       affected_users, unique_users,
       affected_hosts, unique_hosts,
       process_ids, thread_ids,

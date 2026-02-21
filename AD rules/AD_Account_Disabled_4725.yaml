@@ -30,6 +30,7 @@ query: |
   | STATS event_count = COUNT(*), unique_targets = COUNT_DISTINCT(target_user) BY hostn, actor, src_ip
   | WHERE unique_targets >= 2
   | EVAL dyn_risk = CASE(unique_targets >= 10, 90, unique_targets >= 5, 84, 76)
+  | KEEP agent_id, hostn, actor, src_ip, event_count, unique_targets, dyn_risk
   | SORT dyn_risk DESC, unique_targets DESC
   | LIMIT 200
 enabled: false

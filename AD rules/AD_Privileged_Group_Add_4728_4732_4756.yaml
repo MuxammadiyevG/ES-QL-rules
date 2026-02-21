@@ -32,6 +32,7 @@ query: |
   | STATS add_count = COUNT(*) BY hostn, actor, target_user, group_name, src_ip
   | WHERE add_count >= 1
   | EVAL dyn_risk = CASE(group_name RLIKE "(?i)(Domain Admins|Enterprise Admins|Schema Admins)", 98, group_name RLIKE "(?i)(Administrators|DnsAdmins)", 95, 90)
+  | KEEP agent_id, hostn, actor, target_user, group_name, src_ip, add_count, dyn_risk
   | SORT dyn_risk DESC, add_count DESC
   | LIMIT 200
 enabled: false

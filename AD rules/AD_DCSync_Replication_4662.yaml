@@ -32,6 +32,7 @@ query: |
   | STATS dcsync_count = COUNT(*), unique_objects = COUNT_DISTINCT(target_user) BY hostn, actor, src_ip, props
   | WHERE dcsync_count >= 1
   | EVAL dyn_risk = CASE(dcsync_count >= 3, 99, unique_objects >= 2, 97, 95)
+  | KEEP agent_id, hostn, actor, src_ip, props, dcsync_count, unique_objects, dyn_risk
   | SORT dyn_risk DESC, dcsync_count DESC
   | LIMIT 200
 enabled: false

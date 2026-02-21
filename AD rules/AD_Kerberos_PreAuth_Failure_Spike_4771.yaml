@@ -30,6 +30,7 @@ query: |
   | STATS fail_count = COUNT(*), distinct_users = COUNT_DISTINCT(target_user) BY hostn, src_ip, fail_code
   | WHERE fail_count >= 15 OR distinct_users >= 7
   | EVAL dyn_risk = CASE(fail_count >= 60 OR distinct_users >= 20, 93, fail_count >= 30 OR distinct_users >= 12, 88, 83)
+  | KEEP agent_id, hostn, src_ip, fail_code, fail_count, distinct_users, dyn_risk
   | SORT dyn_risk DESC, fail_count DESC
   | LIMIT 200
 enabled: false

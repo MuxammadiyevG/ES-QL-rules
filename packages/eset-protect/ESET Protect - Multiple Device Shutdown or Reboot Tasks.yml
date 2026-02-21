@@ -29,7 +29,7 @@ query: |
       devices = VALUES(eset_protect.device_task.targets.devices_uuids)
     BY bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE event_count >= 1 OR target_count >= 5
-  | KEEP bucket, event_count, target_count, actions, descriptions, display_names, devices
+  | KEEP agent_id, bucket, event_count, target_count, actions, descriptions, display_names, devices
   | SORT target_count DESC, event_count DESC
   | LIMIT 100
 enabled: true

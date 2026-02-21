@@ -30,7 +30,7 @@ query: |
       file_hashes = VALUES(file.hash.md5)
     BY bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE event_count >= 3
-  | KEEP bucket, event_count, senders, recipients, subjects, verdicts, file_names, file_hashes
+  | KEEP agent_id, bucket, event_count, senders, recipients, subjects, verdicts, file_names, file_hashes
   | SORT event_count DESC
   | LIMIT 100
 enabled: true
