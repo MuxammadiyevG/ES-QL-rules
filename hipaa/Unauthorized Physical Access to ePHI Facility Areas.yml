@@ -48,7 +48,7 @@ query: |
       access_attempts > 5, 90,
       85
     )
-  | KEEP user.name, event.dataset, access_attempts, locations, first_attempt, last_attempt, risk_score
+  | KEEP agent_id, user.name, event.dataset, access_attempts, locations, first_attempt, last_attempt, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

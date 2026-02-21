@@ -14,35 +14,40 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  | EVAL raw = COALESCE(event.original, process.command_line, winlog.event_data.CommandLine, "")
-  /* Hunt for WinAPI-ish function names (case-insensitive word boundaries) */
-  | WHERE raw RLIKE "(?i)\\b(AddSecurityPackage|AdjustTokenPrivileges|CloseHandle|CreateProcessWithToken|CreateRemoteThread|CreateThread|CreateUserThread|DangerousGetHandle|DuplicateTokenEx|EnumerateSecurityPackages|FreeLibrary|GetDelegateForFunctionPointer|GetLogonSessionData|GetModuleHandle|GetProcAddress|GetProcessHandle|GetTokenInformation|ImpersonateLoggedOnUser|LoadLibrary|memcpy|MiniDumpWriteDump|OpenDesktop|OpenProcess|OpenProcessToken|OpenThreadToken|OpenWindowStation|QueueUserApc|ReadProcessMemory|RevertToSelf|RtlCreateUserThread|SetThreadToken|VirtualAlloc|VirtualFree|VirtualProtect|WaitForSingleObject|WriteInt32|WriteProcessMemory|ZeroFreeGlobalAllocUnicode)\\b"
+  FROM logs-winlog*
+  | EVAL raw = COALESCE(event.original, winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
+  // Hunt for WinAPI function names using robust regex word boundaries
+  | WHERE raw RLIKE "(?i).*\\\\b(AddSecurityPackage|AdjustTokenPrivileges|CloseHandle|CreateProcessWithToken|CreateRemoteThread|CreateThread|CreateUserThread|DangerousGetHandle|DuplicateTokenEx|EnumerateSecurityPackages|FreeLibrary|GetDelegateForFunctionPointer|GetLogonSessionData|GetModuleHandle|GetProcAddress|GetProcessHandle|GetTokenInformation|ImpersonateLoggedOnUser|LoadLibrary|memcpy|MiniDumpWriteDump|OpenDesktop|OpenProcess|OpenProcessToken|OpenThreadToken|OpenWindowStation|QueueUserApc|ReadProcessMemory|RevertToSelf|RtlCreateUserThread|SetThreadToken|VirtualAlloc|VirtualFree|VirtualProtect|WaitForSingleObject|WriteInt32|WriteProcessMemory|ZeroFreeGlobalAllocUnicode)\\\\b.*"
   | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
-  /* Optional: add a mild context signal for suspicious script locations (tune as needed) */
+  // Context signal: Check if the script is running from a common staging directory
   | EVAL suspicious_script_path = CASE(
-      file.path RLIKE "(?i)\\\\(Users\\\\[^\\\\]+\\\\(Downloads|AppData\\\\Local\\\\Temp)|Windows\\\\Temp|ProgramData|Users\\\\Public)\\\\", true,
+      winlog.event_data.OriginalFileName RLIKE "(?i).*\\\\\\\\(Users\\\\\\\\.*\\\\\\\\(Downloads|AppData\\\\\\\\Local\\\\\\\\Temp)|Windows\\\\\\\\Temp|ProgramData|Users\\\\\\\\Public)\\\\\\\\.*", true,
       false
     )
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      cmdlines = VALUES(process.command_line),
-      script_paths = VALUES(file.path),
+      users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      cmdlines = VALUES(winlog.event_data.CommandLine),
+      script_paths = VALUES(winlog.event_data.OriginalFileName),
       originals = VALUES(COALESCE(event.original, "")),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
       suspicious_path_hits = SUM(CASE(suspicious_script_path == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
+  // Risk Scoring: 20 per event + 15 for night activity + 10 for suspicious paths
   | EVAL risk_score = event_count * 20 + after_hours_hits * 15 + suspicious_path_hits * 10
   | WHERE risk_score >= 25
-  | KEEP bucket, host.name, event_count, users, processes, executables, cmdlines, script_paths, after_hours_hits, suspicious_path_hits, risk_score, originals
+  | KEEP 
+      agent_id, bucket, host.name, event_count, users, processes, executables, 
+      cmdlines, script_paths, after_hours_hits, suspicious_path_hits, risk_score, originals
   | SORT risk_score DESC
 enabled: false
 tags:

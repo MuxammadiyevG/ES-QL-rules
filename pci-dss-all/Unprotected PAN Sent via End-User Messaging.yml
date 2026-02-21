@@ -47,7 +47,7 @@ query: |
       event.original IS NOT NULL, 85,
       70
     )
-  | KEEP host.name, event.dataset, message_count, senders, subjects, risk_score
+  | KEEP agent_id, host.name, event.dataset, message_count, senders, subjects, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

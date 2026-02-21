@@ -46,7 +46,7 @@ query: |
       disposal_events > 3, 95,
       90
     )
-  | KEEP host.name, disposal_events, devices, asset_types, first_disposal, risk_score
+  | KEEP agent_id, host.name, disposal_events, devices, asset_types, first_disposal, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

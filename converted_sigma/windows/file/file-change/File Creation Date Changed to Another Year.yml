@@ -9,58 +9,74 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* file change telemetry (best-effort; depends on your pipeline) */
-  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE "(?i)file"
-  /* selection: PreviousCreationUtcTime starts with 202 (recent) */
-  | WHERE COALESCE(event.original, "") RLIKE "(?i)PreviousCreationUtcTime\\s*[:=]\\s*202"
-  /* filter_main_creation_time: CreationUtcTime also starts with 202 => ignore */
-  | WHERE NOT (COALESCE(event.original, "") RLIKE "(?i)CreationUtcTime\\s*[:=]\\s*202")
-  /* filter_main_program_files: TargetFilename and Image in Program Files */
+ FROM logs-winlog*
+  // File change telemetry
+  | WHERE event.category == "file" 
+   OR event.type == "change" 
+   OR event.dataset RLIKE "(?i).*file.*"
+  // Selection: PreviousCreationUtcTime starts with 202 (recent)
+  | WHERE COALESCE(event.original, "") RLIKE "(?i).*PreviousCreationUtcTime\\\\s*[:=]\\\\s*202.*"
+  // Filter: CreationUtcTime also starts with 202 => ignore
   | WHERE NOT (
-      (COALESCE(file.path, "") RLIKE "(?i)^C:\\\\Program Files( \\(x86\\))?\\\\")
-      AND (COALESCE(process.executable, "") RLIKE "(?i)^C:\\\\Program Files( \\(x86\\))?\\\\")
-    )
-  /* filter_optional_updates */
+    COALESCE(event.original, "") RLIKE "(?i).*CreationUtcTime\\\\s*[:=]\\\\s*202.*"
+  )
+  // Filter: TargetFilename and Image in Program Files
   | WHERE NOT (
-      process.executable IN (
-        "C:\\Windows\\system32\\ProvTool.exe",
-        "C:\\Windows\\System32\\usocoreworker.exe",
-        "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe"
-      )
-      OR (
-        COALESCE(file.path, "") RLIKE "(?i)^C:\\\\ProgramData\\\\USOPrivate\\\\UpdateStore\\\\"
-        AND (COALESCE(file.path, "") RLIKE "(?i)\\.(tmp|temp)$")
-      )
-    )
-  /* filter_optional_cab */
+    COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i)^C:\\\\Program Files( \\\\(x86\\\\))?\\\\.*"
+    AND COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Program Files( \\\\(x86\\\\))?\\\\.*"
+  )
+  // Filter: Optional Updates
   | WHERE NOT (
-      COALESCE(process.executable, "") RLIKE "(?i)^C:\\\\WINDOWS\\\\System32\\\\"
-      AND (process.executable RLIKE "(?i)\\\\(TiWorker|svchost|sihclient)\\.exe$")
-      AND (COALESCE(file.path, "") RLIKE "(?i)\\.cab$")
+    winlog.event_data.ProcessName IN (
+      "C:\\Windows\\system32\\ProvTool.exe",
+      "C:\\Windows\\System32\\usocoreworker.exe",
+      "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe"
     )
-  /* filter_optional_msiexec */
-  | WHERE NOT (process.executable == "C:\\Windows\\system32\\msiexec.exe")
-  /* filter_optional_vcredist */
+    OR (
+      COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i)^C:\\\\ProgramData\\\\USOPrivate\\\\UpdateStore\\\\.*"
+      AND COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i).*\\\\.(tmp|temp)$"
+    )
+  )
+  // Filter: Optional CAB files
   | WHERE NOT (
-      COALESCE(process.executable, "") RLIKE "(?i)^C:\\\\Windows\\\\Temp\\\\"
-      AND (process.executable RLIKE "(?i)\\\\VCREDI~1\\.EXE$")
-    )
+    COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\WINDOWS\\\\System32\\\\.*"
+    AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\(TiWorker|svchost|sihclient)\\\\.exe$"
+    AND COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i).*\\\\.cab$"
+  )
+  // Filter: Optional MSIExec
+  | WHERE NOT (winlog.event_data.ProcessName == "C:\\Windows\\system32\\msiexec.exe")
+  // Filter: Optional VCRedist
+  | WHERE NOT (
+    COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Windows\\\\Temp\\\\.*"
+    AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\VCREDI~1\\\\.EXE$"
+  )
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parent_processes = VALUES(process.parent.name),
-      parent_executables = VALUES(process.parent.executable),
-      file_paths = VALUES(file.path),
-      raw_samples = VALUES(event.original)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    event_count = COUNT(*),
+    users = VALUES(winlog.event_data.TargetUserName),
+    processes = VALUES(winlog.event_data.ProcessName),
+    executables = VALUES(winlog.event_data.ProcessName),
+    parent_processes = VALUES(winlog.event_data.CallerProcessName),
+    parent_executables = VALUES(winlog.event_data.CallerProcessName),
+    file_paths = VALUES(winlog.event_data.OriginalFileName),
+    raw_samples = VALUES(event.original)
+  BY 
+    host.name, 
+    bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, processes, executables, parent_processes, parent_executables, file_paths, raw_samples
+  | KEEP 
+    agent_id, bucket, 
+    host.name, 
+    event_count, 
+    users, 
+    processes, 
+    executables, 
+    parent_processes, 
+    parent_executables, 
+    file_paths, 
+    raw_samples
   | SORT event_count DESC
 enabled: false
 tags:

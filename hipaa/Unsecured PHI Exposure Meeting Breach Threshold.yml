@@ -63,7 +63,7 @@ query: |
       breach_indicators > 5, 90,
       85
     )
-  | KEEP host.name, breach_indicators, indicator_types, data_volume_mb, estimated_individuals, risk_score
+  | KEEP agent_id, host.name, breach_indicators, indicator_types, data_volume_mb, estimated_individuals, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

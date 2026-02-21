@@ -52,7 +52,7 @@ query: |
       mu_violations > 10, 95,
       90
     )
-  | KEEP host.name, mu_violations, violation_types, affected_systems, first_violation, risk_score
+  | KEEP agent_id, host.name, mu_violations, violation_types, affected_systems, first_violation, risk_score
   | SORT mu_violations DESC
 enabled: false
 tags:

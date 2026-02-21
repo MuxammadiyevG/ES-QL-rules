@@ -22,7 +22,7 @@ query: |
       executables = VALUES(process.executable),
       raws = VALUES(event.original)
     BY host.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
-  | KEEP bucket, host.name, event_count, users, user_ids, src_ips, pids, processes, executables, raws
+  | KEEP agent_id, bucket, host.name, event_count, users, user_ids, src_ips, pids, processes, executables, raws
   | SORT event_count DESC
 enabled: false
 tags: ["informational", "linux", "session", "auditd", "ssh"]

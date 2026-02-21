@@ -1,0 +1,70 @@
+name: VMware ESX - Successful Authentication (logged in)
+description: |
+  VMware ESX tizimiga muvaffaqiyatli autentifikatsiya qayd etildi.
+  Bu normal hodisa bo'lishi mumkin, ammo noodatiy vaqtda yoki noma'lum
+  foydalanuvchi tomonidan bo'lsa tekshirish tavsiya etiladi (T1078).
+  SOC triage bosqichlari:
+  - Login qilgan user nomini tekshiring
+  - Login vaqti va joyini solishtiring
+  - Avvalgi login tarixini kuzating
+  - Muvaffaqiyatsiz urinishlar ketidan kelgan login'larni aniqlang
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-vmware.esxi*
+query_language: esql
+query: |
+  FROM logs-vmware.esxi*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "vmware"
+  | WHERE event.dataset == "vmware.esxi"
+  | WHERE event.outcome == "success"
+  | WHERE event.category == "authentication"
+  | WHERE log.level == "info"
+  | WHERE message LIKE "*logged in*"
+  | STATS
+      login_count         = COUNT(*),
+      affected_users      = VALUES(user.name),
+      unique_users        = COUNT_DISTINCT(user.name),
+      affected_hosts      = VALUES(host.hostname),
+      unique_hosts        = COUNT_DISTINCT(host.hostname),
+      process_names       = VALUES(process.name),
+      process_ids         = VALUES(process.pid),
+      thread_ids          = VALUES(process.thread.id),
+      originator_list     = VALUES(vmware.originator),
+      opid_list           = VALUES(vmware.opid),
+      sid_list            = VALUES(vmware.sid),
+      log_messages        = VALUES(message),
+      first_seen          = MIN(@timestamp),
+      last_seen           = MAX(@timestamp)
+    BY host.hostname, user.name, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE login_count >= 1
+  | KEEP
+      bucket, host.hostname, user.name, login_count,
+      affected_users, unique_users,
+      affected_hosts, unique_hosts,
+      process_names, process_ids, thread_ids,
+      originator_list, opid_list, sid_list,
+      log_messages, first_seen, last_seen
+  | SORT login_count DESC
+  | LIMIT 50
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1078
+  - vmware
+  - esxi
+  - authentication
+  - success
+severity: 50
+risk_score: 15
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+nist: ["AC-7", "AU-14"]
+pci_dss: ["10.2.5"]
+gdpr: ["32.2"]
+hipaa: ["164.312.b"]
+mitre_attack:
+  TA0001:
+    T1078: []

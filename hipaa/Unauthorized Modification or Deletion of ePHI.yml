@@ -49,7 +49,7 @@ query: |
       modification_events > 3, 90,
       85
     )
-  | KEEP user.name, host.name, modification_events, operations, targets, files, risk_score
+  | KEEP agent_id, user.name, host.name, modification_events, operations, targets, files, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

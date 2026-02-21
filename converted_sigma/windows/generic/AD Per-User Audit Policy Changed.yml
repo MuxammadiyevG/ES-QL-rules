@@ -12,7 +12,7 @@ query: |
   FROM logs-winlog*
   | WHERE event.code == "4712"
   | EVAL actor = winlog.event_data.SubjectUserName
-  | KEEP @timestamp, actor, winlog.computer_name
+  | KEEP agent_id, @timestamp, actor, winlog.computer_name
   | SORT @timestamp DESC
 enabled: false
 tags:

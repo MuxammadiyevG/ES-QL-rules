@@ -10,50 +10,62 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* file access telemetry view (best-effort; depends on your pipeline) */
+ FROM logs-winlog*
+  // File access telemetry view
   | WHERE event.category == "file"
-     OR event.type == "access"
-     OR event.dataset RLIKE "(?i)file"
-  /* 1 of selection_*: Unistore data path OR UnistoreDB store.vol */
-  | EVAL p = COALESCE(file.path, "")
+   OR event.type == "access"
+   OR event.dataset RLIKE "(?i).*file.*"
+  // Evaluate path to simplify logic
+  | EVAL p = COALESCE(winlog.event_data.OriginalFileName, "")
+  // Selection: Unistore data path OR UnistoreDB store.vol (Windows Mail/Contacts)
   | WHERE (
-      p LIKE "*\\AppData\\Local\\Comms\\Unistore\\data*"
-      OR p RLIKE "(?i)\\\\AppData\\\\Local\\\\Comms\\\\UnistoreDB\\\\store\\.vol$"
-    )
-  /* filter_main_system */
-  | WHERE COALESCE(process.executable, process.name, "") != "System"
-  /* filter_main_generic: exclude common benign install paths */
+    p LIKE "*\\\\AppData\\\\Local\\\\Comms\\\\Unistore\\\\data*"
+    OR p RLIKE "(?i).*\\\\AppData\\\\Local\\\\Comms\\\\UnistoreDB\\\\store\\\\.vol$"
+  )
+  // Filter out legitimate System process
+  | WHERE COALESCE(winlog.event_data.ProcessName, winlog.event_data.ProcessName, "") != "System"
+  // Exclude common benign install paths
   | WHERE NOT (
-      process.executable RLIKE "(?i)^C:\\\\Program Files \\(x86\\)\\\\"
-      OR process.executable RLIKE "(?i)^C:\\\\Program Files\\\\"
-      OR process.executable RLIKE "(?i)^C:\\\\Windows\\\\System32\\\\"
-      OR process.executable RLIKE "(?i)^C:\\\\Windows\\\\SysWOW64\\\\"
-    )
-  /* filter_optional_defender */
+    winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Program Files \\\\(x86\\\\)\\\\.*"
+    OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Program Files\\\\.*"
+    OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Windows\\\\SystemSystem32\\\\.*"
+    OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Windows\\\\SysWOW64\\\\.*"
+  )
+  // Optional: Filter out Windows Defender
   | WHERE NOT (
-      process.executable RLIKE "(?i)^C:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\"
-      AND (process.executable RLIKE "(?i)\\\\MpCopyAccelerator\\.exe$" OR process.executable RLIKE "(?i)\\\\MsMpEng\\.exe$")
-    )
-  /* filter_optional_thor */
+    winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\.*"
+    AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\(MpCopyAccelerator|MsMpEng)\\\\.exe$"
+  )
+  // Optional: Filter out Thor Scanner
   | WHERE NOT (
-      process.executable RLIKE "(?i)\\\\thor64?\\.exe$"
-      OR process.name IN ("thor.exe", "thor64.exe")
-    )
+    winlog.event_data.ProcessName RLIKE "(?i).*\\\\thor(64)?\\\\.exe$"
+    OR winlog.event_data.ProcessName IN ("thor.exe", "thor64.exe")
+  )
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parents = VALUES(process.parent.name),
-      parent_executables = VALUES(process.parent.executable),
-      file_paths = VALUES(file.path)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    event_count = COUNT(*),
+    users = VALUES(winlog.event_data.TargetUserName),
+    processes = VALUES(winlog.event_data.ProcessName),
+    executables = VALUES(winlog.event_data.ProcessName),
+    parents = VALUES(winlog.event_data.CallerProcessName),
+    parent_executables = VALUES(winlog.event_data.CallerProcessName),
+    file_paths = VALUES(winlog.event_data.OriginalFileName)
+  BY 
+    host.name, 
+    bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, file_paths
+  | KEEP 
+    agent_id, bucket, 
+    host.name, 
+    event_count, 
+    users, 
+    processes, 
+    executables, 
+    parents, 
+    parent_executables, 
+    file_paths
   | SORT event_count DESC
 enabled: false
 tags:

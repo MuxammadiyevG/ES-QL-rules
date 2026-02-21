@@ -17,7 +17,7 @@ query: |
   | EVAL hostn = winlog.computer_name
   | EVAL user = winlog.event_data.SubjectUserName
   | EVAL privilege_list = winlog.event_data.PrivilegeList
-  | KEEP @timestamp, hostn, user, privilege_list
+  | KEEP agent_id, @timestamp, hostn, user, privilege_list
   | SORT @timestamp DESC
   | LIMIT 100
 enabled: false

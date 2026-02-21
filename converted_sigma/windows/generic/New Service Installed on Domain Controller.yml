@@ -15,7 +15,7 @@ query: |
   | WHERE hostn RLIKE "(?i)(.*DC.*|ADDC.*|DOMAINCONTROLLER)"
   | EVAL service_name = winlog.event_data.ServiceName
   | EVAL extra_info = COALESCE(winlog.event_data.DisplayName, winlog.event_data.AccountName, "Check logs for details")
-  | KEEP @timestamp, hostn, service_name, extra_info, event.code
+  | KEEP agent_id, @timestamp, hostn, service_name, extra_info, event.code
   | SORT @timestamp DESC
 enabled: false
 tags:

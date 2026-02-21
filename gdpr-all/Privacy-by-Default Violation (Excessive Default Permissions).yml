@@ -43,7 +43,7 @@ query: |
       violation_count > 10, 75,
       65
     )
-  | KEEP host.name, violation_count, users_affected, default_settings, first_violation, risk_score
+  | KEEP agent_id, host.name, violation_count, users_affected, default_settings, first_violation, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

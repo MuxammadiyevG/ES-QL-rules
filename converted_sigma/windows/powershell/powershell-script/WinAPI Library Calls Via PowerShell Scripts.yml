@@ -13,45 +13,48 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  | EVAL raw = COALESCE(event.original, process.command_line, winlog.event_data.CommandLine, "")
-  | WHERE raw RLIKE "(?i)\\b(Advapi32\\.dll|kernel32\\.dll|KernelBase\\.dll|ntdll\\.dll|secur32\\.dll|user32\\.dll)\\b"
-  /* Filters: common benign frameworks (best-effort string filters; tune with your local baselines) */
+  FROM logs-winlog*
+  | EVAL raw = COALESCE(event.original, winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
+  // Selection: Identify references to critical Windows Native Libraries
+  | WHERE raw RLIKE "(?i).*\\\\b(Advapi32\\\\.dll|kernel32\\\\.dll|KernelBase\\\\.dll|ntdll\\\\.dll|secur32\\\\.dll|user32\\\\.dll)\\\\b.*"
+  /* Filters: exclude known benign frameworks/installers */
   | WHERE NOT (
-      /* Carbon module often contains "Carbon" references in scripts */
-      raw RLIKE "(?i)\\bCarbon\\b" OR
-      /* Chocolatey scripts commonly reference chocolatey/install helpers */
-      raw RLIKE "(?i)\\b(chocolatey|choco)\\b"
+      raw RLIKE "(?i).*\\\\b(Carbon|chocolatey|choco)\\\\b.*"
     )
   | EVAL library_hit = CASE(
-      raw RLIKE "(?i)\\bAdvapi32\\.dll\\b", "Advapi32.dll",
-      raw RLIKE "(?i)\\bkernel32\\.dll\\b", "kernel32.dll",
-      raw RLIKE "(?i)\\bKernelBase\\.dll\\b", "KernelBase.dll",
-      raw RLIKE "(?i)\\bntdll\\.dll\\b", "ntdll.dll",
-      raw RLIKE "(?i)\\bsecur32\\.dll\\b", "secur32.dll",
-      raw RLIKE "(?i)\\buser32\\.dll\\b", "user32.dll",
+      raw RLIKE "(?i).*\\\\bAdvapi32\\\\.dll\\\\b.*", "Advapi32.dll",
+      raw RLIKE "(?i).*\\\\bkernel32\\\\.dll\\\\b.*", "kernel32.dll",
+      raw RLIKE "(?i).*\\\\bKernelBase\\\\.dll\\\\b.*", "KernelBase.dll",
+      raw RLIKE "(?i).*\\\\bntdll\\\\.dll\\\\b.*", "ntdll.dll",
+      raw RLIKE "(?i).*\\\\bsecur32\\\\.dll\\\\b.*", "secur32.dll",
+      raw RLIKE "(?i).*\\\\buser32\\\\.dll\\\\b.*", "user32.dll",
       "WinAPI"
     )
   | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      cmdlines = VALUES(process.command_line),
-      script_paths = VALUES(file.path),
+      users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      cmdlines = VALUES(winlog.event_data.CommandLine),
+      script_paths = VALUES(winlog.event_data.OriginalFileName),
       libs = VALUES(library_hit),
       originals = VALUES(COALESCE(event.original, "")),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
+  // Risk: High base (25) for direct DLL referencing; significant bonus for after-hours activity
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25
-  | KEEP bucket, host.name, libs, event_count, users, processes, executables, cmdlines, script_paths, after_hours_hits, risk_score, originals
+  | KEEP 
+      agent_id, bucket, host.name, libs, event_count, users, processes, executables, 
+      cmdlines, script_paths, after_hours_hits, risk_score, originals
   | SORT risk_score DESC
 enabled: false
 tags:

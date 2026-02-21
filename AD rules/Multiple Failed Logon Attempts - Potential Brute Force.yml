@@ -13,10 +13,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- winlogbeat-*
+- logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
   | EVAL hostn = winlog.computer_name
@@ -49,7 +49,7 @@ query: |
         unique_users <= 2, "Brute Force - Single Target",
         "Brute Force - Multiple Targets"
       )
-  | KEEP bucket, winlog.computer_name, source_ip, failure_count, unique_users, users_targeted, 
+  | KEEP agent_id, bucket, winlog.computer_name, source_ip, failure_count, unique_users, users_targeted, 
       workstations, failure_reasons, attack_type, attack_duration, first_attempt, last_attempt
   | SORT failure_count DESC
   | LIMIT 200

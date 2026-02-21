@@ -18,7 +18,7 @@ query: |
   | EVAL hostn = winlog.computer_name
   | EVAL actor = winlog.event_data.SubjectUserName
   | EVAL new_computer = winlog.event_data.TargetUserName
-  | KEEP @timestamp, hostn, actor, new_computer
+  | KEEP agent_id, @timestamp, hostn, actor, new_computer
   | SORT @timestamp DESC
 enabled: false
 tags:

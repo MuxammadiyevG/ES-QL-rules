@@ -46,7 +46,7 @@ query: |
       privilege_events > 3, 85,
       75
     )
-  | KEEP user.name, host.name, privilege_events, target_users, groups, actions, changed_by, risk_score
+  | KEEP agent_id, user.name, host.name, privilege_events, target_users, groups, actions, changed_by, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

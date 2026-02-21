@@ -11,38 +11,43 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
-  - metricbeat-*
+  - logs-winlog*
+  - logs-metric*
 query_language: esql
 query: |
-  FROM winlogbeat-*, metricbeat-*
-  /* Process creation: look for UC Berkeley description in raw or structured fields */
+  FROM logs-winlog*, logs-metric*
+  // Selection: Look for UC Berkeley metadata in the original log or command line
   | WHERE (
       COALESCE(event.original, "") LIKE "*University of California, Berkeley*"
-      OR COALESCE(process.command_line, "") LIKE "*University of California, Berkeley*"
+      OR COALESCE(winlog.event_data.CommandLine, "") LIKE "*University of California, Berkeley*"
     )
   | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  // Identify execution from common staging or "low-barrier" directories
   | EVAL suspicious_path = CASE(
-      COALESCE(process.executable, "") RLIKE "(?i)\\\\(Users\\\\[^\\\\]+\\\\(AppData\\\\Local\\\\Temp|AppData\\\\Roaming|Downloads)|Windows\\\\Temp|ProgramData|Users\\\\Public)\\\\", true,
+      COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i).*\\\\\\\\(Users\\\\\\\\.*\\\\\\\\(AppData\\\\\\\\(Local\\\\\\\\Temp|Roaming)|Downloads)|Windows\\\\\\\\Temp|ProgramData|Users\\\\\\\\Public)\\\\\\\\.*", true,
       false
     )
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parents = VALUES(process.parent.name),
-      cmdlines = VALUES(process.command_line),
+      users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      parents = VALUES(winlog.event_data.CallerProcessName),
+      cmdlines = VALUES(winlog.event_data.CommandLine),
       originals = VALUES(COALESCE(event.original, "")),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
       suspicious_path_hits = SUM(CASE(suspicious_path == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  /* Informational baseline; bump slightly if suspicious install path / after-hours */
+  // Risk Score: Base of 1 per hit; significant multipliers for night-time or suspicious locations
   | EVAL risk_score = event_count * 1 + after_hours_hits * 5 + suspicious_path_hits * 5
   | WHERE risk_score >= 1
-  | KEEP bucket, host.name, event_count, users, processes, executables, parents, cmdlines, after_hours_hits, suspicious_path_hits, risk_score, originals
+  | KEEP 
+      agent_id, bucket, host.name, event_count, users, processes, executables, 
+      parents, cmdlines, after_hours_hits, suspicious_path_hits, risk_score, originals
   | SORT risk_score DESC
 enabled: false
 tags:

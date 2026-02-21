@@ -41,7 +41,7 @@ query: |
       non_eu_deployments > 5, 95,
       90
     )
-  | KEEP event.original  # FIXME: cloud.region not available, host.name, non_eu_deployments, regions, resources, deployers, risk_score
+  | KEEP agent_id, event.original  # FIXME: cloud.region not available, host.name, non_eu_deployments, regions, resources, deployers, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

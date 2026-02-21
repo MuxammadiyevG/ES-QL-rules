@@ -12,35 +12,35 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+ FROM logs-winlog*
   | EVAL raw = COALESCE(event.original, "")
   /* Selection: Trusted Location registry path ending with \Path */
-  | WHERE raw LIKE "*Security\\Trusted Locations\\Location*"
-    AND raw LIKE "*\\Path*"
+  | WHERE raw LIKE "*Security\\\\Trusted Locations\\\\Location*"
+    AND raw LIKE "*\\\\Path*"
   /* Filters: exclude common Office installers and Office apps */
   | WHERE NOT (
-      process.executable LIKE "*\\Program Files\\Common Files\\Microsoft Shared\\ClickToRun\\OfficeClickToRun.exe" OR
-      process.executable LIKE "*\\Program Files\\Microsoft Office\\*" OR
-      process.executable LIKE "*\\Program Files (x86)\\Microsoft Office\\*"
+      winlog.event_data.ProcessName LIKE "*\\\\Program Files\\\\Common Files\\\\Microsoft Shared\\\\ClickToRun\\\\OfficeClickToRun.exe" OR
+      winlog.event_data.ProcessName LIKE "*\\\\Program Files\\\\Microsoft Office\\\\*" OR
+      winlog.event_data.ProcessName LIKE "*\\\\Program Files (x86)\\\\Microsoft Office\\\\*"
     )
   | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parent_processes = VALUES(process.parent.name),
+      users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      parent_processes = VALUES(winlog.event_data.CallerProcessName),
       originals = VALUES(raw),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25
-  | KEEP bucket, host.name, event_count, users, processes, executables, parent_processes, after_hours_hits, risk_score, originals
+  | KEEP agent_id, bucket, host.name, event_count, users, processes, executables, parent_processes, after_hours_hits, risk_score, originals
   | SORT risk_score DESC
 enabled: false
 tags:

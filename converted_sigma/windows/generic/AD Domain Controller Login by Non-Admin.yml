@@ -16,7 +16,7 @@ query: |
   | EVAL user = winlog.event_data.TargetUserName
   /* Oddiy userlarni tekshirish - admin bo'lmaganlarni filtrlash uchun RLIKE ishlating */
   | WHERE NOT user RLIKE "(?i)(admin.*|svc.*|system|network service|local service)"
-  | KEEP @timestamp, user, hostn, winlog.event_data.IpAddress
+  | KEEP agent_id, @timestamp, user, hostn, winlog.event_data.IpAddress
   | SORT @timestamp DESC
 enabled: false
 tags:

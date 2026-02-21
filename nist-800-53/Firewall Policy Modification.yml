@@ -11,11 +11,11 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, logs-audit*
   | WHERE event.code IN ("4946", "4947", "4950", "4954", "5025")
     OR (event.action IN ("firewall-rule-add", "firewall-rule-modified", "firewall-disabled")
         OR file.path RLIKE "(?i).*(iptables|ufw|firewalld).*")
@@ -39,9 +39,9 @@ query: |
   | WHERE rule_changes >= 1
   | EVAL risk_score = rule_changes * 25 + after_hours_changes * 20
   | WHERE risk_score >= 25
-  | KEEP bucket, host.name, change_type, rule_changes, unique_rules, changed_rules, modifiers, after_hours_changes, risk_score
+  | KEEP agent_id, bucket, host.name, change_type, rule_changes, unique_rules, changed_rules, modifiers, after_hours_changes, risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - nist_800_53
   - control_SC-7

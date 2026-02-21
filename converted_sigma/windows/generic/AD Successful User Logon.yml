@@ -18,7 +18,7 @@ query: |
   | EVAL user = winlog.event_data.TargetUserName
   | EVAL src_ip = winlog.event_data.IpAddress
   | EVAL logon_type = winlog.event_data.LogonType
-  | KEEP @timestamp, hostn, user, src_ip, logon_type
+  | KEEP agent_id, @timestamp, hostn, user, src_ip, logon_type
   | SORT @timestamp DESC
   | LIMIT 200
 enabled: false

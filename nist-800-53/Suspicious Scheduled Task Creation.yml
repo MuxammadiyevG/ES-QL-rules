@@ -19,16 +19,17 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, logs-audit*
   | WHERE event.code == "4698"
     OR (event.action IN ("created-file", "modified-file") AND file.path RLIKE "(?i).*(cron|at\\.allow|at\\.deny|crontab).*")
-  | EVAL task_action = COALESCE(event.original, process.command_line, file.path)
+  | EVAL task_action = COALESCE(process.command_line, file.path, event.original)
   | EVAL suspicious_task = CASE(
-      task_action RLIKE "(?i).*(\\\\Temp\\\\|\\\\AppData\\\\|\/tmp\/|powershell|cmd\\.exe|wscript|cscript|mshta|rundll32).*", true,
+      /* Using 4 backslashes for literal Windows directory separators */
+      task_action RLIKE "(?i).*(\\\\Temp\\\\|\\\\AppData\\\\|/tmp/|powershell|cmd\\.exe|wscript|cscript|mshta|rundll32).*", true,
       task_action RLIKE "(?i).*(http|ftp|download|invoke-webrequest|curl|wget).*", true,
       false
     )
@@ -38,14 +39,13 @@ query: |
   | STATS 
       task_creations = COUNT(*),
       task_actions = VALUES(task_action),
-      creators = VALUES(user.name),
+      creators = VALUES(host.name),
       after_hours_count = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name
-    , bucket = DATE_TRUNC(15 minutes, @timestamp)
+    BY host.name, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE task_creations >= 1
   | EVAL risk_score = task_creations * 30 + after_hours_count * 25
   | WHERE risk_score >= 30
-  | KEEP bucket, host.name, task_creations, task_actions, creators, after_hours_count, risk_score
+  | KEEP agent_id, bucket, host.name, task_creations, task_actions, creators, after_hours_count, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

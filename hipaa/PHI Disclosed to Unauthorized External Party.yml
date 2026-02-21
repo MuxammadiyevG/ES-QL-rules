@@ -54,7 +54,7 @@ query: |
       unauthorized_disclosures > 3, 90,
       85
     )
-  | KEEP user.name, host.name, unauthorized_disclosures, recipients, destinations, data_types, risk_score
+  | KEEP agent_id, user.name, host.name, unauthorized_disclosures, recipients, destinations, data_types, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

@@ -13,10 +13,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- winlogbeat-*
+- logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
   | EVAL hostn = winlog.computer_name
@@ -29,7 +29,7 @@ query: |
   | EVAL 
       querying_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
       target_user = COALESCE(winlog.event_data.TargetUserName, "Unknown"),
-      caller_process = COALESCE(process.name, winlog.event_data.CallerProcessName, "Unknown")
+      caller_process = COALESCE(winlog.event_data.ProcessName, winlog.event_data.CallerProcessName, "Unknown")
   | STATS 
       query_count = COUNT(*),
       unique_targets = COUNT_DISTINCT(target_user),
@@ -40,7 +40,7 @@ query: |
       last_query = MAX(@timestamp)
     BY winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE query_count >= 1
-  | KEEP bucket, winlog.computer_name, query_count, unique_targets, querying_users,
+  | KEEP agent_id, bucket, winlog.computer_name, query_count, unique_targets, querying_users,
       target_users, processes, first_query, last_query
   | SORT query_count DESC
   | LIMIT 200

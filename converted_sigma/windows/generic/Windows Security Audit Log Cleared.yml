@@ -15,7 +15,7 @@ query: |
   FROM logs-winlog*
   | WHERE event.code == "1102" OR event.code == "104"
   | EVAL actor = winlog.event_data.SubjectUserName
-  | KEEP @timestamp, actor, winlog.computer_name, event.code
+  | KEEP agent_id, @timestamp, actor, winlog.computer_name, event.code
   | SORT @timestamp DESC
 enabled: false
 tags:

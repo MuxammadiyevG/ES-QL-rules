@@ -51,7 +51,7 @@ query: |
     status_codes = VALUES(http.response.status_code)
   BY source.ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, source.ip, event_count, user_agents, urls, methods, status_codes
+  | KEEP agent_id, bucket, source.ip, event_count, user_agents, urls, methods, status_codes
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

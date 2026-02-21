@@ -44,7 +44,7 @@ query: |
       emergency_access > 1, 90,
       85
     )
-  | KEEP user.name, host.name, emergency_access, systems_accessed, access_times, risk_score
+  | KEEP agent_id, user.name, host.name, emergency_access, systems_accessed, access_times, risk_score
   | SORT emergency_access DESC
 enabled: false
 tags:

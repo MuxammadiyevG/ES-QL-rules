@@ -44,7 +44,7 @@ query: |
       failure_count > 5, 70,
       60
     )
-  | KEEP host.name, failure_count, services, first_failure, last_failure, risk_score
+  | KEEP agent_id, host.name, failure_count, services, first_failure, last_failure, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

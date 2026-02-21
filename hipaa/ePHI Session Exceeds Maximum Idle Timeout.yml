@@ -42,7 +42,7 @@ query: |
       session_duration_min > 30, 80,
       70
     )
-  | KEEP user.name, host.name, session_duration_min, last_activity, sessions, risk_score
+  | KEEP agent_id, user.name, host.name, session_duration_min, last_activity, sessions, risk_score
   | SORT session_duration_min DESC
 enabled: false
 tags:

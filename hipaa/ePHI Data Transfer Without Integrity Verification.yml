@@ -50,7 +50,7 @@ query: |
       unverified_transfers > 50, 85,
       80
     )
-  | KEEP host.name, event.original, unverified_transfers, data_volume_mb, protocols, files, risk_score
+  | KEEP agent_id, host.name, event.original, unverified_transfers, data_volume_mb, protocols, files, risk_score
   | SORT unverified_transfers DESC
 enabled: false
 tags:

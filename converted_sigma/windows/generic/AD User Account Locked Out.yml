@@ -16,7 +16,7 @@ query: |
   | EVAL hostn = winlog.computer_name
   | EVAL target_user = winlog.event_data.TargetUserName
   | EVAL caller_process = winlog.event_data.CallerProcessName
-  | KEEP @timestamp, hostn, target_user, caller_process
+  | KEEP agent_id, @timestamp, hostn, target_user, caller_process
   | SORT @timestamp DESC
 enabled: false
 tags:

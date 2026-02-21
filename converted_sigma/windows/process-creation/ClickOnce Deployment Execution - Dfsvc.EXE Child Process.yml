@@ -9,28 +9,34 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  | WHERE event.category == "process" OR event.code IN ("1", "4688") OR event.dataset RLIKE "(?i)process"
-  /* selection: parent is dfsvc.exe */
-  | WHERE process.parent.executable RLIKE "(?i)\\\\dfsvc\\.exe$"
-     OR process.parent.name == "dfsvc.exe"
-  /* selection: child image path contains AppData\Local\Apps\2.0\ */
-  | WHERE COALESCE(process.executable, "") RLIKE "(?i)\\\\AppData\\\\Local\\\\Apps\\\\2\\.0\\\\"
+  FROM logs-winlog*
+  // Filter for process creation events
+  | WHERE event.category == "process" 
+     OR event.code IN ("1", "4688") 
+     OR event.dataset RLIKE "(?i).*process.*"
+  // Selection: Parent is the ClickOnce Service (dfsvc.exe)
+  | WHERE winlog.event_data.CallerProcessName RLIKE "(?i).*\\\\dfsvc\\\\.exe$"
+     OR winlog.event_data.CallerProcessName == "dfsvc.exe"
+  // Selection: Child image path is within the ClickOnce local app cache
+  | WHERE COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i).*\\\\AppData\\\\Local\\\\Apps\\\\2\\\\.0\\\\.*"
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      parents = VALUES(process.parent.name),
-      parent_cmdlines = VALUES(process.parent.command_line),
-      children = VALUES(process.name),
-      child_executables = VALUES(process.executable),
-      child_cmdlines = VALUES(process.command_line),
-      pids = VALUES(process.pid)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+      users = VALUES(winlog.event_data.TargetUserName),
+      parents = VALUES(winlog.event_data.CallerProcessName),
+      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
+      children = VALUES(winlog.event_data.ProcessName),
+      child_executables = VALUES(winlog.event_data.ProcessName),
+      child_cmdlines = VALUES(winlog.event_data.CommandLine),
+      pids = VALUES(winlog.event_data.ProcessPid)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, parents, parent_cmdlines, children, child_executables, child_cmdlines, pids
+  | KEEP 
+      agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, children, child_executables, child_cmdlines, pids
   | SORT event_count DESC
 enabled: false
 tags:

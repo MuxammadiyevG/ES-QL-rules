@@ -1,0 +1,63 @@
+name: WAF Attack During Off-Business Hours
+description: |
+  Ish soatlaridan tashqarida (kechasi 22:00 dan 06:00 gacha yoki dam olish kunlari)
+  WAF hujum hodisalari aniqlandi. Hujumchilar ko'pincha monitoring kamroq bo'lgan
+  vaqtlarda hujumni amalga oshirishga harakat qiladi.
+  Bu insider threat, vaqt zonasi farqidan foydalanuvchi tashqi hujumchi,
+  yoki scheduled avtomatlashtirilgan hujum bo'lishi mumkin.
+  SOC triage bosqichlari:
+  - `source.geo.timezone` va hujum vaqtini solishtiring — hujumchi uchun bu ish vaqti bo'lishi mumkin.
+  - Shu vaqt oralig'ida autentifikatsiya tizimlari va VPN loglarini tekshiring.
+  - On-call SOC xodimiga darhol xabar bering.
+  - Rejalashtirilgan maintenance oynasi bor-yo'qligini change management tizimidan tekshiring.
+  - Agar ichki IP manzildan bo'lsa, insider threat stsenariyini ko'rib chiqing.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-nginx.waf*
+query_language: esql
+query: |
+  FROM logs-nginx.waf*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.category == "intrusion_detection"
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
+  | WHERE hour_of_day >= 22 OR hour_of_day < 6
+  | STATS
+      off_hours_attacks  = COUNT(*),
+      unique_sources     = COUNT_DISTINCT(source.ip),
+      source_ips         = VALUES(source.ip),
+      unique_rules       = COUNT_DISTINCT(rule.id),
+      triggered_rules    = VALUES(rule.id),
+      rule_descriptions  = VALUES(rule.description),
+      targeted_domains   = VALUES(url.domain),
+      countries          = VALUES(source.geo.country_name),
+      timezones          = VALUES(source.geo.timezone),
+      match_data         = VALUES(nginx.modsecurity.match_data),
+      reasons            = VALUES(event.reason),
+      first_seen         = MIN(@timestamp),
+      last_seen          = MAX(@timestamp)
+    BY source.ip, source.geo.country_name, source.geo.country_iso_code,
+       source.geo.city_name, bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE off_hours_attacks >= 3
+  | KEEP agent_id, bucket, source.ip, source.geo.country_name, source.geo.country_iso_code,
+        source.geo.city_name, off_hours_attacks, unique_sources, source_ips,
+        unique_rules, triggered_rules, rule_descriptions, targeted_domains,
+        countries, timezones, match_data, reasons, first_seen, last_seen
+  | SORT off_hours_attacks DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1190
+  - attack.t1078
+  - detection.medium
+severity: medium
+risk_score: 70
+nist: ["SI-4", "AU-6", "AC-2"]
+pci_dss: ["10.2.4", "11.4", "8.3.9"]
+gdpr: ["32.1.a"]
+mitre_attack:
+  TA0001:
+    T1190: []
+    T1078: []

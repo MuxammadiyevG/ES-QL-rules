@@ -46,7 +46,7 @@ query: |
       pii_log_count > 100, 85,
       75
     )
-  | KEEP host.name, event.dataset, pii_log_count, log_types, risk_score
+  | KEEP agent_id, host.name, event.dataset, pii_log_count, log_types, risk_score
   | SORT pii_log_count DESC
 enabled: false
 tags:

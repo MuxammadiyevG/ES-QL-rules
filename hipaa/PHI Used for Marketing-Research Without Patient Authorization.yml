@@ -51,7 +51,7 @@ query: |
       unauthorized_uses > 5, 95,
       90
     )
-  | KEEP host.name, user.name, unauthorized_uses, use_types, destinations, risk_score
+  | KEEP agent_id, host.name, user.name, unauthorized_uses, use_types, destinations, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

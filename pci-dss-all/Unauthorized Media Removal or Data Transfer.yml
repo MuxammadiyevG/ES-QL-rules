@@ -44,7 +44,7 @@ query: |
       transfer_count > 10, 85,
       70
     )
-  | KEEP user.name, host.name, transfer_count, total_bytes, files, destinations, risk_score
+  | KEEP agent_id, user.name, host.name, transfer_count, total_bytes, files, destinations, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

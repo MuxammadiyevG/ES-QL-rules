@@ -43,7 +43,7 @@ query: |
       user.name RLIKE "(?i).*(shared|generic).*", 90,
       70
     )
-  | KEEP user.name, login_count, unique_sources, sources, concurrent_use, first_login, last_login, risk_score
+  | KEEP agent_id, user.name, login_count, unique_sources, sources, concurrent_use, first_login, last_login, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

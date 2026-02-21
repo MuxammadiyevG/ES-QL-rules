@@ -47,7 +47,7 @@ query: |
       communication_violations > 5, 75,
       65
     )
-  | KEEP user.name, host.name, communication_violations, contact_methods, recipients, risk_score
+  | KEEP agent_id, user.name, host.name, communication_violations, contact_methods, recipients, risk_score
   | SORT communication_violations DESC
 enabled: false
 tags:

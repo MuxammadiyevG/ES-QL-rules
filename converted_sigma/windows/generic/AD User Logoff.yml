@@ -17,14 +17,14 @@ query: |
   | EVAL hostn = winlog.computer_name
   | EVAL user = winlog.event_data.TargetUserName
   | EVAL logon_type = winlog.event_data.LogonType
-  | KEEP @timestamp, hostn, user, logon_type
+  | KEEP agent_id, @timestamp, hostn, user, logon_type
   | SORT @timestamp DESC
   | LIMIT 200
 enabled: false
 tags:
   - detection.logoff
   - monitoring.auth_lifecycle
-severity: informational
+severity: low
 risk_score: 5
 nist: []
 pci_dss: []

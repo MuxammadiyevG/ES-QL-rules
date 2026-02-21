@@ -43,7 +43,7 @@ query: |
       patients_affected > 5, 95,
       90
     )
-  | KEEP user.name, host.name, part2_violations, patients_affected, programs, risk_score
+  | KEEP agent_id, user.name, host.name, part2_violations, patients_affected, programs, risk_score
   | SORT part2_violations DESC
 enabled: false
 tags:

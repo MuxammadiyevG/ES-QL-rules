@@ -41,7 +41,7 @@ query: |
       display_count > 5, 85,
       70
     )
-  | KEEP host.name, event.original, users, display_count, sources, risk_score
+  | KEEP agent_id, host.name, event.original, users, display_count, sources, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

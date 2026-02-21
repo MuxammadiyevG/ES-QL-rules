@@ -1,0 +1,73 @@
+#//RULE-NIST-27 — Suspicious User-Agent Patterns (NIST SI-4, SC-7)
+#//Control Family: SI (System and Information Integrity), SC (System and Communications Protection)
+#//Objective: Detect automated tools and malicious user-agents
+#//Threat scenario: Attacker uses scanning tools or custom scripts to probe web application
+#//Data sources: Nginx access logs with user-agent analysis
+#//ECS fields used: event.original, source.ip, event.original
+#//Field validation: Verify all ECS fields exist in your indices before enabling
+#//Tuning notes: Allowlist legitimate monitoring tools, adjust pattern matching for new tools
+
+name: "Malicious User-Agent Detection"
+description: |
+  Detects requests with user-agents associated with attack tools, scanners, or suspicious patterns.
+  Tool signatures (sqlmap, nikto, masscan), empty user-agents, or custom scripts flagged.
+  Combination of suspicious user-agent with attack payloads increases confidence.
+  False positives: Authorized security scanning, penetration testing, legitimate monitoring.
+  Triage: Verify if source IP authorized for security testing, review requested URLs for attack patterns,
+  check if legitimate security audit is scheduled.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - filebeat-nginx-access-*
+query_language: esql
+query: |
+  FROM logs-nginx*
+  | WHERE event.original IS NOT NULL
+  | EVAL malicious_ua = CASE(
+      event.original RLIKE "(?i).*(sqlmap|nikto|nmap|masscan|metasploit|burp|acunetix|nessus|openvas|w3af|dirbuster|gobuster|wfuzz|hydra|medusa|john|aircrack).*", true,
+      event.original RLIKE "(?i).*(python-requests|curl|wget|libwww-perl|go-http-client|java\\/|ruby|perl|scrapy).*", true,
+      event.original == "-" OR LENGTH(event.original) < 10, true,
+      false
+    )
+  | WHERE malicious_ua == true
+  | EVAL tool_category = CASE(
+      event.original RLIKE "(?i).*(sqlmap|acunetix|w3af).*", "Web-Vuln-Scanner",
+      event.original RLIKE "(?i).*(nikto|dirbuster|gobuster|wfuzz).*", "Web-Fuzzer",
+      event.original RLIKE "(?i).*(nmap|masscan|nessus|openvas).*", "Network-Scanner",
+      event.original RLIKE "(?i).*(metasploit|burp|hydra).*", "Exploitation-Tool",
+      event.original RLIKE "(?i).*(python|curl|wget|scrapy).*", "Custom-Script",
+      "Unknown-Tool"
+    )
+  | STATS 
+      request_count = COUNT(*),
+      unique_paths = COUNT_DISTINCT(event.original),
+      unique_uas = COUNT_DISTINCT(event.original),
+      paths_accessed = VALUES(event.original),
+      user_agents = VALUES(event.original),
+      http_methods = VALUES(event.action)
+    BY source.ip, tool_category
+    , bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE request_count >= 5
+  | EVAL risk_score = request_count * 10 + unique_paths * 5
+  | WHERE risk_score >= 30
+  | KEEP agent_id, bucket, source.ip, tool_category, request_count, unique_paths, unique_uas, paths_accessed, user_agents, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - nist_800_53
+  - control_SI-4
+  - control_SC-7
+  - family_SI
+  - family_SC
+  - reconnaissance
+  - web_application
+severity: medium
+risk_score: 55
+references:
+  - "NIST SP 800-53 Rev.5 SI-4: System Monitoring"
+nist: ["SI-4", "SC-7"]
+pci_dss: "11.4"
+mitre_attack:
+  TA0043:
+    T1595: []

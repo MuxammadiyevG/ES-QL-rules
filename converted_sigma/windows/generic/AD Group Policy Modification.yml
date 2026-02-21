@@ -15,7 +15,7 @@ query: |
   FROM logs-winlog*
   | WHERE event.code IN ("5136", "5137", "5141")
   | EVAL actor = winlog.event_data.SubjectUserName
-  | KEEP @timestamp, actor, event.code, winlog.computer_name, event.action
+  | KEEP agent_id, @timestamp, actor, event.code, winlog.computer_name, event.action
   | SORT @timestamp DESC
 enabled: false
 tags:

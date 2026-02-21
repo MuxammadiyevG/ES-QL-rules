@@ -5,68 +5,70 @@ description: |
   extension-based detections.
   NOTE: Sigma expects SourceFilename/TargetFilename. In your field list those are not present, so this
   rule uses:
-   - file.path as the target filename, and
+   - winlog.event_data.OriginalFileName as the target filename, and
    - event.original parsing as best-effort for source filename (if present in raw event).
 type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* file rename telemetry (best-effort; depends on pipeline) */
-  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE "(?i)file"
-  /* selection: TargetFilename endswith .dll (we use file.path as target) */
-  | EVAL tgt = COALESCE(file.path, "")
-  | WHERE tgt RLIKE "(?i)\\.dll$"
-
-  /* ---- Best-effort source checks via event.original (because SourceFilename field is not available) ---- */
+  FROM logs-winlog*
+  // File rename telemetry (best-effort; depends on pipeline)
+  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE "(?i).*file.*"
+  // Evaluate Target path
+  | EVAL tgt = COALESCE(winlog.event_data.OriginalFileName, "")
+  | WHERE tgt RLIKE "(?i).*\\\\.dll$"
+  
+  // Best-effort source checks via raw log content
   | EVAL raw = COALESCE(event.original, "")
-
-  /* filter_main_empty_source / null source */
-  | WHERE NOT (raw RLIKE "(?i)SourceFilename\\s*[:=]\\s*(''|\"\"|null)")
-
-  /* filter_main_dll: SourceFilename endswith .dll (exclude true dll->dll renames) */
-  | WHERE NOT (raw RLIKE "(?i)SourceFilename\\s*[:=].*\\.dll\\b")
-
-  /* filter_main_installers: SourceFilename endswith .tmp */
-  | WHERE NOT (raw RLIKE "(?i)SourceFilename\\s*[:=].*\\.tmp\\b")
-
-  /* filter_main_tiworker */
+  
+  // filter_main_empty_source: Ignore events with no source path
+  | WHERE NOT (raw RLIKE "(?i).*SourceFilename\\\\s*[:=]\\\\s*(''|\"\"|null).*")
+  
+  // filter_main_dll: SourceFilename was NOT already a .dll (exclude true dll->dll renames)
+  | WHERE NOT (raw RLIKE "(?i).*SourceFilename\\\\s*[:=].*\\\\.dll\\\\b.*")
+  
+  // filter_main_installers: SourceFilename was NOT a .tmp file
+  | WHERE NOT (raw RLIKE "(?i).*SourceFilename\\\\s*[:=].*\\\\.tmp\\\\b.*")
+  
+  // filter_main_tiworker: Handle TiWorker exclusions via path or raw log grep
   | WHERE NOT (
-      (process.executable LIKE "*:\\Windows\\WinSxS\\*" AND process.executable RLIKE "(?i)\\\\TiWorker\\.exe$")
-      OR raw RLIKE "(?i)Image\\s*[:=].*\\\\TiWorker\\.exe\\b"
+      (winlog.event_data.ProcessName LIKE "*:\\\\Windows\\\\WinSxS\\\\*" AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\\\\\TiWorker\\\\.exe$")
+      OR raw RLIKE "(?i).*Image\\\\s*[:=].*\\\\\\\\TiWorker\\\\.exe\\\\b.*"
     )
-
-  /* filter_main_upgrade */
+  
+  // filter_main_upgrade: Ignore Windows Update staging
   | WHERE NOT (
-      process.executable RLIKE "(?i):\\\\Windows\\\\System32\\\\wuauclt\\.exe$"
-      AND tgt LIKE "*:\\$WINDOWS.~BT\\Sources\\*"
+      winlog.event_data.ProcessName RLIKE "(?i).*:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\wuauclt\\\\.exe$"
+      AND tgt LIKE "*:\\\\$WINDOWS.~BT\\\\Sources\\\\*"
     )
-
-  /* filter_main_generic */
+  
+  // filter_main_generic: Program Files paths
   | WHERE NOT (
-      process.executable LIKE "*:\\Program Files (x86)\\*"
-      OR process.executable LIKE "*:\\Program Files\\*"
+      winlog.event_data.ProcessName LIKE "*:\\\\Program Files (x86)\\\\*"
+      OR winlog.event_data.ProcessName LIKE "*:\\\\Program Files\\\\*"
     )
-
-  /* filter_optional_squirrel */
-  | WHERE NOT (raw RLIKE "(?i)SourceFilename\\s*[:=].*\\\\SquirrelTemp\\\\temp")
-
+  
+  // filter_optional_squirrel: Ignore Squirrel installer temp files
+  | WHERE NOT (raw RLIKE "(?i).*SourceFilename\\\\s*[:=].*\\\\\\\\SquirrelTemp\\\\\\\\temp.*")
+  
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parents = VALUES(process.parent.name),
-      parent_executables = VALUES(process.parent.executable),
+      users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      parents = VALUES(winlog.event_data.CallerProcessName),
+      parent_executables = VALUES(winlog.event_data.CallerProcessName),
       target_paths = VALUES(tgt),
       raw_samples = VALUES(raw)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, target_paths, raw_samples
+  | KEEP 
+      agent_id, bucket, host.name, event_count, users, processes, executables, parents, parent_executables, target_paths, raw_samples
   | SORT event_count DESC
 enabled: false
 tags:

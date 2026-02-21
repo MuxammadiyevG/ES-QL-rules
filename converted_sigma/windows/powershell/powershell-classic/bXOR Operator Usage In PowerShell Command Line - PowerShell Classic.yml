@@ -11,27 +11,42 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
+  // Filter for PowerShell interactive sessions and XOR operators
   | WHERE event.original LIKE "*HostName=ConsoleHost*"
-    AND event.original LIKE "* -bxor *"
+    AND event.original RLIKE "(?i).*\\\\s-bxor\\\\s.*"
+  // Extract time-based context for risk scoring
   | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      cmdlines = VALUES(process.command_line),
+      users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      cmdlines = VALUES(winlog.event_data.CommandLine),
       originals = VALUES(event.original),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
+  // Calculate risk: 10 points per event + 10 bonus points if it happened at night
   | EVAL risk_score = event_count * 10 + after_hours_hits * 10
   | WHERE risk_score >= 10
-  | KEEP bucket, host.name, event_count, users, processes, executables, cmdlines, after_hours_hits, risk_score, originals
+  | KEEP 
+      agent_id, bucket, 
+      host.name, 
+      event_count, 
+      users, 
+      processes, 
+      executables, 
+      cmdlines, 
+      after_hours_hits, 
+      risk_score, 
+      originals
   | SORT risk_score DESC
 enabled: false
 tags:

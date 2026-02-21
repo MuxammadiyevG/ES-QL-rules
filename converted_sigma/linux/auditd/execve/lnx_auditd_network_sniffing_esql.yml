@@ -30,7 +30,7 @@ query: |
       raw_samples = VALUES(event.original)
     BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, user.name, event_count, users, processes, command_lines, executables, network_interfaces, hosts, raw_samples
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, executables, network_interfaces, hosts, raw_samples
   | SORT event_count DESC
 enabled: false
 tags:

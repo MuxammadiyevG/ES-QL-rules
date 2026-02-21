@@ -20,7 +20,7 @@ query: |
       src_ips = VALUES(source.ip),
       raws = VALUES(event.original)
     BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | KEEP bucket, host.name, event_count, actors, actor_ids, targets, target_ids, src_ips, raws
+  | KEEP agent_id, bucket, host.name, event_count, actors, actor_ids, targets, target_ids, src_ips, raws
   | SORT event_count DESC
 enabled: false
 tags: ["informational", "linux", "account-management", "auditd"]

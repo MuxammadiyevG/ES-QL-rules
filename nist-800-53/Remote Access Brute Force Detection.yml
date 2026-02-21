@@ -18,15 +18,15 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, logs-audit*
   | WHERE event.outcome == "failure"
     AND (
-      (event.code == "4625" AND event.original == 3389)
-      OR (event.action IN ("ssh_login", "sshd") AND event.original == 22)
+      (event.code == "4625" AND event.code == "3389")
+      OR (event.action IN ("ssh_login", "sshd") AND auditd.log.rport == 22)
       OR event.original IN ("rdp", "ssh")
     )
   | STATS 
@@ -34,12 +34,12 @@ query: |
       unique_users = COUNT_DISTINCT(user.name),
       users_targeted = VALUES(user.name),
       protocols = VALUES(event.original)
-    BY source.ip, host.name, event.original
+    BY host.ip, host.name, event.original
     , bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE failure_count >= 10
   | EVAL attack_type = CASE(
-      event.original == 3389, "RDP-BruteForce",
-      event.original == 22, "SSH-BruteForce",
+      event.code == "3389", "RDP-BruteForce",
+      auditd.log.rport == 22, "SSH-BruteForce",
       "Remote-Access-BruteForce"
     )
   | EVAL severity_level = CASE(
@@ -47,7 +47,7 @@ query: |
       failure_count >= 30, "high",
       "medium"
     )
-  | KEEP bucket, source.ip, host.name, event.original, failure_count, unique_users, users_targeted, attack_type, severity_level
+  | KEEP agent_id, bucket, host.ip, host.name, event.original, failure_count, unique_users, users_targeted, attack_type, severity_level
   | SORT failure_count DESC
 enabled: false
 tags:

@@ -19,11 +19,11 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, logs-audit*
   | WHERE (event.code IN ("7036", "7040") AND event.provider RLIKE "(?i).*(defender|windefend|sense|crowdstrike|carbonblack|sysmon|splunk|wazuh|elastic).*")
     OR (event.action == "process-terminated" AND process.name RLIKE "(?i).*(msmpeng|mssense|csagent|cb\\.exe|sysmon|winlogbeat|auditbeat).*")
     OR (event.action IN ("service-stopped", "service-disabled"))
@@ -51,7 +51,7 @@ query: |
     , bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE tampering_count >= 1
   | EVAL risk_score = tampering_count * 50
-  | KEEP bucket, host.name, tampering_count, unique_components, affected_services, tamper_actions, users, risk_score
+  | KEEP agent_id, bucket, host.name, tampering_count, unique_components, affected_services, tamper_actions, users, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

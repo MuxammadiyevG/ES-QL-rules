@@ -45,7 +45,7 @@ query: |
       severity_level == "high", 80,
       60
     )
-  | KEEP event.original, event.original, event.original, connection_count, sources, severity_level, risk_score
+  | KEEP agent_id, event.original, event.original, event.original, connection_count, sources, severity_level, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

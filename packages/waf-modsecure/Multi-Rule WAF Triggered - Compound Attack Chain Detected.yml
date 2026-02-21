@@ -1,0 +1,63 @@
+name: Multi-Rule WAF Triggered - Compound Attack Chain Detected
+description: |
+  Bitta IP manzildan qisqa vaqt ichida bir nechta turli WAF qoidalari ishga tushdi.
+  Bu bitta hujumchi yoki bot tomonidan bir vaqtning o'zida SQLi, XSS, LFI, RCE kabi
+  turli attack vektorlari sinab ko'rilayotganligini bildiradi.
+  Bunday pattern odatda zaiflikni topish uchun keng qamrovli exploit framework
+  (Metasploit, sqlmap, OWASP ZAP) ishlatilganida kuzatiladi.
+  SOC triage bosqichlari:
+  - `triggered_rules` ro'yxatini o'rganib qaysi attack kategoriyalari birlashtirilganini aniqlab oling.
+  - `rule.reference` va `file.path` asosida qaysi OWASP CRS moduli ishga tushganini tekshiring.
+  - Maqsadli domen va endpoint ning zaif bo'lishi mumkin bo'lgan joylari (login, search, upload) ni tekshiring.
+  - `event.severity` yuqori bo'lgan hodisalarga alohida e'tibor bering.
+  - Birlashtirilgan hujum vektori aniqlanganda darhol application security jamoasini xabardor qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-nginx.waf*
+query_language: esql
+query: |
+  FROM logs-nginx.waf*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.category == "intrusion_detection"
+  | STATS
+      total_events       = COUNT(*),
+      unique_rules       = COUNT_DISTINCT(rule.id),
+      triggered_rules    = VALUES(rule.id),
+      rule_descriptions  = VALUES(rule.description),
+      rule_categories    = VALUES(rule.category),
+      rule_references    = VALUES(rule.reference),
+      file_paths         = VALUES(file.path),
+      match_data         = VALUES(nginx.modsecurity.match_data),
+      event_ids          = VALUES(event.id),
+      reasons            = VALUES(event.reason),
+      first_seen         = MIN(@timestamp),
+      last_seen          = MAX(@timestamp)
+    BY source.ip, source.geo.country_name, source.geo.country_iso_code,
+       source.geo.city_name, url.domain,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE unique_rules >= 2
+  | KEEP agent_id, bucket, source.ip, source.geo.country_name, source.geo.country_iso_code,
+        source.geo.city_name, url.domain, total_events, unique_rules,
+        triggered_rules, rule_descriptions, rule_categories, rule_references,
+        file_paths, match_data, event_ids, reasons, first_seen, last_seen
+  | SORT unique_rules DESC, total_events DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1190
+  - attack.t1059
+  - attack.discovery
+  - detection.critical
+severity: critical
+risk_score: 90
+nist: ["SI-4", "AU-6", "IR-4", "SC-7"]
+pci_dss: ["6.4.1", "11.4", "10.2.4"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0001:
+    T1190: []
+  TA0002:
+    T1059: []

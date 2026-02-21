@@ -1,0 +1,61 @@
+name: Sustained WAF Attack Against Single Domain
+description: |
+  Bitta domen uzoq vaqt davomida uzluksiz WAF hujumlariga duchor bo'lmoqda.
+  Bu maqsadli APT hujumi, raqobatchilar tomonidan uyushtirilgan sabotaj,
+  yoki domenning ma'lum zaifligini exploitlashga qaratilgan persistent kampaniya bo'lishi mumkin.
+  Qisqa muddatli portlar emas, balki davomiy va tizimli hujum patterni xavfli hisoblanadi.
+  SOC triage bosqichlari:
+  - `first_seen` va `last_seen` oralig'idagi hujum davomiyligini hisoblang.
+  - Bir xil domenga qaratilgan turli `source.ip` manzillar botnet koordinatsiyasini ko'rsatadi.
+  - Domenning backend serveri, ma'lumotlar bazasi va autentifikatsiya loglarini parallel tekshiring.
+  - Hujum intensivligi (attacks_per_window) ortib borsa real-time eskalyatsiya qiling.
+  - Domenga rate limiting yoki captcha qo'shish zarurligini baholang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-nginx.waf*
+query_language: esql
+query: |
+  FROM logs-nginx.waf*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | WHERE event.category == "intrusion_detection"
+  | STATS
+      attacks_per_window  = COUNT(*),
+      unique_sources      = COUNT_DISTINCT(source.ip),
+      unique_rules        = COUNT_DISTINCT(rule.id),
+      source_ips          = VALUES(source.ip),
+      country_names       = VALUES(source.geo.country_name),
+      country_codes       = VALUES(source.geo.country_iso_code),
+      triggered_rules     = VALUES(rule.id),
+      rule_descriptions   = VALUES(rule.description),
+      rule_categories     = VALUES(rule.category),
+      match_data          = VALUES(nginx.modsecurity.match_data),
+      event_outcomes      = VALUES(event.outcome),
+      reasons             = VALUES(event.reason),
+      first_seen          = MIN(@timestamp),
+      last_seen           = MAX(@timestamp)
+    BY url.domain, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE attacks_per_window >= 5 AND unique_sources >= 2
+  | KEEP agent_id, bucket, url.domain, attacks_per_window, unique_sources,
+        unique_rules, source_ips, country_names, country_codes,
+        triggered_rules, rule_descriptions, rule_categories,
+        match_data, event_outcomes, reasons, first_seen, last_seen
+  | SORT attacks_per_window DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1190
+  - attack.persistence
+  - detection.high
+severity: high
+risk_score: 85
+nist: ["SI-4", "AU-6", "IR-4", "SC-5"]
+pci_dss: ["6.4.1", "10.2.4", "11.4"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0001:
+    T1190: []
+  TA0003:
+    T1505: []

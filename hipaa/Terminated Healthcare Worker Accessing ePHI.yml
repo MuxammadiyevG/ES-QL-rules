@@ -39,7 +39,7 @@ query: |
     BY user.name
   | WHERE access_count > 0
   | EVAL risk_score = 100
-  | KEEP user.name, access_count, systems_accessed, sources, first_access, last_access, risk_score
+  | KEEP agent_id, user.name, access_count, systems_accessed, sources, first_access, last_access, risk_score
   | SORT first_access ASC
 enabled: false
 tags:

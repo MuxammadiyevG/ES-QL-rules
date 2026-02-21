@@ -16,7 +16,7 @@ query: |
       method_count = COUNT(*)
     BY source.ip, http.request.method, url.original
   | WHERE method_count >= 5
-  | KEEP source.ip, http.request.method, url.original, method_count
+  | KEEP agent_id, source.ip, http.request.method, url.original, method_count
 enabled: true
 tags:
  - "nginx"

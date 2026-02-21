@@ -1,0 +1,73 @@
+name: VMware ESX - Multiple Authentication Failures 
+description: |
+  Qisqa vaqt ichida VMware ESX serveriga bir xil manba IP'dan ko'p marta
+  autentifikatsiya muvaffaqiyatsizliklari qayd etilmoqda.
+  Bu brute force yoki credential stuffing urinishi belgisi bo'lishi mumkin (T1110).
+  Qonuniy holatlar: expired credentials, misconfigured service account, VPN muammosi.
+  SOC triage bosqichlari:
+  - Muvaffaqiyatsiz login qilayotgan user nomlarini aniqlang
+  - Manba IP geo-location va reputatsiyasini tekshiring
+  - Muvaffaqiyatli login bo'lgan-bo'lmaganligini tekshiring (rule 19112)
+  - VMware hostd/authd process loglarini ko'rib chiqing
+  - Vaqt oralig'idagi pattern'larni korrelyatsiya qiling
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-vmware.esxi*
+query_language: esql
+query: |
+  FROM logs-vmware.esxi*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.module == "vmware"
+  | WHERE event.dataset == "vmware.esxi"
+  | WHERE event.outcome == "failure"
+  | WHERE event.category == "authentication"
+  | WHERE log.level == "info"
+  | WHERE process.name IN ("vmware-hostd", "vmware-authd")
+  | STATS
+      failure_count       = COUNT(*),
+      unique_users        = COUNT_DISTINCT(user.name),
+      affected_users      = VALUES(user.name),
+      unique_hosts        = COUNT_DISTINCT(host.hostname),
+      affected_hosts      = VALUES(host.hostname),
+      process_names       = VALUES(process.name),
+      log_levels          = VALUES(log.level),
+      vmware_sids         = VALUES(vmware.sid),
+      first_seen          = MIN(@timestamp),
+      last_seen           = MAX(@timestamp)
+    BY host.hostname, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE failure_count >= 8
+  | KEEP
+      bucket, host.hostname, failure_count,
+      unique_users, affected_users,
+      unique_hosts, affected_hosts,
+      process_names, log_levels,
+      vmware_sids, first_seen, last_seen
+  | SORT failure_count DESC
+  | LIMIT 50
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.t1110
+  - attack.defense-evasion
+  - attack.t1497
+  - vmware
+  - esxi
+  - authentication
+  - brute-force
+severity: high
+risk_score: 73
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+  - "https://attack.mitre.org/techniques/T1497/"
+  - "https://www.vmware.com/security/advisories.html"
+nist: ["IA-5", "SI-4", "AC-7", "AU-14"]
+pci_dss: ["10.2.4", "10.2.5", "11.4"]
+gdpr: ["35.7.d", "32.2"]
+hipaa: ["164.312.b"]
+mitre_attack:
+  TA0006:
+    T1110: []
+  TA0005:
+    T1497: []

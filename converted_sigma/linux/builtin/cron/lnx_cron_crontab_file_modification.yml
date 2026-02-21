@@ -35,7 +35,7 @@ query: |
     BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP
-      bucket,
+      agent_id, bucket,
       host.name,
       user.name,
       event_count,

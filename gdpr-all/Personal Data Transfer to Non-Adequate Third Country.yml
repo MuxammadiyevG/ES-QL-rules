@@ -43,7 +43,7 @@ query: |
       transfer_count > 10, 90,
       85
     )
-  | KEEP event.original, user.name, transfer_count, total_mb, destinations, risk_score
+  | KEEP agent_id, event.original, user.name, transfer_count, total_mb, destinations, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

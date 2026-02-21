@@ -53,7 +53,7 @@ query: |
       total_size_mb > 10, 90,
       85
     )
-  | KEEP user.name, host.name, file_transfers, total_size_mb, files, devices, risk_score
+  | KEEP agent_id, user.name, host.name, file_transfers, total_size_mb, files, devices, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

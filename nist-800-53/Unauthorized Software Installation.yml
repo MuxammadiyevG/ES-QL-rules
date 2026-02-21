@@ -19,17 +19,19 @@ type: esql
 params: '{}'
 schedule_interval: 15m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, logs-audit*
   | WHERE (event.action == "process-started"
       AND (
         process.name RLIKE "(?i).*(msiexec|setup|install|apt|yum|dnf|rpm|dpkg).*"
-        OR process.command_line RLIKE "(?i).*(\.msi|\.exe.*install|apt.*install|yum.*install).*"
+        /* Fixed the dot escaping for file extensions below */
+        OR process.command_line RLIKE "(?i).*(\\.(msi|exe.*install)|apt.*install|yum.*install).*"
       ))
-    OR (event.code == "11707" OR event.code == "1033")
+    /* Codes 11707/1033 are Windows MsiInstaller success/fail codes */
+    OR (event.code IN ("11707", "1033")) 
   | WHERE user.name NOT RLIKE "(?i).*(admin|system|sccm|intune).*"
   | EVAL install_method = CASE(
       process.name RLIKE "(?i).*msiexec.*", "Windows-MSI",
@@ -46,14 +48,12 @@ query: |
       install_count = COUNT(*),
       unique_installers = COUNT_DISTINCT(process.name),
       installed_software = VALUES(process.name),
-      command_lines = VALUES(process.command_line),
       suspicious_count = SUM(CASE(suspicious_software == true, 1, 0))
-    BY host.name, user.name, install_method
-    , bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY host.name, user.name, install_method, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE install_count >= 1
-  | EVAL risk_score = install_count * 20 + suspicious_count * 50
+  | EVAL risk_score = (install_count * 20) + (suspicious_count * 50)
   | WHERE risk_score >= 20
-  | KEEP bucket, host.name, user.name, install_method, install_count, installed_software, suspicious_count, risk_score
+  | KEEP agent_id, bucket, host.name, user.name, install_method, install_count, installed_software, suspicious_count, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

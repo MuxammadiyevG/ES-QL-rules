@@ -45,8 +45,8 @@ severity: critical
 risk_score: 90
 references:
 - "https://www.fortinet.com/support"
-nist: ["DE-1", "SI-4"]
+nist: ["SI-4"]
 pci_dss: ["11.4"]
 gdpr: ["35.7.d"]
 mitre_attack:
-  TA0040: {}
+  TA0040: []

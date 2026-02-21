@@ -9,34 +9,45 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* file access telemetry view (best-effort; depends on your pipeline) */
+  FROM logs-winlog*
+  // File access telemetry view (best-effort; depends on your pipeline)
   | WHERE event.category == "file"
-     OR event.type == "access"
-     OR event.dataset RLIKE "(?i)file"
-  /* selection: file endswith .hive or .reg */
-  | WHERE file.path RLIKE "(?i)\\.(hive|reg)$"
-  /* filter_main_generic: exclude common benign install paths */
+   OR event.type == "access"
+   OR event.dataset RLIKE "(?i).*file.*"
+  // Selection: file ends with .hive or .reg
+  | WHERE winlog.event_data.OriginalFileName RLIKE "(?i).*\\\\.(hive|reg)$"
+  // Filter out common benign install paths
   | WHERE NOT (
-      process.executable RLIKE "(?i)^C:\\\\Program Files \\(x86\\)\\\\"
-      OR process.executable RLIKE "(?i)^C:\\\\Program Files\\\\"
-      OR process.executable RLIKE "(?i)^C:\\\\Windows\\\\System32\\\\"
-      OR process.executable RLIKE "(?i)^C:\\\\Windows\\\\SysWOW64\\\\"
-    )
+    winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Program Files \\\\(x86\\\\)\\\\.*"
+    OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Program Files\\\\.*"
+    OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Windows\\\\System32\\\\.*"
+    OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Windows\\\\SysWOW64\\\\.*"
+  )
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parents = VALUES(process.parent.name),
-      parent_executables = VALUES(process.parent.executable),
-      file_paths = VALUES(file.path)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    event_count = COUNT(*),
+    users = VALUES(winlog.event_data.TargetUserName),
+    processes = VALUES(winlog.event_data.ProcessName),
+    executables = VALUES(winlog.event_data.ProcessName),
+    parents = VALUES(winlog.event_data.CallerProcessName),
+    parent_executables = VALUES(winlog.event_data.CallerProcessName),
+    file_paths = VALUES(winlog.event_data.OriginalFileName)
+  BY 
+    host.name, 
+    bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, file_paths
+  | KEEP 
+    agent_id, bucket, 
+    host.name, 
+    event_count, 
+    users, 
+    processes, 
+    executables, 
+    parents, 
+    parent_executables, 
+    file_paths
   | SORT event_count DESC
 enabled: false
 tags:

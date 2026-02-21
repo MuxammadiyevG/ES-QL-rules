@@ -84,7 +84,7 @@ query: |
   | WHERE event_count >= 3
   | EVAL risk_score = (event_count * 10) + (MAX(base))
   | WHERE risk_score >= 40
-  | KEEP bucket, event_count, exception_types, source_ips, users, user_agents, hosts, paths, urls, risk_score, samples
+  | KEEP agent_id, bucket, event_count, exception_types, source_ips, users, user_agents, hosts, paths, urls, risk_score, samples
   | SORT risk_score DESC
 enabled: false
 tags:

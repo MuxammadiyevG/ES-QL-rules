@@ -28,7 +28,7 @@ query: |
       user_agents = VALUES(user_agent.original)
     BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE event_count >= 30
-  | KEEP bucket, source.ip, event_count, status_codes, urls, methods, user_agents
+  | KEEP agent_id, bucket, source.ip, event_count, status_codes, urls, methods, user_agents
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

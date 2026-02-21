@@ -18,11 +18,11 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, logs-audit*
   | WHERE event.outcome == "failure"
   | STATS 
       total_failures = COUNT(*),
@@ -37,7 +37,7 @@ query: |
       total_failures >= 500, "high",
       "medium"
     )
-  | KEEP bucket, host.name, total_failures, unique_event_types, failure_categories, anomaly_score, severity_level
+  | KEEP agent_id, bucket, host.name, total_failures, unique_event_types, failure_categories, anomaly_score, severity_level
   | SORT anomaly_score DESC
 enabled: false
 tags:

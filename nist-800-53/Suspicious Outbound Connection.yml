@@ -19,17 +19,18 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
-  | WHERE event.action IN ("network-connection", "NetworkConnect")
-    AND event.original IS NOT NULL
-    AND event.original NOT RLIKE "^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)"
+  FROM logs-winlog*, logs-audit*
+  | WHERE event.category == "network"
+    AND destination.ip IS NOT NULL 
+    AND NOT CIDR_MATCH(auditd.log.addr, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.0/8", "::1/128")
+  | EVAL port_int = TO_INTEGER(auditd.log.lport)
   | EVAL suspicious_port = CASE(
-      event.original > 10000, true,
-      event.original IN (4444, 5555, 6666, 7777, 8888, 9999, 31337), true,
+      port_int > 10000, true,
+      port_int IN (4444, 5555, 6666, 7777, 8888, 9999, 31337), true,
       false
     )
   | EVAL suspicious_process = CASE(
@@ -40,16 +41,15 @@ query: |
   | WHERE suspicious_port == true OR suspicious_process == true
   | STATS 
       connection_count = COUNT(*),
-      unique_destinations = COUNT_DISTINCT(event.original),
-      destination_ips = VALUES(event.original),
-      destination_ports = VALUES(event.original),
+      unique_destinations = COUNT_DISTINCT(auditd.log.addr),
+      destination_ips = VALUES(auditd.log.addr),
+      destination_ports = VALUES(auditd.log.addr),
       connecting_processes = VALUES(process.name)
-    BY host.name, user.name
-    , bucket = DATE_TRUNC(15 minutes, @timestamp)
+    BY host.name, user.name, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE connection_count >= 3 OR unique_destinations >= 2
-  | EVAL risk_score = connection_count * 10 + unique_destinations * 20
+  | EVAL risk_score = (connection_count * 10) + (unique_destinations * 20)
   | WHERE risk_score >= 40
-  | KEEP bucket, host.name, user.name, connection_count, unique_destinations, destination_ips, destination_ports, connecting_processes, risk_score
+  | KEEP agent_id, bucket, host.name, user.name, connection_count, unique_destinations, destination_ips, destination_ports, connecting_processes, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

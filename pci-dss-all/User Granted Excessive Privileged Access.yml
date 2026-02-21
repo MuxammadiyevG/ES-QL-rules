@@ -48,7 +48,7 @@ query: |
       privilege_grants > 3, 80,
       70
     )
-  | KEEP winlog.event_data.TargetUserName, host.name, groups, privilege_grants, granted_by, risk_score
+  | KEEP agent_id, winlog.event_data.TargetUserName, host.name, groups, privilege_grants, granted_by, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

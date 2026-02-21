@@ -13,42 +13,49 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* Process creation events */
-  | WHERE event.category == "process" OR event.code IN ("1", "4688") OR event.dataset RLIKE "(?i)process"
-  /* selection_img: cmd.exe */
-  | WHERE process.name == "cmd.exe"
-     OR process.executable RLIKE "(?i)\\\\cmd\\.exe$"
-     OR COALESCE(event.original, "") RLIKE "(?i)OriginalFileName\\s*[:=]\\s*Cmd\\.Exe"
-  /* selection_cli: set /p= patterns (case-insensitive, allow spacing) */
-  | EVAL cmd = COALESCE(process.command_line, winlog.event_data.CommandLine, "")
-  | WHERE cmd RLIKE "(?i)(/c\\s+set\\s*/p=|\"\\s*set\\s*/p=|>>\\s*.*\\s*set\\s*/p=)"
-  /* Strengthen signal: ensure this looks like file write/append via redirection */
+  FROM logs-winlog*
+  // Filter for process creation events
+  | WHERE event.category == "process" 
+     OR event.code IN ("1", "4688") 
+     OR event.dataset RLIKE "(?i).*process.*"
+  // Selection: Identify cmd.exe via name, path, or original filename
+  | WHERE winlog.event_data.ProcessName == "cmd.exe"
+     OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\cmd\\\\.exe$"
+     OR COALESCE(event.original, "") RLIKE "(?i).*OriginalFileName\\\\s*[:=]\\\\s*Cmd\\\\.Exe.*"
+  // Selection: Target set /p= usage which is a common staging/obfuscation primitive
+  | EVAL cmd = COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
+  | WHERE cmd RLIKE "(?i).*([/\\\\]c\\\\s+set\\\\s+[/\\\\]p=|\\\"\\\\s*set\\\\s+[/\\\\]p=|>>\\\\s*.*\\\\s*set\\\\s+[/\\\\]p=).*"
+  // Strengthen signal: identify redirection to files
   | EVAL has_redirect = CASE(cmd LIKE "*>>*", true, CASE(cmd LIKE "* > *", true, false))
-  | EVAL hour_of_day = DATE_EXTRACT(\"hour\", @timestamp)
+  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  // Identify high-risk parent processes (Macros, Scripts, LoLBins)
   | EVAL suspicious_parent = CASE(
-      process.parent.name RLIKE "(?i)^(winword|excel|powerpnt|outlook|mshta|wscript|cscript|rundll32|powershell)\\.exe$", true,
+      winlog.event_data.CallerProcessName RLIKE "(?i)^(winword|excel|powerpnt|outlook|mshta|wscript|cscript|rundll32|powershell)\\\\.exe$", true,
       false
     )
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      parents = VALUES(process.parent.name),
-      parent_cmdlines = VALUES(process.parent.command_line),
+      users = VALUES(winlog.event_data.TargetUserName),
+      parents = VALUES(winlog.event_data.CallerProcessName),
+      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
       cmdlines = VALUES(cmd),
       redirect_hits = SUM(CASE(has_redirect == true, 1, 0)),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
       suspicious_parent_hits = SUM(CASE(suspicious_parent == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  /* Low baseline; boost if redirection present / suspicious parent / after-hours */
+  // Risk Scoring: 5 base + redirection bonus + after-hours bonus + high-risk parent bonus
   | EVAL risk_score = event_count * 5 + redirect_hits * 10 + after_hours_hits * 10 + suspicious_parent_hits * 15
   | WHERE risk_score >= 5
-  | KEEP bucket, host.name, event_count, users, parents, cmdlines, redirect_hits, after_hours_hits, suspicious_parent_hits, risk_score
+  | KEEP 
+      agent_id, bucket, host.name, event_count, users, parents, cmdlines, 
+      redirect_hits, after_hours_hits, suspicious_parent_hits, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

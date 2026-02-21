@@ -8,27 +8,40 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* antivirus event telemetry */
-  | WHERE event.category == "antivirus" OR event.dataset RLIKE "(?i)antivirus" OR event.provider RLIKE "(?i)(windows defender|mcafee|symantec|kaspersky|trend micro)"
-  /* selection: signature contains ransomware indicators */
-  | WHERE COALESCE(message, event.original, "") RLIKE "(?i)(BlackWorm|Chaos|Cobra|ContiCrypt|Crypter|CRYPTES|Cryptor|CylanCrypt|DelShad|Destructor|Filecoder|GandCrab|GrandCrab|Haperlock|Hiddentear|HydraCrypt|Krypt|Lockbit|Locker|Mallox|Phobos|Ransom|Ryuk|Ryzerlo|Stopcrypt|Tescrypt|TeslaCrypt|WannaCry|Xorist)"
+  FROM logs-winlog*
+  // Filter for antivirus event telemetry
+  | WHERE event.category == "antivirus" 
+   OR event.dataset RLIKE "(?i).*antivirus.*" 
+   OR event.provider RLIKE "(?i).*(windows defender|mcafee|symantec|kaspersky|trend micro).*"
+  // Check if signature contains ransomware indicators
+  | WHERE COALESCE(message, event.original, "") RLIKE "(?i).*(BlackWorm|Chaos|Cobra|ContiCrypt|Crypter|CRYPTES|Cryptor|CylanCrypt|DelShad|Destructor|Filecoder|GandCrab|GrandCrab|Haperlock|Hiddentear|HydraCrypt|Krypt|Lockbit|Locker|Mallox|Phobos|Ransom|Ryuk|Ryzerlo|Stopcrypt|Tescrypt|TeslaCrypt|WannaCry|Xorist).*"
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(user.name),
-      file_paths = VALUES(file.path),
-      signatures = VALUES(message),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parent_processes = VALUES(process.parent.name),
-      hosts = VALUES(host.name),
-      raw_samples = VALUES(event.original)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    event_count = COUNT(*),
+    users = VALUES(user.name),
+    file_paths = VALUES(file.path),
+    signatures = VALUES(message),
+    processes = VALUES(process.name),
+    executables = VALUES(process.executable),
+    parent_processes = VALUES(process.parent.name),
+    raw_samples = VALUES(event.original)
+  BY 
+    host.name, 
+    bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, file_paths, signatures, processes, executables, parent_processes, hosts, raw_samples
+  | KEEP 
+    agent_id, bucket, 
+    host.name, 
+    event_count, 
+    users, 
+    file_paths, 
+    signatures, 
+    processes, 
+    executables, 
+    parent_processes, 
+    raw_samples
   | SORT event_count DESC
 enabled: false
 tags:

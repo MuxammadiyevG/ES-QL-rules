@@ -22,7 +22,7 @@ query: |
   | EVAL hostn = winlog.computer_name
   | EVAL user = winlog.event_data.TargetUserName
   | EVAL src_ip = winlog.event_data.IpAddress
-  | KEEP @timestamp, user, src_ip, hostn, logon_type
+  | KEEP agent_id, @timestamp, user, src_ip, hostn, logon_type
   | SORT @timestamp DESC
   | LIMIT 100
 enabled: false

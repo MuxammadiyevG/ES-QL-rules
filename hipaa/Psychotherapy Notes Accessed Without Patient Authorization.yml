@@ -46,7 +46,7 @@ query: |
       unauthorized_access > 5, 90,
       85
     )
-  | KEEP user.name, host.name, unauthorized_access, patients_affected, user_roles, risk_score
+  | KEEP agent_id, user.name, host.name, unauthorized_access, patients_affected, user_roles, risk_score
   | SORT unauthorized_access DESC
 enabled: false
 tags:

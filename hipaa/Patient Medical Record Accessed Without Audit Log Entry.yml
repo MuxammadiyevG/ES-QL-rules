@@ -42,7 +42,7 @@ query: |
       unaudited_access > 20, 90,
       85
     )
-  | KEEP user.name, host.name, unaudited_access, access_types, systems, risk_score
+  | KEEP agent_id, user.name, host.name, unaudited_access, access_types, systems, risk_score
   | SORT unaudited_access DESC
 enabled: false
 tags:

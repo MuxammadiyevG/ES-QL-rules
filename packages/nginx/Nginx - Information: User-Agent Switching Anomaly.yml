@@ -16,7 +16,7 @@ query: |
       ua_list = VALUES(user_agent.original)
     BY source.ip
   | WHERE ua_count >= 10
-  | KEEP source.ip, ua_count, ua_list
+  | KEEP agent_id, source.ip, ua_count, ua_list
 severity: low
 risk_score: 20
 nist: ["SI-4"]

@@ -13,10 +13,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- winlogbeat-*
+- logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
   | EVAL hostn = winlog.computer_name
@@ -57,7 +57,7 @@ query: |
         unique_services >= 5, "High - Potential Kerberoasting",
         "Medium - Suspicious TGS Activity"
       )
-  | KEEP bucket, winlog.computer_name, requesting_user, ticket_requests, unique_services,
+  | KEEP agent_id, bucket, winlog.computer_name, requesting_user, ticket_requests, unique_services,
       services_requested, encryption_types, attack_confidence, first_request, last_request
   | SORT ticket_requests DESC
   | LIMIT 200

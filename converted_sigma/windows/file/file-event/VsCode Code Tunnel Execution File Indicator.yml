@@ -7,27 +7,40 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* file event telemetry (best-effort; depends on your pipeline) */
-  | WHERE event.category == "file" OR event.dataset RLIKE "(?i)file"
-  /* selection: TargetFilename endswith \code_tunnel.json */
-  | EVAL p = COALESCE(file.path, "")
-  | WHERE p RLIKE "(?i)\\\\code_tunnel\\.json$"
+ FROM logs-winlog*
+  // File event telemetry
+  | WHERE event.category == "file" OR event.dataset RLIKE "(?i).*file.*"
+  // Evaluate path to simplify logic
+  | EVAL p = COALESCE(winlog.event_data.OriginalFileName, "")
+  // Selection: TargetFilename ends with \code_tunnel.json
+  | WHERE p RLIKE "(?i).*\\\\code_tunnel\\\\.json$"
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parents = VALUES(process.parent.name),
-      parent_executables = VALUES(process.parent.executable),
-      file_paths = VALUES(file.path),
-      cmdlines = VALUES(COALESCE(process.command_line, winlog.event_data.CommandLine, ""))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+      users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      parents = VALUES(winlog.event_data.CallerProcessName),
+      parent_executables = VALUES(winlog.event_data.CallerProcessName),
+      file_paths = VALUES(winlog.event_data.OriginalFileName),
+      cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, ""))
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, cmdlines, file_paths
+  | KEEP 
+      agent_id, bucket, 
+      host.name, 
+      event_count, 
+      users, 
+      processes, 
+      executables, 
+      parents, 
+      parent_executables, 
+      cmdlines, 
+      file_paths
   | SORT event_count DESC
 enabled: false
 tags:

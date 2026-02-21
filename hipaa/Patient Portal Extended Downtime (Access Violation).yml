@@ -46,7 +46,7 @@ query: |
       downtime_events > 500, 85,
       70
     )
-  | KEEP host.name, downtime_events, duration_hours, first_error, last_error, error_codes, risk_score
+  | KEEP agent_id, host.name, downtime_events, duration_hours, first_error, last_error, error_codes, risk_score
   | SORT duration_hours DESC
 enabled: false
 tags:

@@ -19,10 +19,10 @@ type: esql
 params: '{}'
 schedule_interval: 15m
 index:
-  - filebeat-nginx-access-*
+  - logs-nginx*
 query_language: esql
 query: |
-  FROM filebeat-nginx-access-*
+  FROM logs-nginx*
   | WHERE event.action IN ("PUT", "DELETE", "TRACE", "CONNECT", "OPTIONS", "PATCH")
   | EVAL method_risk = CASE(
       event.action IN ("PUT", "DELETE"), "high",
@@ -31,7 +31,7 @@ query: |
       "unknown"
     )
   | EVAL successful_execution = CASE(
-      event.outcome IN (200, 201, 202, 204), true,
+      http.response.status_code  IN (200, 201, 202, 204), true,
       false
     )
   | STATS 
@@ -50,7 +50,7 @@ query: |
       method_count * 10
     )
   | WHERE risk_score >= 30
-  | KEEP bucket, source.ip, method_risk, method_count, successful_count, unique_paths, methods_used, target_paths, risk_score
+  | KEEP agent_id, bucket, source.ip, method_risk, method_count, successful_count, unique_paths, methods_used, target_paths, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

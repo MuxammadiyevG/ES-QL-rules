@@ -40,7 +40,7 @@ query: |
       biometric_files > 10, 95,
       90
     )
-  | KEEP host.name, file.directory, biometric_files, total_size_mb, files, risk_score
+  | KEEP agent_id, host.name, file.directory, biometric_files, total_size_mb, files, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

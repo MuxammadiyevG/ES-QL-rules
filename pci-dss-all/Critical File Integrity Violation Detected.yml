@@ -51,7 +51,7 @@ query: |
       integrity_violations > 5, 85,
       75
     )
-  | KEEP host.name, file.path, integrity_violations, files_changed, users, criticality, first_violation, risk_score
+  | KEEP agent_id, host.name, file.path, integrity_violations, files_changed, users, criticality, first_violation, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

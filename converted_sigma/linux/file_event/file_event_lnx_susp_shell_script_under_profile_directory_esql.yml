@@ -24,7 +24,7 @@ query: |
       hosts = VALUES(host.name)
     BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, user.name, event_count, users, processes, file_paths, hosts
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, file_paths, hosts
   | SORT event_count DESC
 enabled: false
 tags:

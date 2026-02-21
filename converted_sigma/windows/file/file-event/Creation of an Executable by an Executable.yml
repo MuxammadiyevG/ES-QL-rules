@@ -3,162 +3,175 @@ description: |
   Detects creation of an .exe file by a process that is itself an .exe. This can indicate droppers,
   installers, or malware staging payloads. This rule is very noisy in real environments, so it includes
   a broad set of filters for common installers/updaters and developer tools.
-  Requirements: file event telemetry that captures the creating process (process.executable) and the created file (file.path).
+  Requirements: file event telemetry that captures the creating process (winlog.event_data.ProcessName) and the created file (winlog.event_data.OriginalFileName).
 type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* file event telemetry (best-effort; depends on your pipeline) */
-  | WHERE event.category == "file" OR event.dataset RLIKE "(?i)file"
-  /* selection: Image endswith .exe AND TargetFilename endswith .exe */
-  | EVAL img = COALESCE(process.executable, "")
-  | EVAL tgt = COALESCE(file.path, "")
-  | WHERE img RLIKE "(?i)\\.exe$" AND tgt RLIKE "(?i)\\.exe$"
+  FROM logs-winlog*
+  // File event telemetry
+  | WHERE event.category == "file" OR event.dataset RLIKE "(?i).*file.*"
+  // Evaluate paths to simplify logic
+  | EVAL img = COALESCE(winlog.event_data.ProcessName, "")
+  | EVAL tgt = COALESCE(winlog.event_data.OriginalFileName, "")
+  // Selection: Image ends with .exe AND TargetFilename ends with .exe
+  | WHERE img RLIKE "(?i).*\\\\.exe$" AND tgt RLIKE "(?i).*\\\\.exe$"
 
-  /* -------------------- filters -------------------- */
+  // -------------------- filters -------------------- //
 
-  /* filter_main_generic_1 */
+  // filter_main_generic_1
   | WHERE NOT (
-      img RLIKE "(?i):\\\\Windows\\\\System32\\\\msiexec\\.exe$"
-      OR img RLIKE "(?i):\\\\Windows\\\\system32\\\\cleanmgr\\.exe$"
-      OR img RLIKE "(?i):\\\\Windows\\\\explorer\\.exe$"
-      OR img RLIKE "(?i):\\\\WINDOWS\\\\system32\\\\dxgiadaptercache\\.exe$"
-      OR img RLIKE "(?i):\\\\WINDOWS\\\\system32\\\\Dism\\.exe$"
-      OR img RLIKE "(?i):\\\\Windows\\\\System32\\\\wuauclt\\.exe$"
-    )
+    img RLIKE "(?i).*:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\msiexec\\\\.exe$"
+    OR img RLIKE "(?i).*:\\\\\\\\Windows\\\\\\\\system32\\\\\\\\cleanmgr\\\\.exe$"
+    OR img RLIKE "(?i).*:\\\\\\\\Windows\\\\\\\\explorer\\\\.exe$"
+    OR img RLIKE "(?i).*:\\\\\\\\WINDOWS\\\\\\\\system32\\\\\\\\dxgiadaptercache\\\\.exe$"
+    OR img RLIKE "(?i).*:\\\\\\\\WINDOWS\\\\\\\\system32\\\\\\\\Dism\\\\.exe$"
+    OR img RLIKE "(?i).*:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\wuauclt\\\\.exe$"
+  )
 
-  /* filter_main_update */
+  // filter_main_update
   | WHERE NOT (
-      img RLIKE "(?i):\\\\WINDOWS\\\\system32\\\\svchost\\.exe$"
-      AND tgt LIKE "*:\\Windows\\SoftwareDistribution\\Download\\*"
-    )
+    img RLIKE "(?i).*:\\\\\\\\WINDOWS\\\\\\\\system32\\\\\\\\svchost\\\\.exe$"
+    AND tgt LIKE "*:\\\\Windows\\\\SoftwareDistribution\\\\Download\\\\*"
+  )
 
-  /* filter_main_upgrade */
+  // filter_main_upgrade
   | WHERE NOT (
-      img RLIKE "(?i):\\\\Windows\\\\system32\\\\svchost\\.exe$"
-      AND tgt LIKE "*:\\WUDownloadCache\\*"
-      AND tgt LIKE "*\\WindowsUpdateBox.exe*"
-    )
+    img RLIKE "(?i).*:\\\\\\\\Windows\\\\\\\\system32\\\\\\\\svchost\\\\.exe$"
+    AND tgt LIKE "*:\\\\WUDownloadCache\\\\*"
+    AND tgt LIKE "*\\\\WindowsUpdateBox.exe*"
+  )
 
-  /* filter_main_windows_update_box */
+  // filter_main_windows_update_box
   | WHERE NOT (
-      img LIKE "*:\\WINDOWS\\SoftwareDistribution\\Download\\*"
-      AND img RLIKE "(?i)\\\\WindowsUpdateBox\\.Exe$"
-      AND tgt LIKE "*:\\$WINDOWS.~BT\\Sources\\*"
-    )
+    img LIKE "*:\\\\WINDOWS\\\\SoftwareDistribution\\\\Download\\\\*"
+    AND img RLIKE "(?i).*\\\\\\\\WindowsUpdateBox\\\\.Exe$"
+    AND tgt LIKE "*:\\\\$WINDOWS.~BT\\\\Sources\\\\*"
+  )
 
-  /* filter_main_tiworker */
+  // filter_main_tiworker
   | WHERE NOT (
-      img LIKE "*:\\Windows\\WinSxS\\*"
-      AND img RLIKE "(?i)\\\\TiWorker\\.exe$"
-    )
+    img LIKE "*:\\\\Windows\\\\WinSxS\\\\*"
+    AND img RLIKE "(?i).*\\\\\\\\TiWorker\\\\.exe$"
+  )
 
-  /* filter_main_programfiles */
+  // filter_main_programfiles
   | WHERE NOT (
-      (img LIKE "*:\\Program Files\\*" OR img LIKE "*:\\Program Files (x86)\\*")
-      AND (tgt LIKE "*:\\Program Files\\*" OR tgt LIKE "*:\\Program Files (x86)\\*")
-    )
+    (img LIKE "*:\\\\Program Files\\\\*" OR img LIKE "*:\\\\Program Files (x86)\\\\*")
+    AND (tgt LIKE "*:\\\\Program Files\\\\*" OR tgt LIKE "*:\\\\Program Files (x86)\\\\*")
+  )
 
-  /* filter_main_defender */
+  // filter_main_defender
   | WHERE NOT (
-      img LIKE "*:\\ProgramData\\Microsoft\\Windows Defender\\*"
-      OR img LIKE "*:\\Program Files\\Windows Defender\\*"
-    )
+    img LIKE "*:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\*"
+    OR img LIKE "*:\\\\Program Files\\\\Windows Defender\\\\*"
+  )
 
-  /* filter_main_windows_apps */
-  | WHERE NOT (tgt LIKE "*\\AppData\\Local\\Microsoft\\WindowsApps\\*")
+  // filter_main_windows_apps
+  | WHERE NOT (tgt LIKE "*\\\\AppData\\\\Local\\\\Microsoft\\\\WindowsApps\\\\*")
 
-  /* filter_main_teams */
+  // filter_main_teams
   | WHERE NOT (
-      img RLIKE "(?i)\\\\AppData\\\\Local\\\\Microsoft\\\\Teams\\\\Update\\.exe$"
-      AND (
-        tgt RLIKE "(?i)\\\\AppData\\\\Local\\\\Microsoft\\\\Teams\\\\stage\\\\Teams\\.exe$"
-        OR tgt RLIKE "(?i)\\\\AppData\\\\Local\\\\Microsoft\\\\Teams\\\\stage\\\\Squirrel\\.exe$"
-        OR tgt LIKE "*\\AppData\\Local\\Microsoft\\SquirrelTemp\\tempb\\*"
-      )
+    img RLIKE "(?i).*\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Microsoft\\\\\\\\Teams\\\\\\\\Update\\\\.exe$"
+    AND (
+      tgt RLIKE "(?i).*\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Microsoft\\\\\\\\Teams\\\\\\\\stage\\\\\\\\Teams\\\\.exe$"
+      OR tgt RLIKE "(?i).*\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Microsoft\\\\\\\\Teams\\\\\\\\stage\\\\\\\\Squirrel\\\\.exe$"
+      OR tgt LIKE "*\\\\AppData\\\\Local\\\\Microsoft\\\\SquirrelTemp\\\\tempb\\\\*"
     )
+  )
 
-  /* filter_main_mscorsvw */
+  // filter_main_mscorsvw
   | WHERE NOT (
-      (img LIKE "*:\\Windows\\Microsoft.NET\\Framework\\*"
-       OR img LIKE "*:\\Windows\\Microsoft.NET\\Framework64\\*"
-       OR img LIKE "*:\\Windows\\Microsoft.NET\\FrameworkArm\\*"
-       OR img LIKE "*:\\Windows\\Microsoft.NET\\FrameworkArm64\\*")
-      AND img RLIKE "(?i)\\\\mscorsvw\\.exe$"
-      AND tgt LIKE "*:\\Windows\\assembly\\NativeImages_*"
-    )
+    (img LIKE "*:\\\\Windows\\\\Microsoft.NET\\\\Framework\\\\*"
+     OR img LIKE "*:\\\\Windows\\\\Microsoft.NET\\\\Framework64\\\\*"
+     OR img LIKE "*:\\\\Windows\\\\Microsoft.NET\\\\FrameworkArm\\\\*"
+     OR img LIKE "*:\\\\Windows\\\\Microsoft.NET\\\\FrameworkArm64\\\\*")
+    AND img RLIKE "(?i).*\\\\\\\\mscorsvw\\\\.exe$"
+    AND tgt LIKE "*:\\\\Windows\\\\assembly\\\\NativeImages_*"
+  )
 
-  /* filter_main_vscode */
+  // filter_main_vscode
   | WHERE NOT (
-      img LIKE "*\\AppData\\Local\\*"
-      AND img LIKE "*\\Microsoft VS Code\\Code.exe"
-      AND tgt LIKE "*\\.vscode\\extensions\\*"
-    )
+    img LIKE "*\\\\AppData\\\\Local\\\\*"
+    AND img LIKE "*\\\\Microsoft VS Code\\\\Code.exe"
+    AND tgt LIKE "*\\\\.vscode\\\\extensions\\\\*"
+  )
 
-  /* filter_main_githubdesktop */
+  // filter_main_githubdesktop
   | WHERE NOT (
-      img LIKE "*\\AppData\\Local\\GitHubDesktop\\Update.exe"
-      AND tgt LIKE "*\\AppData\\Local\\SquirrelTemp\\*"
-    )
+    img LIKE "*\\\\AppData\\\\Local\\\\GitHubDesktop\\\\Update.exe"
+    AND tgt LIKE "*\\\\AppData\\\\Local\\\\SquirrelTemp\\\\*"
+  )
 
-  /* filter_main_windows_temp */
+  // filter_main_windows_temp
   | WHERE NOT (
-      img LIKE "*:\\WINDOWS\\TEMP\\*"
-      AND tgt LIKE "*:\\WINDOWS\\TEMP\\*"
-    )
+    img LIKE "*:\\\\WINDOWS\\\\TEMP\\\\*"
+    AND tgt LIKE "*:\\\\WINDOWS\\\\TEMP\\\\*"
+  )
 
-  /* filter_optional_python */
+  // filter_optional_python
   | WHERE NOT (
-      img LIKE "*\\Python27\\python.exe"
-      AND (
-        tgt LIKE "*\\Python27\\Lib\\site-packages\\*"
-        OR tgt LIKE "*\\Python27\\Scripts\\*"
-        OR tgt LIKE "*\\AppData\\Local\\Temp\\*"
-      )
+    img LIKE "*\\\\Python27\\\\python.exe"
+    AND (
+      tgt LIKE "*\\\\Python27\\\\Lib\\\\site-packages\\\\*"
+      OR tgt LIKE "*\\\\Python27\\\\Scripts\\\\*"
+      OR tgt LIKE "*\\\\AppData\\\\Local\\\\Temp\\\\*"
     )
+  )
 
-  /* filter_optional_squirrel */
+  // filter_optional_squirrel
   | WHERE NOT (
-      img LIKE "*\\AppData\\Local\\SquirrelTemp\\Update.exe"
-      AND tgt LIKE "*\\AppData\\Local*"
-    )
+    img LIKE "*\\\\AppData\\\\Local\\\\SquirrelTemp\\\\Update.exe"
+    AND tgt LIKE "*\\\\AppData\\\\Local*"
+  )
 
-  /* filter_main_temp_installers */
+  // filter_main_temp_installers
   | WHERE NOT (
-      img LIKE "*\\AppData\\Local\\Temp\\*"
-      AND tgt LIKE "*\\AppData\\Local\\Temp\\*"
-    )
+    img LIKE "*\\\\AppData\\\\Local\\\\Temp\\\\*"
+    AND tgt LIKE "*\\\\AppData\\\\Local\\\\Temp\\\\*"
+  )
 
-  /* filter_optional_chrome */
+  // filter_optional_chrome
   | WHERE NOT (
-      img RLIKE "(?i)\\\\ChromeSetup\\.exe$"
-      AND tgt LIKE "*\\Google*"
-    )
+    img RLIKE "(?i).*\\\\\\\\ChromeSetup\\\\.exe$"
+    AND tgt LIKE "*\\\\Google*"
+  )
 
-  /* filter_main_dot_net (extra) */
+  // filter_main_dot_net (extra)
   | WHERE NOT (
-      img LIKE "*:\\Windows\\Microsoft.NET\\Framework*"
-      AND img RLIKE "(?i)\\\\mscorsvw\\.exe$"
-      AND tgt LIKE "*:\\Windows\\assembly*"
-    )
+    img LIKE "*:\\\\Windows\\\\Microsoft.NET\\\\Framework*"
+    AND img RLIKE "(?i).*\\\\\\\\mscorsvw\\\\.exe$"
+    AND tgt LIKE "*:\\\\Windows\\\\assembly*"
+  )
 
-  /* -------------------- output -------------------- */
+  // -------------------- output -------------------- //
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(img),
-      parents = VALUES(process.parent.name),
-      parent_executables = VALUES(process.parent.executable),
-      targets = VALUES(tgt),
-      cmdlines = VALUES(COALESCE(process.command_line, winlog.event_data.CommandLine, ""))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    event_count = COUNT(*),
+    users = VALUES(winlog.event_data.TargetUserName),
+    processes = VALUES(winlog.event_data.ProcessName),
+    executables = VALUES(img),
+    parents = VALUES(winlog.event_data.CallerProcessName),
+    parent_executables = VALUES(winlog.event_data.CallerProcessName),
+    targets = VALUES(tgt),
+    cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, ""))
+  BY 
+    host.name, 
+    bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, targets, cmdlines
+  | KEEP 
+    agent_id, bucket, 
+    host.name, 
+    event_count, 
+    users, 
+    processes, 
+    executables, 
+    parents, 
+    parent_executables, 
+    targets, 
+    cmdlines
   | SORT event_count DESC
 enabled: false
 tags:

@@ -53,7 +53,7 @@ query: |
       severity_level == "high", 85,
       70
     )
-  | KEEP event.original, event.original, weak_crypto_connections, destinations, severity_level, risk_score
+  | KEEP agent_id, event.original, event.original, weak_crypto_connections, destinations, severity_level, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

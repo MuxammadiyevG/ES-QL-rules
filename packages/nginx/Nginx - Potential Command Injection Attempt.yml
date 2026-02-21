@@ -20,7 +20,7 @@ query: |
       full_urls = VALUES(url.original)
     BY source.ip
   | WHERE injection_count >= 1
-  | KEEP source.ip, injection_count, full_urls
+  | KEEP agent_id, source.ip, injection_count, full_urls
 enabled: true
 tags:
  - "nginx"

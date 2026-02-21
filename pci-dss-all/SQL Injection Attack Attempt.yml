@@ -49,7 +49,7 @@ query: |
       attempt_count > 3, 85,
       70
     )
-  | KEEP source.ip, event.original, attempt_count, unique_ips, injection_type, queries, user_agents, risk_score
+  | KEEP agent_id, source.ip, event.original, attempt_count, unique_ips, injection_type, queries, user_agents, risk_score
   | SORT risk_score DESC
   | LIMIT 100
 enabled: false

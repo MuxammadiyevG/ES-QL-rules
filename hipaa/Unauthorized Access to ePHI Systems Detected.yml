@@ -51,7 +51,7 @@ query: |
       success_count > 0, 85,
       75
     )
-  | KEEP source.ip, user.name, access_attempts, success_count, failure_count, systems, risk_score
+  | KEEP agent_id, source.ip, user.name, access_attempts, success_count, failure_count, systems, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

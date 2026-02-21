@@ -46,7 +46,7 @@ query: |
       processing_events > 5, 95,
       90
     )
-  | KEEP event.original, host.name, processing_events, data_categories, sources, risk_score
+  | KEEP agent_id, event.original, host.name, processing_events, data_categories, sources, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

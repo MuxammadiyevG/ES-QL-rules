@@ -46,7 +46,7 @@ query: |
       event_count < 2, 85,
       75
     )
-  | KEEP host.name, event.category, event_count, hours_since_last, last_event, risk_score
+  | KEEP agent_id, host.name, event.category, event_count, hours_since_last, last_event, risk_score
   | SORT hours_since_last DESC
 enabled: false
 tags:

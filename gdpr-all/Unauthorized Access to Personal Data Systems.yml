@@ -72,7 +72,7 @@ query: |
         75
       )
   
-    | KEEP user.name, source.ip, attempts, success_count, failure_count, public_success, hosts, actions, risk_score
+    | KEEP agent_id, user.name, source.ip, attempts, success_count, failure_count, public_success, hosts, actions, risk_score
     | SORT risk_score DESC
 enabled: false
 tags:

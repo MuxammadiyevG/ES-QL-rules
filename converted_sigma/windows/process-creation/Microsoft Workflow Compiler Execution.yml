@@ -7,28 +7,32 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  | WHERE event.category == "process"
-     OR event.code IN ("1", "4688")
-     OR event.dataset RLIKE "(?i)process"
-  /* selection: Image endswith \Microsoft.Workflow.Compiler.exe OR OriginalFileName match */
-  | WHERE process.name == "Microsoft.Workflow.Compiler.exe"
-     OR process.executable RLIKE "(?i)\\\\Microsoft\\.Workflow\\.Compiler\\.exe$"
-     OR COALESCE(event.original, "") RLIKE "(?i)OriginalFileName\\s*[:=]\\s*Microsoft\\.Workflow\\.Compiler\\.exe"
+  FROM logs-winlog*
+  // Filter for process creation events
+  | WHERE event.category == "process" 
+     OR event.code IN ("1", "4688") 
+     OR event.dataset RLIKE "(?i).*process.*"
+  // Selection: Target the Workflow Compiler by name, path, or original filename
+  | WHERE winlog.event_data.ProcessName == "Microsoft.Workflow.Compiler.exe"
+     OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\Microsoft\\\\.Workflow\\\\.Compiler\\\\.exe$"
+     OR COALESCE(event.original, "") RLIKE "(?i).*OriginalFileName\\\\s*[:=]\\\\s*Microsoft\\\\.Workflow\\\\.Compiler\\\\.exe.*"
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      parents = VALUES(process.parent.name),
-      parent_cmdlines = VALUES(process.parent.command_line),
-      executables = VALUES(process.executable),
-      cmdlines = VALUES(COALESCE(process.command_line, winlog.event_data.CommandLine, "")),
-      pids = VALUES(process.pid)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+      users = VALUES(winlog.event_data.TargetUserName),
+      parents = VALUES(winlog.event_data.CallerProcessName),
+      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
+      executables = VALUES(winlog.event_data.ProcessName),
+      cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")),
+      pids = VALUES(winlog.event_data.ProcessPid)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids
+  | KEEP 
+      agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids
   | SORT event_count DESC
 enabled: false
 tags:

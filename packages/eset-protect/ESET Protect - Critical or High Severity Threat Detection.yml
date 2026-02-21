@@ -14,10 +14,10 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-- filebeat-eset_protect-*
+- logs-eset_protect-*
 query_language: esql
 query: |
-  FROM filebeat-eset_protect-*
+  FROM logs-eset_protect-*
   | WHERE @timestamp >= NOW() - 30 minutes
   | WHERE data_stream.dataset == "eset_protect.detection"
   | WHERE eset_protect.detection.severity_level RLIKE "(?i)(critical|high|error|fatal)"

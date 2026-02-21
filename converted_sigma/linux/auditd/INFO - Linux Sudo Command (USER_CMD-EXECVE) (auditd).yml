@@ -31,7 +31,7 @@ query: |
       parents = VALUES(process.parent.name),
       raws = VALUES(event.original)
     BY host.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
-  | KEEP bucket, host.name, event_count, users, user_ids, src_ips, processes, executables, parents, raws
+  | KEEP agent_id, bucket, host.name, event_count, users, user_ids, src_ips, processes, executables, parents, raws
   | SORT event_count DESC
 enabled: false
 tags: ["informational", "linux", "sudo", "auditd"]

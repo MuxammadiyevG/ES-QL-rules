@@ -13,25 +13,43 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
+  // Filter strictly for file category events
   | WHERE event.category == "file"
-  | WHERE event.type IN ("creation", "create") OR event.action RLIKE "(?i)create|created"
-     OR event.dataset RLIKE "(?i)file"
-  | WHERE file.path IS NOT NULL
+   OR event.dataset RLIKE "(?i).*file.*"
+  // Explicitly require the action or type to be a creation event
+  | WHERE (
+    event.type IN ("creation", "create") 
+    OR event.action RLIKE "(?i).*(create|created).*"
+  )
+  // Ensure the event actually contains a file path
+  | WHERE winlog.event_data.OriginalFileName IS NOT NULL
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parents = VALUES(process.parent.name),
-      parent_executables = VALUES(process.parent.executable),
-      created_paths = VALUES(file.path)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    event_count = COUNT(*),
+    users = VALUES(winlog.event_data.TargetUserName),
+    processes = VALUES(winlog.event_data.ProcessName),
+    executables = VALUES(winlog.event_data.ProcessName),
+    parents = VALUES(winlog.event_data.CallerProcessName),
+    parent_executables = VALUES(winlog.event_data.CallerProcessName),
+    created_paths = VALUES(winlog.event_data.OriginalFileName)
+  BY 
+    host.name, 
+    bucket = DATE_TRUNC(20m, @timestamp)
+  // (Optional: You will likely want to raise this threshold to filter noise)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, created_paths
+  | KEEP 
+    agent_id, bucket, 
+    host.name, 
+    event_count, 
+    users, 
+    processes, 
+    executables, 
+    parents, 
+    parent_executables, 
+    created_paths
   | SORT event_count DESC
 enabled: false
 tags:

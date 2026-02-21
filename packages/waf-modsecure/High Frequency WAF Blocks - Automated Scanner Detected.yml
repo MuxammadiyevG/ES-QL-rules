@@ -1,0 +1,59 @@
+name: High Frequency WAF Blocks - Automated Scanner Detected
+description: |
+  Bitta IP manzildan juda qisqa vaqt ichida katta miqdordagi WAF bloklash hodisalari
+  aniqlandi. Bu sqlmap, nikto, nuclei, burpsuite kabi avtomatlashtirilgan skaner
+  yoki fuzzing vositasining ishlatilayotganligini ko'rsatadi.
+  Qonuniy holatlar: rejalashtirilgan pentest yoki vulnerability assessment bo'lishi mumkin.
+  SOC triage bosqichlari:
+  - `source.ip` uchun tasdiqlangan pentest change ticket borligini tekshiring.
+  - `rule.category` va `rule.description` asosida qanday turdagi hujumlar skanlanayotganini aniqlab oling.
+  - IP manzilning hosting provayderini (VPS, cloud, residential) tekshiring.
+  - Ruxsatsiz scan bo'lsa darhol IP ni WAF darajasida bloklang va hodisani qayd eting.
+  - Bir xil IP dan turli rule IDlar triggerlanganda keng qamrovli reconnaissance deb baholang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-nginx.waf*
+query_language: esql
+query: |
+  FROM logs-nginx.waf*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.category == "intrusion_detection"
+  | STATS
+      total_blocks       = COUNT(*),
+      unique_rules       = COUNT_DISTINCT(rule.id),
+      triggered_rules    = VALUES(rule.id),
+      rule_descriptions  = VALUES(rule.description),
+      rule_categories    = VALUES(rule.category),
+      targeted_domains   = VALUES(url.domain),
+      unique_domains     = COUNT_DISTINCT(url.domain),
+      severity_levels    = VALUES(event.severity),
+      match_data         = VALUES(nginx.modsecurity.match_data),
+      first_seen         = MIN(@timestamp),
+      last_seen          = MAX(@timestamp)
+    BY source.ip, source.geo.country_name, source.geo.city_name,
+       source.geo.region_name, source.geo.country_iso_code,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE total_blocks >= 10
+  | KEEP agent_id, bucket, source.ip, source.geo.country_name, source.geo.city_name,
+        source.geo.region_name, source.geo.country_iso_code,
+        total_blocks, unique_rules, triggered_rules, rule_descriptions,
+        rule_categories, targeted_domains, unique_domains,
+        severity_levels, match_data, first_seen, last_seen
+  | SORT total_blocks DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.reconnaissance
+  - attack.t1595
+  - attack.t1190
+  - detection.high
+severity: high
+risk_score: 80
+nist: ["SI-4", "AU-6", "SC-7"]
+pci_dss: ["11.4", "6.4.1"]
+gdpr: ["32.1.a"]
+mitre_attack:
+  TA0043:
+    T1595: []

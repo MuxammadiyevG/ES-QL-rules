@@ -12,59 +12,54 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* Process creation events */
-  | WHERE event.category == "process" OR event.code IN ("1", "4688") OR event.dataset RLIKE "(?i)process"
-  /* selection: parent is conhost.exe with --headless flag */
-  | WHERE process.parent.name == "conhost.exe"
-     OR process.parent.executable RLIKE "(?i)\\\\conhost\\.exe$"
-  | WHERE COALESCE(process.parent.command_line, "") LIKE "*--headless*"
+  FROM logs-winlog*
+  // Filter for process creation events
+  | WHERE event.category == "process" 
+     OR event.code IN ("1", "4688") 
+     OR event.dataset RLIKE "(?i).*process.*"
+  // Selection: Parent is conhost.exe running in headless mode
+  | WHERE (winlog.event_data.CallerProcessName == "conhost.exe" OR winlog.event_data.CallerProcessName RLIKE "(?i).*\\\\conhost\\\\.exe$")
+    AND winlog.event_data.CommandLine LIKE "*--headless*"
   | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  // Identify high-risk "LoLBin" children being hidden
   | EVAL suspicious_child = CASE(
-      process.name RLIKE "(?i)^(powershell|pwsh|cmd|mshta|wscript|cscript|rundll32|regsvr32|certutil|curl|wget)\\.exe$", true,
+      winlog.event_data.ProcessName RLIKE "(?i)^(powershell|pwsh|cmd|mshta|wscript|cscript|rundll32|regsvr32|certutil|curl|wget)\\\\.exe$", true,
       false
     )
+  // Check for execution from common staging or temporary directories
   | EVAL suspicious_path = CASE(
-      COALESCE(process.executable, "") RLIKE "(?i)\\\\(Users\\\\[^\\\\]+\\\\(AppData\\\\Local\\\\Temp|AppData\\\\Roaming|Downloads)|Windows\\\\Temp|ProgramData|Users\\\\Public)\\\\", true,
+      COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i).*\\\\\\\\(Users\\\\\\\\.*\\\\\\\\(AppData\\\\\\\\(Local\\\\\\\\Temp|Roaming)|Downloads)|Windows\\\\\\\\Temp|ProgramData|Users\\\\\\\\Public)\\\\\\\\.*", true,
       false
     )
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      parents = VALUES(process.parent.name),
-      parent_cmdlines = VALUES(process.parent.command_line),
-      children = VALUES(process.name),
-      child_executables = VALUES(process.executable),
-      child_cmdlines = VALUES(process.command_line),
+      users = VALUES(winlog.event_data.TargetUserName),
+      parents = VALUES(winlog.event_data.CallerProcessName),
+      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
+      children = VALUES(winlog.event_data.ProcessName),
+      child_executables = VALUES(winlog.event_data.ProcessName),
+      child_cmdlines = VALUES(winlog.event_data.CommandLine),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
       suspicious_child_hits = SUM(CASE(suspicious_child == true, 1, 0)),
       suspicious_path_hits = SUM(CASE(suspicious_path == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  /* Medium-confidence rule; boost signal with context */
+  // Risk Scoring: Heavily weighted toward suspicious children and hidden execution
   | EVAL risk_score = event_count * 20
       + after_hours_hits * 15
       + suspicious_child_hits * 20
       + suspicious_path_hits * 15
   | WHERE risk_score >= 25
-  | KEEP
-      bucket,
-      host.name,
-      event_count,
-      users,
-      parents,
-      parent_cmdlines,
-      children,
-      child_executables,
-      child_cmdlines,
-      after_hours_hits,
-      suspicious_child_hits,
-      suspicious_path_hits,
-      risk_score
+  | KEEP 
+      agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, children, 
+      child_executables, child_cmdlines, after_hours_hits, suspicious_child_hits, 
+      suspicious_path_hits, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

@@ -39,7 +39,7 @@ query: |
       replication_events > 10, 90,
       85
     )
-  | KEEP event.original, event.original, replication_events, data_volume_mb, destination_countries, risk_score
+  | KEEP agent_id, event.original, event.original, replication_events, data_volume_mb, destination_countries, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

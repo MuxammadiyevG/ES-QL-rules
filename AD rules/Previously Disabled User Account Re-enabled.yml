@@ -13,10 +13,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- winlogbeat-*
+- logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
   | EVAL hostn = winlog.computer_name
@@ -27,7 +27,7 @@ query: |
   | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code == "4722"
   | EVAL 
-      enabled_account = COALESCE(winlog.event_data.TargetUserName, user.target.name, "Unknown"),
+      enabled_account = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.TargetUserName, "Unknown"),
       enabler = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
       enabler_domain = COALESCE(winlog.event_data.SubjectDomainName, winlog.event_data.SubjectDomainName, "Unknown"),
       target_sid = COALESCE(winlog.event_data.TargetSid, "Unknown")
@@ -39,7 +39,7 @@ query: |
       last_enable = MAX(@timestamp)
     BY winlog.computer_name, enabler, enabler_domain, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE accounts_enabled >= 1
-  | KEEP bucket, winlog.computer_name, enabler, enabler_domain, accounts_enabled,
+  | KEEP agent_id, bucket, winlog.computer_name, enabler, enabler_domain, accounts_enabled,
       enabled_accounts, sids, first_enable, last_enable
   | SORT accounts_enabled DESC
   | LIMIT 200

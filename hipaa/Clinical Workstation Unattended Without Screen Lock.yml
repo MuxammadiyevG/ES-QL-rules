@@ -42,7 +42,7 @@ query: |
       idle_duration_min > 20, 80,
       70
     )
-  | KEEP user.name, host.name, idle_duration_min, last_activity, sessions, risk_score
+  | KEEP agent_id, user.name, host.name, idle_duration_min, last_activity, sessions, risk_score
   | SORT idle_duration_min DESC
 enabled: false
 tags:

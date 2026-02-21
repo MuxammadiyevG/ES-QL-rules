@@ -44,7 +44,7 @@ query: |
       request_age_days > 45, 85,
       75
     )
-  | KEEP user.name, host.name, request_age_days, first_request, request_status, risk_score
+  | KEEP agent_id, user.name, host.name, request_age_days, first_request, request_status, risk_score
   | SORT request_age_days DESC
 enabled: false
 tags:

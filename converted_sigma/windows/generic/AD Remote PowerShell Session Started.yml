@@ -13,7 +13,7 @@ query: |
   | WHERE winlog.channel == "Windows PowerShell" AND event.code == "400"
   | EVAL hostn = winlog.computer_name
   | EVAL details = host.hostname 
-  | KEEP @timestamp, hostn, details, event.code
+  | KEEP agent_id, @timestamp, hostn, details, event.code
   | SORT @timestamp DESC
 enabled: false
 tags:

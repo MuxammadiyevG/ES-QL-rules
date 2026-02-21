@@ -19,18 +19,18 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - log-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, log-audit*
   | WHERE (event.action IN ("modified-file", "created-file", "deleted-file")
-      AND file.path RLIKE "(?i).*(\/etc\/|\/boot\/|C:\\\\Windows\\\\System32\\\\config\\\\).*")
+      AND file.path RLIKE "(?i).*(/etc/|/boot/|C:\\\\Windows\\\\System32\\\\config\\\\).*")
     OR (event.original RLIKE "(?i).*(HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services|HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies).*")
   | EVAL config_type = CASE(
-      file.path RLIKE "(?i).*\/etc\/passwd.*", "Linux-UserAccounts",
-      file.path RLIKE "(?i).*\/etc\/sudoers.*", "Linux-Sudo-Config",
-      file.path RLIKE "(?i).*\/etc\/ssh\/.*", "Linux-SSH-Config",
+      file.path RLIKE "(?i).*/etc/passwd.*", "Linux-UserAccounts",
+      file.path RLIKE "(?i).*/etc/sudoers.*", "Linux-Sudo-Config",
+      file.path RLIKE "(?i).*/etc/ssh/.*", "Linux-SSH-Config",
       file.path RLIKE "(?i).*firewall.*", "Firewall-Rules",
       event.original RLIKE "(?i).*Policies.*", "Windows-Security-Policy",
       event.original RLIKE "(?i).*Services.*", "Windows-Service-Config",
@@ -44,12 +44,11 @@ query: |
       changed_configs = VALUES(COALESCE(file.path, event.original)),
       modifiers = VALUES(user.name),
       after_hours_changes = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, config_type
-    , bucket = DATE_TRUNC(15 minutes, @timestamp)
+    BY host.name, config_type, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE change_count >= 1
   | EVAL risk_score = change_count * 15 + after_hours_changes * 25
   | WHERE risk_score >= 15
-  | KEEP bucket, host.name, config_type, change_count, unique_files, changed_configs, modifiers, after_hours_changes, risk_score
+  | KEEP agent_id, bucket, host.name, config_type, change_count, unique_files, changed_configs, modifiers, after_hours_changes, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

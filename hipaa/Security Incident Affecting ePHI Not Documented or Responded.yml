@@ -52,7 +52,7 @@ query: |
       undocumented_incidents > 5, 90,
       85
     )
-  | KEEP host.name, event.action, undocumented_incidents, hours_without_response, incident_types, risk_score
+  | KEEP agent_id, host.name, event.action, undocumented_incidents, hours_without_response, incident_types, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

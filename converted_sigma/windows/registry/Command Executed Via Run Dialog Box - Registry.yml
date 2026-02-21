@@ -13,42 +13,37 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | EVAL raw = COALESCE(event.original, "")
-  /* selection: RunMRU key */
   | WHERE raw LIKE "*\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RunMRU*"
-  /* filter_main_mrulist: ignore MRUList maintenance */
   | WHERE NOT (raw LIKE "*\\MRUList*")
-  /* filter_optional_ping: ignore simple ping usage */
-  | WHERE NOT (raw RLIKE "(?i)\\bping\\b")
-  /* filter_optional_generic: ignore common benign run commands */
-  | WHERE NOT (
-      raw RLIKE "(?i)%appdata%\\\\1\\b" OR
-      raw RLIKE "(?i)%localappdata%\\\\1\\b" OR
-      raw RLIKE "(?i)%public%\\\\1\\b" OR
-      raw RLIKE "(?i)%temp%\\\\1\\b" OR
-      raw RLIKE "(?i)\\b(calc|dxdiag|explorer|gpedit\\.msc|mmc|notepad|regedit|services\\.msc|winver)\\\\1\\b"
-    )
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  
+  /* New: Identify potentially malicious PowerShell flags */
+  | EVAL is_suspicious_ps = RLIKE(raw, "(?i)powershell.*(-enc|-e |-w hidden|-nop|-noni)")
+  
+  /* Filter out common noise */
+  | WHERE NOT (raw RLIKE "(?i)\\b(ping|calc|dxdiag|explorer|gpedit\\.msc|mmc|notepad|regedit|services\\.msc|winver)\\\\1\\b")
+  
+  /* Enhanced Temporal Analysis (Hours + Weekends) */
+  | EVAL hour = DATE_EXTRACT("hour", @timestamp)
+  | EVAL dow = DATE_EXTRACT("day_of_week", @timestamp)
+  | EVAL is_after_hours = CASE(hour < 7 OR hour > 20 OR dow == 1 OR dow == 7, true, false)
+  
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parent_processes = VALUES(process.parent.name),
-      cmdlines = VALUES(process.command_line),
-      originals = VALUES(raw),
+      users = VALUES(winlog.event_data.TargetUserName),
+      cmdlines = VALUES(winlog.event_data.CommandLine),
+      suspicious_ps_count = SUM(CASE(is_suspicious_ps == true, 1, 0)),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
-  /* Low-confidence baseline; small score unless after-hours */
-  | EVAL risk_score = event_count * 5 + after_hours_hits * 10
-  | WHERE risk_score >= 5
-  | KEEP bucket, host.name, event_count, users, processes, executables, parent_processes, cmdlines, after_hours_hits, risk_score, originals
+    
+  /* Updated Risk Scoring: PowerShell obfuscation is a massive red flag */
+  | EVAL risk_score = (event_count * 5) + (after_hours_hits * 15) + (suspicious_ps_count * 50)
+  | WHERE risk_score >= 10
+  | KEEP agent_id, bucket, host.name, users, risk_score, event_count, suspicious_ps_count, cmdlines
   | SORT risk_score DESC
 enabled: false
 tags:

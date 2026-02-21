@@ -45,7 +45,7 @@ query: |
       sensitive_access > 100, 85,
       80
     )
-  | KEEP user.name, host.name, sensitive_access, unique_patients, user_roles, service_types, risk_score
+  | KEEP agent_id, user.name, host.name, sensitive_access, unique_patients, user_roles, service_types, risk_score
   | SORT sensitive_access DESC
 enabled: false
 tags:

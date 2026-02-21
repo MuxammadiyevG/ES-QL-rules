@@ -41,7 +41,7 @@ query: |
       violation_count > 3, 85,
       75
     )
-  | KEEP host.name, environments, violation_count, risk_score
+  | KEEP agent_id, host.name, environments, violation_count, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

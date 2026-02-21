@@ -47,7 +47,7 @@ query: |
       event.original == 80 AND user.name IS NOT NULL, 85,
       70
     )
-  | KEEP event.original, event.original, user.name, connection_count, sources, protocols, risk_score
+  | KEEP agent_id, event.original, event.original, user.name, connection_count, sources, protocols, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

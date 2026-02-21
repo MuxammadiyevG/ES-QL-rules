@@ -13,10 +13,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- winlogbeat-*
+- logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
   | EVAL hostn = winlog.computer_name
@@ -43,7 +43,7 @@ query: |
       last_access = MAX(@timestamp)
     BY winlog.computer_name, bucket = DATE_TRUNC(1 day, @timestamp)
   | WHERE total_accesses >= 1
-  | KEEP bucket, winlog.computer_name, total_accesses, unique_users, unique_object_types,
+  | KEEP agent_id, bucket, winlog.computer_name, total_accesses, unique_users, unique_object_types,
       users, object_types, operations, first_access, last_access
   | SORT total_accesses DESC
   | LIMIT 200

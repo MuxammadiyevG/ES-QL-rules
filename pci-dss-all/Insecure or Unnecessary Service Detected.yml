@@ -48,7 +48,7 @@ query: |
       event.original IN (161, 162), "medium",
       "low"
     )
-  | KEEP host.name, services, processes, ports, service_count, first_seen, severity_level
+  | KEEP agent_id, host.name, services, processes, ports, service_count, first_seen, severity_level
 enabled: false
 tags:
   - pci_dss

@@ -19,11 +19,11 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, logs-audit*
   | WHERE event.action IN ("process-started", "ProcessCreate")
     AND (
       process.command_line RLIKE "(?i).*(Invoke-WebRequest|IEX|DownloadString|DownloadFile|encodedcommand|bypass|hidden).*"
@@ -54,7 +54,7 @@ query: |
       attack_pattern == "Office-Spawned-Shell", execution_count * 50,
       execution_count * 30
     )
-  | KEEP bucket, host.name, user.name, attack_pattern, execution_count, command_lines, processes, parent_processes, risk_score
+  | KEEP agent_id, bucket, host.name, user.name, attack_pattern, execution_count, command_lines, processes, parent_processes, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

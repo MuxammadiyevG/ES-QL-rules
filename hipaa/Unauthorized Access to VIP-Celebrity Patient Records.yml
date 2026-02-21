@@ -45,7 +45,7 @@ query: |
       unauthorized_access > 1, 90,
       85
     )
-  | KEEP user.name, event.original  # FIXME: patient.id not available, unauthorized_access, user_departments, accessing_users, risk_score
+  | KEEP agent_id, user.name, event.original  # FIXME: patient.id not available, unauthorized_access, user_departments, accessing_users, risk_score
   | SORT unauthorized_access DESC
 enabled: false
 tags:

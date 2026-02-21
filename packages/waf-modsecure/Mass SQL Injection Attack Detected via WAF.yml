@@ -1,0 +1,54 @@
+name: Mass SQL Injection Attack Detected via WAF
+description: |
+  Ushbu qoida OWASP CRS tomonidan aniqlangan SQL Injection hujumlarini kuzatadi.
+  Qisqa vaqt ichida bir nechta turli IP manzillardan bir xil SQLi payload (`1' or 1=1`) yuborilishi
+  maqsadli mass scan yoki botnet hujumini ko'rsatadi.
+  Bu turdagi hodisa ma'lumotlar bazasiga ruxsatsiz kirish, ma'lumotlarni o'g'irlash yoki
+  autentifikatsiyani chetlab o'tish uchun ishlatilishi mumkin.
+  SOC triage bosqichlari:
+  - `source.ip` manzillarini threat intelligence bilan solishtiring.
+  - `url.domain` va hujum yo'naltirilgan endpoint ni aniqlab oling.
+  - Bir xil vaqt oralig'ida boshqa attack kategoriyalari (LFI, RCE) borligini tekshiring.
+  - WAF bloklagan so'rovlar backend ga yetib bormagan bo'lsa ham, pattern ni o'rganib proaktiv bloklang.
+  - Agar hujum muvaffaqiyatli bo'lsa (`event.outcome: success`), darhol DB auditini boshlang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-nginx.waf*
+query_language: esql
+query: |
+  FROM logs-nginx.waf*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.category == "intrusion_detection"
+  | WHERE rule.id == "942100"
+  | STATS
+      attack_count     = COUNT(*),
+      unique_sources   = COUNT_DISTINCT(source.ip),
+      source_ips       = VALUES(source.ip),
+      countries        = VALUES(source.geo.country_name),
+      cities           = VALUES(source.geo.city_name),
+      rule_desc        = VALUES(rule.description),
+      match_data       = VALUES(nginx.modsecurity.match_data),
+      first_seen       = MIN(@timestamp),
+      last_seen        = MAX(@timestamp)
+    BY url.domain, rule.id, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE attack_count >= 3
+  | KEEP agent_id, bucket, url.domain, rule.id, attack_count, unique_sources,
+        source_ips, countries, cities, rule_desc, match_data, first_seen, last_seen
+  | SORT attack_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1190
+  - attack.credential-access
+  - detection.critical
+severity: high
+risk_score: 85
+nist: ["SI-4", "AU-6", "SC-7"]
+pci_dss: ["6.4.1", "10.2.4", "11.4"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0001:
+    T1190: []

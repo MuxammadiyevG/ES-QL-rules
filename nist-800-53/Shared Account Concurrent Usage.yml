@@ -19,17 +19,17 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, logs-audit*
   | WHERE event.outcome == "success"
     AND (event.code == "4624" OR event.action IN ("ssh_login", "login", "user-login"))
   | STATS 
       login_count = COUNT(*),
-      unique_ips = COUNT_DISTINCT(source.ip),
-      source_ips = VALUES(source.ip),
+      unique_ips = COUNT_DISTINCT(host.ip),
+      source_ips = VALUES(host.ip),
       unique_hosts = COUNT_DISTINCT(host.name),
       hosts = VALUES(host.name)
     BY user.name
@@ -42,7 +42,7 @@ query: |
   | EVAL concurrent_sessions = unique_ips * unique_hosts
   | EVAL risk_score = concurrent_sessions * 20
   | WHERE risk_score >= 40
-  | KEEP bucket, user.name, login_count, unique_ips, source_ips, unique_hosts, hosts, account_type, risk_score
+  | KEEP agent_id, bucket, user.name, login_count, unique_ips, source_ips, unique_hosts, hosts, account_type, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

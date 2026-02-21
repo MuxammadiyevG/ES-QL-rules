@@ -45,7 +45,7 @@ query: |
       queries RLIKE "(?i).*track.*", "Track Data",
       "Unknown"
     )
-  | KEEP host.name, event.dataset, violation_count, data_type
+  | KEEP agent_id, host.name, event.dataset, violation_count, data_type
   | SORT violation_count DESC
 enabled: false
 tags:

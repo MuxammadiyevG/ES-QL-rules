@@ -1,0 +1,67 @@
+#//RULE-NIST-19 — Lateral Movement Detection (NIST IR-4, AC-17)
+#//Control Family: IR (Incident Response), AC (Access Control)
+#//Objective: Detect attacker lateral movement across network
+#//Threat scenario: Attacker uses compromised credentials to access multiple systems
+#//Data sources: Windows Security 4624/4648 (network logons), remote execution
+#//ECS fields used: event.code, winlog.logon.type, winlog.event_data.IpAddress, event.original, winlog.event_data.TargetUserName
+#//Field validation: Verify all ECS fields exist in your indices before enabling
+#//Tuning notes: Baseline normal admin activity, allowlist jump servers and management hosts
+#
+name: "Rapid Lateral Movement Activity"
+description: |
+  Detects single user account authenticating to multiple distinct systems in short timeframe.
+  Network logons (Type 3) to 5+ unique hosts in 15 minutes indicates lateral movement or reconnaissance.
+  Combined with explicit credential use (Event 4648) strengthens detection confidence.
+  False positives: Legitimate administrative tasks, automated deployment scripts, monitoring systems.
+  Triage: Verify if source is known admin workstation or jump server, 
+  check for concurrent privilege escalation, review accessed systems for data value.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code IN ("4624", "4648")
+    AND winlog.logon.type == "3"
+    AND event.outcome == "success"
+  | STATS 
+      total_logons = COUNT(*),
+      unique_targets = COUNT_DISTINCT(host.name),
+      target_hosts = VALUES(host.name),
+      source_ips = VALUES(winlog.event_data.IpAddress),
+      explicit_creds = SUM(CASE(event.code == "4648", 1, 0))
+    BY winlog.event_data.TargetUserName
+    , bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE unique_targets >= 5
+  | EVAL movement_velocity = unique_targets * 2
+  | EVAL attack_confidence = CASE(
+      explicit_creds >= 3 AND unique_targets >= 10, "critical",
+      unique_targets >= 7, "high",
+      "medium"
+    )
+  | EVAL risk_score = unique_targets * 15 + explicit_creds * 10
+  | WHERE risk_score >= 75
+  | KEEP agent_id, bucket, winlog.event_data.TargetUserName, total_logons, unique_targets, target_hosts, source_ips, explicit_creds, attack_confidence, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - nist_800_53
+  - control_IR-4
+  - control_AC-17
+  - family_IR
+  - family_AC
+  - lateral_movement
+  - discovery
+severity: critical
+risk_score: 88
+references:
+  - "NIST SP 800-53 Rev.5 IR-4: Incident Handling"
+  - "MITRE ATT&CK T1021: Remote Services"
+nist: ["IR-4", "AC-17"]
+gdpr: []
+pci_dss: []
+mitre_attack:
+  TA0008:
+    T1021: []

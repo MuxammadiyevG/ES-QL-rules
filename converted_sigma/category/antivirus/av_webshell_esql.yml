@@ -9,27 +9,40 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* antivirus event telemetry */
-  | WHERE event.category == "antivirus" OR event.dataset RLIKE "(?i)antivirus" OR event.provider RLIKE "(?i)(windows defender|mcafee|symantec|kaspersky|trend micro)"
-  /* selection: signature starts with web shell prefixes OR contains web shell indicators */
-  | WHERE COALESCE(message, event.original, "") RLIKE "(?i)(^ASP\\.|^IIS/BackDoor|^JAVA/Backdoor|^JSP\\.|^Perl\\.|^PHP\\.|^Troj/ASP|^Troj/JSP|^Troj/PHP|^VBS/Uxor|ASP_|ASP:|ASP\\.Agent|ASP/|Aspdoor|ASPXSpy|Backdoor\\.ASP|Backdoor\\.Java|Backdoor\\.JSP|Backdoor\\.PHP|Backdoor\\.VBS|Backdoor/ASP|Backdoor/Java|Backdoor/JSP|Backdoor/PHP|Backdoor/VBS|C99shell|Chopper|filebrowser|JSP_|JSP:|JSP\\.Agent|JSP/|Perl:|Perl/|PHP_|PHP:|PHP\\.Agent|PHP/|PHPShell|PShlSpy|SinoChoper|Trojan\\.ASP|Trojan\\.JSP|Trojan\\.PHP|Trojan\\.VBS|VBS\\.Agent|VBS/Agent|Webshell)"
+  FROM logs-winlog*
+  // Filter for antivirus event telemetry
+  | WHERE event.category == "antivirus" 
+   OR event.dataset RLIKE "(?i).*antivirus.*" 
+   OR event.provider RLIKE "(?i).*(windows defender|mcafee|symantec|kaspersky|trend micro).*"
+  // Check if signature starts with web shell prefixes OR contains web shell indicators
+  | WHERE COALESCE(message, event.original, "") RLIKE "(?i)(^(ASP\\\\.|IIS/BackDoor|JAVA/Backdoor|JSP\\\\.|Perl\\\\.|PHP\\\\.|Troj/ASP|Troj/JSP|Troj/PHP|VBS/Uxor).*|.*(ASP_|ASP:|ASP\\\\.Agent|ASP/|Aspdoor|ASPXSpy|Backdoor\\\\.ASP|Backdoor\\\\.Java|Backdoor\\\\.JSP|Backdoor\\\\.PHP|Backdoor\\\\.VBS|Backdoor/ASP|Backdoor/Java|Backdoor/JSP|Backdoor/PHP|Backdoor/VBS|C99shell|Chopper|filebrowser|JSP_|JSP:|JSP\\\\.Agent|JSP/|Perl:|Perl/|PHP_|PHP:|PHP\\\\.Agent|PHP/|PHPShell|PShlSpy|SinoChoper|Trojan\\\\.ASP|Trojan\\\\.JSP|Trojan\\\\.PHP|Trojan\\\\.VBS|VBS\\\\.Agent|VBS/Agent|Webshell).*)"
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(user.name),
-      file_paths = VALUES(file.path),
-      file_names = VALUES(file.name),
-      signatures = VALUES(message),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      hosts = VALUES(host.name),
-      raw_samples = VALUES(event.original)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    event_count = COUNT(*),
+    users = VALUES(user.name),
+    file_paths = VALUES(file.path),
+    file_names = VALUES(file.name),
+    signatures = VALUES(message),
+    processes = VALUES(process.name),
+    executables = VALUES(process.executable),
+    raw_samples = VALUES(event.original)
+  BY 
+    host.name, 
+    bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, file_paths, file_names, signatures, processes, executables, hosts, raw_samples
+  | KEEP 
+    agent_id, bucket, 
+    host.name, 
+    event_count, 
+    users, 
+    file_paths, 
+    file_names, 
+    signatures, 
+    processes, 
+    executables, 
+    raw_samples
   | SORT event_count DESC
 enabled: false
 tags:

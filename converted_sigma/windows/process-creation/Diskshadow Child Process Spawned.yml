@@ -11,28 +11,37 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  | WHERE event.category == "process" OR event.code IN ("1", "4688") OR event.dataset RLIKE "(?i)process"
-  /* selection: parent is diskshadow.exe */
-  | WHERE process.parent.executable RLIKE "(?i)\\\\diskshadow\\.exe$"
-     OR process.parent.name == "diskshadow.exe"
-  /* filter_main_werfault: exclude WerFault child */
-  | WHERE NOT (process.executable RLIKE "(?i)\\\\Windows\\\\System32\\\\WerFault\\.exe$" OR process.name == "WerFault.exe")
+  FROM logs-winlog*
+  // Filter for process creation events
+  | WHERE event.category == "process" 
+     OR event.code IN ("1", "4688") 
+     OR event.dataset RLIKE "(?i).*process.*"
+  // Selection: Parent is the DiskShadow utility
+  | WHERE winlog.event_data.CallerProcessName RLIKE "(?i).*\\\\diskshadow\\\\.exe$"
+     OR winlog.event_data.CallerProcessName == "diskshadow.exe"
+  // Filter: Exclude legitimate Windows Error Reporting noise
+  | WHERE NOT (
+      winlog.event_data.ProcessName RLIKE "(?i).*\\\\Windows\\\\System32\\\\WerFault\\\\.exe$" 
+      OR winlog.event_data.ProcessName == "WerFault.exe"
+    )
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      parents = VALUES(process.parent.name),
-      parent_cmdlines = VALUES(process.parent.command_line),
-      children = VALUES(process.name),
-      child_executables = VALUES(process.executable),
-      child_cmdlines = VALUES(process.command_line),
-      pids = VALUES(process.pid)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+      users = VALUES(winlog.event_data.TargetUserName),
+      parents = VALUES(winlog.event_data.CallerProcessName),
+      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
+      children = VALUES(winlog.event_data.ProcessName),
+      child_executables = VALUES(winlog.event_data.ProcessName),
+      child_cmdlines = VALUES(winlog.event_data.CommandLine),
+      pids = VALUES(winlog.event_data.ProcessPid)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, parents, parent_cmdlines, children, child_executables, child_cmdlines, pids
+  | KEEP 
+      agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, children, child_executables, child_cmdlines, pids
   | SORT event_count DESC
 enabled: false
 tags:

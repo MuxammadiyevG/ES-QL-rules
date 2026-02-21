@@ -1,0 +1,69 @@
+name: VMware ESX - Failed Login Attempt Detected
+description: |
+  VMware ESX tizimiga muvaffaqiyatsiz kirish urinishi qayd etildi.
+  Takrorlanuvchi holatda bu brute force yoki credential stuffing belgisi (T1110).
+  SOC triage bosqichlari:
+  - Muvaffaqiyatsiz login qilayotgan user nomini aniqlang
+  - Manba IP va geo-location tekshiring
+  - Vaqt oralig'ida takrorlanish chastotasini kuzating
+  - Keyingi muvaffaqiyatli loginlar bilan korrelyatsiya qiling
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-vmware.esxi*
+query_language: esql
+query: |
+  FROM logs-vmware.esxi*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "vmware"
+  | WHERE event.dataset == "vmware.esxi"
+  | WHERE event.outcome == "failure"
+  | WHERE event.category == "authentication"
+  | WHERE log.level == "info"
+  | WHERE message LIKE "*Failed login attempt for*"
+  | STATS
+      failure_count       = COUNT(*),
+      affected_users      = VALUES(user.name),
+      unique_users        = COUNT_DISTINCT(user.name),
+      affected_hosts      = VALUES(host.hostname),
+      unique_hosts        = COUNT_DISTINCT(host.hostname),
+      process_names       = VALUES(process.name),
+      process_ids         = VALUES(process.pid),
+      thread_ids          = VALUES(process.thread.id),
+      originator_list     = VALUES(vmware.originator),
+      opid_list           = VALUES(vmware.opid),
+      sid_list            = VALUES(vmware.sid),
+      log_messages        = VALUES(message),
+      first_seen          = MIN(@timestamp),
+      last_seen           = MAX(@timestamp)
+    BY host.hostname, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE failure_count >= 1
+  | KEEP
+      bucket, host.hostname, failure_count,
+      affected_users, unique_users,
+      affected_hosts, unique_hosts,
+      process_names, process_ids, thread_ids,
+      originator_list, opid_list, sid_list,
+      log_messages, first_seen, last_seen
+  | SORT failure_count DESC
+  | LIMIT 50
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.t1110
+  - vmware
+  - esxi
+  - authentication
+  - failure
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+nist: ["AC-7", "AU-14"]
+pci_dss: ["10.2.4", "10.2.5"]
+gdpr: ["35.7.d", "32.2"]
+hipaa: ["164.312.b"]
+mitre_attack:
+  TA0006:
+    T1110: []

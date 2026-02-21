@@ -19,20 +19,22 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+ FROM logs-audit*, logs-winlog*
   | WHERE event.code IN ("7045", "4697")
     OR (event.action IN ("service-installed", "service-started") AND event.provider IS NOT NULL)
-  | EVAL service_path = COALESCE(event.original, process.executable, file.path)
+  | EVAL service_path = COALESCE(process.executable, file.path, event.original)
   | EVAL suspicious_path = CASE(
-      service_path RLIKE "(?i).*(\\\\Users\\\\|\\\\Temp\\\\|\\\\AppData\\\\|\/tmp\/|\/var\/tmp\/).*", true,
+      /* Quadruple backslashes are required to match a single literal backslash in Windows paths */
+      service_path RLIKE "(?i).*(\\\\Users\\\\|\\\\Temp\\\\|\\\\AppData\\\\|/tmp/|/var/tmp/).*", true,
       service_path RLIKE "(?i).*(powershell|cmd|bash|python|perl|ruby).*", true,
       false
     )
   | EVAL suspicious_name = CASE(
+      /* Searching for masquerading names */
       event.provider RLIKE "(?i).*(update|svc|system|windows|google|adobe).*", true,
       false
     )
@@ -41,12 +43,11 @@ query: |
       new_services = COUNT(*),
       service_names = VALUES(event.provider),
       service_paths = VALUES(service_path),
-      installers = VALUES(user.name)
-    BY host.name
-    , bucket = DATE_TRUNC(30 minutes, @timestamp)
+      installers = VALUES(host.name)
+    BY host.name, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE new_services >= 1
   | EVAL risk_score = new_services * 30
-  | KEEP bucket, host.name, new_services, service_names, service_paths, installers, risk_score
+  | KEEP agent_id, bucket, host.name, new_services, service_names, service_paths, installers, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

@@ -14,14 +14,14 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | EVAL raw = COALESCE(event.original, "")
   /* selection: ControlSet + \Services\ + endswith \ImagePath + Details contains user-controlled folders */
-  | WHERE raw LIKE "*ControlSet*\\Services\\*"
-    AND raw LIKE "*\\ImagePath*"
+  | WHERE raw LIKE "*ControlSet*\\\\Services\\\\*"
+    AND raw LIKE "*\\\\ImagePath*"
     AND (
       raw RLIKE "(?i):\\\\ProgramData\\\\" OR
       raw RLIKE "(?i)\\\\AppData\\\\Local\\\\" OR
@@ -29,37 +29,37 @@ query: |
     )
   /* filter_main_windefend: exclude Windows Defender service paths */
   | WHERE NOT (
-      (raw LIKE "*\\Services\\WinDefend\\*" OR raw LIKE "*\\Services\\MpKs*")
-      AND raw LIKE "*C:\\ProgramData\\Microsoft\\Windows Defender\\*"
+      (raw LIKE "*\\\\Services\\\\WinDefend\\\\*" OR raw LIKE "*\\\\Services\\\\MpKs*")
+      AND raw LIKE "*C:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\*"
     )
   /* filter_optional_zoom */
   | WHERE NOT (
-      raw LIKE "*\\Services\\ZoomCptService*"
-      AND raw LIKE "*C:\\Program Files\\Common Files\\Zoom\\Support\\CptService.exe*"
+      raw LIKE "*\\\\Services\\\\ZoomCptService*"
+      AND raw LIKE "*C:\\\\Program Files\\\\Common Files\\\\Zoom\\\\Support\\\\CptService.exe*"
     )
   /* filter_optional_mbami */
   | WHERE NOT (
-      raw LIKE "*\\Services\\MBAMInstallerService*"
-      AND raw LIKE "*C:\\Users\\*"
-      AND raw LIKE "*AppData\\Local\\Temp\\MBAMInstallerService.exe*"
+      raw LIKE "*\\\\Services\\\\MBAMInstallerService*"
+      AND raw LIKE "*C:\\\\Users\\\\*"
+      AND raw LIKE "*AppData\\\\Local\\\\Temp\\\\MBAMInstallerService.exe*"
     )
   | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      target_users = VALUES(user.target.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parent_processes = VALUES(process.parent.name),
-      cmdlines = VALUES(process.command_line),
+      users = VALUES(winlog.event_data.TargetUserName),
+      target_users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      parent_processes = VALUES(winlog.event_data.CallerProcessName),
+      cmdlines = VALUES(winlog.event_data.CommandLine),
       originals = VALUES(raw),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25
-  | KEEP bucket, host.name, event_count, users, processes, executables, parent_processes, cmdlines, after_hours_hits, risk_score, originals
+  | KEEP agent_id, bucket, host.name, event_count, users, target_users, processes, executables, parent_processes, cmdlines, after_hours_hits, risk_score, originals
   | SORT risk_score DESC
 enabled: false
 tags:

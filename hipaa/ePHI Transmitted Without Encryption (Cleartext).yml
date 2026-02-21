@@ -55,7 +55,7 @@ query: |
       cleartext_transmissions > 10, 90,
       85
     )
-  | KEEP event.original, event.original, cleartext_transmissions, data_volume_mb, protocols, urls, risk_score
+  | KEEP agent_id, event.original, event.original, cleartext_transmissions, data_volume_mb, protocols, urls, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

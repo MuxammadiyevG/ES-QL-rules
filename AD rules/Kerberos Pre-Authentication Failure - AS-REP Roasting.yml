@@ -13,10 +13,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- winlogbeat-*
+- logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
   | EVAL hostn = winlog.computer_name
@@ -27,7 +27,7 @@ query: |
   | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code == "4768"
   | EVAL 
-      target_user = COALESCE(winlog.event_data.TargetUserName, user.target.name, "Unknown"),
+      target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.TargetUserName, "Unknown"),
       source_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress, "Unknown"),
       service_name = COALESCE(winlog.event_data.ServiceName, "Unknown"),
       status = COALESCE(winlog.event_data.Status, "Unknown"),
@@ -56,7 +56,7 @@ query: |
         unique_users >= 5, "Medium - Targeted AS-REP Roasting",
         "Low - Possible Reconnaissance"
       )
-  | KEEP bucket, winlog.computer_name, failure_count, unique_users, targeted_users,
+  | KEEP agent_id, bucket, winlog.computer_name, failure_count, unique_users, targeted_users,
       source_ips, status_codes, attack_confidence, first_attempt, last_attempt
   | SORT failure_count DESC
   | LIMIT 200

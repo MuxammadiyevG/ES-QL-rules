@@ -43,7 +43,7 @@ query: |
       access_count > 3, 80,
       70
     )
-  | KEEP user.name, event.original, access_count, first_access, last_access, sources, systems, risk_score
+  | KEEP agent_id, user.name, event.original, access_count, first_access, last_access, sources, systems, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

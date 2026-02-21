@@ -57,7 +57,7 @@ query: |
       severity_level == "high", 90,
       80
     )
-  | KEEP host.name, breach_indicators, indicator_types, data_volume_mb, affected_hosts, sources, destinations, severity_level, risk_score
+  | KEEP agent_id, host.name, breach_indicators, indicator_types, data_volume_mb, affected_hosts, sources, destinations, severity_level, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

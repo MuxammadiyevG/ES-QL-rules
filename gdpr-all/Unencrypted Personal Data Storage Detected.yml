@@ -38,7 +38,7 @@ query: |
       total_size_mb > 100, 85,
       75
     )
-  | KEEP host.name, file.directory, file_count, total_size_mb, files, risk_score
+  | KEEP agent_id, host.name, file.directory, file_count, total_size_mb, files, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

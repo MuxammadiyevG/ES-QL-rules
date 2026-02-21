@@ -48,7 +48,7 @@ query: |
       attempt_count > 5, 85,
       70
     )
-  | KEEP user.name, event.dataset, attempt_count, doors, first_attempt, last_attempt, risk_score
+  | KEEP agent_id, user.name, event.dataset, attempt_count, doors, first_attempt, last_attempt, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

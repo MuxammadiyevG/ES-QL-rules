@@ -1,0 +1,64 @@
+name: Distributed Low-and-Slow WAF Attack - Threshold Evasion Pattern
+description: |
+  Ko'p sonli turli IP manzillardan har biridan ozgina (1-2 ta) so'rov yuborib,
+  WAF rate limiting chegarasidan qochishga urinish aniqlandi.
+  Bu "low-and-slow" yoki "distributed brute force" texnikasi bo'lib,
+  botnet koordinatsiyasi orqali amalga oshiriladi.
+  Har bir alohida IP bloklansa ham, umumiy hujum davom etadi.
+  SOC triage bosqichlari:
+  - `unique_sources` soni yuqori, lekin har bir IP dan `avg_hits_per_ip` past bo'lsa — bu klassik low-and-slow pattern.
+  - Barcha hujum IP larini bir vaqtda bloklash uchun threat feed yoki dynamic blocklist yarating.
+  - Hujum payload laridagi (`match_data`) umumiy pattern ni aniqlang — bir xil payload turli IP lardan kelayotgan bo'lishi mumkin.
+  - CAPTCHA yoki rate limiting ni IP darajasidan session/fingerprint darajasiga ko'tiring.
+  - CDN yoki DDoS protection xizmatiga eskalyatsiya qilishni ko'rib chiqing.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-nginx.waf*
+query_language: esql
+query: |
+  FROM logs-nginx.waf*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.category == "intrusion_detection"
+  | STATS
+      total_attacks      = COUNT(*),
+      unique_sources     = COUNT_DISTINCT(source.ip),
+      source_ips         = VALUES(source.ip),
+      unique_countries   = COUNT_DISTINCT(source.geo.country_iso_code),
+      country_names      = VALUES(source.geo.country_name),
+      country_codes      = VALUES(source.geo.country_iso_code),
+      continent_names    = VALUES(source.geo.continent_name),
+      unique_rules       = COUNT_DISTINCT(rule.id),
+      triggered_rules    = VALUES(rule.id),
+      rule_descriptions  = VALUES(rule.description),
+      match_data         = VALUES(nginx.modsecurity.match_data),
+      reasons            = VALUES(event.reason),
+      first_seen         = MIN(@timestamp),
+      last_seen          = MAX(@timestamp)
+    BY url.domain, bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | EVAL avg_hits_per_ip = total_attacks / unique_sources
+  | WHERE unique_sources >= 5 AND avg_hits_per_ip <= 3
+  | KEEP agent_id, bucket, url.domain, total_attacks, unique_sources, avg_hits_per_ip,
+        source_ips, unique_countries, country_names, country_codes,
+        continent_names, unique_rules, triggered_rules, rule_descriptions,
+        match_data, reasons, first_seen, last_seen
+  | SORT unique_sources DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1190
+  - attack.t1583
+  - attack.discovery
+  - detection.critical
+severity: critical
+risk_score: 90
+nist: ["SI-4", "SC-5", "AU-6", "IR-4", "SC-7"]
+pci_dss: ["6.4.1", "11.4", "10.2.4", "12.10"]
+gdpr: ["32.1.a", "32.2", "33.1"]
+mitre_attack:
+  TA0001:
+    T1190: []
+  TA0042:
+    T1583: []

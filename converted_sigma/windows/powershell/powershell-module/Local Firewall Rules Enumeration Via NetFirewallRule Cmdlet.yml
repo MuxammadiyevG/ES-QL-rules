@@ -11,33 +11,40 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | EVAL raw = COALESCE(event.original, "")
-  | WHERE raw RLIKE "(?i)\\b(Get-NetFirewallRule|Show-NetFirewallRule)\\b"
+  // Filter for specific Firewall discovery cmdlets with proper ES|QL escaping
+  | WHERE raw RLIKE "(?i).*\\\\b(Get-NetFirewallRule|Show-NetFirewallRule)\\\\b.*"
   | EVAL cmdlet = CASE(
-      raw RLIKE "(?i)\\bGet-NetFirewallRule\\b", "Get-NetFirewallRule",
-      raw RLIKE "(?i)\\bShow-NetFirewallRule\\b", "Show-NetFirewallRule",
+      raw RLIKE "(?i).*\\\\bGet-NetFirewallRule\\\\b.*", "Get-NetFirewallRule",
+      raw RLIKE "(?i).*\\\\bShow-NetFirewallRule\\\\b.*", "Show-NetFirewallRule",
       "NetFirewallRule-Enum"
     )
   | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      target_users = VALUES(user.target.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      cmdlines = VALUES(process.command_line),
+      users = VALUES(winlog.event_data.TargetUserName),
+      target_users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      cmdlines = VALUES(winlog.event_data.CommandLine),
       originals = VALUES(raw),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, cmdlet, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      host.name, 
+      cmdlet, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
+  // Risk calculation: baseline 10 points, plus 10 if performed after hours
   | EVAL risk_score = event_count * 10 + after_hours_hits * 10
   | WHERE risk_score >= 10
-  | KEEP bucket, host.name, cmdlet, event_count, users, processes, executables, cmdlines, after_hours_hits, risk_score, originals
+  | KEEP 
+      agent_id, bucket, host.name, cmdlet, event_count, users, processes, executables, 
+      cmdlines, after_hours_hits, risk_score, originals
   | SORT risk_score DESC
 enabled: false
 tags:

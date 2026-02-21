@@ -16,7 +16,7 @@ query: |
   | WHERE event.code IN ("4728", "4732", "4756")
   | EVAL actor = winlog.event_data.SubjectUserName
   | EVAL target_group = winlog.event_data.TargetUserName
-  | KEEP @timestamp, actor,target_group, winlog.computer_name
+  | KEEP agent_id, @timestamp, actor,target_group, winlog.computer_name
   | SORT @timestamp DESC
 enabled: false
 tags:

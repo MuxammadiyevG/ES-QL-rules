@@ -1,0 +1,63 @@
+name: WAF Rule File Anomaly - Possible Rule Evasion Pattern
+description: |
+  Turli WAF rule fayllari va line numberlardan bir vaqtda triggerlanish aniqlandi.
+  Bu hujumchi tomonidan WAF qoidalarining chegaralarini sinovdan o'tkazish,
+  rule evasion texnikalarini qo'llash (encoding, obfuscation, fragmentation)
+  yoki WAF configuration zaifliklarini izlash urinishi bo'lishi mumkin.
+  SOC triage bosqichlari:
+  - `file.path` va `rule.monitor.line` asosida qaysi spesifik WAF modullari nishonga olinganini aniqlab oling.
+  - `nginx.modsecurity.match_data` dagi payloadlarni o'rganib obfuscation patternlarini (URL encoding, unicode bypass, case manipulation) izlang.
+  - `rule.version` (OWASP CRS versiyasi) ni tekshiring — eski versiya exploit bo'layotgan bo'lishi mumkin.
+  - WAF konfiguratsiyasini audit qiling va evasion imkoniyati bo'lgan qoidalarni mustahkamlang.
+  - OWASP CRS ni so'nggi versiyaga yangilash zarurligini baholang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-nginx.waf*
+query_language: esql
+query: |
+  FROM logs-nginx.waf*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.category == "intrusion_detection"
+  | STATS
+      total_events        = COUNT(*),
+      unique_rule_files   = COUNT_DISTINCT(file.path),
+      rule_files          = VALUES(file.path),
+      rule_line_numbers   = VALUES(rule.monitor.line),
+      unique_rule_ids     = COUNT_DISTINCT(rule.id),
+      rule_ids            = VALUES(rule.id),
+      rule_versions       = VALUES(rule.version),
+      rule_references     = VALUES(rule.reference),
+      rule_descriptions   = VALUES(rule.description),
+      rule_categories     = VALUES(rule.category),
+      match_data          = VALUES(nginx.modsecurity.match_data),
+      event_ids           = VALUES(event.id),
+      first_seen          = MIN(@timestamp),
+      last_seen           = MAX(@timestamp)
+    BY source.ip, source.geo.country_name, source.geo.city_name,
+       url.domain, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE unique_rule_files >= 2 AND unique_rule_ids >= 2
+  | KEEP agent_id, bucket, source.ip, source.geo.country_name, source.geo.city_name,
+        url.domain, total_events, unique_rule_files, rule_files,
+        rule_line_numbers, unique_rule_ids, rule_ids, rule_versions,
+        rule_references, rule_descriptions, rule_categories,
+        match_data, event_ids, first_seen, last_seen
+  | SORT unique_rule_files DESC, total_events DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1027
+  - attack.t1190
+  - detection.high
+severity: high
+risk_score: 80
+nist: ["SI-4", "AU-6", "SC-7", "CM-7"]
+pci_dss: ["6.4.1", "11.4", "6.3.3"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0005:
+    T1027: []
+  TA0001:
+    T1190: []

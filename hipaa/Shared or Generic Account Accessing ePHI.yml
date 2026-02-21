@@ -52,7 +52,7 @@ query: |
       login_count > 20, 90,
       85
     )
-  | KEEP user.name, login_count, unique_sources, sources, concurrent_use, systems, risk_score
+  | KEEP agent_id, user.name, login_count, unique_sources, sources, concurrent_use, systems, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

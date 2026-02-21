@@ -12,13 +12,13 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
+  FROM logs-winlog*
   | EVAL raw = COALESCE(event.original, "")
   /* selection_key: \Shell\Open\Command */
-  | WHERE raw LIKE "*\\Shell\\Open\\Command*"
+  | WHERE raw LIKE "*\\\\Shell\\\\Open\\\\Command*"
   /* selection_value_img: contains powershell or pwsh */
   | WHERE raw RLIKE "(?i)\\b(powershell|pwsh)\\b"
   /* selection_value_namespace: System.Security.Cryptography. */
@@ -29,20 +29,20 @@ query: |
   | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      target_users = VALUES(user.target.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parent_processes = VALUES(process.parent.name),
-      parent_executables = VALUES(process.parent.executable),
-      cmdlines = VALUES(process.command_line),
+      users = VALUES(winlog.event_data.TargetUserName),
+      target_users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      parent_processes = VALUES(winlog.event_data.CallerProcessName),
+      parent_executables = VALUES(winlog.event_data.CallerProcessName),
+      cmdlines = VALUES(winlog.event_data.CommandLine),
       originals = VALUES(raw),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25
-  | KEEP bucket, host.name, event_count, users, processes, executables, parent_processes, parent_executables, cmdlines, after_hours_hits, risk_score, originals
+  | KEEP agent_id, bucket, host.name, event_count, users, processes, executables, parent_processes, parent_executables, cmdlines, after_hours_hits, risk_score, originals
   | SORT risk_score DESC
 enabled: false
 tags:

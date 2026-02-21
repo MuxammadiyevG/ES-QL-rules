@@ -44,7 +44,7 @@ query: |
       collection_events > 10, 85,
       75
     )
-  | KEEP event.original, host.name, collection_events, data_types, sources, risk_score
+  | KEEP agent_id, event.original, host.name, collection_events, data_types, sources, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

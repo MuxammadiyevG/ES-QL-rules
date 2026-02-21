@@ -36,7 +36,7 @@ query: |
       column_count > 40, 75,
       65
     )
-  | KEEP event.original, host.name, excessive_schemas, tables, column_counts, risk_score
+  | KEEP agent_id, event.original, host.name, excessive_schemas, tables, column_counts, risk_score
   | SORT column_count DESC
 enabled: false
 tags:

@@ -52,7 +52,7 @@ query: |
       command_count > 20, 85,
       70
     )
-  | KEEP user.name, host.name, command_count, processes, commands, risk_score
+  | KEEP agent_id, user.name, host.name, command_count, processes, commands, risk_score
   | SORT risk_score DESC
   | LIMIT 100
 enabled: false

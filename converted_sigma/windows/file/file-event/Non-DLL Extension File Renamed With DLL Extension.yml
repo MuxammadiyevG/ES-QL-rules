@@ -9,52 +9,69 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
+  - logs-winlog*
 query_language: esql
 query: |
-  FROM winlogbeat-*
-  /* file rename telemetry (best-effort; depends on your pipeline) */
-  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE "(?i)file"
-  /* selection: TargetFilename endswith .dll */
-  | EVAL tgt = COALESCE(file.path, "")
-  | EVAL src = COALESCE(file.original.path, "")
-  | WHERE tgt RLIKE "(?i)\\.dll$"
-  /* filter_main_dll: SourceFilename endswith .dll */
-  | WHERE NOT (src RLIKE "(?i)\\.dll$")
-  /* filter_main_installers: SourceFilename endswith .tmp */
-  | WHERE NOT (src RLIKE "(?i)\\.tmp$")
-  /* filter_main_empty_source / null source */
+  FROM logs-winlog*
+  // File rename telemetry (best-effort; depends on pipeline)
+  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE "(?i).*file.*"
+  // Evaluate Target and Source paths to simplify logic
+  | EVAL tgt = COALESCE(winlog.event_data.OriginalFileName, "")
+  | EVAL src = COALESCE(winlog.event_data.OriginalFileName, "")
+  // Selection: TargetFilename ends with .dll
+  | WHERE tgt RLIKE "(?i).*\\\\.dll$"
+
+  // filter_main_dll: SourceFilename was NOT already a .dll
+  | WHERE NOT (src RLIKE "(?i).*\\\\.dll$")
+  // filter_main_installers: SourceFilename was NOT a .tmp file
+  | WHERE NOT (src RLIKE "(?i).*\\\\.tmp$")
+  // filter_main_empty_source: Ensure it's an actual rename/move with a source
   | WHERE src != ""
-  /* filter_main_tiworker: Image contains \Windows\WinSxS\ and endswith \TiWorker.exe */
+
+  // filter_main_tiworker: Image contains \Windows\WinSxS\ and ends with \TiWorker.exe
   | WHERE NOT (
-      process.executable LIKE "*:\\Windows\\WinSxS\\*"
-      AND (process.executable RLIKE "(?i)\\\\TiWorker\\.exe$")
+      winlog.event_data.ProcessName LIKE "*:\\\\Windows\\\\WinSxS\\\\*"
+      AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\\\\\TiWorker\\\\.exe$"
     )
-  /* filter_main_upgrade */
+  // filter_main_upgrade
   | WHERE NOT (
-      (process.executable RLIKE "(?i):\\\\Windows\\\\System32\\\\wuauclt\\.exe$")
-      AND (tgt LIKE "*:\\$WINDOWS.~BT\\Sources\\*")
+      winlog.event_data.ProcessName RLIKE "(?i).*:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\wuauclt\\\\.exe$"
+      AND tgt LIKE "*:\\\\$WINDOWS.~BT\\\\Sources\\\\*"
     )
-  /* filter_main_generic: Program Files paths */
+  // filter_main_generic: Program Files paths
   | WHERE NOT (
-      process.executable LIKE "*:\\Program Files (x86)\\*"
-      OR process.executable LIKE "*:\\Program Files\\*"
+      winlog.event_data.ProcessName LIKE "*:\\\\Program Files (x86)\\\\*"
+      OR winlog.event_data.ProcessName LIKE "*:\\\\Program Files\\\\*"
     )
-  /* filter_optional_squirrel */
-  | WHERE NOT (src LIKE "*\\SquirrelTemp\\temp*")
+  // filter_optional_squirrel
+  | WHERE NOT (src LIKE "*\\\\SquirrelTemp\\\\temp*")
+
   | STATS
       event_count = COUNT(*),
-      users = VALUES(user.name),
-      processes = VALUES(process.name),
-      executables = VALUES(process.executable),
-      parents = VALUES(process.parent.name),
-      parent_executables = VALUES(process.parent.executable),
+      users = VALUES(winlog.event_data.TargetUserName),
+      processes = VALUES(winlog.event_data.ProcessName),
+      executables = VALUES(winlog.event_data.ProcessName),
+      parents = VALUES(winlog.event_data.CallerProcessName),
+      parent_executables = VALUES(winlog.event_data.CallerProcessName),
       source_paths = VALUES(src),
       target_paths = VALUES(tgt),
       raw_samples = VALUES(event.original)
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      host.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP bucket, host.name, event_count, users, processes, executables, parents, parent_executables, source_paths, target_paths, raw_samples
+  | KEEP 
+      agent_id, bucket, 
+      host.name, 
+      event_count, 
+      users, 
+      processes, 
+      executables, 
+      parents, 
+      parent_executables, 
+      source_paths, 
+      target_paths, 
+      raw_samples
   | SORT event_count DESC
 enabled: false
 tags:

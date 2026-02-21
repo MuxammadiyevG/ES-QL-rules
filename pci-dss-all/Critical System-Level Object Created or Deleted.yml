@@ -51,7 +51,7 @@ query: |
       change_count > 5, 85,
       75
     )
-  | KEEP user.name, host.name, change_count, files_affected, services, registry_keys, actions, risk_score
+  | KEEP agent_id, user.name, host.name, change_count, files_affected, services, registry_keys, actions, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

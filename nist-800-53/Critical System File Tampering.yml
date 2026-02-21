@@ -19,11 +19,11 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - log-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, log-audit*
   | WHERE event.action IN ("modified-file", "created-file", "overwrite")
     AND (
       file.path RLIKE "(?i).*C:\\\\Windows\\\\System32\\\\.*\\.exe$"
@@ -49,7 +49,7 @@ query: |
       system_criticality == "Critical", modification_count * 50,
       modification_count * 30
     )
-  | KEEP bucket, host.name, system_criticality, modification_count, unique_files, modified_files, modifiers, risk_score
+  | KEEP agent_id, bucket, host.name, system_criticality, modification_count, unique_files, modified_files, modifiers, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

@@ -18,37 +18,49 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - winlogbeat-*
-  - auditbeat-*
+  - logs-winlog*
+  - logs-audit*
 query_language: esql
 query: |
-  FROM winlogbeat-*, auditbeat-*
+  FROM logs-winlog*, logs-audit*
   | WHERE event.outcome == "failure"
-    AND (
-      event.code IN ("4656", "4663", "5145") 
-      OR (event.category == "file" AND event.action == "open")
-      OR (event.category == "process" AND event.action == "exec")
-    )
+  AND (
+    event.code IN ("4656", "4663", "5145") 
+    OR (event.category == "file" AND event.action == "open")
+    OR (event.category == "process" AND event.action == "exec")
+  )
   | EVAL sensitive_path = CASE(
-      file.path RLIKE "(?i).*(\\\\system32\\\\config|/etc/shadow|/etc/sudoers|SAM|SYSTEM|SECURITY).*", true,
-      file.path RLIKE "(?i).*(\\\\windows\\\\|/root/|/var/|HKLM\\\\SAM).*", true,
-      false
-    )
-  | WHERE sensitive_path == true OR event.original IS NOT NULL
+    file.path RLIKE "(?i).*(\\\\system32\\\\config|/etc/shadow|/etc/sudoers|SAM|SYSTEM|SECURITY).*", true,
+    file.path RLIKE "(?i).*(\\\\windows\\\\|/root/|/var/|HKLM\\\\SAM).*", true,
+    false
+  )
+  | WHERE sensitive_path OR event.original IS NOT NULL
   | STATS 
-      failure_count = COUNT(*),
-      unique_targets = COUNT_DISTINCT(COALESCE(file.path, process.name)),
-      failed_paths = VALUES(file.path),
-      failed_processes = VALUES(process.name)
-    BY host.name, user.name, source.ip
-    , bucket = DATE_TRUNC(5 minutes, @timestamp)
+    failure_count = COUNT(*),
+    unique_targets = COUNT_DISTINCT(COALESCE(file.path, process.name)),
+    failed_paths = VALUES(file.path),
+    failed_processes = VALUES(process.name)
+  BY 
+    host.name, 
+    user.name, 
+    source.ip, 
+    bucket = DATE_TRUNC(5m, @timestamp)
   | WHERE failure_count >= 5
   | EVAL severity_multiplier = CASE(
-      failure_count > 20, 3,
-      failure_count > 10, 2,
-      1
-    )
-  | KEEP bucket, host.name, user.name, source.ip, failure_count, unique_targets, failed_paths, failed_processes, severity_multiplier
+    failure_count > 20, 3,
+    failure_count > 10, 2,
+    1
+  )
+  | KEEP 
+    agent_id, bucket, 
+    host.name, 
+    user.name, 
+    source.ip, 
+    failure_count, 
+    unique_targets, 
+    failed_paths, 
+    failed_processes, 
+    severity_multiplier
   | SORT failure_count DESC
 enabled: false
 tags:

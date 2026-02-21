@@ -48,7 +48,7 @@ query: |
       phi_sharing_events > 20, 90,
       85
     )
-  | KEEP event.original, host.name, phi_sharing_events, data_volume_mb, vendors, api_endpoints, risk_score
+  | KEEP agent_id, event.original, host.name, phi_sharing_events, data_volume_mb, vendors, api_endpoints, risk_score
   | SORT risk_score DESC
 enabled: false
 tags:

@@ -1,0 +1,71 @@
+name: VMware ESX - Virtual Machine Being Reconfigured
+description: |
+  VMware ESX muhitida virtual mashina qayta sozlanmoqda (VM_STATE_RECONFIGURING).
+  Bu ruxsatsiz konfiguratsiya o'zgarishi, persistence o'rnatish yoki
+  resurs manipulyatsiyasi belgisi bo'lishi mumkin (T1578).
+  SOC triage bosqichlari:
+  - vmware.originator orqali kim initiate qilganini aniqlang
+  - vmware.opid bilan operatsiyani to'liq kuzating
+  - vmware.sid sessiyasini solishtiring
+  - Change management ticketi mavjudligini aniqlang
+  - CPU/RAM/disk/network o'zgarishlari tafsirini tekshiring
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-vmware.esxi*
+query_language: esql
+query: |
+  FROM logs-vmware.esxi*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "vmware"
+  | WHERE event.dataset == "vmware.esxi"
+  | WHERE log.level == "info"
+  | WHERE message LIKE "*-> VM_STATE_RECONFIGURING*"
+  | STATS
+      reconfig_count      = COUNT(*),
+      affected_hosts      = VALUES(host.hostname),
+      unique_hosts        = COUNT_DISTINCT(host.hostname),
+      process_names       = VALUES(process.name),
+      process_ids         = VALUES(process.pid),
+      thread_ids          = VALUES(process.thread.id),
+      originator_list     = VALUES(vmware.originator),
+      opid_list           = VALUES(vmware.opid),
+      sid_list            = VALUES(vmware.sid),
+      syslog_priority     = VALUES(log.syslog.priority),
+      syslog_version      = VALUES(log.syslog.version),
+      log_logger          = VALUES(log.logger),
+      log_messages        = VALUES(message),
+      first_seen          = MIN(@timestamp),
+      last_seen           = MAX(@timestamp)
+    BY host.hostname, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE reconfig_count >= 1
+  | KEEP
+      bucket, host.hostname, reconfig_count,
+      affected_hosts, unique_hosts,
+      process_names, process_ids, thread_ids,
+      originator_list, opid_list, sid_list,
+      syslog_priority, syslog_version, log_logger,
+      log_messages, first_seen, last_seen
+  | SORT reconfig_count DESC
+  | LIMIT 50
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1578
+  - vmware
+  - esxi
+  - vm-state
+  - reconfiguration
+  - config-change
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1578/"
+nist: ["CM-3", "CM-6", "AU-14"]
+pci_dss: ["10.2.7"]
+gdpr: ["35.7.d"]
+hipaa: ["164.312.b"]
+mitre_attack:
+  TA0005:
+    T1578: []

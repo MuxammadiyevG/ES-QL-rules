@@ -40,7 +40,7 @@ query: |
       unique_destinations > 5, 80,
       70
     )
-  | KEEP source.ip, event.original, connection_count, ports, protocols, risk_level
+  | KEEP agent_id, source.ip, event.original, connection_count, ports, protocols, risk_level
   | SORT risk_level DESC
 enabled: false
 tags:

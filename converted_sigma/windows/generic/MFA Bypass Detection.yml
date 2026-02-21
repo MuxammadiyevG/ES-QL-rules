@@ -1,0 +1,63 @@
+#//RULE-NIST-10 — Multi-Factor Authentication Bypass (NIST IA-2)
+#//Control Family: IA (Identification and Authentication)
+#//Objective: Detect successful logins without MFA when policy requires it
+#//Threat scenario: Attacker bypasses MFA via legacy protocol or stolen session token
+#//Data sources: Windows Security 4624 (LogonType 3/10 without MFA claim), Azure AD logs
+#//ECS fields used: event.code, winlog.logon.type, winlog.event_data.TargetUserName, event.action
+#//Field validation: Verify all ECS fields exist in your indices before enabling
+#//Tuning notes: Requires MFA enforcement baseline, allowlist service accounts, legacy apps
+
+name: "MFA Bypass Detection"
+description: |
+  Detects successful interactive logins via RDP or network logon without multi-factor authentication.
+  LogonType 10 (RemoteInteractive) and Type 3 (Network) should require MFA per policy.
+  MFA bypass often achieved via legacy protocols (NTLM, basic auth) or token theft.
+  False positives: Service accounts, legacy applications unable to support MFA, emergency access accounts.
+  Triage: Verify if account is on MFA exclusion list, check authentication protocol used, 
+  review for concurrent credential theft indicators.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - winlogbeat-*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4624"
+    AND winlog.event_data.LogonType IN  ("3", "10")
+    AND event.outcome == "success"
+  | WHERE event.original != "Negotiate"
+    OR event.original IS NULL
+  | EVAL mfa_indicator = COALESCE(event.original, "NotPresent")
+  | WHERE mfa_indicator == "NotPresent"
+  | STATS 
+      non_mfa_logins = COUNT(*),
+      unique_sources = COUNT_DISTINCT(host.ip),
+      source_ips = VALUES(host.ip),
+      logon_types = VALUES(winlog.event_data.LogonType)
+    BY host.name, host.name
+    , bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE non_mfa_logins >= 1
+  | EVAL risk_score = non_mfa_logins * 20 + unique_sources * 10
+  | WHERE risk_score >= 20
+  | KEEP agent_id, bucket, host.name, host.name, non_mfa_logins, unique_sources, source_ips, logon_types, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - nist_800_53
+  - control_IA-2
+  - family_IA
+  - credential_access
+  - defense_evasion
+  - mfa_bypass
+severity: high
+risk_score: 70
+references:
+  - "NIST SP 800-53 Rev.5 IA-2: Identification and Authentication"
+  - "MITRE ATT&CK T1078: Valid Accounts"
+nist: ["IA-2"]
+gdpr: ["32"]
+pci_dss: ["8.3"]
+mitre_attack:
+  TA0005:
+    T1078: []

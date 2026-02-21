@@ -54,7 +54,7 @@ query: |
       traversal_technique == "Double Encoded", 85,
       75
     )
-  | KEEP source.ip, event.original, attempt_count, status_codes, traversal_technique, paths, user_agents, risk_score
+  | KEEP agent_id, source.ip, event.original, attempt_count, status_codes, traversal_technique, paths, user_agents, risk_score
   | SORT risk_score DESC
   | LIMIT 100
 enabled: false
