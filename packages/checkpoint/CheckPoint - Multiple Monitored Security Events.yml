@@ -28,7 +28,7 @@ query: |
       rules = VALUES(rule.name)
     BY source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 15
-  | KEEP agent_id, bucket, source.ip, event_count, dst_ips, attacks, protection_names, severities, rules
+  | KEEP bucket, source.ip, event_count, dst_ips, attacks, protection_names, severities, rules
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

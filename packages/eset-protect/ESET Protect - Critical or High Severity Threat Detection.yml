@@ -32,7 +32,7 @@ query: |
       devices = VALUES(eset_protect.detection.context.device_uuid)
     BY bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP agent_id, bucket, event_count, detection_names, categories, object_names, object_hashes, response_actions, users, devices
+  | KEEP bucket, event_count, detection_names, categories, object_names, object_hashes, response_actions, users, devices
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

@@ -33,7 +33,7 @@ query: |
       country         = VALUES(source.geo.country_name)
     BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE blocked_count >= 50
-  | KEEP agent_id, bucket, source.ip, blocked_count, unique_dst_ips, unique_ports,
+  | KEEP bucket, source.ip, blocked_count, unique_dst_ips, unique_ports,
          dest_ips, dst_ports, protocols, devices, reasons, country
   | SORT blocked_count DESC
   | LIMIT 50

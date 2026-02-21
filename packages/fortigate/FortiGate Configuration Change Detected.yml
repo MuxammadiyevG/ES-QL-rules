@@ -22,7 +22,7 @@ query: |
     AND fortinet.fortigate.subtype == "system"
     AND message LIKE "*state=\"Config-Changed\"*"
   | EVAL Dev = COALESCE(observer.name, observer.name.text, "FortiGate")
-  | KEEP agent_id, @timestamp, Dev, message
+  | KEEP @timestamp, Dev, message
   | SORT @timestamp DESC
   | LIMIT 100
 enabled: true

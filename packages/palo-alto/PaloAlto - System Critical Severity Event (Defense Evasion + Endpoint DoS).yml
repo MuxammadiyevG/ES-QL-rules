@@ -30,7 +30,7 @@ query: |
       serials        = VALUES(observer.serial_number)
     BY observer.hostname, bucket = DATE_TRUNC(2 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP agent_id, bucket, observer.hostname, event_count, unique_devices, reasons, rule_names, serials
+  | KEEP bucket, observer.hostname, event_count, unique_devices, reasons, rule_names, serials
   | SORT event_count DESC
   | LIMIT 50
 enabled: true

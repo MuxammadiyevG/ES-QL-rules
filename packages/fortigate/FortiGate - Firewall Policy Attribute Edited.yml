@@ -23,7 +23,7 @@ query: |
     AND message LIKE "*cfgpath=\"firewall.policy\"*"
   | EVAL Device = COALESCE(observer.name, observer.name.text, "FortiGate"),
          Action_Type = "Firewall policy attribute edited"
-  | KEEP agent_id, @timestamp, Device, Action_Type, message
+  | KEEP @timestamp, Device, Action_Type, message
   | SORT @timestamp DESC
   | LIMIT 100
 enabled: true

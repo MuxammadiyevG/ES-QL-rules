@@ -34,7 +34,7 @@ query: |
       message LIKE "*state=\"Config-Changed\"*", "Logout state = Config-Changed",
       "Configuration change (other)"
     )
-  | KEEP agent_id, @timestamp, Device, Kim, Nima, message
+  | KEEP @timestamp, Device, Kim, Nima, message
   | SORT @timestamp DESC
   | LIMIT 100
 enabled: true

@@ -28,7 +28,7 @@ query: |
       zones = VALUES(observer.egress.zone)
     BY source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 25
-  | KEEP agent_id, bucket, source.ip, event_count, dst_ips, dst_ports, applications, protocols, zones
+  | KEEP bucket, source.ip, event_count, dst_ips, dst_ports, applications, protocols, zones
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

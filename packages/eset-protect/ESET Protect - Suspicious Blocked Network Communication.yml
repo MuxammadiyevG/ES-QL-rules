@@ -32,7 +32,7 @@ query: |
       detection_types = VALUES(eset_protect.detection.type_name)
     BY host.hostname, eset_protect.detection.context.device_uuid, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 10
-  | KEEP agent_id, bucket, host.hostname, eset_protect.detection.context.device_uuid, event_count, remote_ips, remote_ports, protocols, directions, processes, detection_types
+  | KEEP bucket, host.hostname, eset_protect.detection.context.device_uuid, event_count, remote_ips, remote_ports, protocols, directions, processes, detection_types
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

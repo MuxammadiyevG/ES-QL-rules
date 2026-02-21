@@ -34,7 +34,7 @@ query: |
     BY host.hostname, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE reconfig_count >= 1
   | KEEP
-      agent_id, bucket, host.hostname, reconfig_count,
+      bucket, host.hostname, reconfig_count,
       affected_hosts, unique_hosts,
       originator_list, opid_list, sid_list,
       log_messages, first_seen, last_seen
