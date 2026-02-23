@@ -1,3 +1,4 @@
+rule_id: 2b5bc626-aed9-4350-9939-0df51b8f3f4e
 #//RULE-PCI-05 — Insecure Service Enabled (PCI 2.2.2)
 #//Requirement: 2
 #//Objective: Detect unnecessary or insecure services running

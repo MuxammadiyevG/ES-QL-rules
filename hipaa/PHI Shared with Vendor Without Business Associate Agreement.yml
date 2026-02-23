@@ -1,3 +1,4 @@
+rule_id: 3d5cc3f5-0fbd-49eb-a683-1464a022148a
 #//RULE-HIPAA-33 — Business Associate Agreement (BAA) Missing - §164.504(e)
 #//Requirement: HIPAA Privacy Rule §164.504(e) - Business Associate Contracts
 #//Objective: Detect PHI sharing with vendors without executed BAA

@@ -1,3 +1,4 @@
+rule_id: 3b2bf9fb-d135-452d-86c4-58217d3f5c7a
 name: "GraphQL Introspection and Injection Attacks"
 description: |
   This rule detects GraphQL introspection queries and injection attempts by identifying __schema, __type introspection queries, deeply nested queries, batched queries, and injection payloads in GraphQL requests.

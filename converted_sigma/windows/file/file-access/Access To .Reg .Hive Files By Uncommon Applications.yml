@@ -1,3 +1,4 @@
+rule_id: abe717db-351d-45d1-afa4-da68872ef852
 name: "Access To .Reg/.Hive Files By Uncommon Applications"
 description: |
   Detects file access to files ending with ".reg" or ".hive", commonly associated with Windows Registry

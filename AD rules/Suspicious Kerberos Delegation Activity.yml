@@ -1,3 +1,4 @@
+rule_id: 48e33c44-c298-4fbe-ab85-9f0c475c1b1e
 name: Suspicious Kerberos Delegation Activity
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Suspicious Kerberos Delegation Activity` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

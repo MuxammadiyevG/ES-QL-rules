@@ -1,3 +1,4 @@
+rule_id: 0ec0f1ab-bcac-4f3b-a35e-e9a96aad47a0
 name: AD User Account Disabled Burst on Domain Controller (4725)
 description: |
   Ushbu qoida privilege escalation va defense evasion kontekstida akkauntlarni ommaviy disable qilish urinishlarini aniqlaydi.

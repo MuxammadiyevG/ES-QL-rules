@@ -1,3 +1,4 @@
+rule_id: fd496d22-14f8-413e-b1a2-c446c1fa2187
 name: Windows Security Audit Log Cleared
 description: |
   Security loglari qo'lda tozalanganligini aniqlaydi (Event ID 1102). 

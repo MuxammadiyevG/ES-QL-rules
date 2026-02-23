@@ -1,3 +1,4 @@
+rule_id: 1dd1daec-5d7c-4292-bcf9-feec56f940d6
 name: "Windows LOLBin Suspicious Chain Execution"
 description: |
   This rule detects abuse of Windows "Living Off The Land" binaries (LOLBins) - legitimate Windows utilities weaponized by attackers. It identifies suspicious execution chains of PowerShell, WMIC, reg.exe, sc.exe, rundll32.exe with high-risk arguments such as encoded commands, remote execution flags, registry manipulation, service creation, or DLL execution. The rule triggers when 3+ LOLBin executions with suspicious patterns occur on a single host within 20 minutes.

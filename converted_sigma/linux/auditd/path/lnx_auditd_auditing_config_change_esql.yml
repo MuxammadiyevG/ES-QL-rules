@@ -1,3 +1,4 @@
+rule_id: 7fa664a3-6734-4455-bf1e-51d4bc8168e0
 name: "Auditing Configuration Changes Detection"
 description: |
   Detects changes to auditd configuration files.

@@ -1,3 +1,4 @@
+rule_id: ce718778-f3f7-495b-be38-e9b5ccc3c0c0
 name: "New Self Extracting Package Created Via IExpress.EXE"
 description: |
   Detects creation of self-extracting packages via IExpress. Attackers have been observed leveraging

@@ -1,3 +1,4 @@
+rule_id: 074605f5-a0e9-455d-805a-c5a61acc21a1
 #//RULE-HIPAA-15 — Patient Access Request Not Fulfilled - §164.524
 #//Requirement: HIPAA Privacy Rule §164.524 - Right of Access
 #//Objective: Detect patient medical record requests not fulfilled within 30 days

@@ -1,3 +1,4 @@
+rule_id: a3504a7f-9f98-428b-ad55-66a7fc8a1cd5
 name: "Privileged Group Membership Change"
 description: |
   This rule monitors for additions to high-privilege Windows security groups including Domain Admins, Enterprise Admins, Administrators, Schema Admins, and other sensitive groups. It triggers when Event ID 4728/4732/4756 (group membership addition) occurs for these critical groups. Any modification to privileged groups represents a significant security event that requires immediate investigation.

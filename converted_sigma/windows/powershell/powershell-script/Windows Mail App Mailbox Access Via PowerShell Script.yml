@@ -1,3 +1,4 @@
+rule_id: 3f28c4d4-d07b-4202-8624-87fc0b654dcc
 name: "Windows Mail App Mailbox Access Via PowerShell Script"
 description: |
   Detects PowerShell Script Block Logging events that reference the Windows Mail app mailbox storage path

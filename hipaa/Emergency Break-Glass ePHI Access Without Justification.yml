@@ -1,3 +1,4 @@
+rule_id: 0555e2bb-b4bf-429e-967b-2e79c238bc05
 #//RULE-HIPAA-04 — Emergency Access Without Documentation - §164.312(a)(2)(ii)
 #//Requirement: HIPAA Security Rule §164.312(a)(2)(ii) - Emergency Access Procedure
 #//Objective: Detect break-glass access without proper logging/justification

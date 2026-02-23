@@ -1,3 +1,4 @@
+rule_id: 51df74d0-e403-48ae-b561-2e67b8b564f9
 name: Kerberos Ticket Renewal - Normal Operations
 description: |
   Monitors Kerberos ticket renewal (Event ID 4770) which is part of normal long-running session operations. Tracks session persistence and Kerberos ticket lifecycle.

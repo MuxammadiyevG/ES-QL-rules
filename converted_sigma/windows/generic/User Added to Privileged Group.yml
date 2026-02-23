@@ -1,3 +1,4 @@
+rule_id: 97020a1e-d91b-40d8-877f-a97a1f9191b9
 name: User Added to Privileged Group
 description: |
   Foydalanuvchining Domain Admins yoki boshqa muhim guruhlarga qo'shilishi (Event ID 4728, 4732).

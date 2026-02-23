@@ -1,3 +1,4 @@
+rule_id: 3cf4fdde-a9e8-4ba0-8a2e-2ea197aa6c67
 #//RULE-PCI-01 — Firewall Rule Change Detection (PCI 1.1.1, 1.1.7)
 #//Requirement: 1
 #//Objective: Detect unauthorized firewall configuration changes

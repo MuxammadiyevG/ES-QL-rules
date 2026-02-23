@@ -1,3 +1,4 @@
+rule_id: 9beebcf2-dd0f-4d86-a860-f60c339c80e6
 name: "Magic SysRq Key Configuration Access"
 description: |
   Detects access to /proc/sys/kernel/sysrq configuration file.

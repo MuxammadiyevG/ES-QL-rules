@@ -1,3 +1,4 @@
+rule_id: 6db3bf71-845c-4e46-9e23-c597f0f329b7
 name: "Microsoft Office Trusted Location Updated"
 description: |
   Detects registry modifications that add or update Microsoft Office Trusted Locations.

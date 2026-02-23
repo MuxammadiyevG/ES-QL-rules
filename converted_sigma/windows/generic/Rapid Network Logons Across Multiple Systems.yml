@@ -1,3 +1,4 @@
+rule_id: 7e13ed51-dd0d-4b35-90c0-345e916fdbe6
 name: Rapid Network Logons Across Multiple Systems
 description: |
   Detects network logons (Event ID 4624, LogonType 3) from a single source account to multiple destination systems within a short timeframe. This pattern indicates potential lateral movement using techniques like Pass-the-Hash or stolen credentials.

@@ -1,3 +1,4 @@
+rule_id: fd26b401-fcf1-4116-890a-bc6cf40936ec
 name: "Mass Database Table Access Pattern"
 description: |
   This rule identifies potential data exfiltration by detecting mass access to database-related tables or keywords in logs. It uses heuristic pattern matching in event.original to find indicators like "SELECT * FROM users", "customer", "payment", "credit_card", or bulk query patterns. The rule triggers when 20+ database access operations with sensitive table indicators are detected from a single user or host within 20 minutes.

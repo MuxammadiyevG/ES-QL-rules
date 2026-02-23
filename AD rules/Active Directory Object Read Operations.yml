@@ -1,3 +1,4 @@
+rule_id: ef612d1f-df6c-459a-a14c-6a952811d12a
 name: Active Directory Object Read Operations
 description: |
   Ushbu qoida persistence, privilege escalation va credential access texnikalariga bog'liq bo'lib, `Active Directory Object Read Operations` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: f93c69af-b59b-4083-9e43-1f6f80d93cba
 name: "Polyglot File Upload - Multi-Format Malicious Files"
 description: |
   This rule detects uploads of polyglot files that are valid in multiple formats (e.g., valid JPEG and PHP simultaneously) by identifying suspicious file headers, magic bytes manipulation, or files combining image and executable formats.

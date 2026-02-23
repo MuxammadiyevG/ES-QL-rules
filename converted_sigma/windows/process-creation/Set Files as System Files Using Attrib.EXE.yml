@@ -1,3 +1,4 @@
+rule_id: b4ce161d-b1f7-4daf-a969-5bca8747b9e0
 name: "Set Files as System Files Using Attrib.EXE"
 description: |
   Detects execution of attrib.exe with the "+s" flag to mark files as system files. Adversaries can set

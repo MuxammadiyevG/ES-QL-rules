@@ -1,3 +1,4 @@
+rule_id: b3d08f7c-4776-4225-8a19-73845e781728
 #//RULE-NIST-05 — Impossible Travel Detection (NIST AC-2, IA-2)
 #//Control Family: AC (Access Control), IA (Identification and Authentication)
 #//Objective: Detect geographically impossible user logins

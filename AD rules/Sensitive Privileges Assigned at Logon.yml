@@ -1,3 +1,4 @@
+rule_id: 8f498058-c62f-4ae9-833e-75f6182a3667
 name: Sensitive Privileges Assigned at Logon
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Sensitive Privileges Assigned at Logon` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

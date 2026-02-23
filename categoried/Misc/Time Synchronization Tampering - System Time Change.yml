@@ -1,3 +1,4 @@
+rule_id: a8c70af1-3e71-4eaf-8f23-b87a1197ddfb
 name: "Time Synchronization Tampering - System Time Change"
 description: |
   This rule detects modifications to system time settings which can be used to evade time-based security controls, manipulate log timestamps, or bypass certificate validation. Adversaries may change system time to interfere with forensic analysis or security mechanisms.

@@ -1,3 +1,4 @@
+rule_id: bdbe3c21-f1e7-4d7e-898b-dba43047facb
 name: "GDPR Art.25(1) - Data Protection by Design Controls Failure"
 description: |
   Detects failures or absence of technical data-protection-by-design controls required

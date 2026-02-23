@@ -1,3 +1,4 @@
+rule_id: 66893245-0ab2-443e-a717-80412a8c4ae0
 name: Nginx - Suspicious or Malicious User Agents
 description: |
   Ushbu qoida Nginx access log'da suspicious yoki malicious user agent'larni aniqlaydi.

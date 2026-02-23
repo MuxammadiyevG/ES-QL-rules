@@ -1,3 +1,4 @@
+rule_id: 2afdc6d1-6a86-4725-b11c-e2b8518c1e40
 name: FortiGate - Firewall Policy Attribute Edited
 description: |
   Ushbu qoida FortiGate qurilmalarida mavjud firewall polisyalarining atributlari o'zgartirilganini aniqlaydi.

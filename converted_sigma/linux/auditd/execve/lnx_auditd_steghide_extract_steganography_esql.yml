@@ -1,3 +1,4 @@
+rule_id: 2871d477-730e-4dcd-8a2d-10a972eb9827
 name: "Steghide Extract Steganography"
 description: |
   Detects usage of steghide to extract data from images.

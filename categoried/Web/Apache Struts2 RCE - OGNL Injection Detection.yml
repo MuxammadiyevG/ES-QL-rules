@@ -1,3 +1,4 @@
+rule_id: f636cb1e-a3fd-4c23-891f-a811378f14ff
 name: "Apache Struts2 RCE - OGNL Injection Detection"
 description: |
   This rule detects attempts to exploit Apache Struts2 vulnerabilities through OGNL (Object-Graph Navigation Language) injection. Multiple CVEs affect Struts2 including CVE-2017-5638, CVE-2018-11776, and others. Attackers inject OGNL expressions in HTTP headers or parameters to achieve remote code execution.

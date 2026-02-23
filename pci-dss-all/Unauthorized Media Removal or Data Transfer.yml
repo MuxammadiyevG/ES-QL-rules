@@ -1,3 +1,4 @@
+rule_id: 95dc8319-5aa6-40ea-9029-ea9e917400e1
 #//RULE-PCI-29 — Media Removed Without Authorization (PCI 9.6, 9.7)
 #//Requirement: 9
 #//Objective: Detect removal of media containing cardholder data without approval

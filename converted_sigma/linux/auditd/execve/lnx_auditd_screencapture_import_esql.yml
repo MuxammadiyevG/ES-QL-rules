@@ -1,3 +1,4 @@
+rule_id: eeb5d51c-1ca0-4431-a04d-1c17ab429def
 name: "Screen Capture with Import Command"
 description: |
   Detects screen capture using ImageMagick import command.

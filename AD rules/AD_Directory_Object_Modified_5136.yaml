@@ -1,3 +1,4 @@
+rule_id: 7ddd8fe2-fcfd-4a39-81c0-422d8cc4287e
 name: AD Directory Object Modified Suspiciously (5136)
 description: |
   Ushbu qoida persistence va privilege escalation hujumlarida ishlatiladigan AD obyekt atributlari o'zgarishini aniqlaydi.

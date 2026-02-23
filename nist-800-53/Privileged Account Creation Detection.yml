@@ -1,3 +1,4 @@
+rule_id: 5abbfed8-e727-4bd1-8f29-ad6c98a95749
 #//RULE-NIST-01 — Privileged Account Creation (NIST AC-2)
 #//Control Family: AC (Access Control)
 #//Objective: Detect unauthorized creation of privileged accounts

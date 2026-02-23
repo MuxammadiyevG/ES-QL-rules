@@ -1,3 +1,4 @@
+rule_id: 04887f86-f939-49dd-b1b1-fb2e166877de
 name: Tomcat - Anomalous 500 Error Rate Spike (App Crash / DoS Indicator)
 description: |
   Ushbu qoida qisqa vaqt ichida katta miqdordagi HTTP 500 xatoliklarini 

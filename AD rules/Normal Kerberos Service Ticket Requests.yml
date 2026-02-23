@@ -1,3 +1,4 @@
+rule_id: 2c29de60-3dfd-4396-a46f-4a54644975c8
 name: Normal Kerberos Service Ticket Requests
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Normal Kerberos Service Ticket Requests` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: e7ae7c50-2f23-4cc5-9b45-24c8ceef0674
 name: ESET Protect - Suspicious Blocked Network Communication
 description: |
   Ushbu qoida ESET tomonidan block qilingan suspicious network communication'larni aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 7f80ab2a-27b0-4652-bcb4-7d07a200fce9
 name: "Suspicious Outbound Connection to Rare Port"
 description: |
   This rule identifies outbound network connections to uncommon high ports (1024-65535) from workstations or application servers. It focuses on detecting command-and-control (C2) channels, data exfiltration tunnels, and reverse shells that often use non-standard ports to evade detection. The rule triggers when a host initiates 15+ connections to ports outside the common service range within 20 minutes.

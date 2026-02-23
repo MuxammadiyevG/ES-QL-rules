@@ -1,3 +1,4 @@
+rule_id: c85ded9c-c2d9-4a0b-857e-5c3f2cec4a6e
 name: FortiGate - High Volume Data Exfiltration Detection
 description: |
   Ushbu qoida FortiGate trafik loglari asosida tashqi tarmoqqa yuborilayotgan ma'lumotlar hajmini nazorat qiladi.

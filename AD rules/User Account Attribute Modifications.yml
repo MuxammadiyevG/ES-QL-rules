@@ -1,3 +1,4 @@
+rule_id: 8c08a0d0-b1cc-4822-bfdb-b34067c0a6ef
 name: User Account Attribute Modifications
 description: |
   Ushbu qoida credential access va privilege escalation texnikalariga bog'liq bo'lib, `User Account Attribute Modifications` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

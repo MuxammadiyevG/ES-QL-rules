@@ -1,3 +1,4 @@
+rule_id: 6034c8ae-32df-4ea2-ad05-4f2c2fd0211f
 name: AD Domain Policy Changed (4739)
 description: |
   Ushbu qoida privilege escalation va defense evasion bilan bog'liq bo'lib, domen siyosati parametrlarining o'zgarishini aniqlaydi.

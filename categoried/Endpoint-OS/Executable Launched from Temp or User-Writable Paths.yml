@@ -1,3 +1,4 @@
+rule_id: 6461295a-2fa6-4b16-ac6f-4952d87ed153
 name: "Executable Launched from Temp or User-Writable Paths"
 description: |
   This rule detects process execution from temporary or user-writable directories such as C:\Users\*\AppData\Local\Temp, C:\Windows\Temp, /tmp, /var/tmp, and Downloads folders. Attackers frequently stage malware in these locations because they don't require administrative privileges and are often excluded from application whitelisting. The rule triggers when 5+ processes are executed from these paths on a single host within 30 minutes.

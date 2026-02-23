@@ -1,3 +1,4 @@
+rule_id: f4123df2-5d47-4709-bd91-7f18b90382ff
 name: "Archive Bomb Upload - Zip Bomb and Decompression DoS"
 description: |
   This rule detects potential zip bomb or archive bomb uploads by identifying unusually high compression ratios, nested archives, or specific zip bomb signatures in upload requests. These files can cause denial of service when decompressed.

@@ -1,3 +1,4 @@
+rule_id: ea900b29-1282-4a82-80a0-b02be53643f0
 name: "Antivirus Web Shell Detection"
 description: |
   Detects a highly relevant Antivirus alert that reports a web shell.

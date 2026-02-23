@@ -1,3 +1,4 @@
+rule_id: 2de5a4fc-60a7-464e-bbce-0675ba4fe3a7
 name: FortiGate - Network Flood Detection
 description: |
   Bitta manba IPdan juda qisqa vaqt ichida haddan tashqari ko'p (5000 dan ortiq) sessiyalar ochilishini aniqlaydi. 

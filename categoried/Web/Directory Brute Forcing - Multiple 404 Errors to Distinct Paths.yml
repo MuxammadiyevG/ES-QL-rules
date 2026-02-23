@@ -1,3 +1,4 @@
+rule_id: 30d80fff-6956-4990-ada3-314d9d3269d0
 
 name: "Directory Brute Forcing - Multiple 404 Errors to Distinct Paths"
 description: |

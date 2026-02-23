@@ -1,3 +1,4 @@
+rule_id: 12924758-5535-4c8d-aaaa-359aa21cb698
 name: "Multiple Failed RDP Logons Across Multiple Hosts - Lateral Movement Attempt"
 description: |
   This rule detects multiple failed RDP (Remote Desktop Protocol) logon attempts across different hosts from a single user or source IP, indicating potential lateral movement reconnaissance or credential stuffing. Adversaries often probe multiple systems to find accessible targets.

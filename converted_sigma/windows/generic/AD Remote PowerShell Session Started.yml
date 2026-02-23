@@ -1,3 +1,4 @@
+rule_id: dbff69e2-fd03-485d-b5fa-43b8c34d5b74
 name: AD Remote PowerShell Session Started
 description: |
   Domain Controller yoki serverlarda masofaviy PowerShell sessiyasi boshlanganini aniqlaydi (Event ID 400).

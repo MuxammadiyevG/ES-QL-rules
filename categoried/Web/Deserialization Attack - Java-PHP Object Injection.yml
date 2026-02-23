@@ -1,3 +1,4 @@
+rule_id: c7bf1975-2036-422a-9fc5-b52c4e4d8560
 name: "Deserialization Attack - Java/PHP Object Injection"
 description: |
   This rule detects potential deserialization attacks by identifying serialized object patterns in HTTP requests. Common indicators include Java serialized objects (rO0AB, aced0005), PHP serialized objects (O:), Python pickle objects, and .NET ViewState manipulation.

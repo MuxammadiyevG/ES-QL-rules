@@ -1,3 +1,4 @@
+rule_id: 9d8a5444-d4a8-444e-81ae-3e6762404037
 
 name: "Kerberos Pre-Authentication Disabled - Potential AS-REP Roasting Setup"
 description: |

@@ -1,3 +1,4 @@
+rule_id: 1666c5fc-6d38-4400-a26c-39909ea872d8
 name: Suspicious Kerberos Delegation Activity
 description: |
   Detects potential abuse of Kerberos delegation including unconstrained and constrained delegation attacks. Monitors for unusual service ticket requests using delegation (S4U2Proxy) and accounts with delegation privileges making suspicious authentication patterns.

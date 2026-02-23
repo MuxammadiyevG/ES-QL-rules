@@ -1,3 +1,4 @@
+rule_id: 27414f73-b670-453e-8a4d-8b4331b83d5b
 name: Audit Policy Disabled or Modified
 description: |
   Detects changes to Windows audit policies (Event ID 4719) which attackers use to disable logging and evade detection. Monitors for audit policy subcategory changes especially those that disable critical security logging.

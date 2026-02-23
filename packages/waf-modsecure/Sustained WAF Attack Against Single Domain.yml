@@ -1,3 +1,4 @@
+rule_id: 6bf7e22e-b653-40a9-a340-1a5dfd2480c7
 name: Sustained WAF Attack Against Single Domain
 description: |
   Bitta domen uzoq vaqt davomida uzluksiz WAF hujumlariga duchor bo'lmoqda.

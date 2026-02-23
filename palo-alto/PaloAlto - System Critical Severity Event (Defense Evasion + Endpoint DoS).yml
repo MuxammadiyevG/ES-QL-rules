@@ -1,3 +1,4 @@
+rule_id: 6adea152-19ad-4c3e-871b-40b0b7b1314d
 name: PaloAlto - System Critical Severity Event (Defense Evasion + Endpoint DoS)
 description: |
   Palo Alto NGFW tizimidan CRITICAL darajadagi system xabari aniqlandi.

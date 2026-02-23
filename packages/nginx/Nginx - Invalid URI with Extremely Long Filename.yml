@@ -1,3 +1,4 @@
+rule_id: ddfae7c8-0fa4-4879-9b5a-3723660ee726
 name: Nginx - Invalid URI with Extremely Long Filename
 description: |
   Ushbu qoida Nginx'da juda uzun filename bilan invalid URI request'larni aniqlaydi.

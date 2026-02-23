@@ -1,3 +1,4 @@
+rule_id: 296df52a-0806-494c-8f01-208b1b0924d1
 #//RULE-HIPAA-08 — ePHI Data Integrity Violation - Unauthorized Modification - §164.312(c)(1)
 #//Requirement: HIPAA Security Rule §164.312(c)(1) - Integrity
 #//Objective: Detect unauthorized modifications to ePHI

@@ -1,3 +1,4 @@
+rule_id: 4f024d6e-a4d3-4ed5-9bb3-12170455ffbd
 #//RULE-PCI-36 — Critical System Object Deletion (PCI 10.2.7)
 #//Requirement: 10
 #//Objective: Detect creation and deletion of system-level objects

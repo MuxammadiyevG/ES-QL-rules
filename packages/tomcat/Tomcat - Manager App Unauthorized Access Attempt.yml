@@ -1,3 +1,4 @@
+rule_id: 5f3e05ad-c481-4542-bb0e-480480e9dc00
 name: Tomcat - Manager App Unauthorized Access Attempt
 description: |
   Ushbu qoida Tomcat Manager, Host Manager va admin interfeyslarga 

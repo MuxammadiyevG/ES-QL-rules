@@ -1,3 +1,4 @@
+rule_id: f5797a68-d197-4880-bfed-0e590fc77394
 name: "INFO - Linux SSH Authentication Success (auditd)"
 description: |
   Baselines successful SSH authentication events via auditd.

@@ -1,3 +1,4 @@
+rule_id: 487ea91b-c522-496d-b7ad-adc8751e4019
 name: "WMI Persistence and Lateral Movement Indicators"
 description: |
   This rule detects Windows Management Instrumentation (WMI) abuse for persistence and lateral movement. It identifies WMI event subscriptions (Event Consumers, Event Filters), remote WMI process creation, and suspicious WMI queries. Attackers use WMI for fileless persistence and remote command execution. The rule triggers when 3+ WMI persistence or lateral movement indicators are detected on a host within 15 minutes.

@@ -1,3 +1,4 @@
+rule_id: 5389f50c-9509-4ae1-b22f-5aa8e09fcf7a
 name: AD Group Policy Modification
 description: |
   Group Policy obyekti yaratilishi, o'zgartirilishi yoki o'chirilishini aniqlaydi (Event ID 5136, 5137).

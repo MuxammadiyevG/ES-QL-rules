@@ -1,3 +1,4 @@
+rule_id: bd93f2b0-1bf7-44ba-b432-15d8069925ae
 #//RULE-PCI-17 — SQL Injection Attempt (PCI 6.5.1)
 #//Requirement: 6
 #//Objective: Detect SQL injection attacks against web applications

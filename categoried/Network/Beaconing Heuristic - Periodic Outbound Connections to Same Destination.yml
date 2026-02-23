@@ -1,3 +1,4 @@
+rule_id: fd2723ac-9ace-44b8-91bd-2df3286226ec
 name: "Beaconing Heuristic - Periodic Outbound Connections to Same Destination"
 description: |
   This rule detects potential command-and-control (C2) beaconing by identifying periodic outbound connections to the same external destination IP within consistent time intervals. This pattern suggests malware calling home for instructions.

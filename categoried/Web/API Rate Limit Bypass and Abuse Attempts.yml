@@ -1,3 +1,4 @@
+rule_id: c3f45395-e8ce-40f1-b8a9-c841c44cfd8d
 name: "API Rate Limit Bypass and Abuse Attempts"
 description: |
   This rule detects attempts to bypass API rate limiting by identifying rapid requests from single sources, distributed requests with similar patterns, user-agent rotation, IP rotation indicators, or requests with rate limit bypass headers (X-Forwarded-For manipulation).

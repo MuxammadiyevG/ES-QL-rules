@@ -1,3 +1,4 @@
+rule_id: 271c8428-791f-4cd6-b03e-a7b4d55aab3e
 name: "Suspicious Service Configuration Change - Persistence Modification"
 description: |
   This rule detects modifications to existing Windows service configurations using sc.exe config or Set-Service cmdlets. Adversaries may modify legitimate services to execute malicious payloads, change service accounts, or alter startup types for persistence.

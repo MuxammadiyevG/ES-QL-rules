@@ -1,3 +1,4 @@
+rule_id: b8971069-aa93-431c-871d-01b8e9faa319
 name: Successful Kerberos Pre-Authentication
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Successful Kerberos Pre-Authentication` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

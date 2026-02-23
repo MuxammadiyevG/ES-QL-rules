@@ -1,3 +1,4 @@
+rule_id: cb03c168-cc19-48d3-b1b3-c08445f93309
 #//RULE-GDPR-09 — Default Privacy Settings Violation (GDPR Article 25(2))
 #//Requirement: Article 25
 #//Objective: Detect systems defaulting to maximum data collection

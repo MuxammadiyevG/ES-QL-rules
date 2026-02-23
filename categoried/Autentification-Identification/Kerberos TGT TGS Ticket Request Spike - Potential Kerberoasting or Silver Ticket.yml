@@ -1,3 +1,4 @@
+rule_id: b36cea49-fd0f-41b9-ae64-0573a21f11a7
 name: "Kerberos TGT/TGS Ticket Request Spike - Potential Kerberoasting or Silver Ticket"
 description: |
   This rule detects anomalous spikes in Kerberos service ticket (TGS) requests (Event ID 4769) from a single source, which may indicate Kerberoasting attacks where adversaries request service tickets for cracking offline. High volumes of TGT requests (4768) may also indicate Golden Ticket attacks or automated reconnaissance.

@@ -1,3 +1,4 @@
+rule_id: 77a04c9a-34c8-4e40-9d60-827c8faad231
 name: "Shadow Copy Deletion - Ransomware Behavior"
 description: |
   This rule detects deletion of volume shadow copies using tools like vssadmin, wmic, or PowerShell. Shadow copy deletion is a common ransomware technique to prevent file recovery.

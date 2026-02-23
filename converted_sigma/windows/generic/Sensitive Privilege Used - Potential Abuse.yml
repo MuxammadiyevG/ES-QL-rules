@@ -1,3 +1,4 @@
+rule_id: 05c85028-008f-4b16-ae87-f7209c9f939a
 name: Sensitive Privilege Used - Potential Abuse
 description: |
   Detects usage of sensitive privileges (Event ID 4673, 4674) that can be abused for attacks such as SeDebugPrivilege for credential dumping, SeBackupPrivilege for data theft, or SeLoadDriverPrivilege for rootkit installation.

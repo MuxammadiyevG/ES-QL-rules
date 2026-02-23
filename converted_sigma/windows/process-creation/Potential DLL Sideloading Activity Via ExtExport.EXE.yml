@@ -1,3 +1,4 @@
+rule_id: fa1521b5-19fd-46c5-8a0d-a6dc2f53695c
 name: "Potential DLL Sideloading Activity Via ExtExport.EXE"
 description: |
   Detects execution of Extexport.exe (Internet Explorer utility). This LOLBin can be abused for DLL sideloading

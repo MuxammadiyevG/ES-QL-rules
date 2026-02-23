@@ -1,3 +1,4 @@
+rule_id: 59ad02a6-9d6f-41b1-8200-b35455a427d7
 name: AD Account Lockout Spike on Domain Controller (4740)
 description: |
   Ushbu qoida credential access va brute-force faoliyatiga oid bo'lib, lockout hodisalarining keskin oshishini aniqlaydi.

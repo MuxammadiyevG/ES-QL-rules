@@ -1,3 +1,4 @@
+rule_id: 5d1148ff-1427-4101-b7ef-41e6c036c968
 #//RULE-NIST-07 — Audit Configuration Tampering (NIST AU-2, AU-12)
 #//Control Family: AU (Audit and Accountability)
 #//Objective: Detect modification of audit policy or logging configuration

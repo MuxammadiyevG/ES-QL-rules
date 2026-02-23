@@ -1,3 +1,4 @@
+rule_id: 2eb54f94-9ef9-4365-b3f3-805293eaaaef
 #//RULE-HIPAA-18 — Confidential Communications Request Not Honored - §164.522(b)
 #//Requirement: HIPAA Privacy Rule §164.522(b) - Confidential Communications
 #//Objective: Detect communications sent to non-requested addresses

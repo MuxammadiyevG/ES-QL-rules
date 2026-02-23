@@ -1,3 +1,4 @@
+rule_id: c1bff945-0f15-4afc-b69a-3dee6f6dbdf5
 name: VMware ESX - Virtual Machine Powering ON
 description: |
   VMware ESX muhitida virtual mashina yoqilish jarayoni boshlandi (VM_STATE_POWERING_ON).

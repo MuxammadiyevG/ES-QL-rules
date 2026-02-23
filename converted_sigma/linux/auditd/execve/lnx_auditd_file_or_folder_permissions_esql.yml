@@ -1,3 +1,4 @@
+rule_id: 9c5c18b1-adc5-46c9-802e-79d5fb03346f
 name: "File/Folder Permission Modification"
 description: |
   Detects chmod commands that modify file or folder permissions.

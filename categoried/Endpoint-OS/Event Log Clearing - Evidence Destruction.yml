@@ -1,3 +1,4 @@
+rule_id: 971c21ae-33b1-4c67-9c18-5ab212402f41
 name: "Event Log Clearing - Evidence Destruction"
 description: |
   This rule detects attempts to clear Windows event logs using wevtutil, PowerShell Clear-EventLog, or Event Viewer API calls. Log clearing is a common defense evasion and anti-forensics technique used to hide attacker activity.

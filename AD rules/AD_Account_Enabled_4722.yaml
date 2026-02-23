@@ -1,3 +1,4 @@
+rule_id: 600e9e42-29e5-49fd-85e5-8d84f15a6127
 name: AD Disabled Account Enabled on Domain Controller (4722)
 description: |
   Ushbu qoida persistence va privilege escalation bilan bog'liq bo'lib, oldin o'chirilgan akkauntning qayta yoqilishini kuzatadi.

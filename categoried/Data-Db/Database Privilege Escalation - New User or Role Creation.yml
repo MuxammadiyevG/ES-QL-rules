@@ -1,3 +1,4 @@
+rule_id: 30065423-c566-4e37-b04d-b080af04456f
 name: "Database Privilege Escalation - New User or Role Creation"
 description: |
   This rule detects creation of new database users or roles with elevated privileges. It looks for database administrative commands like CREATE USER, GRANT ALL, ALTER ROLE, or similar privilege assignment operations in audit logs. The detection focuses on identifying unauthorized privilege escalation within database management systems. The rule triggers when 2+ database user/role modification events occur within 10 minutes.

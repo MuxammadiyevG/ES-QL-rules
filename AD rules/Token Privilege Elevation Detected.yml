@@ -1,3 +1,4 @@
+rule_id: 1e90cebc-c146-4ab9-a328-34bcd780d649
 name: Token Privilege Elevation Detected
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Token Privilege Elevation Detected` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

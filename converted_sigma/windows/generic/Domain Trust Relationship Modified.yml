@@ -1,3 +1,4 @@
+rule_id: 868133a9-096d-4cd0-b381-2abb7753b8d9
 name: Domain Trust Relationship Modified
 description: |
   Detects modifications to domain trust relationships (Event ID 4706). Trust modifications are rare, high-privilege operations that can enable cross-domain attacks and should always be carefully audited.

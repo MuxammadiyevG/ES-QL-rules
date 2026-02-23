@@ -1,3 +1,4 @@
+rule_id: 2dc7f32f-53bf-4b93-b3f0-bd82ad72f413
 name: "Logging Configuration Changes Detection"
 description: |
   Detects changes to syslog daemons configuration files.

@@ -1,3 +1,4 @@
+rule_id: 8265e18e-aed1-4f93-aa2e-0ab6fcda13ba
 #//RULE-PCI-12 — Weak TLS/SSL Configuration (PCI 4.1, 4.1.1)
 #//Requirement: 4
 #//Objective: Detect weak or deprecated TLS versions and ciphers

@@ -1,3 +1,4 @@
+rule_id: 93dbba9d-95be-4635-94a2-120ff90ca9ec
 #//RULE-GDPR-10 — Inadequate Access Controls to Personal Data (GDPR Article 32(1)(b))
 #//Requirement: Article 32
 #//Objective: Detect unauthorized access to personal data systems

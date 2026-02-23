@@ -1,3 +1,4 @@
+rule_id: 2470c8c3-db4c-43de-bf10-ac18467b22e3
 name: Potential Golden Ticket Attack - Suspicious TGT Properties
 description: |
   Detects potential Golden Ticket attacks by identifying anomalous Kerberos TGT (Event ID 4768, 4769) requests with suspicious properties such as unusual encryption types, abnormal ticket lifetimes, or TGTs for unusual accounts like krbtgt. Golden Tickets allow attackers persistent domain access.

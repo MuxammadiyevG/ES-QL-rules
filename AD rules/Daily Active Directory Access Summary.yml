@@ -1,3 +1,4 @@
+rule_id: c4d54cf9-91ff-4385-ada4-57adc3bc63ff
 name: Daily Active Directory Access Summary
 description: |
   Ushbu qoida persistence, privilege escalation va credential access texnikalariga bog'liq bo'lib, `Daily Active Directory Access Summary` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

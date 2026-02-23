@@ -1,3 +1,4 @@
+rule_id: 07304c5d-0e7f-40de-bba1-cb2dcfea8744
 #//RULE-GDPR-15 — Unauthorized International Data Transfer (GDPR Chapter V)
 #//Requirement: Articles 44-50
 #//Objective: Detect personal data transfers to non-adequate countries without safeguards

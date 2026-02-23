@@ -1,3 +1,4 @@
+rule_id: e8590af6-b5e2-4e9a-a71d-0609cf21dc49
 name: AD User Logoff
 description: |
   Foydalanuvchi tizimdan chiqqanligini (Logoff) aniqlaydi (Event ID 4634).

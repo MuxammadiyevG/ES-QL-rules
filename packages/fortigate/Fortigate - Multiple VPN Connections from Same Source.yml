@@ -1,3 +1,4 @@
+rule_id: 7d225589-651d-4cc1-bbec-6a67cb30da54
 name: Fortigate - Multiple VPN Connections from Same Source
 description: |
   Ushbu qoida bir xil manba IP'dan ko'p VPN tunnel ulanishlarini aniqlaydi.

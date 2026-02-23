@@ -1,3 +1,4 @@
+rule_id: cd517394-d7dd-4dd0-b9a0-439b02a73e36
 name: WAF Attack from Previously Unseen Geographic Region
 description: |
   Odatda hujumlar kuzatilmagan yangi geografik mintaqadan (mamlakat yoki kontinent)

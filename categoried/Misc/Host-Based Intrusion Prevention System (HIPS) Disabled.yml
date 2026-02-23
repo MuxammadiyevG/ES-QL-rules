@@ -1,3 +1,4 @@
+rule_id: ecc0b4bf-dadc-4b4d-8d1e-a29988deaaba
 name: "Host-Based Intrusion Prevention System (HIPS) Disabled"
 description: |
   This rule detects attempts to disable host-based security controls such as HIPS, application whitelisting (AppLocker), or exploit protection features. Adversaries disable these controls to facilitate malware execution.

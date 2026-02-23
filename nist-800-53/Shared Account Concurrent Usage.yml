@@ -1,3 +1,4 @@
+rule_id: c70aa3c1-aaec-49ec-856d-efe39a741aa9
 #//RULE-NIST-11 — Shared Account Usage (NIST IA-4, AC-2)
 #//Control Family: IA (Identification and Authentication), AC (Access Control)
 #//Objective: Detect concurrent logins from shared/generic accounts

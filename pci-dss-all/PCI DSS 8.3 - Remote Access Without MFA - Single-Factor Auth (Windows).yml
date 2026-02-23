@@ -1,3 +1,4 @@
+rule_id: f60712b3-7b5c-49e7-a009-3c3f691c6ae2
 name: "PCI DSS 8.3 - Remote Access Without MFA / Single-Factor Auth (Windows)"
 description: |
   Detects successful remote network access (RDP/VPN/Network logon) where only

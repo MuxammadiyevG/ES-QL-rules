@@ -1,3 +1,4 @@
+rule_id: acfd51b8-5366-403f-9416-3f3ea2e1ff03
 name: AD Per-User Audit Policy Changed
 description: |
   Foydalanuvchilar uchun maxsus audit siyosati o'zgarganini aniqlaydi (Event ID 4712).

@@ -1,3 +1,4 @@
+rule_id: 0b5b149d-3e99-44c5-ada7-eaeedd8f59e0
 name: "Suspicious Process Parent-Child Relationship"
 description: |
   This rule identifies anomalous process parent-child relationships that indicate exploitation or malicious activity. It detects scenarios such as Office applications (Word, Excel, PowerPoint) spawning cmd.exe or PowerShell, web browsers launching scripting engines, or system binaries like explorer.exe spawning unusual child processes. These relationships often indicate macro-based malware, browser exploits, or user-initiated execution of malicious payloads.

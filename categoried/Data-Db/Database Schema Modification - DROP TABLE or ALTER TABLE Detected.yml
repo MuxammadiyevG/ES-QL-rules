@@ -1,3 +1,4 @@
+rule_id: 04c82b0e-1482-4f7f-9093-f9b7bb581695
 
 name: "Database Schema Modification - DROP TABLE or ALTER TABLE Detected"
 description: |

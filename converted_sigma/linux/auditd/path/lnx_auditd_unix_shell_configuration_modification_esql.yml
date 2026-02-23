@@ -1,3 +1,4 @@
+rule_id: 7ca64be0-8ec9-4301-91bc-4d305d01b29e
 name: "Unix Shell Configuration Modification"
 description: |
   Detects modification of Unix shell configuration files.

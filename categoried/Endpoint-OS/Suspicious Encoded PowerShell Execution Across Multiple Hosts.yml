@@ -1,3 +1,4 @@
+rule_id: 76c93776-ccc1-4b5f-8449-7fe941b355b3
 name: "Suspicious Encoded PowerShell Execution Across Multiple Hosts"
 description: |
   This rule detects encoded PowerShell commands (-EncodedCommand, -enc, -e) executed across multiple hosts within a short time window. This pattern suggests automated malware deployment, lateral movement, or coordinated attack campaigns using obfuscated payloads.

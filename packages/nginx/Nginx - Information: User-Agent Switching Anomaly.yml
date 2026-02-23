@@ -1,3 +1,4 @@
+rule_id: 555a9e3d-9c48-433e-bf70-c15db21f78f5
 name: Nginx - Information User-Agent Switching Anomaly
 description: |
   Bitta IP manzili tomonidan ko'plab turli xil User-Agent'lar ishlatilishini aniqlaydi.

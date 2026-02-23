@@ -1,3 +1,4 @@
+rule_id: cb44a85a-8e13-4ecc-9aca-bb64c11b6754
 #//RULE-GDPR-38 — SaaS Provider Data Processing in Undisclosed Jurisdictions (GDPR Article 28)
 #//Requirement: Article 28
 #//Objective: Detect third-party SaaS processing data outside documented regions

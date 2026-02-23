@@ -1,3 +1,4 @@
+rule_id: 8869733b-1392-42e1-bf0d-3b9c77f16340
 #//RULE-NIST-17 — Anomalous Network Connection (NIST SI-4, SC-7)
 #//Control Family: SI (System and Information Integrity), SC (System and Communications Protection)
 #//Objective: Detect unusual outbound network connections indicating C2 or data exfiltration

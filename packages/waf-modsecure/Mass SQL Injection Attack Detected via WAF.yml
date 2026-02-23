@@ -1,3 +1,4 @@
+rule_id: 68d36639-a622-4505-8144-0ed4832e4a40
 name: Mass SQL Injection Attack Detected via WAF
 description: |
   Ushbu qoida OWASP CRS tomonidan aniqlangan SQL Injection hujumlarini kuzatadi.

@@ -1,3 +1,4 @@
+rule_id: de815966-059a-4353-a80e-64dc8847aa6c
 #//RULE-HIPAA-05 — Automatic Logoff Not Configured - §164.312(a)(2)(iii)
 #//Requirement: HIPAA Security Rule §164.312(a)(2)(iii) - Automatic Logoff
 #//Objective: Detect long-duration sessions without timeout

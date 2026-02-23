@@ -1,3 +1,4 @@
+rule_id: 77e53966-1bba-48dc-90ac-56f8d83558bd
 name: "INFO - Linux Account Management (ADD_USER/DEL_USER/USER_CHAUTHTOK) (auditd)"
 description: |
   Baselines account events such as user creation/deletion/password changes via auditd.

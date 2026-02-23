@@ -1,3 +1,4 @@
+rule_id: 0c6b8718-0e40-47b5-ac52-6b9c89c83c80
 #//RULE-HIPAA-22 — Media Disposal Without Sanitization - §164.310(d)(2)(i)
 #//Requirement: HIPAA Security Rule §164.310(d)(2)(i) - Disposal
 #//Objective: Detect improper disposal of media containing ePHI

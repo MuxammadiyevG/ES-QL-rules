@@ -1,3 +1,4 @@
+rule_id: 578e04f5-2490-4135-94b6-2aa0fd907b2e
 name: "NoSQL Injection - MongoDB and Other NoSQL Databases"
 description: |
   This rule detects NoSQL injection attempts targeting MongoDB and other NoSQL databases by identifying operator injection patterns ($ne, $gt, $where, etc.), JavaScript injection in queries, and authentication bypass attempts specific to NoSQL syntax.

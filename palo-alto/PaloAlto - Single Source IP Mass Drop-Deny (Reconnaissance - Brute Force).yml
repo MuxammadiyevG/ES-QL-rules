@@ -1,3 +1,4 @@
+rule_id: 69f904b4-56e2-4e59-a4bb-0f4fd429cbd5
 name: PaloAlto - Single Source IP Mass Drop-Deny (Reconnaissance / Brute Force)
 description: |
   Bitta manba IP manzilidan qisqa vaqt ichida ko'p sonli drop/deny

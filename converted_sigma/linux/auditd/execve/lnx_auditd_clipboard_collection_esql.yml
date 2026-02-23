@@ -1,3 +1,4 @@
+rule_id: c0d7736a-f95f-40eb-b88f-44205d695c31
 name: "Clipboard Collection - Linux"
 description: |
   Detects usage of xclip tool to collect clipboard data.

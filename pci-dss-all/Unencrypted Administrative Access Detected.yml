@@ -1,3 +1,4 @@
+rule_id: 62dbd61d-8c82-4a66-94d0-328c81eb9fbc
 #//RULE-PCI-06 — Unencrypted Admin Access (PCI 2.3)
 #//Requirement: 2
 #//Objective: Detect non-console administrative access without encryption

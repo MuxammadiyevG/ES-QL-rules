@@ -1,3 +1,4 @@
+rule_id: 6a19e120-744e-4634-86f1-907c93da455c
 name: NTLM Authentication Where Kerberos Expected
 description: |
   Detects use of NTLM authentication (Event ID 4624, 4776) in environments where Kerberos should be used. NTLM usage may indicate Pass-the-Hash attacks, Kerberos infrastructure issues, or legacy system connections that attackers exploit.

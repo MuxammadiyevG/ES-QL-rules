@@ -1,3 +1,4 @@
+rule_id: b3b96326-4194-4c52-974e-b9b93f8384a6
 name: AD User Account Created - Persistence Check
 description: |
   Ushbu qoida Active Directory muhitida yangi foydalanuvchi hisobi yaratilishini aniqlaydi (Event ID 4720). 

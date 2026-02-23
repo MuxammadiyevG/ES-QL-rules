@@ -1,3 +1,4 @@
+rule_id: e5c5c269-cf6a-46db-9ebb-aabd251f4ec3
 name: "Unattend.XML File Access Attempt"
 description: |
   Detects attempts to access the Windows unattended installation file "unattend.xml" located under

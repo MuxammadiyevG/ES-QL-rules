@@ -1,3 +1,4 @@
+rule_id: e6fb7e81-c30b-4ac6-b892-5c63fa329772
 name: "Scheduled Task or Cron Job Suspicious Modification"
 description: |
   This rule detects creation or modification of scheduled tasks (Windows Task Scheduler) or cron jobs that could establish persistence. For Windows, it monitors schtasks.exe commands creating tasks with suspicious patterns. For Linux, it detects crontab modifications or direct /etc/cron.* file edits. The rule triggers when 2+ scheduled task operations occur on a host within 10 minutes.

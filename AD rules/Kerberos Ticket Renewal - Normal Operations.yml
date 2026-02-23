@@ -1,3 +1,4 @@
+rule_id: 52e3b998-8494-4587-9391-962d54ad74c6
 name: Kerberos Ticket Renewal - Normal Operations
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Kerberos Ticket Renewal - Normal Operations` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

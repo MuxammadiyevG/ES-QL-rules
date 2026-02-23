@@ -1,3 +1,4 @@
+rule_id: 7d02b030-24fb-4db4-b3ed-ab087e08e33c
 name: "VsCode Code Tunnel Execution File Indicator"
 description: |
   Detects creation of a file named "code_tunnel.json", an indicator of Visual Studio Code tunneling

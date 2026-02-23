@@ -1,3 +1,4 @@
+rule_id: 7db646a1-252a-4436-a8f7-9cc0b632e7c1
 name: VMware ESX - Virtual Machine Being Reconfigured
 description: |
   VMware ESX muhitida virtual mashina qayta sozlanmoqda (VM_STATE_RECONFIGURING).

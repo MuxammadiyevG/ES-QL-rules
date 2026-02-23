@@ -1,3 +1,4 @@
+rule_id: 4a945104-8c98-4c2d-9496-f3c3def0b334
 name: VMware ESX - Virtual Machine Powered OFF
 description: |
   VMware ESX muhitida virtual mashina holati VM_STATE_OFF ga o'tdi (T1529).

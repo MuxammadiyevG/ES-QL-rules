@@ -1,3 +1,4 @@
+rule_id: dfb7ab89-72e2-429f-860d-ef18089790e4
 name: "PFX File Creation"
 description: |
   Detects creation of PFX files (.pfx). PFX (Personal Information Exchange) bundles private keys and

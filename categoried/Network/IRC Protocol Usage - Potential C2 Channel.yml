@@ -1,3 +1,4 @@
+rule_id: f4636e04-5f84-44e4-a031-83340459ecfd
 name: "IRC Protocol Usage - Potential C2 Channel"
 description: |
   This rule detects IRC (Internet Relay Chat) protocol usage by identifying connections to common IRC ports (6667, 6668, 6669, 7000) or IRC-related keywords in event logs. IRC is rarely used in enterprise environments and may indicate malware C2 communication.

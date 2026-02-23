@@ -1,3 +1,4 @@
+rule_id: 499d2a79-82d0-45ee-a7d8-9e84620b30a6
 name: "TripleCross Rootkit Persistence File"
 description: |
   Detects creation of 'ebpfbackdoor' files in cron.d or sudoers.d.

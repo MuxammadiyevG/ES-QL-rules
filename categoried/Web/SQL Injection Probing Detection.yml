@@ -1,3 +1,4 @@
+rule_id: bace5816-33e3-4717-a8ce-6aaa8b0e1da1
 name: "SQL Injection Probing Detection"
 description: |
   This rule identifies SQL injection (SQLi) attack attempts in HTTP requests by analyzing nginx access logs for common SQLi patterns in URI parameters and request bodies. It detects classic SQLi signatures such as UNION SELECT statements, comment sequences (--,/*,#), boolean-based blind SQLi (AND 1=1, OR 1=1), time-based blind techniques (SLEEP, WAITFOR), and stacked queries. The rule triggers when 5+ distinct SQLi patterns are detected from a single source IP within 10 minutes.

@@ -1,3 +1,4 @@
+rule_id: 633b561e-3068-4c49-9002-b1758ab4e9a6
 name: CheckPoint - Source IP Quarantine Events
 description: |
   Ushbu qoida CheckPoint tomonidan quarantine qilingan source IP'larni monitoring qiladi.

@@ -1,3 +1,4 @@
+rule_id: 742dfec4-c0cd-4a38-b126-c7cf049734e5
 name: User Account Attribute Modifications
 description: |
   Monitors changes to user account properties (Event ID 4738) such as display name, description, department, etc. Normal HR and administrative updates for audit purposes.

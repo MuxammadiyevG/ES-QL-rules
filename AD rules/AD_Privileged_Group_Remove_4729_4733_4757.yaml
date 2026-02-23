@@ -1,3 +1,4 @@
+rule_id: 18f06be8-e2dc-4b85-83f6-d7b6092dba42
 name: AD Privileged Group Membership Removed (4729/4733/4757)
 description: |
   Ushbu qoida privilege escalation va defense evasion bilan bog'liq bo'lib, imtiyozli guruhlardan a'zoni olib tashlash hodisasini nazorat qiladi.

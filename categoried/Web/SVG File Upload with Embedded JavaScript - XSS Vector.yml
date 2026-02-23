@@ -1,3 +1,4 @@
+rule_id: 9e971c2e-ddfd-4ffe-87b8-e3fa2766f974
 name: "SVG File Upload with Embedded JavaScript - XSS Vector"
 description: |
   This rule detects SVG file uploads containing embedded JavaScript or event handlers that can be used for stored XSS attacks. SVG files can contain <script> tags, event attributes, or data URLs with JavaScript.

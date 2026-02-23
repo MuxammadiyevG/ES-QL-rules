@@ -1,3 +1,4 @@
+rule_id: 23023d5b-8e55-4e4b-b772-7c1437c68eb8
 name: "WDAC Policy File Creation In CodeIntegrity Folder"
 description: |
   Detects creation of WDAC policy-related files (.cip / .p7b) inside the privileged

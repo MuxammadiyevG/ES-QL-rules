@@ -1,3 +1,4 @@
+rule_id: 9ea5402a-289b-4e1e-8e1f-189ecf780ea0
 name: Network Share Access - Normal Usage Patterns
 description: |
   Ushbu qoida persistence, privilege escalation va credential access texnikalariga bog'liq bo'lib, `Network Share Access - Normal Usage Patterns` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

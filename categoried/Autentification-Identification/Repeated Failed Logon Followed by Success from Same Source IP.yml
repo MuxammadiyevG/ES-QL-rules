@@ -1,3 +1,4 @@
+rule_id: a8d6e91e-a8cc-4f4b-a252-14caec36c0c6
 name: "Repeated Failed Logon Followed by Success from Same Source IP"
 description: |
   This rule detects multiple failed logon attempts from the same source IP followed by a successful logon, indicating potential credential brute forcing or password guessing. This pattern suggests an attacker eventually guessed or cracked valid credentials.

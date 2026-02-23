@@ -1,3 +1,4 @@
+rule_id: c2f4b96a-7ed9-448d-b63f-387d7406d490
 name: "Service Binary in User Controlled Folder"
 description: |
   Detects registry modifications to Windows service ImagePath values where the configured service binary

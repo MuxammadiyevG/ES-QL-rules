@@ -1,3 +1,4 @@
+rule_id: 03a068c6-f314-487c-b8ef-1341732d35e1
 name: AD Suspicious Successful Logon to Domain Controller (4624)
 description: |
   Ushbu qoida lateral movement va privilege escalation holatlarini aniqlash uchun DC'ga muvaffaqiyatli logonlarni tahlil qiladi.

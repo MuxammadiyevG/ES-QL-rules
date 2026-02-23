@@ -1,3 +1,4 @@
+rule_id: 5f477db4-e12e-459f-88f3-8c6d1c46ca91
 name: "Web Application 5xx Error Spike After Probing"
 description: |
   This rule correlates nginx access logs and error logs to detect exploitation attempts that cause server-side errors. It identifies scenarios where a source IP generates 3+ requests with attack patterns (from previous rules' signatures), followed by 5+ HTTP 5xx server errors within a 15-minute window. This correlation indicates that attack payloads are reaching the application layer and causing unexpected server behavior.

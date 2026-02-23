@@ -1,3 +1,4 @@
+rule_id: a8f15ed9-3c0e-4aa6-8305-90322b19e7b8
 name: Active Directory Trust Enumeration Detected
 description: |
   Detects domain trust enumeration activities by monitoring Event ID 4799 (user added to local group) combined with specific LDAP query patterns. Trust enumeration is reconnaissance for lateral movement across domain trusts.

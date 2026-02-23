@@ -1,3 +1,4 @@
+rule_id: b60a001b-4242-43fe-9c4f-427b84813bde
 #//RULE-HIPAA-38 — Reproductive Health Services Access Logged - Privacy Concern
 #//Requirement: HIPAA Privacy Rule - Sensitive Services
 #//Objective: Detect potential privacy violations for reproductive health access

@@ -1,3 +1,4 @@
+rule_id: e85caf89-276f-4689-8db5-30341f5e1f59
 name: Audit Policy Disabled or Modified
 description: |
   Ushbu qoida persistence va defense evasion texnikalariga bog'liq bo'lib, `Audit Policy Disabled or Modified` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

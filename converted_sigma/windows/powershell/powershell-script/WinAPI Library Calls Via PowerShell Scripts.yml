@@ -1,3 +1,4 @@
+rule_id: e8850e68-4424-494e-b79b-a5c8592da26c
 name: "WinAPI Library Calls Via PowerShell Scripts"
 description: |
   Detects PowerShell Script Block Logging events referencing common WinAPI libraries (Advapi32.dll, kernel32.dll,

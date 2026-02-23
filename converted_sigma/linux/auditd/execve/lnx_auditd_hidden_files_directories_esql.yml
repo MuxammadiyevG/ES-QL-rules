@@ -1,3 +1,4 @@
+rule_id: 06654aeb-bc5a-4f98-a2d0-9ca920462e11
 name: "Hidden Files and Directories Creation"
 description: |
   Detects creation of hidden files and directories (starting with dot).

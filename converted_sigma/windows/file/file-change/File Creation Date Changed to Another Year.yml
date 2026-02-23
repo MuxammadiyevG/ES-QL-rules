@@ -1,3 +1,4 @@
+rule_id: e30b0575-edd5-4c29-a272-71417c056ab8
 name: "File Creation Date Changed to Another Year"
 description: |
   Detects potential timestomping where a file’s creation time is modified from a recent year (202x)

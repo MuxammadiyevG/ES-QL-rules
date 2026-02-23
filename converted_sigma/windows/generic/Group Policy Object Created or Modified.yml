@@ -1,3 +1,4 @@
+rule_id: 7c01592b-5f73-425c-86c0-e86aabea2739
 name: Group Policy Object Created or Modified
 description: |
   Detects Group Policy Object (GPO) creation or modification (Event ID 5136, 5137, 5141) in Active Directory. Unauthorized GPO changes are high-risk persistence and privilege escalation mechanisms allowing domain-wide control.

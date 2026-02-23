@@ -1,3 +1,4 @@
+rule_id: c7a22c0c-f0b5-4653-86a4-e5b2091e67a6
 name: Computer Account Logons - Domain Joined Systems
 description: |
   Monitors computer account authentication (Event ID 4624) which occurs as part of normal domain operations. Essential for tracking domain-joined system health and connectivity.

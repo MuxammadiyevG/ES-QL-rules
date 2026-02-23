@@ -1,3 +1,4 @@
+rule_id: 53b8d542-efb8-4d3d-b3bc-67529a70f2fe
 name: "CodePage Modification Via MODE.COM"
 description: |
   Detects a CodePage modification using the mode.com utility by matching command line patterns

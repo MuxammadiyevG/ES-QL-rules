@@ -1,3 +1,4 @@
+rule_id: 2f89b31a-c385-4052-b668-dfe7255948e1
 name: Active Directory Object Read Operations
 description: |
   Monitors read access to directory objects (Event ID 4662) for normal administrative and application queries. Establishes baseline for AD object access patterns.

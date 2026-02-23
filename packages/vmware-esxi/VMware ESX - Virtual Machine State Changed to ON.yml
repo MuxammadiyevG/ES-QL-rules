@@ -1,3 +1,4 @@
+rule_id: 59253dac-292f-4119-8d6a-ebb6298b37de
 name: VMware ESX - Virtual Machine State Changed to ON
 description: |
   VMware ESX muhitida virtual mashina holati VM_STATE_ON ga o'tdi.

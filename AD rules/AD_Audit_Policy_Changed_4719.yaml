@@ -1,3 +1,4 @@
+rule_id: 8e271369-53f4-494e-912d-43350c044280
 name: AD Audit Policy Changed on Domain Controller (4719)
 description: |
   Ushbu qoida defense evasion va persistence texnikalariga mos bo'lib, audit policy o'zgarishlarini aniqlaydi.

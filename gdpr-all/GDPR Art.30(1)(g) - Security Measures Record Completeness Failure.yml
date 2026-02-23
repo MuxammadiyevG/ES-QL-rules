@@ -1,3 +1,4 @@
+rule_id: 83d69f1e-6fc8-41fb-a83e-1b4767447ffd
 name: "GDPR Art.30(1)(g) - Security Measures Record Completeness Failure"
 description: |
   Detects conditions that undermine the ability to maintain accurate records of technical

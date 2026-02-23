@@ -1,3 +1,4 @@
+rule_id: 54a88104-9416-49b7-befa-91ded14bd0e8
 name: "TripleCross Rootkit Lock File Creation"
 description: |
   Detects the creation of 'rootlog' file in /tmp, used by TripleCross rootkit.

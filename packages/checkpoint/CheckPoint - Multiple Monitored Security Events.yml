@@ -1,3 +1,4 @@
+rule_id: 6121094b-14fc-4e73-b650-20b2ad8fb84f
 name: CheckPoint - Multiple Monitored Security Events
 description: |
   Ushbu qoida CheckPoint tomonidan monitored (but not blocked) security event'larni aniqlaydi.

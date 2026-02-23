@@ -1,3 +1,4 @@
+rule_id: 0ea19eec-b7dd-4b39-aaf6-4fa4ce27b1f8
 #//RULE-GDPR-34 — Biometric Template Storage Without Encryption (GDPR Article 32)
 #//Requirement: Articles 9, 32
 #//Objective: Detect unencrypted biometric template databases

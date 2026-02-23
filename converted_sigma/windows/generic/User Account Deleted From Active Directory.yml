@@ -1,3 +1,4 @@
+rule_id: 161e82cc-0748-4819-a4b7-cd80fd40e9a1
 name: User Account Deleted From Active Directory
 description: |
   Detects deletion of user accounts from Active Directory (Event ID 4726). Unauthorized account deletions may indicate sabotage, data destruction, or covering tracks after breach.

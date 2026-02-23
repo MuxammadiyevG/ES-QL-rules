@@ -1,3 +1,4 @@
+rule_id: 2a0fe210-f0b8-4911-bff5-b9647074d26b
 name: Security Group Membership Changes - Audit Trail
 description: |
   Comprehensive monitoring of all security group membership changes (Event IDs 4728, 4729, 4732, 4733, 4756, 4757) for compliance and audit purposes.

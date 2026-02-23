@@ -1,3 +1,4 @@
+rule_id: e70b1a92-3a6f-4687-8d20-c6c070dde311
 name: FortiGate Configuration Change Detected
 description: |
   Ushbu qoida FortiGate qurilmalarida konfiguratsiya o'zgarishlarini (`Config-Changed`) aniqlaydi. 

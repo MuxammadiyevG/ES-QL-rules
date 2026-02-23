@@ -1,3 +1,4 @@
+rule_id: e7920f6e-d19f-47a9-bfcc-a493e4e903c7
 name: "Registry Set With Crypto-Classes From The 'Cryptography' PowerShell Namespace"
 description: |
   Detects registry modifications to "\Shell\Open\Command" where the value data includes PowerShell (powershell/pwsh)

@@ -1,3 +1,4 @@
+rule_id: fd687d52-4fcc-46cc-940b-82f3172843f6
 name: "Python Path Configuration File Creation - Windows"
 description: |
   Detects creation of Python path configuration files (*.pth) inside Python "site-packages" folders

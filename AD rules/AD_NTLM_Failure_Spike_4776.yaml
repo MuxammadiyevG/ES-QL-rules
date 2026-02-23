@@ -1,3 +1,4 @@
+rule_id: c1fb6866-5ff2-4a80-b6a6-14a5d62d7667
 name: AD NTLM Authentication Failure Spike (4776)
 description: |
   Ushbu qoida credential access faoliyatiga taalluqli bo'lib, NTLM autentikatsiya xatolarining spike holatini aniqlaydi.

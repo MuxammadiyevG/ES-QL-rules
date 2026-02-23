@@ -1,3 +1,4 @@
+rule_id: d4974978-d8b9-428e-8d95-4013b93575d1
 name: Successful User Logon Events - Baseline
 description: |
   Monitors successful user logons (Event ID 4624) for baseline activity tracking and compliance reporting. Captures normal authentication patterns for anomaly detection baselines and audit purposes.

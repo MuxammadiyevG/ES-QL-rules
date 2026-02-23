@@ -1,3 +1,4 @@
+rule_id: 8ade75c1-9a20-4b52-b2ef-4fee99a05145
 name: CheckPoint - Multiple Connection Reject Events
 description: |
   Ushbu qoida CheckPoint firewall'da bir xil manbadan ko'p reject hodisalarini aniqlaydi.

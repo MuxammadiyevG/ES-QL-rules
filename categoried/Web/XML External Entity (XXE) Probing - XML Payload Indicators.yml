@@ -1,3 +1,4 @@
+rule_id: d6b023e5-f6ac-4487-b50d-25aea9c0b681
 
 name: "XML External Entity (XXE) Probing - XML Payload Indicators"
 description: |

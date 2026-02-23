@@ -1,3 +1,4 @@
+rule_id: 8c80e75f-0ad1-40b7-aecb-7a650301a4cb
 #//RULE-NIST-18 — Ransomware Activity Indicators (NIST IR-4, SI-4)
 #//Control Family: IR (Incident Response), SI (System and Information Integrity)
 #//Objective: Detect early indicators of ransomware deployment

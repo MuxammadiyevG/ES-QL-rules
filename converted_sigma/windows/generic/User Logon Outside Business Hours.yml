@@ -1,3 +1,4 @@
+rule_id: 0a28d8c5-a9cc-4ce2-883f-e59ce26c457f
 name: User Logon Outside Business Hours
 description: |
   Detects successful interactive or remote logons (Event ID 4624) occurring outside defined business hours (Mon-Fri 6AM-10PM). May indicate compromised credentials or insider threat activity.

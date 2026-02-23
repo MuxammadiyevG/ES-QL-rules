@@ -1,3 +1,4 @@
+rule_id: c618b9ca-8697-421e-bbf5-aa0acbde72f7
 name: Kerberos Pre-Authentication Failure - AS-REP Roasting
 description: |
   Detects Kerberos pre-authentication failures (Event ID 4768) with specific failure codes. Multiple failures may indicate AS-REP Roasting attack where attacker requests TGTs for accounts without pre-authentication required, allowing offline password cracking.

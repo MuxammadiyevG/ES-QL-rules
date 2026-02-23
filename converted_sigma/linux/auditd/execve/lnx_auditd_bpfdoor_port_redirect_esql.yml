@@ -1,3 +1,4 @@
+rule_id: c4fac1f0-3efd-4677-9c5b-49e0399a2c31
 name: "BPFDoor Port Redirection Detection"
 description: |
   Detects BPFDoor malware port redirection technique using iptables.

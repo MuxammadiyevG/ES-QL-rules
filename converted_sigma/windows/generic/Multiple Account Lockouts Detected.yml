@@ -1,3 +1,4 @@
+rule_id: 32652f3c-f01f-4e6d-98d4-36c3fdc3953b
 name: Multiple Account Lockouts Detected
 description: |
   Detects account lockouts (Event ID 4740) which may indicate brute-force attacks, password spraying, or credential stuffing attempts. Multiple lockouts across different accounts suggest active attack.

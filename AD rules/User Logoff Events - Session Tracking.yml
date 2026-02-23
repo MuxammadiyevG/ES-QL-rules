@@ -1,3 +1,4 @@
+rule_id: 18e77132-16b1-43a4-8f6e-28e97642dc55
 name: User Logoff Events - Session Tracking
 description: |
   Ushbu qoida credential access va privilege escalation texnikalariga bog'liq bo'lib, `User Logoff Events - Session Tracking` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

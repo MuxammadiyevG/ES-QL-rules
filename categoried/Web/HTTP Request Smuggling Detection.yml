@@ -1,3 +1,4 @@
+rule_id: b431be8c-c2c3-47b0-94d0-14121c14dfd8
 name: "HTTP Request Smuggling Detection"
 description: |
   This rule detects potential HTTP request smuggling attempts by identifying conflicting Content-Length and Transfer-Encoding headers, multiple Content-Length headers, or suspicious chunked encoding patterns that can desynchronize front-end and back-end servers.

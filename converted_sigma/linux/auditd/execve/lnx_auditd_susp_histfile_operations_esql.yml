@@ -1,3 +1,4 @@
+rule_id: d1b28594-1015-4073-a915-4dda921d5f97
 name: "History File Operations Detection"
 description: |
   Detects suspicious operations on shell history files.

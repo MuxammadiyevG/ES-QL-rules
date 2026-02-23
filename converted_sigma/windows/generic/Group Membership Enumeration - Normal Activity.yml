@@ -1,3 +1,4 @@
+rule_id: 423f0fe9-2532-40c8-bbea-81deaa40d171
 name: Group Membership Enumeration - Normal Activity
 description: |
   Monitors group membership queries (Event ID 4799) for normal administrative and application activities. Establishes baseline for group membership lookups.

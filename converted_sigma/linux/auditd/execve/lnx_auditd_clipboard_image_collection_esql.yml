@@ -1,3 +1,4 @@
+rule_id: 036d62e4-b88b-4e09-bc87-572caf4052d6
 name: "Clipboard Image Collection - Linux"
 description: |
   Detects usage of xclip to capture clipboard images.

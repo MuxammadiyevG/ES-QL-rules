@@ -1,3 +1,4 @@
+rule_id: b411d049-f1a1-4ef6-ba4b-aec549b56481
 name: "New Windows Service Installation - Persistence Mechanism"
 description: |
   This rule detects the creation of new Windows services using sc.exe create, New-Service PowerShell cmdlet, or Event ID 7045. Adversaries commonly install malicious services for persistence, privilege escalation, or to maintain access after reboot.

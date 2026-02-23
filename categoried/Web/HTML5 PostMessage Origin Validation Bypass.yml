@@ -1,3 +1,4 @@
+rule_id: ea219fe0-d0a2-458a-9cdf-556a95f05f2f
 name: "HTML5 PostMessage Origin Validation Bypass"
 description: |
   This rule detects potential HTML5 postMessage exploitation attempts by identifying JavaScript code injection in parameters that could be reflected in postMessage handlers, or requests attempting to load malicious iframes for postMessage exploitation.

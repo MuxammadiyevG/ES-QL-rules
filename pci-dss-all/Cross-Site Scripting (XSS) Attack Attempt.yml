@@ -1,3 +1,4 @@
+rule_id: 71182724-b639-424a-94d9-5c37b10f4225
 #//RULE-PCI-18 — Cross-Site Scripting (XSS) Attempt (PCI 6.5.7)
 #//Requirement: 6
 #//Objective: Detect XSS attack attempts in web requests

@@ -1,3 +1,4 @@
+rule_id: f4da2572-0860-4357-88ad-d88ed2e83274
 name: "PCI DSS 11.5 - Critical File Modification Detected (Linux)"
 description: |
   Detects unauthorized modification of critical system files on Linux via auditd FIM rules.

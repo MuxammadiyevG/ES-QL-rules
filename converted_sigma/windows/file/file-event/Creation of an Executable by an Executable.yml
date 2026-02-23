@@ -1,3 +1,4 @@
+rule_id: 056875fd-4eae-4524-ac86-8b45015ce419
 name: "Creation of an Executable by an Executable"
 description: |
   Detects creation of an .exe file by a process that is itself an .exe. This can indicate droppers,

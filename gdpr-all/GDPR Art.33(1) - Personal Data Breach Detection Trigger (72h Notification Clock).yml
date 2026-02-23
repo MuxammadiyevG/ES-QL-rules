@@ -1,3 +1,4 @@
+rule_id: b61e51e7-9db4-447e-be7a-d4acf3523fb3
 name: "GDPR Art.33(1) - Personal Data Breach Detection Trigger (72h Notification Clock)"
 description: |
   Detects high-confidence personal data breach indicators that start the GDPR Article 33(1)

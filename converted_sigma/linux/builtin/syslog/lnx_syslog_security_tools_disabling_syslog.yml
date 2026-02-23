@@ -1,3 +1,4 @@
+rule_id: a43acd11-d3d7-4a00-94d1-3840dd792369
 name: "Disabling Security Tools - Builtin"
 description: |
   Detects attempts to disable built-in or installed security tools on Linux systems.

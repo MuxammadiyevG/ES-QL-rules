@@ -1,3 +1,4 @@
+rule_id: 97e5bfe8-8f5b-4764-a148-eb6a68ac402a
 #//RULE-HIPAA-10 — ePHI Transmitted Over Unencrypted Connection - §164.312(e)(1)
 #//Requirement: HIPAA Security Rule §164.312(e)(1) - Transmission Security
 #//Objective: Detect unencrypted ePHI transmissions over networks

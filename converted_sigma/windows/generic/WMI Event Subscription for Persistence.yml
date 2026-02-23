@@ -1,3 +1,4 @@
+rule_id: 4782a1a7-344e-461e-9976-9234391a5c95
 name: WMI Event Subscription for Persistence
 description: |
   Detects creation of WMI event subscriptions (Event ID 5861, 5859) which can be used for persistence and execution. Monitors for WMI event consumers, filters, and bindings that execute on specific triggers.

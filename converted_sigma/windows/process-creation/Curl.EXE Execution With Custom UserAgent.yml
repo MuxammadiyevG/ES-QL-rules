@@ -1,3 +1,4 @@
+rule_id: a03d8de2-f45b-45e4-9797-c2a700d6fdc5
 name: "Curl.EXE Execution With Custom UserAgent"
 description: |
   Detects curl.exe execution with custom User-Agent options (-A or --user-agent).

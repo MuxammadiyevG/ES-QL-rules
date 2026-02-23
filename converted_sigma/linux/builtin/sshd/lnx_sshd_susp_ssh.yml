@@ -1,3 +1,4 @@
+rule_id: 78da9627-3cd9-47c6-8759-93c7ed862929
 name: "Suspicious OpenSSH Daemon Error"
 description: |
   Detects suspicious SSH / SSHD error messages that indicate a fatal or unusual error.

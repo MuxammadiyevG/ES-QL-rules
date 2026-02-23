@@ -1,3 +1,4 @@
+rule_id: e7926136-6a91-43ab-a770-2408a50901df
 name: Successful Kerberos Pre-Authentication
 description: |
   Monitors successful Kerberos pre-authentication (Event ID 4768) for baseline authentication health. Tracks normal Kerberos infrastructure operation.

@@ -1,3 +1,4 @@
+rule_id: 45689976-52e8-4c26-ab83-3d974bcff0fc
 name: Fortigate - Multiple Failed Login Attempts from Same Source
 description: |
   Ushbu qoida Fortigate firewall'da bir xil manbadan ko'p marta muvaffaqiyatsiz login urinishlarini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 4ca95ad0-9e7f-4b31-be3f-ab7b1c59ec8b
 #//RULE-HIPAA-26 — Workforce Member Without Security Training - §164.308(a)(5)
 #//Requirement: HIPAA Security Rule §164.308(a)(5) - Security Awareness and Training
 #//Objective: Detect workforce members accessing ePHI without completed training

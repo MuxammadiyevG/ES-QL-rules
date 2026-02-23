@@ -1,3 +1,4 @@
+rule_id: c708561a-784b-4c52-9a94-cf5b68ad3b16
 name: High Frequency WAF Blocks - Automated Scanner Detected
 description: |
   Bitta IP manzildan juda qisqa vaqt ichida katta miqdordagi WAF bloklash hodisalari

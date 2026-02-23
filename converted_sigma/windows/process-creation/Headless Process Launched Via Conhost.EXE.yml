@@ -1,3 +1,4 @@
+rule_id: e04c9d9f-f0ba-4afc-a35d-c4976a338d5b
 name: "Headless Process Launched Via Conhost.EXE"
 description: |
   Detects child process execution where the parent process is conhost.exe and the parent

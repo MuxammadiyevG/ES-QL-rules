@@ -1,3 +1,4 @@
+rule_id: b3c34b29-6542-4dea-bbf3-a99b3bfb21a2
 name: Normal Kerberos Service Ticket Requests
 description: |
   Monitors successful Kerberos service ticket (TGS) requests (Event ID 4769) for service access patterns. Establishes baseline for service authentication and resource access.

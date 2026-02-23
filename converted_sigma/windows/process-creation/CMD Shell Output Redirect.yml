@@ -1,3 +1,4 @@
+rule_id: 43975294-5269-4327-b112-2756685c437d
 name: "CMD Shell Output Redirect"
 description: |
   Detects execution of cmd.exe with output redirection using the ">" operator.

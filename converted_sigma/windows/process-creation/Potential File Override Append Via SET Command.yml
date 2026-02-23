@@ -1,3 +1,4 @@
+rule_id: 6f58128e-0c5d-408a-874c-0ccba1a22b00
 name: "Potential File Override/Append Via SET Command"
 description: |
   Detects cmd.exe usage of the internal SET command with the /p flag followed directly by "=" (set /p=),

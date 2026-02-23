@@ -1,3 +1,4 @@
+rule_id: ce23f4f5-0c83-483f-b947-a5b41d5bb0c3
 
 name: "User-Agent Anomaly - Known Scanner or Empty User-Agent"
 description: |

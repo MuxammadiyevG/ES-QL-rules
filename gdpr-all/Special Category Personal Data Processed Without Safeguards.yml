@@ -1,3 +1,4 @@
+rule_id: 9e1bc417-195c-4620-8886-df64e0e9ffeb
 #//RULE-GDPR-05 — Special Category Data Processing Without Safeguards (GDPR Article 9)
 #//Requirement: Article 9
 #//Objective: Detect processing of sensitive data without explicit consent or legal basis

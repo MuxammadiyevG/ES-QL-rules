@@ -1,3 +1,4 @@
+rule_id: ccdeec8f-b2ea-41a5-bcef-5c48910b0efa
 name: FortiGate - Connection Reset by Client
 description: |
   Ushbu qoida tarmoq ulanishining mijoz tomonidan kutilmaganda to'xtatilganini (`client-rst`) aniqlaydi. 

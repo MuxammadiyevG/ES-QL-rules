@@ -1,3 +1,4 @@
+rule_id: a53c70f6-15a6-40d5-a32c-4b1d416650a1
 name: "Server-Side Request Forgery (SSRF) Metadata Probing"
 description: |
   This rule detects SSRF attacks targeting cloud metadata services (AWS, Azure, GCP) and internal IP ranges. Attackers exploit SSRF to access instance metadata endpoints (169.254.169.254, metadata.google.internal) to steal credentials, enumerate infrastructure, or pivot to internal services. The rule triggers when 3+ requests to metadata endpoints or internal IPs are detected within 10 minutes from a single source.

@@ -1,3 +1,4 @@
+rule_id: 3faf3b2e-adf1-4169-8614-d5ae2ede1d08
 name: "PCI DSS 10.2.6 - Audit Log Service Stopped or Paused (Windows)"
 description: |
   Detects stopping, pausing, or tampering with audit log services on Windows systems.

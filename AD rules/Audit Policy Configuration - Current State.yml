@@ -1,3 +1,4 @@
+rule_id: 4ffd6a27-2479-4cae-8094-3fcedcba25b4
 name: Audit Policy Configuration - Current State
 description: |
   Ushbu qoida persistence va defense evasion texnikalariga bog'liq bo'lib, `Audit Policy Configuration - Current State` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

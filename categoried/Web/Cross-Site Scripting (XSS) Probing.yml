@@ -1,3 +1,4 @@
+rule_id: b58309c2-f6cd-40f1-9b54-14fba17122e2
 name: "Cross-Site Scripting (XSS) Probing"
 description: |
   This rule detects cross-site scripting (XSS) attack attempts by analyzing HTTP requests for common XSS payloads including <script> tags, JavaScript event handlers (onerror, onload, onclick), and encoded variations. It identifies both reflected and stored XSS probing attempts. The detection triggers when 4+ distinct XSS patterns are observed from a single source IP within 10 minutes.

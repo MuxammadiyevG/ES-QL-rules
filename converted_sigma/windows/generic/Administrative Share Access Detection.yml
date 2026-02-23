@@ -1,3 +1,4 @@
+rule_id: 4adc15de-a909-43e4-af09-26f945874ed6
 name: Administrative Share Access Detection
 description: |
   Detects access to administrative shares (C$, ADMIN$, IPC$) via Event ID 5140. Administrative share access is commonly used for lateral movement, remote command execution, and data exfiltration during attacks.

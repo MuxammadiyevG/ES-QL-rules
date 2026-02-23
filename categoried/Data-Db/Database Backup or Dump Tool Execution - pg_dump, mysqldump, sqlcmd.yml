@@ -1,3 +1,4 @@
+rule_id: f17ca290-01ae-4bf8-a6ca-538307e32606
 
 name: "Database Backup or Dump Tool Execution - pg_dump, mysqldump, sqlcmd"
 description: |

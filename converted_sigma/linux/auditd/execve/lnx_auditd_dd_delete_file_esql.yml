@@ -1,3 +1,4 @@
+rule_id: 3f984cbd-d1c8-41c5-92a5-19faca5c4f54
 name: "DD File Deletion Detection"
 description: |
   Detects dd command being used to delete files by overwriting with zeros.

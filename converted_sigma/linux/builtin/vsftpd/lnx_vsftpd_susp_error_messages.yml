@@ -1,3 +1,4 @@
+rule_id: ca6863e2-a87f-4230-a2c4-6869e91bcf15
 name: "Suspicious VSFTPD Error Messages"
 description: |
   Detects suspicious VSFTPD error messages that indicate fatal or abnormal behavior.

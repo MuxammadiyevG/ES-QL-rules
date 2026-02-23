@@ -1,3 +1,4 @@
+rule_id: 9ae2c98a-ec2d-4e2d-9465-093040bc0e34
 name: User Added to Privileged Security Group
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `User Added to Privileged Security Group` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

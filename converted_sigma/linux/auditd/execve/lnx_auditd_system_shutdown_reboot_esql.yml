@@ -1,3 +1,4 @@
+rule_id: 94c20511-b4b7-4fe0-923e-14810590f54f
 name: "System Shutdown/Reboot Detection"
 description: |
   Detects system shutdown or reboot commands.

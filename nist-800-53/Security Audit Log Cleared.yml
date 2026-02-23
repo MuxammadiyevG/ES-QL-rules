@@ -1,3 +1,4 @@
+rule_id: baacab4c-3fab-43b0-88cb-fcca4b97ea04
 #//RULE-NIST-06 — Audit Log Cleared (NIST AU-6, AU-9)
 #//Control Family: AU (Audit and Accountability)
 #//Objective: Detect malicious clearing of security audit logs

@@ -1,3 +1,4 @@
+rule_id: b1cd0f33-8382-4612-81b2-51a7a92f19bc
 name: "Database Audit Log Tampering - DROP AUDIT or Disable Logging Keywords"
 description: |
   This rule detects attempts to tamper with database audit logs by identifying keywords such as "DROP AUDIT", "DISABLE AUDIT", "TRUNCATE audit", or similar patterns in process command lines or event originals. Adversaries disable logging to evade detection during data exfiltration or privilege escalation.

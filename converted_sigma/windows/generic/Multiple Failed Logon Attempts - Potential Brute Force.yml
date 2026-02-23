@@ -1,3 +1,4 @@
+rule_id: 4328ab82-f26b-49b1-856e-71f7f526e81d
 name: Multiple Failed Logon Attempts - Potential Brute Force
 description: |
   Detects multiple failed logon attempts (Event ID 4625) from the same source IP or targeting the same user account within a short timeframe. This pattern is consistent with brute-force password attacks. Threshold: 5+ failures within 10 minutes.

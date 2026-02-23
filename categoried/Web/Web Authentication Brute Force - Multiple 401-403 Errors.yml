@@ -1,3 +1,4 @@
+rule_id: e4bc7339-020b-445d-b606-f329d0723b71
 
 name: "Web Authentication Brute Force - Multiple 401/403 Errors"
 description: |

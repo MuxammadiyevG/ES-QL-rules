@@ -1,3 +1,4 @@
+rule_id: c6d3a78e-24e6-4f14-8892-ebe572262d7f
 
 name: "Large POST Request Body - Potential File Upload Attack"
 description: |

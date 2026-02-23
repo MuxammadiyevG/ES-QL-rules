@@ -1,3 +1,4 @@
+rule_id: 0921fd27-8777-4b53-8165-f8a5ce92f465
 #//RULE-NIST-23 — DNS Tunneling Detection (NIST SC-7, SI-4)
 #//Control Family: SC (System and Communications Protection), SI (System and Information Integrity)
 #//Objective: Detect DNS tunneling for C2 or data exfiltration

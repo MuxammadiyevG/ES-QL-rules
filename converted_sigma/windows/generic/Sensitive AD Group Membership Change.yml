@@ -1,3 +1,4 @@
+rule_id: bd31605a-23a1-4261-a741-75f79a5b3447
 name: Sensitive AD Group Membership Change
 description: |
   Kritik AD guruhlariga (Admin, Backup, Remote Desktop) foydalanuvchi qo'shilishi yoki o'chirilishini aniqlaydi. 

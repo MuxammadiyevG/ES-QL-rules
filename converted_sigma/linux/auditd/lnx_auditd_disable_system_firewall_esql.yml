@@ -1,3 +1,4 @@
+rule_id: e1059ca4-ec85-436e-87d6-d1f41957664e
 name: "System Firewall Service Stopped or Disabled"
 description: |
   Detects stopping or disabling of system firewall services (firewalld, ufw, iptables).

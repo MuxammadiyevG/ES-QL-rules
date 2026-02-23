@@ -1,3 +1,4 @@
+rule_id: 1e81e9f7-5a80-4d0c-b277-175a02f8e4a7
 #//RULE-NIST-13 — Baseline Configuration Drift (NIST CM-2)
 #//Control Family: CM (Configuration Management)
 #//Objective: Detect deviations from approved baseline configurations

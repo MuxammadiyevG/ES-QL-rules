@@ -1,3 +1,4 @@
+rule_id: 3ddfb5da-e1d6-40ba-a772-14a6908cff14
 name: Nginx - Excessive Authentication Failures
 description: |
   Bitta manbadan ko'plab 401 va 403 xatoliklarini aniqlaydi. 

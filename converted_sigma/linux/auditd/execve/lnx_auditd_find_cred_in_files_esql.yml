@@ -1,3 +1,4 @@
+rule_id: c4402e8e-5516-4ad7-92fb-eb8a88b8aecd
 name: "Credential Search in Files - Linux"
 description: |
   Detects attempts to extract passwords from files using grep.

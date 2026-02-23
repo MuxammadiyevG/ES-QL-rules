@@ -1,3 +1,4 @@
+rule_id: be3f244d-5a1d-4419-8dd0-85e1eb8e78a6
 name: Successful User Logon Events - Baseline
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Successful User Logon Events - Baseline` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

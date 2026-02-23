@@ -1,3 +1,4 @@
+rule_id: 5ea41511-939d-41e6-9a53-47347bfbcb57
 name: "USB Device Connection - Removable Media Activity"
 description: |
   This rule detects USB or removable media device connections which may be used for data exfiltration, malware introduction, or unauthorized data transfer. Monitoring USB activity helps enforce removable media policies.

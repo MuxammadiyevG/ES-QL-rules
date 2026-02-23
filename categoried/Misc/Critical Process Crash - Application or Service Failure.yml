@@ -1,3 +1,4 @@
+rule_id: d4dfc033-a9c4-411e-80ad-9a5dfe71e272
 name: "Critical Process Crash - Application or Service Failure"
 description: |
   This rule detects crashes of critical system processes or services by identifying keywords indicating process termination, application crashes, or service failures in event logs. Frequent crashes may indicate exploitation attempts, malware activity, or system instability.

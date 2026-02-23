@@ -1,3 +1,4 @@
+rule_id: 270b78ba-be52-4848-acb8-a4616efe9f45
 name: AdminSDHolder ACL Modification Detected
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `AdminSDHolder ACL Modification Detected` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

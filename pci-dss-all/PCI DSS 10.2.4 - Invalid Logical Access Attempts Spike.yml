@@ -1,3 +1,4 @@
+rule_id: 24abf78f-e27a-4b88-abee-f480211543a5
 name: "PCI DSS 10.2.4 - Invalid Logical Access Attempts Spike"
 description: |
   Detects abnormal spike in invalid logical access attempts across Windows and Linux systems.

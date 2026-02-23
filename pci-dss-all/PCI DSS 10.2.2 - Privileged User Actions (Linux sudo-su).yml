@@ -1,3 +1,4 @@
+rule_id: c6216626-338a-486e-a77c-b67013b1afe7
 name: "PCI DSS 10.2.2 - Privileged User Actions (Linux sudo/su)"
 description: |
   Detects all sudo and su privilege escalation events on Linux systems via auditd.

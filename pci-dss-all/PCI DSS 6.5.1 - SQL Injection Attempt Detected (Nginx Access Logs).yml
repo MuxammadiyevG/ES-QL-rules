@@ -1,3 +1,4 @@
+rule_id: ced6b666-a684-4d2f-ba09-2ab2e82a3958
 name: "PCI DSS 6.5.1 - SQL Injection Attempt Detected (Nginx Access Logs)"
 description: |
   Detects SQL injection attack patterns in HTTP requests via Nginx access logs.

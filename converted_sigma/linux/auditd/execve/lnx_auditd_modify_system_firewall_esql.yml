@@ -1,3 +1,4 @@
+rule_id: 34fd2af3-dda5-4fba-a954-3dc3a17b586b
 name: "System Firewall Modification Detection"
 description: |
   Detects the removal or modification of system firewall rules on Linux.

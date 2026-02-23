@@ -1,3 +1,4 @@
+rule_id: 64ed24bb-5351-4a8f-a897-6595a3e294a4
 name: User Added to Security Group
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `User Added to Security Group` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

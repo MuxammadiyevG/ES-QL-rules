@@ -1,3 +1,4 @@
+rule_id: 3984a3f7-422b-44c4-98d8-8aeb6ed6d594
 name: Suspicious Service Installed for Persistence
 description: |
   Ushbu qoida persistence va lateral movement texnikalariga bog'liq bo'lib, `Suspicious Service Installed for Persistence` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 9c02c151-9c40-4afa-9b9d-40064f62373f
 name: "Suspicious DLL Hijacking - DLL Loaded from Non-Standard Path"
 description: |
   This rule detects potential DLL hijacking by identifying DLL loads from unusual paths such as user-writable directories, temp folders, or current working directories. Adversaries exploit DLL search order vulnerabilities to execute malicious code.

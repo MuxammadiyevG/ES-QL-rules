@@ -1,3 +1,4 @@
+rule_id: 5fdfff7c-dea1-4209-85a5-7b9aa4f3f1d3
 name: "Excessive 5xx Server Errors After External Access - Application Crash"
 description: |
   This rule detects a spike in HTTP 5xx server errors (500, 502, 503) from external sources, particularly following probing or exploitation attempts. High 5xx rates may indicate successful denial of service, application crashes from exploitation, or resource exhaustion.

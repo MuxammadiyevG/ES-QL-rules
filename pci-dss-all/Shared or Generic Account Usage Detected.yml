@@ -1,3 +1,4 @@
+rule_id: c7166cf7-7144-4760-a8df-1c5462ee658b
 #//RULE-PCI-24 — Shared/Generic Account Usage (PCI 8.5)
 #//Requirement: 8
 #//Objective: Detect use of shared, group, or generic accounts

@@ -1,3 +1,4 @@
+rule_id: 5b34321e-508a-4625-ae61-6fbba5577c35
 name: "Large Data Export from Database - Bulk Query Indicators"
 description: |
   This rule identifies bulk data export operations from databases that could indicate exfiltration. It detects commands like "SELECT INTO OUTFILE", "COPY TO", "pg_dump", "mysqldump", "bcp", or export utilities being executed. The rule also flags large result set queries (SELECT with broad wildcards on sensitive tables). The rule triggers when 3+ data export indicators are detected within 15 minutes.

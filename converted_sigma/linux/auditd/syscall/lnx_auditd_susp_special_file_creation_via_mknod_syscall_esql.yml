@@ -1,3 +1,4 @@
+rule_id: 26fac5fb-465d-4276-bdef-0ed50fadc437
 name: "Special File Creation via Mknod Syscall"
 description: |
   Detects creation of special files (block/character devices) using mknod syscall.

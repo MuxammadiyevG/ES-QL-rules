@@ -1,3 +1,4 @@
+rule_id: 5427dbbc-52d8-4d6e-bc9a-7af795e5425b
 name: "INFO - Linux Sudo Command (USER_CMD/EXECVE) (auditd)"
 description: |
   Baselines sudo usage via auditd.

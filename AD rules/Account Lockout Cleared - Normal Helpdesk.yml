@@ -1,3 +1,4 @@
+rule_id: 13d852ad-62bf-4709-961a-3237da60f54a
 name: Account Lockout Cleared - Normal Helpdesk
 description: |
   Ushbu qoida credential access va privilege escalation texnikalariga bog'liq bo'lib, `Account Lockout Cleared - Normal Helpdesk` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

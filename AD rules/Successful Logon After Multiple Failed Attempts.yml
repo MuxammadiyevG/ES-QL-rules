@@ -1,3 +1,4 @@
+rule_id: eb6681b3-8bb2-4603-9587-157113e1433f
 name: Successful Logon After Multiple Failed Attempts
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Successful Logon After Multiple Failed Attempts` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

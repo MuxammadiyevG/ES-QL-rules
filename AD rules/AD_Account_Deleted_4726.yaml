@@ -1,3 +1,4 @@
+rule_id: 2bd1bdcb-f598-4bb4-a19c-9651dc94250e
 name: AD User Account Deletion on Domain Controller (4726)
 description: |
   Ushbu qoida defense evasion va impact texnikalariga aloqador bo'lib, AD akkaunti o'chirilishini aniqlaydi.

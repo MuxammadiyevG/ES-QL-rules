@@ -1,3 +1,4 @@
+rule_id: 44b686b4-eca3-4125-a11d-cecd00e642db
 name: "Unusual HTTP Method Usage - TRACE, PROPFIND, OPTIONS Abuse"
 description: |
   This rule detects usage of unusual or potentially dangerous HTTP methods such as TRACE, PROPFIND, OPTIONS, PUT, DELETE, CONNECT, or custom methods. These methods are rarely used in normal web traffic and may indicate exploitation attempts, WebDAV abuse, or reconnaissance.

@@ -1,3 +1,4 @@
+rule_id: db57b591-125e-40c1-abd9-d8b25e343683
 name: Previously Disabled User Account Re-enabled
 description: |
   Ushbu qoida credential access va privilege escalation texnikalariga bog'liq bo'lib, `Previously Disabled User Account Re-enabled` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

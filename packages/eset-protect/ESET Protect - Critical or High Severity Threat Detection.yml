@@ -1,3 +1,4 @@
+rule_id: 1de12325-5d74-4e98-9cd6-3bd7bc825a26
 name: ESET Protect - Critical or High Severity Threat Detection
 description: |
   Ushbu qoida ESET tomonidan critical yoki high severity threat detection'larni monitoring qiladi.

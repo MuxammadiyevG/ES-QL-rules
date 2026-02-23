@@ -1,3 +1,4 @@
+rule_id: 0cdf1afb-d53e-4725-931e-ee18fef2c008
 name: Privileged Access Workstation (PAW) Activity
 description: |
   Monitors authentication from designated administrative workstations. Tracks normal privileged access management patterns for security and compliance.

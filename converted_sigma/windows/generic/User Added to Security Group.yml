@@ -1,3 +1,4 @@
+rule_id: 01127622-885f-43b5-ae19-eff0348be082
 name: User Added to Security Group
 description: |
   Detects when users are added to security groups (Event ID 4728, 4732, 4756). Monitors for unauthorized group membership modifications especially for sensitive groups.

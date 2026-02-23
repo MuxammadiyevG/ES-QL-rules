@@ -1,3 +1,4 @@
+rule_id: cc743e6b-3bdf-4424-b4de-0503d4b6cb94
 name: "Suspicious Database Privilege GRANT to New User or Role"
 description: |
   This rule detects suspicious GRANT statements in database command lines or event originals that assign elevated privileges (DBA, SYSDBA, ALTER, CREATE, DROP) to users or roles. Adversaries may escalate privileges to access sensitive data or maintain persistence.

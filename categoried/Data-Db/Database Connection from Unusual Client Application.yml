@@ -1,3 +1,4 @@
+rule_id: 12eef03d-02b1-4119-96d6-cc1586ce0ba7
 name: "Database Connection from Unusual Client Application"
 description: |
   This rule detects database connections from unusual or unexpected client applications by analyzing process names or command lines. Adversaries may use non-standard clients (curl, wget, custom scripts) to access databases, bypassing normal application layers.

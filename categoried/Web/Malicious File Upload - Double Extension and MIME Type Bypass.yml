@@ -1,3 +1,4 @@
+rule_id: c149fa02-812c-48cc-adbe-97f299788052
 
 name: "Malicious File Upload - Double Extension and MIME Type Bypass"
 description: |

@@ -1,3 +1,4 @@
+rule_id: 8cbc3e7f-1491-49bd-a9d0-c74b8226c4d4
 name: Successful Logon After Multiple Failed Attempts
 description: |
   Detects successful logons (Event ID 4624) that occur shortly after multiple failed logon attempts (Event ID 4625)

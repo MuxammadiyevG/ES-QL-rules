@@ -1,3 +1,4 @@
+rule_id: 6be91e9c-271e-4564-9b7e-5b7f85d8837b
 #//RULE-HIPAA-39 — Substance Abuse Treatment Records - 42 CFR Part 2 Violation
 #//Requirement: 42 CFR Part 2 - Confidentiality of Substance Use Disorder Records
 #//Objective: Detect unauthorized access to substance abuse treatment records

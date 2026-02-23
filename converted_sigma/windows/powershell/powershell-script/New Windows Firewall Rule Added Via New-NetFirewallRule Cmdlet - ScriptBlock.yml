@@ -1,3 +1,4 @@
+rule_id: b33810d7-5b77-4141-92a4-8541a719c890
 name: "New Windows Firewall Rule Added Via New-NetFirewallRule Cmdlet - ScriptBlock"
 description: |
   Detects PowerShell Script Block Logging events where a script invokes New-NetFirewallRule with an Allow action.

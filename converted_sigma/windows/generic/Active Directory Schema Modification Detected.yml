@@ -1,3 +1,4 @@
+rule_id: 92c22404-ac18-4520-a49b-5651107aa742
 name: Active Directory Schema Modification Detected
 description: |
   Detects modifications to Active Directory schema (Event ID 5137) which controls the structure and attributes available in AD. Schema changes are rare and highly privileged operations that could enable advanced persistence.

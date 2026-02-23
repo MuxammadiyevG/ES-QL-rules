@@ -1,3 +1,4 @@
+rule_id: 03caa539-48c9-45c1-bf51-9a4ae8e68e9d
 name: AD Suspicious Directory Object Access (4662)
 description: |
   Ushbu qoida credential access va privilege escalation xavfini ifodalovchi AD obyektlariga shubhali kirishlarni aniqlaydi.

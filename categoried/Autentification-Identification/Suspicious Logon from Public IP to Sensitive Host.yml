@@ -1,3 +1,4 @@
+rule_id: ba6b3c98-6009-4390-8b25-bb5d9aee38f9
 name: "Suspicious Logon from Public IP to Sensitive Host"
 description: |
   This rule identifies authentication attempts from public (non-RFC1918) IP addresses to hosts with sensitive naming patterns (e.g., DC, SQL, PROD, FIN, HR keywords). It focuses on detecting external threat actors or compromised external systems attempting to access critical internal infrastructure. The rule triggers when 3+ authentication attempts occur from public IPs to sensitive hosts within a 30-minute window.

@@ -1,3 +1,4 @@
+rule_id: b06c75fd-2ccd-4915-83e5-7bd70b2ba3c2
 name: AD Kerberos Ticket Anomaly on Domain Controller (4768/4769)
 description: |
   Ushbu qoida credential access va lateral movement bilan bog'liq bo'lib, Kerberos TGT/TGS jarayonidagi noodatiy xatti-harakatlarni aniqlaydi.

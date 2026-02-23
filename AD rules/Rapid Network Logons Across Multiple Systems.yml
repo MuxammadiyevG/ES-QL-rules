@@ -1,3 +1,4 @@
+rule_id: 72657b74-d335-47ac-a2dd-bb0ae258b9ca
 name: Rapid Network Logons Across Multiple Systems
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Rapid Network Logons Across Multiple Systems` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

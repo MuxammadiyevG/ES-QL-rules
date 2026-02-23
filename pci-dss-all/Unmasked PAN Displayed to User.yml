@@ -1,3 +1,4 @@
+rule_id: 407d5490-dfbf-471c-a993-2e125feea679
 #//RULE-PCI-09 — Unmasked PAN Display (PCI 3.3)
 #//Requirement: 3
 #//Objective: Detect display of full unmasked PAN to unauthorized users

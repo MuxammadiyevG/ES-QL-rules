@@ -1,3 +1,4 @@
+rule_id: c25d001d-877c-4fa1-8e88-7c8f6d98bfe2
 name: AD User Account Locked Out
 description: |
   Foydalanuvchi hisobi ko'p sonli muvaffaqiyatsiz urinishlardan keyin bloklanganini aniqlaydi (Event ID 4740).

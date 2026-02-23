@@ -1,3 +1,4 @@
+rule_id: b0b8cbb0-8d76-48eb-a1af-7882859af624
 #//RULE-NIST-02 — Failed Privileged Access Attempts (NIST AC-3)
 #//Control Family: AC (Access Control)
 #//Objective: Detect repeated failed access to privileged resources

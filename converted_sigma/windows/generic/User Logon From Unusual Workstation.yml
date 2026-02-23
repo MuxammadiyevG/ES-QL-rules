@@ -1,3 +1,4 @@
+rule_id: 43a04558-281e-4c8f-9db8-4087956219fc
 name: User Logon From Unusual Workstation
 description: |
   Detects successful logons (Event ID 4624) from workstations not previously used by the user in the past 30 days. Uses statistical baseline to identify anomalous authentication sources. May indicate compromised credentials or lateral movement.

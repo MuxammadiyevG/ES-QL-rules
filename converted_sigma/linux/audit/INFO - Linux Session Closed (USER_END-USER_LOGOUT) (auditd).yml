@@ -1,3 +1,4 @@
+rule_id: 919aa52a-a8f2-4108-bfc8-e3b056a54080
 name: "INFO - Linux Session Closed (USER_END/USER_LOGOUT) (auditd)"
 description: |
   Baselines session closing via auditd USER_END/USER_LOGOUT (who logged out).

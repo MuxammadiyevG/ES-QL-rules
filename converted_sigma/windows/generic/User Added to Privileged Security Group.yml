@@ -1,3 +1,4 @@
+rule_id: 32cb74c8-c690-4582-9c33-e2f77ae552a2
 name: User Added to Privileged Security Group
 description: |
   Detects when users are added to highly privileged groups in Active Directory (Event IDs 4728, 4732, 4756). Monitors Domain Admins, Enterprise Admins, Administrators, Schema Admins, Account Operators, Backup Operators, and other high-privilege groups. Unauthorized additions indicate privilege escalation attempts.

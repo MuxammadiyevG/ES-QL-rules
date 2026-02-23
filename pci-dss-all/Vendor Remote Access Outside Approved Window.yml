@@ -1,3 +1,4 @@
+rule_id: aa03a790-87e0-49fd-bf58-e03dd41c7053
 #//EVIDENCE-PCI-11 — Vulnerability Scans, Penetration Testing, IDS/IPS (PCI 11.2, 11.3, 11.4, 11.6)
 #//Requirement: 11
 #//Objective: Evidence of vulnerability scanning, penetration testing, intrusion detection deployment

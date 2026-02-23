@@ -1,3 +1,4 @@
+rule_id: cf15b033-db0a-4a0b-a8f7-9b05b5c3db0c
 name: "Suspicious C2 and Reconnaissance Commands"
 description: |
   Detects executed commands often associated with C2, reconnaissance, and data exfiltration.

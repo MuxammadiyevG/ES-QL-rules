@@ -1,3 +1,4 @@
+rule_id: 155f1bb2-b0b5-4cbc-b707-8415ea322c66
 #//RULE-NIST-12 — Unauthorized System Configuration Change (NIST CM-6)
 #//Control Family: CM (Configuration Management)
 #//Objective: Detect modifications to critical system configuration files

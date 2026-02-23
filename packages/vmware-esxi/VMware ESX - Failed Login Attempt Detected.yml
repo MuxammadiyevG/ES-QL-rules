@@ -1,3 +1,4 @@
+rule_id: 27dd0857-d1a0-4b12-a089-7f7d4c7fb318
 name: VMware ESX - Failed Login Attempt Detected
 description: |
   VMware ESX tizimiga muvaffaqiyatsiz kirish urinishi qayd etildi.

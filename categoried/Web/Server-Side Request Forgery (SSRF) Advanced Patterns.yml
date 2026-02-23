@@ -1,3 +1,4 @@
+rule_id: 9f63b817-2988-4ec7-b035-735cc22a42f1
 
 name: "Server-Side Request Forgery (SSRF) Advanced Patterns"
 description: |

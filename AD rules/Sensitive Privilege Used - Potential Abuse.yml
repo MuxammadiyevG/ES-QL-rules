@@ -1,3 +1,4 @@
+rule_id: 7d268888-dc67-4015-bb79-ae87571b62ab
 name: Sensitive Privilege Used - Potential Abuse
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Sensitive Privilege Used - Potential Abuse` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

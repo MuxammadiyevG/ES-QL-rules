@@ -1,3 +1,4 @@
+rule_id: edab8c5b-8948-4c52-8f81-5635a396af93
 name: "Linux Suspicious Sudo Usage to Root"
 description: |
   This rule identifies suspicious sudo usage on Linux systems where non-root users execute commands as root with potentially malicious arguments. It detects sudo commands containing shell invocations, file system modifications in sensitive directories (/etc/, /boot/, /root/), package manager abuse (apt/yum with unusual flags), or privilege persistence mechanisms (crontab, ssh key manipulation). The rule triggers when 5+ suspicious sudo commands are executed on a host within 15 minutes.

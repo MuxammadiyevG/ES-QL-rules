@@ -1,3 +1,4 @@
+rule_id: b8733b24-c86c-4ed3-8088-52e1d911683d
 name: "Anomalous Logon Time - Off-Hours Access by Privileged User"
 description: |
   This rule detects successful logons by privileged users (Administrators, Domain Admins) during off-hours (e.g., nights, weekends) which may indicate compromised credentials or insider threat activity. Adversaries often operate outside business hours to evade detection.

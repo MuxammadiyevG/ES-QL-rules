@@ -1,3 +1,4 @@
+rule_id: d9bb9af7-f545-4f16-80df-535e3b2d0a4a
 name: VMware ESX - Virtual Machine Unexpectedly Powered OFF
 description: |
   VMware ESX muhitida virtual mashina holati VM_STATE_OFF ga o'tdi.

@@ -1,3 +1,4 @@
+rule_id: e06d4388-b6b1-4a65-b252-1ef952b7711e
 name: "Linux Capabilities Discovery"
 description: |
   Detects usage of getcap command to discover process capabilities.

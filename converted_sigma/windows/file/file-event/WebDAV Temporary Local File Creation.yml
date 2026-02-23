@@ -1,3 +1,4 @@
+rule_id: d93330b2-fcd8-4b80-a95a-13d5da883ce9
 name: "WebDAV Temporary Local File Creation"
 description: |
   Detects creation of WebDAV temporary files inside the TfsStore WebDAV cache folder

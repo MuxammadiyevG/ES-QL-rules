@@ -1,3 +1,4 @@
+rule_id: d2beb7b0-d494-4998-b9b6-1c31717d7de5
 
 name: "Repeated Failed Database Login Attempts from Same Source IP"
 description: |

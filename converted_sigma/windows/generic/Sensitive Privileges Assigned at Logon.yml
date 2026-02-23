@@ -1,3 +1,4 @@
+rule_id: 0ff21bff-1fc4-4b4a-984b-28e3d3f6f166
 name: Sensitive Privileges Assigned at Logon
 description: |
   Detects assignment of sensitive privileges during logon (Event ID 4672). Monitors for privileges like SeDebugPrivilege, SeTcbPrivilege, SeBackupPrivilege, and others that can be abused for privilege escalation, data theft, or defense evasion.

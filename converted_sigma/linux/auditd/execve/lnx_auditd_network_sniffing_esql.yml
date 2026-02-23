@@ -1,3 +1,4 @@
+rule_id: 64a54643-3096-4149-b786-7399255c4a7a
 name: "Network Sniffing Detection - Linux"
 description: |
   Network sniffing refers to using the network interface on a system to monitor or capture information sent over a wired or wireless connection.

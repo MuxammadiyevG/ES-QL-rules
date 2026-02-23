@@ -1,3 +1,4 @@
+rule_id: cf7438c2-5570-4c18-8fea-55f0d3e1dfcc
 name: AD Privileged Group Membership Added (4728/4732/4756)
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga to'g'ridan-to'g'ri bog'liq bo'lib, imtiyozli guruhlarga yangi a'zo qo'shilishini aniqlaydi.

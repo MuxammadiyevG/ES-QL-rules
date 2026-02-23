@@ -1,3 +1,4 @@
+rule_id: 7710588c-f62e-4ebd-9de6-96ef2b1f8033
 name: AD User Account Deleted - Impact Monitoring
 description: |
   Foydalanuvchi o'chirilishi (Event ID 4726) izlarni yashirish yoki servislar ishini to'xtatish uchun ishlatilishi mumkin.

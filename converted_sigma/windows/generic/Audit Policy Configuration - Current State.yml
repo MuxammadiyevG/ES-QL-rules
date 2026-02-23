@@ -1,3 +1,4 @@
+rule_id: fe9f1337-9872-4371-b646-e68a0d1bd685
 name: Audit Policy Configuration - Current State
 description: |
   Monitors audit policy settings (Event ID 4719) for compliance verification. Tracks audit configuration state for security baseline maintenance.

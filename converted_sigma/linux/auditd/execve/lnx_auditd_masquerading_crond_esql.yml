@@ -1,3 +1,4 @@
+rule_id: d9719edb-d1f9-4223-8d3b-15e7744f1935
 name: "Crond Masquerading Detection"
 description: |
   Detects execution of crond from unusual locations.

@@ -1,3 +1,4 @@
+rule_id: 0774746c-fb08-4447-885d-43bb72c6b29d
 name: "Suspicious Service Reload or Restart"
 description: |
   Detects suspicious service reload or restart commands.

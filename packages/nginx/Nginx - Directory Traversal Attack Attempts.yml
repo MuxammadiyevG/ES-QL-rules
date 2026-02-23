@@ -1,3 +1,4 @@
+rule_id: 2e76e665-b9a9-421e-9413-2045d08433de
 name: Nginx - Directory Traversal Attack Attempts
 description: |
   Ushbu qoida Nginx access log'da directory/path traversal pattern'larni aniqlaydi.

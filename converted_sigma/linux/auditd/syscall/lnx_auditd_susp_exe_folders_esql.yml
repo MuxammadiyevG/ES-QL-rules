@@ -1,3 +1,4 @@
+rule_id: a3914f87-325b-4771-bfd9-cc8ed0f729b2
 name: "Program Execution in Suspicious Folders"
 description: |
   Detects program executions in suspicious non-program folders.

@@ -1,3 +1,4 @@
+rule_id: 76c62ce0-166b-4527-9da2-4a3e8b94f0cc
 #//RULE-GDPR-37 — Multi-Region Data Replication Without Geo-Fencing (GDPR Chapter V)
 #//Requirement: Articles 44-46
 #//Objective: Detect automatic data replication to non-adequate countries

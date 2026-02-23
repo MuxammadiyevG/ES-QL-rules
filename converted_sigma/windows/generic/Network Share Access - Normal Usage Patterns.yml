@@ -1,3 +1,4 @@
+rule_id: 47fac6dc-0dd5-4b7c-a439-b41a55cec1d6
 name: Network Share Access - Normal Usage Patterns
 description: |
   Monitors file share access (Event ID 5140) to establish baseline patterns for data access. Supports compliance, capacity planning, and anomaly detection.

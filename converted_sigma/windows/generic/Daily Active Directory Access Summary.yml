@@ -1,3 +1,4 @@
+rule_id: eb6e1d31-67ff-4d4b-a6ec-e8b00aa43373
 name: Daily Active Directory Access Summary
 description: |
   Daily summary of all directory service access for compliance reporting. Aggregates AD access patterns for audit and review purposes.

@@ -1,3 +1,4 @@
+rule_id: 41c517b7-d238-44b8-86ec-de0df4b69707
 name: Nginx - Unusual 4xx Error Rate (Fuzzing/Scanning)
 description: |
   Bitta IP manzilidan ko'p miqdorda mavjud bo'lmagan sahifalarga so'rov yuborilishini aniqlaydi.

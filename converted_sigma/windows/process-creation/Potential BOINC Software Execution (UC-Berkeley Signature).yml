@@ -1,3 +1,4 @@
+rule_id: 5e292a2b-1f00-48db-b6ea-f2930cebe6d5
 name: "Potential BOINC Software Execution (UC-Berkeley Signature)"
 description: |
   Detects process execution where the file metadata description indicates "University of California, Berkeley",

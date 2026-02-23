@@ -1,3 +1,4 @@
+rule_id: b316ddce-a46d-47bc-bcca-f85b6e0fe128
 #//RULE-PCI-32 — Unauthorized Database Access Attempt (PCI 10.2.1)
 #//Requirement: 10
 #//Objective: Detect individual user access to cardholder data in databases

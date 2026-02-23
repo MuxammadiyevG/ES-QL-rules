@@ -1,3 +1,4 @@
+rule_id: e382afe5-b895-41ba-a153-040c889ec4f5
 name: Security Event Log Cleared
 description: |
   Detects clearing of the Security event log (Event ID 1102). Log clearing is a strong indicator of defense evasion and attempted evidence destruction after malicious activity.

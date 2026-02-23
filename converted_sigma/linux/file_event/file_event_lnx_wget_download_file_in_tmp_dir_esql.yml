@@ -1,3 +1,4 @@
+rule_id: c185ad97-0e64-472e-ba30-1fcc47343c4a
 name: "Wget File Download in Temp Directory"
 description: |
   Detects wget creating files in /tmp or /var/tmp directories.

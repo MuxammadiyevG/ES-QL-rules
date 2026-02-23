@@ -1,3 +1,4 @@
+rule_id: 24771986-3d29-446d-a2c4-7dbf3848cb0e
 name: AD Sensitive Share Access - SYSVOL/NETLOGON
 description: |
   Kritik AD tarmoq papkalariga (SYSVOL, NETLOGON) kirishni aniqlaydi (Event ID 5140).

@@ -1,3 +1,4 @@
+rule_id: 6e99c2ab-f42d-4ace-8156-37c78bfce92f
 name: Previously Disabled User Account Re-enabled
 description: |
   Detects re-enabling of previously disabled user accounts (Event ID 4722). May indicate persistence mechanism where attacker re-enables dormant account for later access.

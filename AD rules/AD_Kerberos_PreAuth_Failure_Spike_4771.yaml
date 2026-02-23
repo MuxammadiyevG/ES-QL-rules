@@ -1,3 +1,4 @@
+rule_id: 32e83f5d-9756-4a9e-95a0-58ccad2dfc19
 name: AD Kerberos Pre-Authentication Failure Spike (4771)
 description: |
   Ushbu qoida credential access (brute-force/password spray) faoliyatini aniqlash uchun Kerberos pre-auth xatolarining keskin oshishini kuzatadi.

@@ -1,3 +1,4 @@
+rule_id: b913666d-c678-4f56-9398-4cbb9a7d4485
 name: Suspicious Service Installed for Persistence
 description: |
   Detects installation of Windows services (Event ID 7045, 4697) with suspicious properties such as unusual service names, encoded commands, or installation by non-admin accounts. Services are common persistence mechanisms.

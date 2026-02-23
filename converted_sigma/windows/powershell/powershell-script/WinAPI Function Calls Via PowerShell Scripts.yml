@@ -1,3 +1,4 @@
+rule_id: f7253dce-328a-4536-97d9-d75a8d62bd5e
 name: "WinAPI Function Calls Via PowerShell Scripts"
 description: |
   Detects PowerShell Script Block Logging events referencing common WinAPI / low-level function names frequently

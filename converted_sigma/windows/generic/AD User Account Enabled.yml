@@ -1,3 +1,4 @@
+rule_id: 4a1f27f0-4a66-446c-874d-1280d44b0cc5
 name: AD User Account Enabled
 description: |
   Ilgari o'chirilgan (disabled) foydalanuvchi hisobi qayta yoqilganligini aniqlaydi (Event ID 4722).

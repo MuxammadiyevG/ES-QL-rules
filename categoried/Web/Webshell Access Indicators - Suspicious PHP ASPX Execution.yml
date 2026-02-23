@@ -1,3 +1,4 @@
+rule_id: d7bb3a0b-b418-4358-8cac-842f3bb6857a
 name: "Webshell Access Indicators - Suspicious PHP/ASPX Execution"
 description: |
   This rule detects potential webshell access by identifying requests to suspicious file names commonly associated with webshells (shell.php, cmd.php, upload.php, r57.php, c99.php, webshell.aspx) or requests with webshell-like parameters (cmd=, exec=, command=). Webshells provide persistent remote access to compromised web servers.

@@ -1,3 +1,4 @@
+rule_id: fdb95461-2c07-48d4-a2f1-4f4600c44f01
 name: ESET Protect - Multiple Device Shutdown or Reboot Tasks
 description: |
   Ushbu qoida ESET device management orqali bir nechta device'larga shutdown/reboot task'larni aniqlaydi.

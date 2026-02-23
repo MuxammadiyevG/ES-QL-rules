@@ -1,3 +1,4 @@
+rule_id: 57e2450b-548e-4c51-b7a1-1803ae098514
 name: VMware ESX - User Login via vmware-hostd or vmware-authd
 description: |
   VMware ESX tizimiga vmware-hostd yoki vmware-authd orqali

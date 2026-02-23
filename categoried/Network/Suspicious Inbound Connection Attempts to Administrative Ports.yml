@@ -1,3 +1,4 @@
+rule_id: 78e4f7bf-c66a-4a24-b117-61df50fbf871
 
 name: "Suspicious Inbound Connection Attempts to Administrative Ports"
 description: |

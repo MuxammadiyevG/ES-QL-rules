@@ -1,3 +1,4 @@
+rule_id: dae34d85-ad6a-47b1-ad82-4ec2137cee16
 #//RULE-PCI-19 — Directory Traversal Attempt (PCI 6.5.8)
 #//Requirement: 6
 #//Objective: Detect path traversal attacks in web requests

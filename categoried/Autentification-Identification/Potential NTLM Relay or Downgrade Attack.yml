@@ -1,3 +1,4 @@
+rule_id: 23ce7613-8d6c-4228-ac18-715641f810ec
 name: "NTLM Authentication Spike - Potential NTLM Relay or Downgrade Attack"
 description: |
   This rule detects excessive NTLM authentication events which may indicate NTLM relay attacks, pass-the-hash, or downgrade attacks forcing NTLM over Kerberos. NTLM is weaker than Kerberos and its misuse can facilitate lateral movement.

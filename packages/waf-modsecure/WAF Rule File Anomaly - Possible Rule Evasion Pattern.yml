@@ -1,3 +1,4 @@
+rule_id: 16b93b7e-2d82-4585-abd8-0ff5b8cc7c5f
 name: WAF Rule File Anomaly - Possible Rule Evasion Pattern
 description: |
   Turli WAF rule fayllari va line numberlardan bir vaqtda triggerlanish aniqlandi.

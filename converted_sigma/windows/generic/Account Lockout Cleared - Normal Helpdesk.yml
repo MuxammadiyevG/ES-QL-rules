@@ -1,3 +1,4 @@
+rule_id: 17186bf7-49f0-43bf-8636-c1d4eb66792e
 name: Account Lockout Cleared - Normal Helpdesk
 description: |
   Monitors account lockout resets (Event ID 4767) typically performed by help desk. Tracks normal user support operations and account recovery.

@@ -1,3 +1,4 @@
+rule_id: c05e80af-aaed-4809-bf7e-7e16229dad0b
 #//RULE-HIPAA-25 — Security Incident Not Logged or Reviewed - §164.308(a)(6)
 #//Requirement: HIPAA Security Rule §164.308(a)(6) - Security Incident Procedures
 #//Objective: Detect security incidents without proper documentation or response

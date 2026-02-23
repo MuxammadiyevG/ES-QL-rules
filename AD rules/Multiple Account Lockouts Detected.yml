@@ -1,3 +1,4 @@
+rule_id: e640fad1-081e-4a47-9bba-ab43fa7162f1
 name: Multiple Account Lockouts Detected
 description: |
   Ushbu qoida credential access va privilege escalation texnikalariga bog'liq bo'lib, `Multiple Account Lockouts Detected` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

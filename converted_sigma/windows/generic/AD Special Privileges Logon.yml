@@ -1,3 +1,4 @@
+rule_id: fd4ba669-c6be-426b-8d9a-a413723e27c2
 name: AD Special Privileges Logon
 description: |
   Foydalanuvchi tizimga maxsus (administrative) huquqlar bilan kirganini aniqlaydi (Event ID 4672).

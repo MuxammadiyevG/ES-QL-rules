@@ -1,3 +1,4 @@
+rule_id: 0f21a291-70ec-4b06-870d-468ddaa5342a
 name: "Command Executed Via Run Dialog Box - Registry"
 description: |
   Detects potential command execution via the Windows Run dialog by monitoring writes to the

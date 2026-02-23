@@ -1,3 +1,4 @@
+rule_id: d59ec226-d47a-4f53-8878-3c4470ed248b
 name: Security Group Membership Queries
 description: |
   Monitors queries for security group membership (Event ID 4798) which occur during normal access control checks. Tracks standard authorization operations.

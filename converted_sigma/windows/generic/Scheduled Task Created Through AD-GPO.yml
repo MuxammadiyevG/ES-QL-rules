@@ -1,3 +1,4 @@
+rule_id: 32b83dc2-8fe3-49ed-a1bd-8e4218d03397
 name: Scheduled Task Created Through AD/GPO
 description: |
   Detects creation of scheduled tasks through Active Directory or Group Policy (Event ID 4698, 4699, 4702). Attackers use GPO-based scheduled tasks for domain-wide persistence and execution.

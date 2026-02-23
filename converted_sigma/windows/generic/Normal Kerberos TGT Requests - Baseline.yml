@@ -1,3 +1,4 @@
+rule_id: e981d468-7173-4ec7-b5e5-1405f4108600
 name: Normal Kerberos TGT Requests - Baseline
 description: |
   Monitors successful Kerberos TGT (Ticket Granting Ticket) requests (Event ID 4768) for baseline Kerberos activity. Helps establish normal authentication patterns and detect deviations.

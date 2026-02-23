@@ -1,3 +1,4 @@
+rule_id: 1ca11ba1-bdc8-45e8-89c9-c346761ef06e
 name: VMware ESX - Multiple Authentication Failures 
 description: |
   Qisqa vaqt ichida VMware ESX serveriga bir xil manba IP'dan ko'p marta

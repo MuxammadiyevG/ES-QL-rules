@@ -1,3 +1,4 @@
+rule_id: 3bb72671-0bb6-47fa-9f0d-c51b8e5ad34a
 name: "INFO - Linux Session Opened (USER_START) (auditd)"
 description: |
   Baselines session opening via auditd USER_START (who logged in).

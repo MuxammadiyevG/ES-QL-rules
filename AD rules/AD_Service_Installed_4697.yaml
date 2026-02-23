@@ -1,3 +1,4 @@
+rule_id: a2bb4211-4b48-4809-b524-0a2370dc40cb
 name: AD Service Installed via Security Log (4697)
 description: |
   Ushbu qoida persistence texnikalariga tegishli bo'lib, xavfsizlik jurnalida yangi servis yaratilishini aniqlaydi.

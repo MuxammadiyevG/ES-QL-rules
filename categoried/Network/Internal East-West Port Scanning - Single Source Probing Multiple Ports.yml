@@ -1,3 +1,4 @@
+rule_id: 8ab9b517-4d8e-4229-8448-b6c94e792931
 name: "Internal East-West Port Scanning - Single Source Probing Multiple Ports"
 description: |
   This rule detects potential internal lateral movement port scanning by identifying a single source IP connecting to multiple distinct destination ports within a short time window. This pattern suggests reconnaissance for vulnerable services or lateral movement targets.

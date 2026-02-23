@@ -1,3 +1,4 @@
+rule_id: 1175d3e2-99ca-4e27-84c6-0d2cc2012ac1
 name: "Single Account Brute Force with Success"
 description: |
   This rule detects targeted brute force attacks against individual user accounts where an attacker eventually succeeds. It identifies scenarios where a single username receives 20+ failed authentication attempts from one or more source IPs within 15 minutes, followed by at least one successful logon. This pattern indicates persistent targeting of a specific account that culminated in compromise.

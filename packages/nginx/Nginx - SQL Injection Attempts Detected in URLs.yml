@@ -1,3 +1,4 @@
+rule_id: 992af4b2-b016-4d58-8213-5f6a46027f0f
 name: Nginx - SQL Injection Attempts Detected in URLs
 description: |
   Ushbu qoida Nginx access log'da URL'larda SQL injection pattern'larni aniqlaydi.

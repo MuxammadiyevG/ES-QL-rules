@@ -1,3 +1,4 @@
+rule_id: 9a5e0894-41b8-459a-812f-bdbafcb95343
 name: AD Special Privileges Assigned to New Logon (4672)
 description: |
   Ushbu qoida privilege escalation hamda lateral movement xavfini ifodalovchi 4672 hodisalarini aniqlaydi.

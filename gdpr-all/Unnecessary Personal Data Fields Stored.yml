@@ -1,3 +1,4 @@
+rule_id: 8e50a310-b69c-4890-95eb-8ba1b507fd47
 #//RULE-GDPR-20 — Data Minimization Violation - Retention of Unnecessary Data (GDPR Article 5(1)(c))
 #//Requirement: Article 5
 #//Objective: Detect storage of data not necessary for processing purpose

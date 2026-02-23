@@ -1,3 +1,4 @@
+rule_id: 27297a34-0360-4c46-be99-737ba74ffcee
 name: "Powershell Token Obfuscation - Powershell"
 description: |
   Detects common token-obfuscation patterns frequently produced by Invoke-Obfuscation and similar techniques

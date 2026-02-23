@@ -1,3 +1,4 @@
+rule_id: b6d3a936-888a-4866-a4e6-ff41bc27e82f
 name: Kerberos Service Ticket Request - Kerberoasting
 description: |
   Detects suspicious Kerberos service ticket (TGS) requests (Event ID 4769) that may indicate Kerberoasting attacks. Monitors for requests using RC4 encryption, requests for unusual SPNs, or mass ticket requests from single sources.

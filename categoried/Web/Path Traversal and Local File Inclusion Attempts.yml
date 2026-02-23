@@ -1,3 +1,4 @@
+rule_id: 722750d3-6dc0-47ee-9598-d77d73e3f7d4
 name: "Path Traversal and Local File Inclusion Attempts"
 description: |
   This rule identifies path traversal and local file inclusion (LFI) attack attempts where attackers try to access files outside the web application's intended directory. It detects classic traversal sequences (../, ..\, %2e%2e/, encoded variations), and attempts to access sensitive system files (/etc/passwd, /etc/shadow, C:\Windows\, win.ini, boot.ini). The rule triggers when 5+ path traversal indicators are seen from a single IP within 10 minutes.

@@ -1,3 +1,4 @@
+rule_id: f2ccb372-5f47-4c8d-acbe-c933cac74adc
 name: "File Time Attribute Modification"
 description: |
   Detects file time attribute changes using touch command.

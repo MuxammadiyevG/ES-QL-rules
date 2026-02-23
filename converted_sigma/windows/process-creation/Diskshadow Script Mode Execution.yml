@@ -1,3 +1,4 @@
+rule_id: 9c24a229-2998-4855-9c98-1e8f082ec777
 name: "Diskshadow Script Mode Execution"
 description: |
   Detects execution of Diskshadow.exe in script mode using the "/s" (or -s) flag.

@@ -1,3 +1,4 @@
+rule_id: dc5bcd4c-a5f5-4c19-9695-de9d5dcad4b3
 name: Normal Domain Controller Replication
 description: |
   Monitors normal domain controller replication events (Event ID 4662) for AD infrastructure health. Tracks replication patterns between DCs.

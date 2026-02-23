@@ -1,3 +1,4 @@
+rule_id: fea22678-9ecf-4932-abb5-43088a3a3d91
 # Django Framework Exceptions
 # Detects suspicious Django security-related exceptions that may indicate exploitation attempts.
 name: "Django Framework Exceptions"

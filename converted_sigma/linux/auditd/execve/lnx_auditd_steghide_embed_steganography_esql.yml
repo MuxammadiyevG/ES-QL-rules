@@ -1,3 +1,4 @@
+rule_id: fd6b6958-af08-4fa3-bfd6-bd1ad2919f75
 name: "Steghide Embed Steganography"
 description: |
   Detects usage of steghide to embed data in images.

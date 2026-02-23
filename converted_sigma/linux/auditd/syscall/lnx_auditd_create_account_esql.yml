@@ -1,3 +1,4 @@
+rule_id: 219040f0-37b7-41cf-aa90-e8f4abad6ec8
 name: "User Account Creation Detection"
 description: |
   Detects the creation of a new user account.

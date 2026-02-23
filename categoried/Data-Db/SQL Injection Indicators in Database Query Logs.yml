@@ -1,3 +1,4 @@
+rule_id: 00cd8086-1c4f-47a1-a1b7-e60dd00588fd
 name: "SQL Injection Indicators in Database Query Logs"
 description: |
   This rule detects potential SQL injection patterns in database query logs or process command lines by identifying common SQLi syntax such as UNION SELECT, OR 1=1, ' OR '1'='1, sleep(), BENCHMARK(), etc. This indicates potential exploitation attempts.

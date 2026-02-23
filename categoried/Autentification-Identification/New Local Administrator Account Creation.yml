@@ -1,3 +1,4 @@
+rule_id: 203d893d-aff5-4e9f-982d-afbfe4ac8533
 name: "New Local Administrator Account Creation"
 description: |
   This rule detects the creation of new local user accounts that are immediately or shortly after added to the local Administrators group. It correlates Event ID 4720 (user account created) with Event ID 4732 (user added to group) within a 5-minute window on the same host. This pattern is commonly used by attackers to establish persistent privileged access.

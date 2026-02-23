@@ -1,3 +1,4 @@
+rule_id: b4ddd042-b88e-428a-bca7-90a1d5d44e37
 name: FortiGate Admin Login/Logout Activity Detection
 description: |
   Ushbu qoida FortiGate qurilmalarida tizimga kirish (login) va chiqish (logout) harakatlarini monitoring qilish uchun mo'ljallangan. 

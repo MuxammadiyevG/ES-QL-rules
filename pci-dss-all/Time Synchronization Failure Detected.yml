@@ -1,3 +1,4 @@
+rule_id: 90af7bec-8581-4c7a-a930-39813d45b97d
 #//RULE-PCI-33 — System Time Synchronization Failure (PCI 10.4)
 #//Requirement: 10
 #//Objective: Detect NTP/time synchronization failures affecting audit trails

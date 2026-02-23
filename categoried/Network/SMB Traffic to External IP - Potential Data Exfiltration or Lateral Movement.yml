@@ -1,3 +1,4 @@
+rule_id: ec424400-f733-4ee9-aa93-c8fbfd3ef549
 name: "SMB Traffic to External IP - Potential Data Exfiltration or Lateral Movement"
 description: |
   This rule detects SMB (Server Message Block) traffic directed to external IP addresses, which is highly anomalous in most environments. SMB should typically remain internal; external SMB may indicate data exfiltration, lateral movement attempts, or exploitation.

@@ -1,3 +1,4 @@
+rule_id: fbf4e673-61ef-47f4-948c-cb7215bd3434
 name: AD DCSync Replication Rights Abuse Detection (4662)
 description: |
   Ushbu qoida credential access va privilege escalation uchun eng kritik indikatorlardan biri bo'lgan DCSync faoliyatini aniqlaydi.

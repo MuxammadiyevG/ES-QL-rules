@@ -1,3 +1,4 @@
+rule_id: 82fb0291-4c86-40df-8fa2-0ee3a2c4a3ea
 #//RULE-GDPR-13 — Potential Personal Data Breach Undetected (GDPR Article 33)
 #//Requirement: Articles 33, 34
 #//Objective: Detect indicators of personal data breach requiring notification

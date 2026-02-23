@@ -1,3 +1,4 @@
+rule_id: 44b2f848-7798-41eb-95a9-729156a77c0d
 
 name: "Suspicious REVOKE Privilege Operation - Access Removal"
 description: |

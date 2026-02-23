@@ -1,3 +1,4 @@
+rule_id: 56b2bde4-6235-4b9d-837e-8aadc7e1ac4b
 name: "JWT Token Manipulation and Algorithm Confusion"
 description: |
   This rule detects JWT (JSON Web Token) manipulation attempts by identifying suspicious JWT patterns in requests, including algorithm confusion attacks (alg:none), weak algorithms (HS256 when RS256 expected), null signature attempts, or JWT claims manipulation.

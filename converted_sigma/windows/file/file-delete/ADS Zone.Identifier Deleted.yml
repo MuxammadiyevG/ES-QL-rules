@@ -1,3 +1,4 @@
+rule_id: 8c3b7ace-de52-4761-b792-1b3a75c9434e
 name: "ADS Zone.Identifier Deleted"
 description: |
   Detects deletion of the Zone.Identifier alternate data stream (ADS) by matching file delete events

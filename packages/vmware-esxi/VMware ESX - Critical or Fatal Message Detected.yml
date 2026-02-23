@@ -1,3 +1,4 @@
+rule_id: 50ec3d00-1001-47ef-8a69-1915da1e166a
 name: VMware ESX - Critical or Fatal Message Detected
 description: |
   VMware ESX tizimidan critical yoki fatal darajadagi xabar qayd etildi.

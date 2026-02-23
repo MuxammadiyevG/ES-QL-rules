@@ -1,3 +1,4 @@
+rule_id: 891095ca-cebd-423c-ac60-bf2ff8b10b7b
 #//EVIDENCE-PCI-08 — User ID Management, Password Policies, Auth Documentation (PCI 8.1, 8.2, 8.4, 8.6, 8.7, 8.8)
 #//Requirement: 8
 #//Objective: Evidence of user ID policies, password management, auth procedures, database access controls

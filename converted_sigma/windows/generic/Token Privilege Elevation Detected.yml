@@ -1,3 +1,4 @@
+rule_id: 0818b08d-930d-44ac-b10a-a5259dd23c77
 name: Token Privilege Elevation Detected
 description: |
   Detects token privilege elevation events by correlating Event ID 4672 (special privileges assigned) with 4624 (logon) events where elevated tokens are used. May indicate UAC bypass or token manipulation attacks.

@@ -1,3 +1,4 @@
+rule_id: bb0159d3-3865-43f8-973e-edf383e8aa37
 name: "Kernel Ring Buffer (dmesg) Clearing Detection"
 description: |
   Detects clearing or disabling of kernel ring buffer (dmesg) logs via syslog syscall.

@@ -1,3 +1,4 @@
+rule_id: ab133a90-ca81-463e-8fd1-6a5a20eb8130
 name: AD Suspicious User Account Change on Domain Controller (4738)
 description: |
   Ushbu qoida persistence va privilege escalation faoliyatlariga tegishli bo'lib, foydalanuvchi atributlaridagi xavfli o'zgarishlarni kuzatadi.

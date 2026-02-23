@@ -1,3 +1,4 @@
+rule_id: 7eaf1375-2738-4dbe-8cdb-a6e120728d11
 name: "GDPR Art.32(1)(d) - Security Controls Effectiveness Degradation"
 description: |
   Detects degradation or failure of security controls that should be regularly tested

@@ -1,3 +1,4 @@
+rule_id: a4af85c3-f5f2-440f-8d14-5942fa9494da
 name: AD New User Created on Domain Controller (4720)
 description: |
   Ushbu qoida persistence va privilege escalation texnikalariga bog'liq bo'lib, AD muhitida yangi foydalanuvchi yaratilishini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 3edc84cd-709a-4101-83f4-8dc22db3e5f9
 #//RULE-NIST-32 — Registry Persistence Modification (NIST CM-6, SI-7)
 #//Control Family: CM (Configuration Management), SI (System and Information Integrity)
 #//Objective: Detect registry modifications for persistence mechanisms

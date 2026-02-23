@@ -1,3 +1,4 @@
+rule_id: 1e1d47bf-a75d-4066-9392-4f2d2091b78a
 name: "Cleartext Protocol Usage on Sensitive Ports"
 description: |
   This rule identifies usage of cleartext protocols (HTTP, FTP, Telnet) on ports commonly associated with sensitive services. Using metricbeat network metrics or auditbeat network activity, it detects connections on ports 80 (HTTP), 21 (FTP), 23 (Telnet) where encrypted alternatives should be mandated. The rule triggers when 10+ cleartext protocol connections are observed from sensitive hosts within 30 minutes.

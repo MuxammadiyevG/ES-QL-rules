@@ -1,3 +1,4 @@
+rule_id: 5c7032d5-a6c5-4143-bcc5-a9c74c3f869c
 name: "Hidden Binary Execution Detection"
 description: |
   Detects execution of binaries from hidden directories (starting with dot).

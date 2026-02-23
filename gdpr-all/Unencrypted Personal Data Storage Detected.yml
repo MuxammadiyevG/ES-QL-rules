@@ -1,3 +1,4 @@
+rule_id: aa37ff90-81c9-4348-a36a-fc3fd81916e3
 #//RULE-GDPR-03 — Unencrypted Personal Data at Rest (GDPR Article 32(1)(a) - Encryption)
 #//Requirement: Article 32
 #//Objective: Detect unencrypted storage of personal data

@@ -1,3 +1,4 @@
+rule_id: 79d56142-3af8-4691-9676-0e4b225980a9
 name: "TOR Network Usage Detection - Onion Routing Indicators"
 description: |
   This rule detects potential TOR network usage by identifying connections to known TOR ports (9001, 9030, 9050, 9051) or TOR-related keywords in event logs. TOR usage may indicate attempts to anonymize malicious traffic or evade detection.

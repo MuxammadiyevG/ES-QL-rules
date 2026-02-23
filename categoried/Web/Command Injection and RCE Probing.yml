@@ -1,3 +1,4 @@
+rule_id: eb5c18ba-97ee-4406-a6b5-7fdc9ca8ce21
 name: "Command Injection and RCE Probing"
 description: |
   This rule identifies command injection and remote code execution (RCE) attempts in HTTP requests. It detects shell metacharacters and command chaining operators (;, |, &&, ||), command substitution ($(), backticks), common shell binaries (/bin/sh, /bin/bash, cmd.exe), and PowerShell execution patterns (powershell -enc, -nop, -w hidden). The rule triggers when 5+ distinct command injection indicators are detected from a single source IP within 10 minutes.

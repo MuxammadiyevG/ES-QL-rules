@@ -1,3 +1,4 @@
+rule_id: 4a1ed307-fb99-43e1-93b1-c792dbb120e0
 name: "PCI DSS 8.1.8 - Long-Running Idle Interactive Sessions (Windows)"
 description: |
   Detects user sessions that have been active for more than 15 minutes without

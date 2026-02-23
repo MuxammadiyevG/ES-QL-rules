@@ -1,3 +1,4 @@
+rule_id: 74aa4e2b-a333-4d94-b937-1f8f42526938
 name: Potential DCSync Attack - Suspicious Replication
 description: |
   Detects potential DCSync attacks where attackers abuse directory replication to extract password hashes (Event ID 4662). Monitors for replication requests from non-DC systems or unusual accounts requesting sensitive properties like unicodePwd, ntPwdHistory, etc.

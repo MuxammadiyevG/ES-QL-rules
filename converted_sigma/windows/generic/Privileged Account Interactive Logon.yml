@@ -1,3 +1,4 @@
+rule_id: 9bfcbcbc-7e1c-4f72-bdc4-b7f7b5d681f6
 name: Privileged Account Interactive Logon
 description: |
   Detects interactive logons (Event ID 4624, LogonType 2 or 10) by members of privileged groups. Privileged accounts should primarily use specific administrative workstations. This rule tracks privileged logons for anomaly detection.

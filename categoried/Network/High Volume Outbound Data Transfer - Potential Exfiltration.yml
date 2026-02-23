@@ -1,3 +1,4 @@
+rule_id: 8fa6e3e1-2d37-4edd-a324-ae94415b9930
 name: "High Volume Outbound Data Transfer - Potential Exfiltration"
 description: |
   This rule detects unusually high outbound data volumes from a single host within a short time window, which may indicate data exfiltration. While exact byte counts may not be available, high connection counts or repeated large transfers can serve as heuristics.

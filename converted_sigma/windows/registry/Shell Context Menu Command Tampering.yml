@@ -1,3 +1,4 @@
+rule_id: 315227ce-f2ff-449e-b5fa-c82ff174bd0b
 name: "Shell Context Menu Command Tampering"
 description: |
   Detects registry modifications to Windows Shell context menu command handlers.

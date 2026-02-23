@@ -1,3 +1,4 @@
+rule_id: f36c9377-1eb8-43d3-bc04-3dd7322df1c2
 #//RULE-GDPR-01 — Excessive Personal Data Collection (GDPR Article 5(1)(c) - Data Minimization)
 #//Objective: Detect collection of personal data beyond stated purpose
 #//Data sources: Application logs, database logs, web access logs

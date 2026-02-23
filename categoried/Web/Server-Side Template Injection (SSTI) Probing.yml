@@ -1,3 +1,4 @@
+rule_id: b64fe1d0-e7a4-4634-9a0a-bf4b2ec5bb48
 
 name: "Server-Side Template Injection (SSTI) Probing"
 description: |

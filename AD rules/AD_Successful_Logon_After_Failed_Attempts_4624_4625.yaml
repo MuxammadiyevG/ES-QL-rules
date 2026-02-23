@@ -1,3 +1,4 @@
+rule_id: 929d5e88-02d9-4c03-9e36-43ab7886697c
 name: AD Successful Logon After Multiple Failed Attempts (4624/4625)
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, bir xil manbadan ketma-ket muvaffaqiyatsiz urinishlardan keyin muvaffaqiyatli kirishni aniqlaydi.

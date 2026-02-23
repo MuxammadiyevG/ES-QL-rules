@@ -1,3 +1,4 @@
+rule_id: f3e6d08f-0f20-4dc2-843e-e8e26ea1ad7c
 name: CheckPoint - Multiple Connection Drop Events from Same Source
 description: |
   Ushbu qoida bir xil manbadan qisqa vaqt ichida ko'p connection drop hodisalarini aniqlaydi.

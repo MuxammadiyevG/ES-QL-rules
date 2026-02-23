@@ -1,3 +1,4 @@
+rule_id: 88942686-cd60-4efb-958c-72d25eceb4ef
 name: "Critical Host Logging Gap Detection"
 description: |
   This rule detects prolonged silence (60+ minutes) from critical infrastructure hosts that should be continuously generating logs. It identifies hosts with sensitive naming patterns (DC, SQL, PROD, etc.) that have not sent any logs for over an hour. This gap could indicate logging service failures, agent tampering, or attacker anti-forensics activity.

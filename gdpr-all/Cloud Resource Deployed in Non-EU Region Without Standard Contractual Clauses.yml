@@ -1,3 +1,4 @@
+rule_id: f831f7cc-a2f3-4035-a970-e0b1ed04dafe
 #//RULE-GDPR-36 — Personal Data in Non-EU Cloud Region Without SCCs (GDPR Article 46)
 #//Requirement: Article 46
 #//Objective: Detect cloud deployments outside EU without transfer safeguards

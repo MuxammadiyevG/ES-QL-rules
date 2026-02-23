@@ -1,3 +1,4 @@
+rule_id: 073c64f3-40fb-4061-b86d-db44e6c7b7da
 name: Account Lockout Policy Disabled or Weakened
 description: |
   Detects modifications to the account lockout policy that weaken security by increasing the lockout threshold

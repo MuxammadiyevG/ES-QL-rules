@@ -1,3 +1,4 @@
+rule_id: 03838f8f-65d1-4e6d-918a-0a65b87b40ca
 name: "Multiple Failed Connection Attempts - Network Reconnaissance"
 description: |
   This rule detects multiple failed network connection attempts from a single source, which may indicate network reconnaissance, port scanning, or connection failures during exploitation attempts.

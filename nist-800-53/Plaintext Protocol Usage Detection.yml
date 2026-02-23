@@ -1,3 +1,4 @@
+rule_id: de5f121d-5872-459e-a5d4-2469cb87039d
 #//RULE-NIST-21 — Unencrypted Network Traffic (NIST SC-8, SC-13)
 #//Control Family: SC (System and Communications Protection)
 #//Objective: Detect sensitive data transmitted without encryption

@@ -1,3 +1,4 @@
+rule_id: 396fe86a-fbac-444e-abd7-011252d25125
 name: WAF Inbound Anomaly Score Threshold Exceeded
 description: |
   OWASP CRS ning anomaly scoring mexanizmi (rule 949110) bir so'rov uchun

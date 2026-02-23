@@ -1,3 +1,4 @@
+rule_id: d1e6f711-02c9-4079-825b-91a27696bc26
 name: Fortigate - Network Attack Detected
 description: |
   Ushbu qoida Fortigate IPS tomonidan aniqlangan tarmoq hujumlarini monitoring qiladi.

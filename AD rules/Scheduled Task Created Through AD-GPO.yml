@@ -1,3 +1,4 @@
+rule_id: 9e37e373-c6ac-4790-967a-7793484cc46a
 name: Scheduled Task Created Through AD/GPO
 description: |
   Ushbu qoida persistence va defense evasion texnikalariga bog'liq bo'lib, `Scheduled Task Created Through AD/GPO` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

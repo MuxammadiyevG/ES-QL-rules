@@ -1,3 +1,4 @@
+rule_id: 6ba1b74c-c4e7-4f20-88ff-80f51ff46c25
 name: "Cross-Site WebSocket Hijacking (CSWSH)"
 description: |
   This rule detects potential Cross-Site WebSocket Hijacking attempts by identifying WebSocket upgrade requests with suspicious origins, missing or mismatched Origin headers, or WebSocket connections from unexpected sources.

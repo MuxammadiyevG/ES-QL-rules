@@ -1,3 +1,4 @@
+rule_id: 575f30db-ce59-4b81-95c8-ded888037a26
 name: "Scheduled Task Created - FileCreation"
 description: |
   Detects creation of Scheduled Tasks via file creation in Windows task folders:

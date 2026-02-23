@@ -1,3 +1,4 @@
+rule_id: 26c1d653-fadd-45b7-be06-1f5ab9e6074c
 name: New User Account Created in Active Directory
 description: |
   Detects creation of new user accounts in Active Directory (Event ID 4720). Monitors for unauthorized account creation which may indicate persistence attempts or rogue administrator activity.

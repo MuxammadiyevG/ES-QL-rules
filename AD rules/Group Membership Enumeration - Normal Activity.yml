@@ -1,3 +1,4 @@
+rule_id: be4a0ea2-5ac7-498e-bffa-e017e9106f2d
 name: Group Membership Enumeration - Normal Activity
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Group Membership Enumeration - Normal Activity` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

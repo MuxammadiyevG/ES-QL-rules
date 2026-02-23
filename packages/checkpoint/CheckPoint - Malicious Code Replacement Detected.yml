@@ -1,3 +1,4 @@
+rule_id: 09481be2-e11b-4245-bdd5-693a088693e0
 name: CheckPoint - Malicious Code Replacement Detected
 description: |
   Ushbu qoida CheckPoint IPS tomonidan malicious code replacement hodisalarini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 17b32904-a32a-490c-aa17-fc2482d6cb4c
 name: CheckPoint - Multiple Interspect Block Events
 description: |
   Ushbu qoida CheckPoint Interspect tomonidan bir xil manbadan ko'p block hodisalarini aniqlaydi.

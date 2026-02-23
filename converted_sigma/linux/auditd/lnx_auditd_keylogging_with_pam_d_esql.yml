@@ -1,3 +1,4 @@
+rule_id: b997101d-280c-49f2-8f08-ed00f2225833
 name: "Keylogging via PAM Configuration"
 description: |
   Detects attempts to enable TTY auditing via PAM configuration.

@@ -1,3 +1,4 @@
+rule_id: c0defaed-1631-4fb7-a8c2-c3b6b2d9ca8a
 name: "ASLR Disabled Detection"
 description: |
   Detects actions that disable Address Space Layout Randomization (ASLR).
