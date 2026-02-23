@@ -1,0 +1,75 @@
+name: "PCI DSS 10.2.6 - Audit Log Service Stopped or Paused (Windows)"
+description: |
+  Detects stopping, pausing, or tampering with audit log services on Windows systems.
+  PCI DSS Requirement 10.2.6 requires logging of initialization, stopping, or pausing of audit logs.
+  Monitors Event 1100 (audit log service shutdown), 1102 (audit log cleared),
+  1104 (security log is full), and 4719 (system audit policy was changed).
+  This is a HIGH severity event - disabling audit logs is a strong indicator of
+  an attacker covering their tracks or insider threat activity.
+  False positives: Planned system maintenance, legitimate GPO audit policy changes.
+  Triage: IMMEDIATELY verify if change was authorized, check who made the change,
+  review adjacent timeline for suspicious activity, escalate to incident response.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code IN ("1100", "1102", "1104", "4719", "4612")
+  | EVAL event_meaning = CASE(
+      event.code == "1100", "audit_service_shutdown",
+      event.code == "1102", "audit_log_cleared",
+      event.code == "1104", "security_log_full",
+      event.code == "4719", "audit_policy_changed",
+      event.code == "4612", "audit_log_not_saved",
+      "unknown_audit_event"
+    )
+  | STATS
+      audit_events       = COUNT(*),
+      event_types        = VALUES(event_meaning),
+      event_codes        = VALUES(event.code),
+      actors             = VALUES(winlog.event_data.SubjectUserName),
+      affected_policies  = VALUES(winlog.event_data.CategoryId)
+    BY host.name,
+       event_meaning,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | EVAL severity_level = CASE(
+      event_meaning == "audit_log_cleared",    "critical",
+      event_meaning == "audit_service_shutdown","critical",
+      event_meaning == "audit_policy_changed", "high",
+      event_meaning == "security_log_full",    "high",
+      "medium"
+    )
+  | EVAL risk_score = CASE(
+      event_meaning == "audit_log_cleared",     95,
+      event_meaning == "audit_service_shutdown", 90,
+      event_meaning == "audit_policy_changed",   75,
+      event_meaning == "security_log_full",       70,
+      50
+    )
+  | KEEP bucket, host.name, event_meaning, audit_events,
+         event_types, event_codes, actors, affected_policies,
+         severity_level, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - audit_tampering
+  - log_integrity
+  - windows
+  - critical
+severity: high
+risk_score: 90
+references:
+  - "PCI DSS v3.2.1 Requirement 10.2.6: Initialization, stopping, or pausing of the audit logs"
+  - "PCI DSS v3.2.1 Requirement 10.5: Secure audit trails so they cannot be altered"
+  - "https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=1102"
+pci_dss: ["10.2.6", "10.5", "10.5.2"]
+nist: ["AU-5","AU-9","SI-12","IR-4"]
+gdpr: ["5.1.f", "32", "33"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.001"]
+    T1562: ["T1562.002"]

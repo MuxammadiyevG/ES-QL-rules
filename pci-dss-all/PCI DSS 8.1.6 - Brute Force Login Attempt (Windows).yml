@@ -1,0 +1,62 @@
+name: "PCI DSS 8.1.6 - Brute Force Login Attempt (Windows)"
+description: |
+  Detects excessive failed login attempts against Windows systems which may indicate
+  brute force or credential stuffing attacks targeting cardholder data systems.
+  PCI DSS Req 8.1.6 requires lockout after no more than 6 failed attempts.
+  Trigger: 6+ failed logins from same source to same host within 5 minutes.
+  False positives: Misconfigured service accounts, users forgetting passwords after reset.
+  Triage: Verify if source IP is internal/external, check if target account is privileged,
+  review surrounding successful logins for compromise, check if lockout policy is enforced.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4625"
+    AND event.outcome == "failure"
+  | STATS
+      failed_attempts    = COUNT(*),
+      target_accounts    = COUNT_DISTINCT(winlog.event_data.TargetUserName),
+      source_ips         = VALUES(source.ip),
+      logon_types        = VALUES(winlog.event_data.LogonType),
+      failure_reasons    = VALUES(winlog.event_data.SubStatus)
+    BY host.name,
+       winlog.event_data.TargetUserName,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE failed_attempts >= 6
+  | EVAL severity_level = CASE(
+      failed_attempts >= 50, "critical",
+      failed_attempts >= 20, "high",
+      failed_attempts >= 10, "medium",
+      "low"
+    )
+  | EVAL risk_score = CASE(
+      failed_attempts >= 50, 90,
+      failed_attempts >= 20, 70,
+      failed_attempts >= 10, 50,
+      30
+    )
+  | KEEP bucket, host.name, winlog.event_data.TargetUserName,
+         failed_attempts, target_accounts, source_ips,
+         logon_types, failure_reasons, severity_level, risk_score
+  | SORT failed_attempts DESC
+enabled: false
+tags:
+  - pci_dss
+  - authentication
+  - brute_force
+  - windows
+severity: medium
+risk_score: 50
+references:
+  - "PCI DSS v3.2.1 Requirement 8.1.6: Lock out user IDs after not more than six failed attempts"
+  - "https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4625"
+pci_dss: ["8.1.6" ,"8.1.7"]
+nist: ["AC-7","IA-5","SI-4"]
+gdpr: ["5.1.f", "32"]
+mitre_attack:
+  TA0006:
+    T1110: ["T1110.001","T1110.003"]

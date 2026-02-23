@@ -1,0 +1,64 @@
+name: "PCI DSS 10.2.2 - Privileged User Actions (Windows Admin)"
+description: |
+  Detects and tracks all actions taken by users with root or administrative privileges
+  as required by PCI DSS Requirement 10.2.2.
+  Monitors Windows Event 4672 (Special privileges assigned to new logon) which fires
+  whenever an account with sensitive privileges logs on - key indicator of admin activity.
+  Trigger: Any admin/privileged logon event for audit trail completeness verification.
+  False positives: Routine admin logins during maintenance windows.
+  Triage: Cross-reference with change management tickets, verify if outside business hours,
+  check if the privileged account is expected to log on to this system.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4672"
+    AND NOT winlog.event_data.SubjectUserName LIKE "*$"
+    AND NOT winlog.event_data.SubjectUserName == "SYSTEM"
+    AND NOT winlog.event_data.SubjectUserName == "LOCAL SERVICE"
+    AND NOT winlog.event_data.SubjectUserName == "NETWORK SERVICE"
+  | STATS
+      privileged_logons    = COUNT(*),
+      unique_admins        = COUNT_DISTINCT(winlog.event_data.SubjectUserName),
+      admin_accounts       = VALUES(winlog.event_data.SubjectUserName),
+      logon_ids            = VALUES(winlog.event_data.SubjectLogonId),
+      privileges_assigned  = VALUES(winlog.event_data.PrivilegeList)
+    BY host.name,
+       winlog.event_data.SubjectUserName,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | EVAL severity_level = CASE(
+      privileged_logons >= 20, "high",
+      privileged_logons >= 5,  "medium",
+      "info"
+    )
+  | EVAL risk_score = CASE(
+      privileged_logons >= 20, 65,
+      privileged_logons >= 5,  40,
+      20
+    )
+  | KEEP bucket, host.name, winlog.event_data.SubjectUserName,
+         privileged_logons, unique_admins, admin_accounts,
+         privileges_assigned, severity_level, risk_score
+  | SORT privileged_logons DESC
+enabled: false
+tags:
+  - pci_dss
+  - privileged_access
+  - audit_trail
+  - windows
+severity: low
+risk_score: 20
+references:
+  - "PCI DSS v3.2.1 Requirement 10.2.2: All actions by individuals with root or administrative privileges"
+  - "https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4672"
+pci_dss: ["10.2.2", "10.3"]
+nist: ["AC-2","AU-2","AU-12"]
+gdpr: ["5.1.f", "32"]
+mitre_attack:
+  TA0004:
+    T1078: ["T1078.002"]
+  

@@ -1,0 +1,83 @@
+name: "PCI DSS 1.3.5 - Unauthorized Outbound Traffic from CDE (Palo Alto)"
+description: |
+  Detects unauthorized outbound traffic originating from the cardholder data environment (CDE)
+  to the Internet, violating PCI DSS Requirement 1.3.5.
+  Monitors Palo Alto firewall deny/drop actions on outbound traffic from CDE network segments.
+  High volume of denied outbound traffic may indicate malware C2, data exfiltration attempts,
+  or misconfigured application trying to reach external endpoints.
+  Trigger: >10 distinct denied outbound connections from a single CDE host in 5 minutes.
+  False positives: New application deployments reaching uncategorized URLs, misconfigured proxies.
+  Triage: Identify the destination IPs/domains, check if the source host is compromised,
+  verify against approved application communication matrix.
+  NOTE: Update the source.ip CIDR ranges to match your actual CDE network segments.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-paloalto*
+query_language: esql
+query: |
+  FROM filebeat-paloalto*
+  | WHERE event.dataset == "panw.panos"
+    AND network.direction == "egress"
+    AND event.outcome == "failure"
+    AND event.action IN ("deny", "drop", "reset-both", "reset-client", "reset-server")
+    AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+    -- Filter to CDE source networks only (update these CIDRs to your CDE ranges)
+    -- AND CIDR_MATCH(source.ip, "10.10.10.0/24", "10.20.0.0/16")
+  | STATS
+      denied_connections     = COUNT(*),
+      unique_destinations    = COUNT_DISTINCT(destination.ip),
+      unique_dest_ports      = COUNT_DISTINCT(destination.port),
+      destination_ips        = VALUES(destination.ip),
+      destination_ports      = VALUES(destination.port),
+      destination_countries  = VALUES(destination.geo.country_iso_code),
+      protocols              = VALUES(network.transport),
+      firewall_rules         = VALUES(rule.name)
+    BY source.ip,
+       observer.hostname,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE denied_connections >= 10
+  | EVAL risk_indicator = CASE(
+      unique_destinations >= 20,                              "possible_c2_beaconing",
+      unique_dest_ports >= 10 AND unique_destinations <= 3,   "port_scanning",
+      denied_connections >= 100,                              "high_volume_exfil_attempt",
+      "repeated_policy_violation"
+    )
+  | EVAL severity_level = CASE(
+      denied_connections >= 100 OR risk_indicator == "possible_c2_beaconing", "critical",
+      denied_connections >= 50  OR risk_indicator == "port_scanning",          "high",
+      denied_connections >= 20,                                                 "medium",
+      "low"
+    )
+  | EVAL risk_score = CASE(
+      denied_connections >= 100, 90,
+      denied_connections >= 50,  70,
+      denied_connections >= 20,  50,
+      30
+    )
+  | KEEP bucket, source.ip, observer.hostname, denied_connections,
+         unique_destinations, unique_dest_ports, destination_ips,
+         destination_countries, protocols, firewall_rules,
+         risk_indicator, severity_level, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - firewall
+  - network_egress
+  - palo_alto
+severity: medium
+risk_score: 50
+references:
+  - "PCI DSS v3.2.1 Requirement 1.3.5: Do not allow unauthorized outbound traffic from CDE to Internet"
+  - "PCI DSS v3.2.1 Requirement 1.2.1: Restrict inbound and outbound traffic to necessary for CDE"
+pci_dss: ["1.3.5", "1.2.1"]
+nist: ["AC-4","SC-7","SI-4","CA-3"]
+gdpr: ["5.1.f","32","33"]
+mitre_attack:
+  TA0010:
+    T1041: []
+    T1048: []
+  TA0011:
+    T1071: []

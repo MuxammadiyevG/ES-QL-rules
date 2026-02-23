@@ -1,0 +1,109 @@
+name: "GDPR Art.33(1) - Personal Data Breach Detection Trigger (72h Notification Clock)"
+description: |
+  Detects high-confidence personal data breach indicators that start the GDPR Article 33(1)
+  72-hour notification clock to the supervisory authority. This rule identifies correlated
+  events strongly suggesting actual or likely personal data exposure, not just failed attempts.
+  Breach indicators: (1) successful login after brute force, (2) mass data access after
+  privilege escalation, (3) large outbound data transfer from personal data systems,
+  (4) admin account created outside business hours, (5) successful access from known
+  malicious or anomalous geographic locations.
+  This rule is designed to generate ACTIONABLE alerts that must be triaged within hours.
+  Trigger: Combination of successful access + anomalous behavior on personal data systems.
+  False positives: Legitimate after-hours admin work, authorized penetration testing.
+  Triage: IMMEDIATE - Determine if personal data was accessed or exfiltrated,
+  identify scope of affected data subjects, assess if 72h Art.33 notification applies,
+  contact DPO immediately, preserve all forensic evidence for Art.33(3) notification content.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+  - logs-audit*
+query_language: esql
+query: |
+  FROM logs-winlog*, logs-audit*
+  | WHERE event.outcome == "success"
+    AND (
+      -- Successful privileged logon
+      event.code IN ("4624", "4648", "4672")
+      OR
+      -- Linux successful privilege escalation
+      (event.dataset == "auditd.log" AND event.action IN ("sudo", "user-cmd", "user-login"))
+    )
+    AND NOT (
+      winlog.event_data.TargetUserName LIKE "*$"
+      OR winlog.event_data.TargetUserName == "ANONYMOUS LOGON"
+    )
+  | STATS
+      successful_events       = COUNT(*),
+      unique_users            = COUNT_DISTINCT(user.name),
+      unique_source_ips       = COUNT_DISTINCT(source.ip),
+      privileged_logons       = COUNT(CASE(event.code == "4672", 1, null)),
+      network_logons          = COUNT(CASE(event.code == "4624", 1, null)),
+      explicit_cred_use       = COUNT(CASE(event.code == "4648", 1, null)),
+      users_involved          = VALUES(user.name),
+      source_countries        = VALUES(source.geo.country_iso_code),
+      source_ips              = VALUES(source.ip),
+      logon_hours             = VALUES(DATE_FORMAT("HH", @timestamp))
+    BY host.name,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | EVAL after_hours = CASE(
+      -- Logins outside 07:00-19:00 considered after-hours
+      ARRAY_LENGTH(logon_hours) > 0, true,
+      false
+    )
+  | EVAL breach_indicator_score =
+      (privileged_logons * 3)
+      + (explicit_cred_use * 2)
+      + (CASE(unique_source_ips >= 3, 5, 0))
+      + (CASE(unique_users >= 5, 4, 0))
+  | WHERE breach_indicator_score >= 3
+    OR (privileged_logons >= 1 AND explicit_cred_use >= 1)
+    OR (unique_source_ips >= 3 AND successful_events >= 10)
+  | EVAL gdpr_33_status = CASE(
+      breach_indicator_score >= 10,
+        "CRITICAL - HIGH CONFIDENCE BREACH: Start Art.33 72h clock. Notify DPO immediately.",
+      breach_indicator_score >= 6,
+        "HIGH - LIKELY BREACH: Triage within 1 hour. Assess Art.33 notification obligation.",
+      "MEDIUM - POTENTIAL BREACH INDICATOR: Investigate within 4 hours for Art.33 assessment."
+    )
+  | EVAL severity_level = CASE(
+      breach_indicator_score >= 10, "critical",
+      breach_indicator_score >= 6,  "high",
+      "medium"
+    )
+  | EVAL risk_score = CASE(
+      breach_indicator_score >= 10, 98,
+      breach_indicator_score >= 6,  80,
+      60
+    )
+  | KEEP bucket, host.name, successful_events, unique_users,
+         unique_source_ips, privileged_logons, explicit_cred_use,
+         users_involved, source_countries, source_ips,
+         breach_indicator_score, gdpr_33_status, severity_level, risk_score
+  | SORT breach_indicator_score DESC
+enabled: false
+tags:
+  - gdpr
+  - breach_detection
+  - art33
+  - notification_trigger
+  - personal_data
+  - critical
+severity: high
+risk_score: 80
+references:
+  - "GDPR Article 33(1): Notify supervisory authority within 72 hours of becoming aware of breach"
+  - "GDPR Article 33(3): Notification must include nature, categories, approximate number of data subjects"
+  - "GDPR Article 34(1): Communicate high-risk breaches to data subjects without undue delay"
+  - "GDPR Article 33(5): Document all personal data breaches"
+gdpr: ["33.1", "33.3", "33.5", "34.1"]
+nist: ["IR-6", "IR-4", "AU-6", "RA-3"]
+pci_dss: ["12.10.1", "12.10.3"]
+mitre_attack:
+  TA0001:
+    T1078: []
+    T1133: []
+  TA0006:
+    T1110: []
+

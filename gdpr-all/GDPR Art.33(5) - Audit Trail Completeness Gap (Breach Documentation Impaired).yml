@@ -1,0 +1,101 @@
+name: "GDPR Art.33(5) - Audit Trail Completeness Gap (Breach Documentation Impaired)"
+description: |
+  Detects gaps in audit trail completeness that would impair GDPR Article 33(5) obligation
+  to document all personal data breaches, including those not requiring notification.
+  Controllers must maintain comprehensive breach records as compliance evidence.
+  This rule identifies: (1) audit log cleared events, (2) periods with abnormally low
+  event volume suggesting collection failure, (3) event sequence gaps indicating
+  deliberate or accidental log destruction on personal data processing systems.
+  Without complete audit trails, controllers cannot fulfill Art.33(5) documentation
+  requirements and cannot reconstruct breach timeline for Art.33(3) notification content.
+  Trigger: Audit log cleared OR event volume drops >80% from baseline in 15-min window.
+  False positives: Log rotation, agent restart, disk full conditions causing log loss.
+  Triage: Determine cause of gap (accidental vs deliberate), assess what events were lost,
+  document the gap itself as a potential breach per Art.33(5), restore logging immediately,
+  evaluate if the gap period coincides with any access anomalies already detected.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-winlog*
+  - logs-audit*
+query_language: esql
+query: |
+  FROM logs-winlog*, logs-audit*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | STATS
+      events_in_window      = COUNT(*),
+      security_events       = COUNT(CASE(event.category == "authentication" OR
+                                          event.category == "process" OR
+                                          event.category == "file", 1, null)),
+      log_cleared_events    = COUNT(CASE(event.code == "1102" OR
+                                          event.code == "1100", 1, null)),
+      audit_policy_changes  = COUNT(CASE(event.code == "4719", 1, null)),
+      sources_reporting     = COUNT_DISTINCT(event.dataset),
+      last_event_time       = MAX(@timestamp),
+      first_event_time      = MIN(@timestamp)
+    BY host.name,
+       bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | EVAL gap_minutes = DATE_DIFF("minutes", last_event_time, NOW())
+  | EVAL coverage_minutes = DATE_DIFF("minutes", first_event_time, last_event_time)
+  | EVAL events_per_minute = events_in_window / GREATEST(coverage_minutes, 1)
+  | WHERE log_cleared_events >= 1
+    OR audit_policy_changes >= 1
+    OR (events_in_window < 10 AND gap_minutes > 10)
+    OR sources_reporting < 1
+  | EVAL gap_type = CASE(
+      log_cleared_events >= 1,   "audit_log_deliberately_cleared",
+      audit_policy_changes >= 1, "audit_policy_changed",
+      events_in_window < 5,      "near_zero_events_critical_gap",
+      events_in_window < 10,     "low_event_volume_warning",
+      "collection_source_missing"
+    )
+  | EVAL gdpr_33_5_impact = CASE(
+      gap_type == "audit_log_deliberately_cleared",
+        "CRITICAL - Art.33(5) impaired: breach documentation destroyed. Cannot reconstruct incident timeline.",
+      gap_type == "audit_policy_changed",
+        "HIGH - Art.33(5) at risk: audit policy change may reduce breach detection capability.",
+      gap_type == "near_zero_events_critical_gap",
+        "HIGH - Art.33(5) at risk: significant event collection failure; breach may be undetected.",
+      gap_type == "low_event_volume_warning",
+        "MEDIUM - Art.33(5) warning: reduced visibility; verify audit collection health.",
+      "MEDIUM - Art.33(5) notice: data source gap detected; investigate collection pipeline."
+    )
+  | EVAL severity_level = CASE(
+      gap_type == "audit_log_deliberately_cleared", "critical",
+      gap_type IN ("audit_policy_changed",
+                    "near_zero_events_critical_gap"), "high",
+      "medium"
+    )
+  | EVAL risk_score = CASE(
+      gap_type == "audit_log_deliberately_cleared",  95,
+      gap_type == "audit_policy_changed",             75,
+      gap_type == "near_zero_events_critical_gap",    70,
+      45
+    )
+  | KEEP bucket, host.name, gap_type, events_in_window,
+         log_cleared_events, audit_policy_changes, sources_reporting,
+         gap_minutes, events_per_minute, gdpr_33_5_impact,
+         severity_level, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - breach_documentation
+  - audit_trail
+  - art33
+  - log_integrity
+severity: high
+risk_score: 75
+references:
+  - "GDPR Article 33(5): Controller shall document all personal data breaches"
+  - "GDPR Article 33(3): Notification content requires reconstruction of breach timeline"
+  - "GDPR Article 5(2): Accountability - controller must demonstrate compliance"
+  - "GDPR Article 30(1)(g): Record security measures applied"
+gdpr: ["33.5", "33.3", "5.2", "30.1.g"]
+nist: ["AU-9", "AU-5", "IR-5", "AU-11"]
+pci_dss: ["10.2.6", "10.5", "10.7"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.001"]
+    T1562: ["T1562.002"]

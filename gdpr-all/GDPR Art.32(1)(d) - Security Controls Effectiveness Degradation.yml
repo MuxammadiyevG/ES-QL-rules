@@ -1,0 +1,108 @@
+name: "GDPR Art.32(1)(d) - Security Controls Effectiveness Degradation"
+description: |
+  Detects degradation or failure of security controls that should be regularly tested
+  and evaluated per GDPR Article 32(1)(d), which requires a process for regularly
+  testing, assessing and evaluating the effectiveness of technical and organisational
+  measures for ensuring the security of processing.
+  Monitors: antivirus/EDR going silent, IDS/IPS stopping, firewall policy failures,
+  audit log volume drops indicating log collection issues, and Windows Defender
+  real-time protection disabled events (Event 5001, 5010, 5012).
+  Trigger: Critical security tool disabled or reporting zero events for expected window.
+  False positives: Tool upgrades, agent restarts, legitimate config changes via GPO.
+  Triage: Verify if security tool change was authorized via change management,
+  check agent health in management console, restore controls immediately if unauthorized,
+  document the gap for Art.32(1)(d) compliance evidence.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-winlog*
+  - logs-audit*
+query_language: esql
+query: |
+  FROM logs-winlog*, logs-audit*
+  | WHERE (
+      -- Windows Defender/AV events: disabled, error, protection off
+      event.code IN ("5001", "5004", "5007", "5010", "5012", "5013",
+                     "3002", "3007",
+                     -- Windows Firewall disabled
+                     "2003", "2004",
+                     -- Security Center: AV disabled
+                     "1150", "1151")
+      OR
+      -- Linux: security daemon stopped
+      (event.dataset == "auditd.log"
+        AND event.action IN ("service-stop", "daemon-stop")
+        AND process.name IN ("auditd", "firewalld", "fail2ban",
+                              "ossec", "wazuh-agent", "clamav"))
+    )
+  | EVAL control_type = CASE(
+      event.code IN ("5001", "5004", "5010", "5012", "5013"), "antivirus_realtime_disabled",
+      event.code IN ("5007"),                                   "av_configuration_changed",
+      event.code IN ("3002", "3007"),                           "av_engine_failure",
+      event.code IN ("2003", "2004"),                           "firewall_disabled",
+      event.code IN ("1150", "1151"),                           "security_center_alert",
+      process.name == "auditd",                                 "linux_audit_daemon_stopped",
+      process.name == "firewalld",                              "linux_firewall_stopped",
+      process.name IN ("ossec", "wazuh-agent"),                 "linux_hids_stopped",
+      process.name == "fail2ban",                               "linux_brute_force_protection_stopped",
+      "unknown_security_control_event"
+    )
+  | STATS
+      control_events       = COUNT(*),
+      unique_control_types = COUNT_DISTINCT(control_type),
+      disabled_controls    = VALUES(control_type),
+      affected_systems     = VALUES(host.name),
+      actors               = VALUES(winlog.event_data.SubjectUserName)
+    BY host.name,
+       control_type,
+       bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | EVAL gdpr_32d_status = CASE(
+      control_type == "antivirus_realtime_disabled",
+        "CRITICAL - real-time protection disabled; Art.32 technical measure non-operational",
+      control_type == "linux_audit_daemon_stopped",
+        "CRITICAL - audit capability lost; Art.32(1)(d) evaluation process impaired",
+      control_type == "firewall_disabled",
+        "CRITICAL - network boundary control disabled; personal data systems exposed",
+      control_type == "linux_hids_stopped",
+        "HIGH - host intrusion detection stopped; Art.32 monitoring measure non-operational",
+      "MEDIUM - security control state change; verify Art.32 measure effectiveness"
+    )
+  | EVAL severity_level = CASE(
+      control_type IN ("antivirus_realtime_disabled",
+                        "linux_audit_daemon_stopped",
+                        "firewall_disabled"),            "critical",
+      control_type IN ("linux_hids_stopped",
+                        "linux_brute_force_protection_stopped",
+                        "av_engine_failure"),             "high",
+      "medium"
+    )
+  | EVAL risk_score = CASE(
+      control_type == "antivirus_realtime_disabled",  90,
+      control_type == "linux_audit_daemon_stopped",   90,
+      control_type == "firewall_disabled",             88,
+      control_type == "linux_hids_stopped",            70,
+      50
+    )
+  | KEEP bucket, host.name, control_type, control_events,
+         unique_control_types, disabled_controls, affected_systems,
+         actors, gdpr_32d_status, severity_level, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - security_controls
+  - control_effectiveness
+  - art32
+severity: high
+risk_score: 80
+references:
+  - "GDPR Article 32(1)(d): Process for regularly testing, assessing and evaluating effectiveness of measures"
+  - "GDPR Article 25(1): Data protection by design - technical measures must remain operational"
+  - "GDPR Article 32(1)(b): Ongoing confidentiality and integrity of processing systems"
+gdpr: ["32.1.d", "32.1.b", "25.1"]
+nist: ["CA-2", "CA-7", "SI-4", "AU-5"]
+pci_dss: ["5.3", "11.5", "6.1"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.001", "T1562.002", "T1562.004"]

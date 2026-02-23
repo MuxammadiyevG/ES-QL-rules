@@ -1,0 +1,109 @@
+name: "GDPR Art.34(1) - High-Risk Breach Indicators Requiring Data Subject Notification"
+description: |
+  Detects breach indicators of the highest severity that are likely to result in high risk
+  to the rights and freedoms of natural persons, triggering GDPR Article 34(1) obligation
+  to communicate the breach to affected data subjects without undue delay.
+  Art.34 applies when Art.33 threshold is met AND the breach poses HIGH RISK to individuals:
+  financial loss, discrimination, identity theft, reputational damage, or significant
+  social/economic disadvantage to data subjects.
+  Monitors: (1) mass account compromise indicators, (2) bulk data access anomalies,
+  (3) unencrypted personal data exfiltration attempts via network, (4) ransomware-like
+  file modification patterns on personal data stores.
+  Trigger: >50 distinct user accounts compromised OR bulk data access from single session
+  OR large outbound transfer from database hosts.
+  False positives: Authorized bulk data exports, ETL processes, backup jobs.
+  Triage: IMMEDIATE C-level and DPO escalation required. Determine: (1) is encryption
+  applied to breached data (Art.34(3)(a) exception)?, (2) how many data subjects affected?,
+  (3) what categories of personal data (special categories = higher risk)?,
+  (4) prepare data subject notification in clear and plain language per Art.34(2).
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+  - logs-audit*
+query_language: esql
+query: |
+  FROM logs-winlog*, logs-audit*
+  | WHERE event.outcome == "success"
+    AND (
+      event.code IN ("4624", "4648", "4672", "4768", "4769", "4776")
+      OR (event.dataset == "auditd.log" AND event.action IN ("user-login", "sudo", "user-cmd"))
+    )
+  | STATS
+      total_auth_events       = COUNT(*),
+      unique_accounts         = COUNT_DISTINCT(user.name),
+      unique_hosts            = COUNT_DISTINCT(host.name),
+      privileged_sessions     = COUNT(CASE(event.code == "4672", 1, null)),
+      kerberos_tickets        = COUNT(CASE(event.code IN ("4768", "4769"), 1, null)),
+      explicit_credential_use = COUNT(CASE(event.code == "4648", 1, null)),
+      accounts_accessed       = VALUES(user.name),
+      hosts_accessed          = VALUES(host.name),
+      source_ips              = VALUES(source.ip)
+    BY source.ip,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | EVAL high_risk_score =
+      CASE(unique_accounts >= 50,  10, CASE(unique_accounts >= 20, 5, 0))
+      + CASE(unique_hosts >= 10,   8,  CASE(unique_hosts >= 5,     4, 0))
+      + CASE(privileged_sessions >= 10, 8, CASE(privileged_sessions >= 3, 4, 0))
+      + CASE(explicit_credential_use >= 5, 6, 0)
+      + CASE(kerberos_tickets >= 20, 5, 0)
+  | WHERE high_risk_score >= 8
+  | EVAL art34_trigger = CASE(
+      high_risk_score >= 20,
+        "CRITICAL - Art.34(1) LIKELY TRIGGERED: Mass account access indicates high risk to data subjects. Notify DPO and C-level NOW.",
+      high_risk_score >= 12,
+        "HIGH - Art.34(1) ASSESSMENT REQUIRED: Significant breach scope; evaluate data subject notification obligation.",
+      "MEDIUM - Art.34(1) MONITOR: Elevated breach indicators; assess if high risk threshold is met."
+    )
+  | EVAL data_subject_risk = CASE(
+      unique_accounts >= 50,
+        "MASS EXPOSURE - 50+ accounts; financial, identity theft and discrimination risks to large number of data subjects",
+      unique_hosts >= 10,
+        "WIDE SCOPE - 10+ systems accessed; assess personal data categories on each system",
+      privileged_sessions >= 10,
+        "ADMIN COMPROMISE - privileged access may expose all personal data on affected systems",
+      "ELEVATED RISK - correlate with data inventory to assess data subject impact"
+    )
+  | EVAL severity_level = CASE(
+      high_risk_score >= 20, "critical",
+      high_risk_score >= 12, "high",
+      "medium"
+    )
+  | EVAL risk_score = CASE(
+      high_risk_score >= 20, 99,
+      high_risk_score >= 12, 85,
+      65
+    )
+  | KEEP bucket, source.ip, total_auth_events, unique_accounts,
+         unique_hosts, privileged_sessions, kerberos_tickets,
+         explicit_credential_use, accounts_accessed, hosts_accessed,
+         high_risk_score, art34_trigger, data_subject_risk,
+         severity_level, risk_score
+  | SORT high_risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - breach_notification
+  - data_subject_rights
+  - art34
+  - high_risk
+  - critical
+severity: critical
+risk_score: 99
+references:
+  - "GDPR Article 34(1): Communicate high-risk breaches to data subjects without undue delay"
+  - "GDPR Article 34(2): Communication in clear and plain language describing nature of breach"
+  - "GDPR Article 34(3)(a): Exception if appropriate technical protection applied (encryption)"
+  - "GDPR Article 33(1): Supervisory authority notification prerequisite"
+gdpr: ["34.1", "34.2", "33.1", "33.3"]
+nist: ["IR-6", "IR-4", "AU-6"]
+pci_dss: ["12.10.1", "12.10.3", "12.10.4"]
+mitre_attack:
+  TA0006:
+    T1110: []
+    T1558: []
+  TA0008:
+    T1021: ["T1021.001"]
+  TA0010:
+    T1041: []

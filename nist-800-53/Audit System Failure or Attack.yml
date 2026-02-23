@@ -1,11 +1,3 @@
-#//RULE-NIST-08 — Excessive Failed Audit Events (NIST AU-6)
-#//Control Family: AU (Audit and Accountability)
-#//Objective: Detect anomalous spike in audit failures indicating system stress or attack
-#//Threat scenario: DoS attack, log flooding to hide malicious activity, audit system failure
-#//Data sources: Windows event_outcome=failure spike, Linux auditd lost events
-#//ECS fields used: event.outcome, event.category, host.name
-#//Field validation: Verify all ECS fields exist in your indices before enabling
-#//Tuning notes: Baseline normal failure rate per host type, adjust threshold for log volume
 
 name: "Audit System Failure or Attack"
 description: |

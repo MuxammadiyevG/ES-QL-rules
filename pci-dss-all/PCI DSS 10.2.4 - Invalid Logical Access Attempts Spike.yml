@@ -1,0 +1,73 @@
+name: "PCI DSS 10.2.4 - Invalid Logical Access Attempts Spike"
+description: |
+  Detects abnormal spike in invalid logical access attempts across Windows and Linux systems.
+  PCI DSS Requirement 10.2.4 mandates logging of all invalid logical access attempts.
+  This rule provides aggregate visibility to identify systematic attack patterns,
+  password spraying, or insider misuse attempts against CDE systems.
+  Trigger: >50 invalid access attempts from single host in 5 minutes (possible spray attack),
+  or >200 total invalid attempts in environment (possible coordinated attack).
+  False positives: Automated tools with incorrect credentials, domain trust issues.
+  Triage: Identify top targeted accounts, check if source IPs are internal,
+  correlate with VPN/remote access logs for external origin.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+  - logs-audit*
+query_language: esql
+query: |
+  FROM logs-winlog*, logs-audit*
+  | WHERE event.outcome == "failure"
+    AND (
+      event.code == "4625"
+      OR (event.dataset == "auditd.log" AND event.action IN ("authenticated", "user-login", "login"))
+    )
+  | STATS
+      total_failures        = COUNT(*),
+      unique_targets        = COUNT_DISTINCT(host.name),
+      unique_source_ips     = COUNT_DISTINCT(source.ip),
+      targeted_hosts        = VALUES(host.name),
+      source_ip_list        = VALUES(source.ip),
+      failure_types         = VALUES(event.action)
+    BY source.ip,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE total_failures >= 20
+  | EVAL attack_pattern = CASE(
+      unique_targets >= 5 AND unique_source_ips <= 2, "lateral_movement",
+      unique_targets >= 3 AND total_failures >= 100,  "spray_attack",
+      total_failures >= 50,                            "brute_force",
+      "repeated_failure"
+    )
+  | EVAL severity_level = CASE(
+      total_failures >= 200 OR attack_pattern == "spray_attack",    "critical",
+      total_failures >= 100 OR attack_pattern == "lateral_movement","high",
+      total_failures >= 50,                                          "medium",
+      "low"
+    )
+  | EVAL risk_score = CASE(
+      total_failures >= 200, 95,
+      total_failures >= 100, 75,
+      total_failures >= 50,  55,
+      35
+    )
+  | KEEP bucket, source.ip, total_failures, unique_targets,
+         unique_source_ips, targeted_hosts, attack_pattern,
+         severity_level, risk_score
+  | SORT total_failures DESC
+enabled: false
+tags:
+  - pci_dss
+  - authentication
+  - access_control
+  - attack_detection
+severity: medium
+risk_score: 55
+references:
+  - "PCI DSS v3.2.1 Requirement 10.2.4: Invalid logical access attempts"
+pci_dss: ["10.2.4", "10.6.1"]
+nist: ["AC-7","AU-6","SI-4","IR-4"]
+gdpr: ["5.1.f", "32", "33"]
+mitre_attack:
+  TA0006:
+    T1110: ["T1110.003"]

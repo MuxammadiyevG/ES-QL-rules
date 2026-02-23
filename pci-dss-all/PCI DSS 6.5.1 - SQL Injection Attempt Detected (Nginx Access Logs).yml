@@ -1,0 +1,90 @@
+name: "PCI DSS 6.5.1 - SQL Injection Attempt Detected (Nginx Access Logs)"
+description: |
+  Detects SQL injection attack patterns in HTTP requests via Nginx access logs.
+  PCI DSS Requirement 6.5.1 requires addressing injection flaws including SQL injection
+  in software development processes, and 6.6 requires ongoing protection of public-facing apps.
+  Monitors for common SQL injection patterns in URL query strings and request bodies
+  including UNION SELECT, OR 1=1, comment injection (--), SLEEP(), etc.
+  Trigger: Any HTTP request containing SQL injection signature patterns.
+  False positives: Security scanning tools (Nessus, Burp Suite), penetration testing.
+  Triage: Identify source IP and user-agent, check if request was blocked (4xx/5xx),
+  determine if WAF/IDS is deployed in front of this application,
+  escalate to application security team for code review if payload reached application.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-nginx*
+query_language: esql
+query: |
+  FROM logs-nginx*
+  | WHERE event.dataset == "nginx.access"
+    AND (
+      url.original LIKE "*union%20select*"
+      OR url.original LIKE "*union+select*"
+      OR url.original LIKE "*' or '1'='1*"
+      OR url.original LIKE "*' or 1=1*"
+      OR url.original LIKE "*or+1=1*"
+      OR url.original LIKE "*%27%20OR%20*"
+      OR url.original LIKE "*sleep(*"
+      OR url.original LIKE "*benchmark(*"
+      OR url.original LIKE "*waitfor+delay*"
+      OR url.original LIKE "*%3B%20drop%20table*"
+      OR url.original LIKE "*'; drop table*"
+      OR url.original LIKE "*xp_cmdshell*"
+      OR url.original LIKE "*/etc/passwd*"
+      OR url.original LIKE "*../../../*"
+    )
+  | STATS
+      sqli_attempts         = COUNT(*),
+      unique_patterns       = COUNT_DISTINCT(url.path),
+      unique_targets        = COUNT_DISTINCT(url.domain),
+      attacked_endpoints    = VALUES(url.path),
+      http_methods          = VALUES(http.request.method),
+      response_codes        = VALUES(http.response.status_code),
+      user_agents           = VALUES(user_agent.original)
+    BY source.ip,
+       host.name,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE sqli_attempts >= 1
+  | EVAL reached_app = CASE(
+      -- 2xx means request may have reached application
+      http.response.status_code >= 200 AND http.response.status_code < 300, true,
+      false
+    )
+  | EVAL severity_level = CASE(
+      sqli_attempts >= 50,  "critical",
+      sqli_attempts >= 10,  "high",
+      sqli_attempts >= 3,   "medium",
+      "low"
+    )
+  | EVAL risk_score = CASE(
+      sqli_attempts >= 50, 95,
+      sqli_attempts >= 10, 75,
+      sqli_attempts >= 3,  55,
+      40
+    )
+  | KEEP bucket, host.name, source.ip, sqli_attempts,
+         unique_patterns, attacked_endpoints, http_methods,
+         response_codes, user_agents, severity_level, risk_score
+  | SORT sqli_attempts DESC
+enabled: false
+tags:
+  - pci_dss
+  - sql_injection
+  - web_application
+  - nginx
+severity: medium
+risk_score: 55
+references:
+  - "PCI DSS v3.2.1 Requirement 6.5.1: Injection flaws, particularly SQL injection"
+  - "PCI DSS v3.2.1 Requirement 6.6: Public-facing web applications protection"
+  - "OWASP Top 10 A03:2021 - Injection"
+pci_dss: ["6.5.1", "6.6"]
+nist: ["SA-11","SI-10","SI-4","RA-5"]
+gdpr: ["5.1.f","25","32","33"]
+mitre_attack:
+  TA0001:
+    T1190: []
+  TA0002:
+    T1059: []

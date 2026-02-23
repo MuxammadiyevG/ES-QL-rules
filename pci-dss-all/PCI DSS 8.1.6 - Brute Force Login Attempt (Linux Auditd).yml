@@ -1,0 +1,62 @@
+name: "PCI DSS 8.1.6 - Brute Force Login Attempt (Linux/Auditd)"
+description: |
+  Detects excessive failed authentication attempts on Linux systems via auditd logs.
+  PCI DSS Req 8.1.6 requires lockout after no more than 6 failed attempts.
+  Monitors USER_AUTH, USER_LOGIN failure events from Linux PAM/auditd.
+  Trigger: 6+ failed login events to same host within 5 minutes.
+  False positives: Misconfigured services, SSH key mismatches during automation.
+  Triage: Check source IP geolocation, verify target account privileges,
+  review /var/log/secure or /var/log/auth.log for additional context.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-audit*
+query_language: esql
+query: |
+  FROM logs-audit*
+  | WHERE event.dataset == "auditd.log"
+    AND event.outcome == "failure"
+    AND event.action IN ("authenticated", "login", "user-login", "user-auth")
+  | STATS
+      failed_attempts   = COUNT(*),
+      unique_users      = COUNT_DISTINCT(user.name),
+      source_addresses  = VALUES(source.ip),
+      affected_users    = VALUES(user.name),
+      processes         = VALUES(process.name)
+    BY host.name,
+       user.name,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE failed_attempts >= 6
+  | EVAL severity_level = CASE(
+      failed_attempts >= 50, "critical",
+      failed_attempts >= 20, "high",
+      failed_attempts >= 10, "medium",
+      "low"
+    )
+  | EVAL risk_score = CASE(
+      failed_attempts >= 50, 90,
+      failed_attempts >= 20, 70,
+      failed_attempts >= 10, 50,
+      30
+    )
+  | KEEP bucket, host.name, user.name, failed_attempts,
+         unique_users, source_addresses, affected_users,
+         processes, severity_level, risk_score
+  | SORT failed_attempts DESC
+enabled: false
+tags:
+  - pci_dss
+  - authentication
+  - brute_force
+  - linux
+severity: medium
+risk_score: 50
+references:
+  - "PCI DSS v3.2.1 Requirement 8.1.6: Lock out user IDs after not more than six failed attempts"
+pci_dss: ["8.1.6" ,"8.1.7"]
+nist: ["AC-7","IA-5","SI-4"]
+gdpr: ["5.1.f", "32"]
+mitre_attack:
+  TA0006:
+    T1110: ["T1110.001","T1110.003"]

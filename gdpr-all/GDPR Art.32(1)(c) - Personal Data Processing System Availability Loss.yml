@@ -1,0 +1,98 @@
+name: "GDPR Art.32(1)(c) - Personal Data Processing System Availability Loss"
+description: |
+  Detects loss of availability of systems that process personal data, as required by
+  GDPR Article 32(1)(c) which mandates the ability to restore availability and access
+  to personal data in a timely manner after a physical or technical incident.
+  Monitors Windows Event 6006 (system shutdown unexpected), 41 (system rebooted without
+  clean shutdown - kernel power), 7034 (service crashed unexpectedly), 7036 (service
+  stopped), and Linux auditd SYSTEM_SHUTDOWN, service failure events.
+  Availability loss of personal data systems may trigger Art.33 notification if data
+  subjects are unable to exercise their rights during the outage.
+  Trigger: Unexpected service crash or system shutdown on hosts processing personal data.
+  False positives: Planned maintenance reboots, OS patching cycles, controlled shutdowns.
+  Triage: Determine if shutdown was planned or unexpected, assess data availability impact,
+  check if personal data access was interrupted, document for Art.32 compliance records.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+  - logs-audit*
+query_language: esql
+query: |
+  FROM logs-winlog*, logs-audit*
+  | WHERE (
+      -- Windows: unexpected shutdown, kernel power failure, service crash
+      event.code IN ("41", "6006", "6008", "7034", "7035", "7036", "1074")
+      OR
+      -- Linux: system shutdown, service failure via auditd
+      (event.dataset == "auditd.log" AND event.action IN (
+        "system-shutdown", "service-stop", "daemon-stop"
+      ))
+    )
+  | EVAL availability_event = CASE(
+      event.code == "41",    "kernel_power_failure_unexpected_reboot",
+      event.code == "6006",  "event_log_service_stopped",
+      event.code == "6008",  "unexpected_system_shutdown",
+      event.code == "7034",  "service_crashed_unexpectedly",
+      event.code == "7035",  "service_control_request",
+      event.code == "7036",  "service_state_change",
+      event.code == "1074",  "system_restart_initiated",
+      event.action == "system-shutdown", "linux_system_shutdown",
+      event.action == "service-stop",    "linux_service_stop",
+      "unknown_availability_event"
+    )
+  | EVAL is_unexpected = CASE(
+      event.code IN ("41", "6008", "7034"), true,
+      event.action IN ("system-shutdown"),   true,
+      false
+    )
+  | STATS
+      availability_events   = COUNT(*),
+      unexpected_events     = COUNT_DISTINCT(CASE(is_unexpected == true, event.code, null)),
+      event_types_seen      = VALUES(availability_event),
+      affected_services     = VALUES(winlog.event_data.param1),
+      shutdown_reasons      = VALUES(winlog.event_data.Comment)
+    BY host.name,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE availability_events >= 1
+  | EVAL gdpr_impact = CASE(
+      unexpected_events >= 2,
+        "HIGH - multiple unexpected outages; personal data availability at risk; document for Art.32 records",
+      unexpected_events >= 1,
+        "MEDIUM - unexpected availability event; assess personal data access impact per Art.32(1)(c)",
+      "LOW - service state change; verify personal data processing continuity"
+    )
+  | EVAL severity_level = CASE(
+      unexpected_events >= 2, "high",
+      unexpected_events >= 1, "medium",
+      "low"
+    )
+  | EVAL risk_score = CASE(
+      unexpected_events >= 2, 70,
+      unexpected_events >= 1, 50,
+      25
+    )
+  | KEEP bucket, host.name, availability_events, unexpected_events,
+         event_types_seen, affected_services, shutdown_reasons,
+         gdpr_impact, severity_level, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - gdpr
+  - availability
+  - system_resilience
+  - personal_data
+severity: medium
+risk_score: 50
+references:
+  - "GDPR Article 32(1)(c): Restore availability and access to data in timely manner after incident"
+  - "GDPR Article 32(1)(b): Ongoing availability and resilience of processing systems"
+  - "GDPR Article 33: Availability loss may trigger breach notification obligation"
+gdpr: ["32.1.b", "32.1.c", "33.1"]
+nist: ["CP-10", "SI-13", "AU-5", "IR-4"]
+pci_dss: ["12.10.1"]
+mitre_attack:
+  TA0040:
+    T1529: []
+    T1489: []

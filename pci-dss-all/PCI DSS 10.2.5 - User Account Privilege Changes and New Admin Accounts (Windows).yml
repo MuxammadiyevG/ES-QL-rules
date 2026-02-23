@@ -1,0 +1,85 @@
+name: "PCI DSS 10.2.5 - User Account Privilege Changes and New Admin Accounts (Windows)"
+description: |
+  Detects creation of new accounts, privilege elevation, and changes to admin group
+  membership on Windows systems. PCI DSS Requirement 10.2.5 requires logging of
+  all use of and changes to identification/authentication mechanisms including
+  creation of new accounts and elevation of privileges.
+  Monitors: 4720 (account created), 4728/4732/4756 (added to security group),
+  4738 (user account changed), 4670 (permissions changed).
+  Trigger: Any new account creation or group membership change for privileged groups.
+  False positives: Legitimate IT provisioning processes, HR onboarding automation.
+  Triage: Verify against HR/IT ticketing system, check if change was outside business hours,
+  confirm approver identity, validate group membership matches role requirements.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code IN ("4720", "4728", "4732", "4756", "4738", "4670", "4722", "4724")
+  | EVAL change_type = CASE(
+      event.code == "4720", "new_account_created",
+      event.code == "4722", "account_enabled",
+      event.code == "4724", "password_reset",
+      event.code == "4728", "added_to_global_security_group",
+      event.code == "4732", "added_to_local_security_group",
+      event.code == "4756", "added_to_universal_security_group",
+      event.code == "4738", "user_account_changed",
+      event.code == "4670", "permissions_changed",
+      "unknown_account_change"
+    )
+  | STATS
+      change_count        = COUNT(*),
+      unique_actors       = COUNT_DISTINCT(winlog.event_data.SubjectUserName),
+      unique_targets      = COUNT_DISTINCT(winlog.event_data.TargetUserName),
+      actors              = VALUES(winlog.event_data.SubjectUserName),
+      target_accounts     = VALUES(winlog.event_data.TargetUserName),
+      groups_modified     = VALUES(winlog.event_data.TargetUserName),
+      change_types        = VALUES(change_type)
+    BY host.name,
+       change_type,
+       winlog.event_data.SubjectUserName,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | EVAL severity_level = CASE(
+      change_type == "new_account_created",            "high",
+      change_type IN ("added_to_global_security_group",
+                       "added_to_local_security_group",
+                       "added_to_universal_security_group"), "high",
+      change_type == "password_reset",                 "medium",
+      change_type == "account_enabled",                "medium",
+      "low"
+    )
+  | EVAL risk_score = CASE(
+      change_type == "new_account_created",     75,
+      change_type LIKE "added_to*",             70,
+      change_type == "password_reset",          50,
+      change_type == "account_enabled",         45,
+      30
+    )
+  | KEEP bucket, host.name, change_type, change_count,
+         unique_actors, unique_targets, actors,
+         target_accounts, groups_modified,
+         severity_level, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - account_management
+  - privilege_escalation
+  - windows
+severity: high
+risk_score: 70
+references:
+  - "PCI DSS v3.2.1 Requirement 10.2.5: Use of and changes to identification and authentication mechanisms"
+  - "PCI DSS v3.2.1 Requirement 8.1.2: Control addition, deletion, and modification of user IDs"
+pci_dss: ["10.2.5", "8.1.2", "8.1.3"]
+nist: ["AC-2","AC-6","AU-9","CM-5"]
+gdpr: ["5.1.f", "25", "32"]
+mitre_attack:
+  TA0003:
+    T1098: []
+    T1136: ["T1136.001"]
+  TA0004:
+    T1078: ["T1078.002"]

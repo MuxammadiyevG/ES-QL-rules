@@ -1,0 +1,64 @@
+name: "PCI DSS 10.2.2 - Privileged User Actions (Linux sudo/su)"
+description: |
+  Detects all sudo and su privilege escalation events on Linux systems via auditd.
+  Required by PCI DSS Requirement 10.2.2 to track all administrative actions.
+  Monitors USER_CMD (sudo commands), USER_AUTH (su authentication), and
+  SYSCALL events related to privilege changes (setuid, setgid).
+  Trigger: Any sudo/su usage on cardholder data environment Linux hosts.
+  False positives: Authorized admins performing routine maintenance tasks.
+  Triage: Verify against change management records, check if command is expected,
+  confirm execution time aligns with maintenance window schedules.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-audit*
+query_language: esql
+query: |
+  FROM logs-audit*
+  | WHERE event.dataset == "auditd.log"
+    AND (
+      event.action IN ("sudo", "user-cmd", "su")
+      OR (process.name IN ("sudo", "su", "sudoedit"))
+    )
+  | STATS
+      priv_commands      = COUNT(*),
+      unique_users       = COUNT_DISTINCT(user.name),
+      executing_users    = VALUES(user.name),
+      commands_run       = VALUES(process.args),
+      target_users       = VALUES(auditd.log.data.uid),
+      outcomes           = VALUES(event.outcome)
+    BY host.name,
+       user.name,
+       bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | EVAL severity_level = CASE(
+      priv_commands >= 30, "high",
+      priv_commands >= 10, "medium",
+      "info"
+    )
+  | EVAL risk_score = CASE(
+      priv_commands >= 30, 60,
+      priv_commands >= 10, 35,
+      15
+    )
+  | KEEP bucket, host.name, user.name, priv_commands,
+         unique_users, executing_users, commands_run,
+         target_users, outcomes, severity_level, risk_score
+  | SORT priv_commands DESC
+enabled: false
+tags:
+  - pci_dss
+  - privileged_access
+  - audit_trail
+  - linux
+severity: low
+risk_score: 15
+references:
+  - "PCI DSS v3.2.1 Requirement 10.2.2: All actions by individuals with root or administrative privileges"
+pci_dss: ["10.2.2", "10.3"]
+nist: ["AC-6","AU-2","AU-12"]
+gdpr: ["5.1.f", "32"]
+mitre_attack:
+  TA0004:
+    T1078: ["T1078.003"]
+    T1548: ["T1548.003"]

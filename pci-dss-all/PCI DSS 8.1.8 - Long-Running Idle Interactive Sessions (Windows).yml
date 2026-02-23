@@ -1,0 +1,63 @@
+name: "PCI DSS 8.1.8 - Long-Running Idle Interactive Sessions (Windows)"
+description: |
+  Detects user sessions that have been active for more than 15 minutes without
+  re-authentication, violating PCI DSS Requirement 8.1.8.
+  Identifies logon events (4624) with interactive logon types (2=Interactive, 10=RemoteInteractive)
+  where no logoff event (4634/4647) occurred within the required 15-minute window.
+  Trigger: Sessions with interactive logon types lasting beyond 15 minutes without activity.
+  False positives: Long-running legitimate admin sessions, kiosk terminals, monitoring systems.
+  Triage: Verify if screen lock / session timeout policy is enforced via GPO,
+  check if the session belongs to a service account or interactive user.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4624"
+    AND winlog.event_data.LogonType IN ("2", "10")
+    AND NOT winlog.event_data.TargetUserName LIKE "*$"
+    AND NOT winlog.event_data.TargetUserName == "ANONYMOUS LOGON"
+  | EVAL session_age_minutes = DATE_DIFF("minutes", @timestamp, NOW())
+  | WHERE session_age_minutes >= 15
+  | STATS
+      session_count        = COUNT(*),
+      affected_users       = VALUES(winlog.event_data.TargetUserName),
+      logon_types_seen     = VALUES(winlog.event_data.LogonType),
+      oldest_session_min   = MAX(session_age_minutes),
+      source_ips           = VALUES(source.ip)
+    BY host.name,
+       winlog.event_data.TargetUserName,
+       bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE session_count >= 1
+  | EVAL severity_level = CASE(
+      oldest_session_min >= 120, "high",
+      oldest_session_min >= 60,  "medium",
+      "low"
+    )
+  | EVAL risk_score = CASE(
+      oldest_session_min >= 120, 65,
+      oldest_session_min >= 60,  45,
+      25
+    )
+  | KEEP bucket, host.name, winlog.event_data.TargetUserName,
+         session_count, oldest_session_min, source_ips,
+         logon_types_seen, severity_level, risk_score
+  | SORT oldest_session_min DESC
+enabled: false
+tags:
+  - pci_dss
+  - session_management
+  - windows
+severity: low
+risk_score: 25
+references:
+  - "PCI DSS v3.2.1 Requirement 8.1.8: Re-authenticate if idle for more than 15 minutes"
+pci_dss: ["8.1.8"]
+nist: ["AC-11","AC-12","IA-11"]
+gdpr: ["5.1.f", "32"]
+mitre_attack:
+  TA0001:
+    T1078: []

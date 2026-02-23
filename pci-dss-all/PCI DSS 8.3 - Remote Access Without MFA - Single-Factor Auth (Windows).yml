@@ -1,0 +1,78 @@
+name: "PCI DSS 8.3 - Remote Access Without MFA / Single-Factor Auth (Windows)"
+description: |
+  Detects successful remote network access (RDP/VPN/Network logon) where only
+  single-factor authentication appears to have been used, violating PCI DSS
+  Requirement 8.3 which mandates two-factor authentication for all remote access.
+  Monitors Event 4624 with logon types 3 (Network) and 10 (RemoteInteractive/RDP)
+  from external/non-internal IP ranges. High volume of such logins without
+  corresponding MFA token events may indicate MFA bypass or misconfiguration.
+  Trigger: Remote logon events from non-RFC1918 IPs (potential external access).
+  False positives: Internal network logins from RFC1918 ranges (excluded by filter),
+  site-to-site VPN tunnels with pre-shared keys (policy issue, not false positive).
+  Triage: Verify if MFA solution (Duo, Azure MFA, etc.) is configured for these accounts,
+  check if source IP is on approved remote access whitelist, review VPN gateway logs.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE event.code == "4624"
+    AND event.outcome == "success"
+    AND winlog.event_data.LogonType IN ("3", "10")
+    AND NOT winlog.event_data.TargetUserName LIKE "*$"
+    AND NOT winlog.event_data.TargetUserName == "ANONYMOUS LOGON"
+    -- Exclude internal RFC1918 source IPs (remote from Internet only)
+    AND source.ip IS NOT NULL
+    AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.1/32")
+  | STATS
+      remote_logins          = COUNT(*),
+      unique_source_ips      = COUNT_DISTINCT(source.ip),
+      unique_users           = COUNT_DISTINCT(winlog.event_data.TargetUserName),
+      user_accounts          = VALUES(winlog.event_data.TargetUserName),
+      external_sources       = VALUES(source.ip),
+      source_countries       = VALUES(source.geo.country_iso_code),
+      logon_type_breakdown   = VALUES(winlog.event_data.LogonType)
+    BY host.name,
+       winlog.event_data.TargetUserName,
+       bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE remote_logins >= 1
+  | EVAL severity_level = CASE(
+      unique_source_ips >= 3,   "critical",
+      remote_logins >= 10,      "high",
+      remote_logins >= 3,       "medium",
+      "low"
+    )
+  | EVAL risk_score = CASE(
+      unique_source_ips >= 3,  85,
+      remote_logins >= 10,     65,
+      remote_logins >= 3,      45,
+      35
+    )
+  | KEEP bucket, host.name, winlog.event_data.TargetUserName,
+         remote_logins, unique_source_ips, unique_users,
+         external_sources, source_countries, logon_type_breakdown,
+         severity_level, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - pci_dss
+  - mfa
+  - remote_access
+  - windows
+severity: medium
+risk_score: 45
+references:
+  - "PCI DSS v3.2.1 Requirement 8.3: Two-factor authentication for remote network access"
+  - "PCI DSS v3.2.1 Requirement 8.3.1: MFA for all non-console access into CDE"
+pci_dss: ["8.3"]
+nist: ["AC-17","IA-2","IA-3"]
+gdpr: ["5.1.f", "25", "32"]
+mitre_attack:
+  TA0001:
+    T1078: []
+    T1133: []
+  TA0008:
+    T1021: ["T1021.001"]
