@@ -1,3 +1,4 @@
+rule_id: a696e6ee-f177-499d-b970-fb3f682e110f
 name: "PCI DSS 10.2.2 - Privileged User Actions (Windows Admin)"
 description: |
   Detects and tracks all actions taken by users with root or administrative privileges

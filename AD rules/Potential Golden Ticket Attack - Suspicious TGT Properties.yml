@@ -1,3 +1,4 @@
+rule_id: c2207e8a-7c8c-431e-949d-5bd9f38d0320
 name: Potential Golden Ticket Attack - Suspicious TGT Properties
 description: |
   Ushbu qoida persistence, privilege escalation va credential access texnikalariga bog'liq bo'lib, `Potential Golden Ticket Attack - Suspicious TGT Properties` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

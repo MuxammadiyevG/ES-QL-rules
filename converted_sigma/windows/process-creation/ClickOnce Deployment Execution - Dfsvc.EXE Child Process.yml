@@ -1,3 +1,4 @@
+rule_id: ba76aecd-6a28-43f2-99e0-d391edae5f9b
 name: "ClickOnce Deployment Execution - Dfsvc.EXE Child Process"
 description: |
   Detects child processes spawned by dfsvc.exe (ClickOnce service) where the executed image path

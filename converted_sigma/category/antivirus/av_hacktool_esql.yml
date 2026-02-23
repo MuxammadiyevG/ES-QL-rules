@@ -1,3 +1,4 @@
+rule_id: ca1f673f-4499-4f7c-b45a-94db1ea877fb
 name: "Antivirus Hacktool Detection"
 description: |
   Detects a highly relevant Antivirus alert that reports a hack tool or other attack tool.

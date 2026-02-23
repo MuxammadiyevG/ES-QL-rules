@@ -1,3 +1,4 @@
+rule_id: 5030cdc9-290c-40c2-b051-aa01050760d5
 name: Security Group Membership Queries
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Security Group Membership Queries` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

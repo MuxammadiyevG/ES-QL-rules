@@ -1,3 +1,4 @@
+rule_id: 3846c8ab-b781-4bcd-b363-a123f0ff4424
 name: Active Directory Trust Enumeration Detected
 description: |
   Ushbu qoida persistence va defense evasion texnikalariga bog'liq bo'lib, `Active Directory Trust Enumeration Detected` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 5a43a74d-1987-4a7a-a2c2-6248f1e50625
 #//RULE-HIPAA-12 — PHI Disclosed Without Authorization - §164.502(a)
 #//Requirement: HIPAA Privacy Rule §164.502(a) - Uses and Disclosures
 #//Objective: Detect unauthorized PHI disclosures outside permitted exceptions

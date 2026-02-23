@@ -1,3 +1,4 @@
+rule_id: 5bdd228b-cae6-486f-a186-9a027b726227
 name: Account Lockout Policy Disabled or Weakened
 description: |
   Ushbu qoida persistence va defense evasion texnikalariga bog'liq bo'lib, `Account Lockout Policy Disabled or Weakened` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

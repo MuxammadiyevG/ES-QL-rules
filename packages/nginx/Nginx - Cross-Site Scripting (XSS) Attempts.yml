@@ -1,3 +1,4 @@
+rule_id: 8e5b301f-7db0-4287-89b8-a569fd28d623
 name: Nginx - Cross-Site Scripting (XSS) Attempts
 description: |
   Ushbu qoida Nginx access log'da XSS attack pattern'larni aniqlaydi.

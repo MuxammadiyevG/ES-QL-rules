@@ -1,3 +1,4 @@
+rule_id: c62c62b8-ffd8-4cfd-91f4-8ad9cef85303
 name: VMware ESX - Error Message Detected
 description: |
   VMware ESX tizimidan error darajasidagi xabar qayd etildi.

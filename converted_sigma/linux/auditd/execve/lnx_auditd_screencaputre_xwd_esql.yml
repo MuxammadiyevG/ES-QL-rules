@@ -1,3 +1,4 @@
+rule_id: b088cf2c-93bb-4ed1-8404-115a11c699cf
 name: "Screen Capture with XWD Command"
 description: |
   Detects screen capture using xwd (X Window Dump) command.

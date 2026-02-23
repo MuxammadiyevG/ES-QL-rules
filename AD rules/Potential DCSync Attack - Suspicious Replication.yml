@@ -1,3 +1,4 @@
+rule_id: bab7f6e7-2f0a-426c-96cd-d074cfa61ef0
 name: Potential DCSync Attack - Suspicious Replication
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Potential DCSync Attack - Suspicious Replication` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

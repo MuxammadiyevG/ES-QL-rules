@@ -1,3 +1,4 @@
+rule_id: fda1586a-3411-4fd8-8e88-1723eb656161
 name: "Uncommon PowerShell Hosts"
 description: |
   Detects PowerShell execution where the host application is NOT the standard powershell.exe,

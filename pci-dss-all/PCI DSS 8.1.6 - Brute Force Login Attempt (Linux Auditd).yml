@@ -1,3 +1,4 @@
+rule_id: 7cabc6eb-74dd-48b7-99b6-4e639000fdbe
 name: "PCI DSS 8.1.6 - Brute Force Login Attempt (Linux/Auditd)"
 description: |
   Detects excessive failed authentication attempts on Linux systems via auditd logs.

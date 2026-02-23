@@ -1,3 +1,4 @@
+rule_id: 60fe1317-95aa-4f21-b626-8b57855b32af
 name: Tomcat - Scanner / Reconnaissance Activity Detected
 description: |
   Ushbu qoida bir IP'dan ko'p xil URL path'lariga qilingan so'rovlarni 

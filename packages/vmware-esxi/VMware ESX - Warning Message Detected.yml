@@ -1,3 +1,4 @@
+rule_id: fe6acda5-4591-4b5c-9c18-cd159c7e305c
 name: VMware ESX - Warning Message Detected
 description: |
   VMware ESX tizimidan warn darajasidagi xabar qayd etildi.

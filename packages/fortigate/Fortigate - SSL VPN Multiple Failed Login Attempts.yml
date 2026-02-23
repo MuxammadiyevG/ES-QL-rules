@@ -1,3 +1,4 @@
+rule_id: 0e1af39f-7c4b-44ab-aea0-e35da22efbe7
 name: Fortigate - SSL VPN Multiple Failed Login Attempts
 description: |
   Ushbu qoida Fortigate SSL VPN'da bir xil manbadan ko'p marta muvaffaqiyatsiz login urinishlarini aniqlaydi.

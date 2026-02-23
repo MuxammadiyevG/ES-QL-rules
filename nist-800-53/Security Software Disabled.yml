@@ -1,3 +1,4 @@
+rule_id: 82b2cbec-094f-4636-af38-78bd3e57f3ba
 #//RULE-NIST-34 — Security Software Tampering (NIST SI-3, SI-4)
 #//Control Family: SI (System and Information Integrity)
 #//Objective: Detect attempts to disable or tamper with security software

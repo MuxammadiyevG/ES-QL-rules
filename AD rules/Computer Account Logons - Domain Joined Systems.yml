@@ -1,3 +1,4 @@
+rule_id: e8ca9cc3-9493-4ccd-a6e1-52ddae4fe9a1
 name: Computer Account Logons - Domain Joined Systems
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Computer Account Logons - Domain Joined Systems` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

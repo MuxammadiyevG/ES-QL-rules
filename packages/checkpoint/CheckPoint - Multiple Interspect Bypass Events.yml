@@ -1,3 +1,4 @@
+rule_id: 4203b2c4-3e89-4e0f-869c-155ff9f4d9c0
 name: CheckPoint - Multiple Interspect Bypass Events
 description: |
   Ushbu qoida CheckPoint Interspect'dan bypass bo'lgan connection'larni monitoring qiladi.

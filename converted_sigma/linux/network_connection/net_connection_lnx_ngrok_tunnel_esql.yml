@@ -1,3 +1,4 @@
+rule_id: c3ca3211-0f96-4825-a058-bcde7573c0b3
 name: "Ngrok Tunneling Service Connection"
 description: |
   Detects connections to Ngrok tunneling service endpoints.

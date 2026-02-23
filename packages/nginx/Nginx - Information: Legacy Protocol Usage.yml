@@ -1,3 +1,4 @@
+rule_id: 14ee0902-6fcf-4654-998f-bd2dbcedb9b5
 name: Nginx - Information Legacy Protocol Usage
 description: |
   HTTP/1.0 yoki undan eski protokollar orqali kelayotgan so'rovlarni aniqlaydi.

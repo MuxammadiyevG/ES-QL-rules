@@ -1,3 +1,4 @@
+rule_id: a314861e-97f8-459f-9681-fbb758029b7f
 #//RULE-NIST-19 — Lateral Movement Detection (NIST IR-4, AC-17)
 #//Control Family: IR (Incident Response), AC (Access Control)
 #//Objective: Detect attacker lateral movement across network

@@ -1,3 +1,4 @@
+rule_id: f833dfa9-a8e2-4f24-80c2-c673b4e10f23
 name: "Use Of Remove-Item to Delete File - ScriptBlock"
 description: |
   Detects PowerShell Script Block Logging events where file or directory deletion is performed

@@ -1,3 +1,4 @@
+rule_id: 79a63c86-5325-4cd7-ac90-fb25fcaec892
 #//RULE-HIPAA-06 — ePHI Access Audit Log Gap Detected - §164.312(b)
 #//Requirement: HIPAA Security Rule §164.312(b) - Audit Controls
 #//Objective: Detect missing or disabled audit logging for ePHI systems

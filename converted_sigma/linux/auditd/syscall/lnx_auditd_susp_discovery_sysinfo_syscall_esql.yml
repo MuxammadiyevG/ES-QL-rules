@@ -1,3 +1,4 @@
+rule_id: 013fb544-acc4-4ca1-8d9f-78f21af4a8e0
 name: "System Info Discovery via sysinfo Syscall"
 description: |
   Detects use of the sysinfo system call.

@@ -1,3 +1,4 @@
+rule_id: df5044f0-49ce-4979-9aca-dab8078f1667
 #//RULE-NIST-30 — HTTP Method Abuse (NIST SC-7, SI-4)
 #//Control Family: SC (System and Communications Protection), SI (System and Information Integrity)
 #//Objective: Detect use of dangerous or unusual HTTP methods

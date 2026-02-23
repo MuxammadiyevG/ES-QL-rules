@@ -1,3 +1,4 @@
+rule_id: bef2ddce-26ad-479e-ba75-392268032d2a
 #//RULE-HIPAA-34 — EHR Meaningful Use Security Violation - HITECH Act
 #//Requirement: HITECH Act - EHR Meaningful Use Security Requirements
 #//Objective: Detect security violations impacting meaningful use attestation

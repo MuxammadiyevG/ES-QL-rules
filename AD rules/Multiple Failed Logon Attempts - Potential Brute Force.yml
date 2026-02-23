@@ -1,3 +1,4 @@
+rule_id: 9a420961-e054-414a-a023-af1f549023ee
 name: Multiple Failed Logon Attempts - Potential Brute Force
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Multiple Failed Logon Attempts - Potential Brute Force` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

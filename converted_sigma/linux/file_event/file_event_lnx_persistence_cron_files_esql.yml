@@ -1,3 +1,4 @@
+rule_id: 654798ab-5007-4fb2-81de-80d52b068e89
 name: "Persistence via Cron Files"
 description: |
   Detects creation of cron files in cron directories.

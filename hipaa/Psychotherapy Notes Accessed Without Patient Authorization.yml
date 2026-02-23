@@ -1,3 +1,4 @@
+rule_id: 44aca027-8a49-493a-9cd3-b71c07809958
 #//RULE-HIPAA-37 — Psychotherapy Notes Access Without Special Authorization - §164.508(a)(2)
 #//Requirement: HIPAA Privacy Rule §164.508(a)(2) - Psychotherapy Notes
 #//Objective: Detect access to psychotherapy notes without patient authorization

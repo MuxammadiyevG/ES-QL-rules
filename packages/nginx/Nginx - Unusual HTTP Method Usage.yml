@@ -1,3 +1,4 @@
+rule_id: 7ef6f13d-2922-440e-aeba-9b693adfdf2a
 name: Nginx - Unusual HTTP Method Usage
 description: |
   Kutilmagan HTTP metodlari (PUT, DELETE, TRACK, DEBUG) orqali yuborilgan so'rovlarni aniqlaydi.

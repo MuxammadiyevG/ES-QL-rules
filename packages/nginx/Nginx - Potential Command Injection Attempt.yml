@@ -1,3 +1,4 @@
+rule_id: b917fceb-7b72-440b-976a-adfd0532a4ed
 name: Nginx - Potential Command Injection Attempt
 description: |
   URL yoki User-Agent orqali tizim buyruqlarini (ls, cat, whoami, /bin/sh) yuborish urinishlarini aniqlaydi.

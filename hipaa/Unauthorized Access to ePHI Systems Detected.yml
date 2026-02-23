@@ -1,3 +1,4 @@
+rule_id: abf37e30-abfe-459f-ad04-469e022fab43
 #//RULE-HIPAA-01 — Unauthorized Access to Electronic PHI (ePHI) - §164.312(a)(1)
 #//Requirement: HIPAA Security Rule §164.312(a)(1) - Access Control
 #//Objective: Detect unauthorized access to systems containing ePHI

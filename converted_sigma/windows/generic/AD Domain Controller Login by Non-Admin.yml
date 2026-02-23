@@ -1,3 +1,4 @@
+rule_id: 9f99259d-faeb-4ecf-988f-bae7e3d5adab
 name: AD Domain Controller Login by Non-Admin
 description: |
   Domain Controllerga oddiy (imtiyozsiz) foydalanuvchi kirganini aniqlaydi (Event ID 4624).

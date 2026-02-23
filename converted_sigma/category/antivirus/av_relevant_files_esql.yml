@@ -1,3 +1,4 @@
+rule_id: c17ab2b3-f418-4a63-b5e0-612543e3940c
 name: "Antivirus Relevant File Paths Alerts"
 description: |
   Detects an Antivirus alert in a highly relevant file path or with a relevant file name.

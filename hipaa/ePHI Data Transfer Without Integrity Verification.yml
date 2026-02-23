@@ -1,3 +1,4 @@
+rule_id: d064e026-758e-46bd-943d-f6a975feee2a
 #//RULE-HIPAA-09 — ePHI Transmitted Without Integrity Verification - §164.312(c)(2)
 #//Requirement: HIPAA Security Rule §164.312(c)(2) - Mechanism to Authenticate ePHI
 #//Objective: Detect ePHI transmissions without checksums/digital signatures

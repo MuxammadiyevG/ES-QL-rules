@@ -1,3 +1,4 @@
+rule_id: 155d0745-9352-4a23-8681-57559e43fce0
 name: FortiGate - Internal Network Scanning (Lateral Movement)
 description: |
   Ushbu qoida bitta ichki manba IP-manzilidan qisqa vaqt ichida ko'plab turli xil ichki manzillarga ulanish urinishlarini aniqlaydi. 

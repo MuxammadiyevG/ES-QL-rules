@@ -1,3 +1,4 @@
+rule_id: 908ede2b-3e7e-4aff-99fc-0859b7778c9c
 name: "PCI DSS 8.1.6 - Brute Force Login Attempt (Windows)"
 description: |
   Detects excessive failed login attempts against Windows systems which may indicate

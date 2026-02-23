@@ -1,3 +1,4 @@
+rule_id: 5ae04acf-c947-464c-bb1f-c2f10cf4d05b
 name: CheckPoint - DLP Data Exfiltration Attempts
 description: |
   Ushbu qoida CheckPoint DLP (Data Loss Prevention) tomonidan aniqlangan data exfiltration urinishlarini monitoring qiladi.

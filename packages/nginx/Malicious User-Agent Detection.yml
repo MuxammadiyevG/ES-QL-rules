@@ -1,3 +1,4 @@
+rule_id: 87043277-fb0b-4b0d-83f9-4d6c2f8abf03
 #//RULE-NIST-27 — Suspicious User-Agent Patterns (NIST SI-4, SC-7)
 #//Control Family: SI (System and Information Integrity), SC (System and Communications Protection)
 #//Objective: Detect automated tools and malicious user-agents

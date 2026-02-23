@@ -1,3 +1,4 @@
+rule_id: 8d67a8d6-6425-4446-8e90-c582b2abf841
 name: "System Information Discovery"
 description: |
   Detects commands and file accesses used to identify system information (OS version, kernel, etc.).

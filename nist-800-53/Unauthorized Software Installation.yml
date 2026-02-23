@@ -1,3 +1,4 @@
+rule_id: 5ee93082-005c-46eb-9827-700f37559f3d
 #//RULE-NIST-14 — Software Installation Without Authorization (NIST CM-7, CM-11)
 #//Control Family: CM (Configuration Management)
 #//Objective: Detect installation of unauthorized software packages

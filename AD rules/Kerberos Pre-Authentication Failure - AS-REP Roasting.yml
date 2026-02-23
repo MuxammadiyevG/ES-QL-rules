@@ -1,3 +1,4 @@
+rule_id: 27433a7c-c099-4db9-8fa5-d6269e35cb4c
 name: Kerberos Pre-Authentication Failure - AS-REP Roasting
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Kerberos Pre-Authentication Failure - AS-REP Roasting` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

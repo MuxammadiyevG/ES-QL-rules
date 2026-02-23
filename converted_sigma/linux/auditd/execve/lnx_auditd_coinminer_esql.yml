@@ -1,3 +1,4 @@
+rule_id: 42c50e24-97ba-4ba7-a3e0-d7b307ec771d
 name: "Possible Coin Miner CPU Priority Detection"
 description: |
   Detects command line parameter very often used with coin miners.

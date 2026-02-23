@@ -1,3 +1,4 @@
+rule_id: ad522187-3395-47a6-9a5c-2681f9e77afc
 name: "Webshell Remote Command Execution Detection"
 description: |
   Detects command execution by web server user (e.g. www-data).

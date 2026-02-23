@@ -1,3 +1,4 @@
+rule_id: c89a2f19-75eb-469c-8f11-fd1fab0a467f
 name: CheckPoint - Multiple Email Threats Detected
 description: |
   Ushbu qoida CheckPoint email security blade tomonidan aniqlangan ko'p threat'larni monitoring qiladi.

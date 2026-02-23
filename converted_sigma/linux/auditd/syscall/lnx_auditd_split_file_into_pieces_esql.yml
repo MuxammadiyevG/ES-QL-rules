@@ -1,3 +1,4 @@
+rule_id: adb73774-2d8d-4532-a320-1067d4835058
 name: "File Splitting Detection (split command)"
 description: |
   Detects usage of the split command to split files into pieces.

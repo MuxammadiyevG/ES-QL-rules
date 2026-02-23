@@ -1,3 +1,4 @@
+rule_id: e6a9d172-f43d-4103-9ca4-a82e64d44013
 name: Security Event Log Cleared
 description: |
   Ushbu qoida persistence, privilege escalation va credential access texnikalariga bog'liq bo'lib, `Security Event Log Cleared` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

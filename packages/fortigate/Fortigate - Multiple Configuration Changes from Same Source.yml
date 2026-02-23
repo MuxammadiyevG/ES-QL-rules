@@ -1,3 +1,4 @@
+rule_id: 0cd409c0-6feb-497b-b7b4-5aa27c130ff6
 name: Fortigate - Multiple Configuration Changes from Same Source
 description: |
   Ushbu qoida Fortigate firewall'da bir xil manbadan qisqa vaqt ichida ko'p konfiguratsiya o'zgarishlarini aniqlaydi.

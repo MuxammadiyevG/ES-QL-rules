@@ -1,3 +1,4 @@
+rule_id: fcd939d2-d27c-4ee4-9a77-99b2f5a5f727
 name: "System Information Discovery via /proc Files"
 description: |
   Detects access to /proc filesystem files for system information discovery.

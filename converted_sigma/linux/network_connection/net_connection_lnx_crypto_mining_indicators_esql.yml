@@ -1,3 +1,4 @@
+rule_id: 64b0f7ce-5360-4000-9e3a-77c922335d2b
 name: "Crypto Mining Pool Connections"
 description: |
   Detects network connections or DNS queries to known crypto mining pools (Monero).

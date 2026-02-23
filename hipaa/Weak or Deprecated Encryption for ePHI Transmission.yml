@@ -1,3 +1,4 @@
+rule_id: be92aa45-7fab-4d98-b547-d3fcd567c3f2
 #//RULE-HIPAA-11 — Weak Encryption for ePHI Transmission - §164.312(e)(2)(ii)
 #//Requirement: HIPAA Security Rule §164.312(e)(2)(ii) - Encryption
 #//Objective: Detect use of deprecated or weak encryption protocols/ciphers

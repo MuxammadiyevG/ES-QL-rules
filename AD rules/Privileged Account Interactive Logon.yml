@@ -1,3 +1,4 @@
+rule_id: 7441da8e-c184-48f6-921d-6c1e01f17cfb
 name: Privileged Account Interactive Logon
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Privileged Account Interactive Logon` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

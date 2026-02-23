@@ -1,3 +1,4 @@
+rule_id: 9c22613f-4ffc-4418-a934-7a2a03a6cbca
 name: Active Directory Schema Modification Detected
 description: |
   Ushbu qoida persistence va defense evasion texnikalariga bog'liq bo'lib, `Active Directory Schema Modification Detected` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

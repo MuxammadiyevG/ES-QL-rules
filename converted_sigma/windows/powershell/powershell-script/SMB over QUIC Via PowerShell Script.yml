@@ -1,3 +1,4 @@
+rule_id: 580b7c77-f99c-4cf8-b291-3fdf770b9939
 name: "SMB over QUIC Via PowerShell Script"
 description: |
   Detects PowerShell Script Block Logging events indicating a Windows SMB share mapping over QUIC

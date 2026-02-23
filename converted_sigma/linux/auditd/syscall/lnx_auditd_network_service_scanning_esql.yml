@@ -1,3 +1,4 @@
+rule_id: b5bebe57-4d27-4a4e-afed-7a7e282d9c17
 name: "Network Service Scanning Tools Detection"
 description: |
   Detects execution of network scanning tools (nmap, netcat, telnet).

@@ -1,3 +1,4 @@
+rule_id: 3879c32f-f5e7-41e0-a5d3-9c086f8912e1
 #//RULE-NIST-29 — Large POST Request Detection (NIST SC-5, SI-4)
 #//Control Family: SC (System and Communications Protection), SI (System and Information Integrity)
 #//Objective: Detect abnormally large POST requests indicating upload attacks or DoS

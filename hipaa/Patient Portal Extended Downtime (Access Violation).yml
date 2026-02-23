@@ -1,3 +1,4 @@
+rule_id: 3acdcead-0675-4c34-b335-b6a5225f8337
 #//RULE-HIPAA-35 — Patient Portal Downtime Exceeds Access Requirement - HITECH §13405(e)
 #//Requirement: HITECH Act §13405(e) - Patient Access to Health Information
 #//Objective: Detect excessive patient portal downtime impacting access rights

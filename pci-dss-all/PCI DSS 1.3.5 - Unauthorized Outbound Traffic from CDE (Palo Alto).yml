@@ -1,3 +1,4 @@
+rule_id: 5616866b-2f81-49a7-80f9-b3abbd71ffe5
 name: "PCI DSS 1.3.5 - Unauthorized Outbound Traffic from CDE (Palo Alto)"
 description: |
   Detects unauthorized outbound traffic originating from the cardholder data environment (CDE)

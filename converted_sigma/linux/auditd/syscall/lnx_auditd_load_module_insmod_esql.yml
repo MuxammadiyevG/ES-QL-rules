@@ -1,3 +1,4 @@
+rule_id: 9551ec32-802e-4e01-b2b0-90e578605dca
 name: "Kernel Module Loading (Insmod) Detection"
 description: |
   Detects loading of kernel modules with insmod command.

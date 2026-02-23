@@ -1,3 +1,4 @@
+rule_id: 35b369ae-eff0-49dc-a2ff-bdcf8e5b4999
 name: Nginx - Suspicious HTTP 5xx Server Error Spike
 description: |
   Ushbu qoida Nginx'da qisqa vaqt ichida ko'p 5xx server error'larni aniqlaydi.

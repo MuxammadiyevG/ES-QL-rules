@@ -1,3 +1,4 @@
+rule_id: 53e8e45b-d3e8-4ef4-bea0-914cacadedbe
 name: New Service Installed on Domain Controller
 description: |
   DC'larda yangi servis o'rnatilishini aniqlaydi (Event ID 7045). 

@@ -1,3 +1,4 @@
+rule_id: 0f23f629-ed74-4a4b-9bfd-886a415c5a3d
 name: "Potential Registry Reconnaissance Via PowerShell Script"
 description: |
   Detects PowerShell Script Block Logging events that suggest registry reconnaissance. The pattern matches

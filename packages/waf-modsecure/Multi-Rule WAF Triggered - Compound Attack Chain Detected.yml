@@ -1,3 +1,4 @@
+rule_id: 573c8066-44dd-4342-971d-0f14d1efd896
 name: Multi-Rule WAF Triggered - Compound Attack Chain Detected
 description: |
   Bitta IP manzildan qisqa vaqt ichida bir nechta turli WAF qoidalari ishga tushdi.

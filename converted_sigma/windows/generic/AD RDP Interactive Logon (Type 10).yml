@@ -1,3 +1,4 @@
+rule_id: acc80539-79a3-412d-a037-d63b4118c865
 name: AD RDP Interactive Logon (Type 10)
 description: |
   Ushbu qoida Active Directory muhitida foydalanuvchining RDP (Remote Desktop Protocol) orqali masofadan tizimga kirishini aniqlaydi (Event ID 4624, Logon Type 10).

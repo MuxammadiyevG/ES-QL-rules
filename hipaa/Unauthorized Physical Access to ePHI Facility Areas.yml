@@ -1,3 +1,4 @@
+rule_id: 8e45cf0a-7483-49c1-bbae-cb295bce6d6a
 #//RULE-HIPAA-19 — Unauthorized Physical Access to ePHI Areas - §164.310(a)(1)
 #//Requirement: HIPAA Security Rule §164.310(a)(1) - Facility Access Controls
 #//Objective: Detect unauthorized physical access to areas with ePHI systems

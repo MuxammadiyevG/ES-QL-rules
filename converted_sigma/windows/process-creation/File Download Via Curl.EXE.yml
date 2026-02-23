@@ -1,3 +1,4 @@
+rule_id: 6b092f22-03b6-4847-9604-970556cc0662
 name: "File Download Via Curl.EXE"
 description: |
   Detects file download activity using curl.exe by identifying curl execution with output flags such as

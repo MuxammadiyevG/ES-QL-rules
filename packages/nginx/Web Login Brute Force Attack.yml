@@ -1,3 +1,4 @@
+rule_id: d5a00ded-02be-4aaa-af72-478320f15707
 #//RULE-NIST-25 — Web Authentication Brute Force (NIST AC-7, IA-2)
 #//Control Family: AC (Access Control), IA (Identification and Authentication)
 #//Objective: Detect brute force attacks against web login forms

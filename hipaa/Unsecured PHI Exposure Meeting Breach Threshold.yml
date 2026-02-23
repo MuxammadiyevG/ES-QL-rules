@@ -1,3 +1,4 @@
+rule_id: 9c057999-5ac2-4d5c-9866-aae5ef808bd3
 #//RULE-HIPAA-29 — Breach Threshold Analysis - Unsecured PHI Exposure - §164.402
 #//Requirement: HIPAA Breach Notification Rule §164.402 - Breach Definition
 #//Objective: Detect PHI exposure incidents meeting breach criteria

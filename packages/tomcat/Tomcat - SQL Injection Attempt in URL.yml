@@ -1,3 +1,4 @@
+rule_id: 70e8ba82-4293-409b-9499-04939fa13129
 name: Tomcat - SQL Injection Attempt in URL
 description: |
   Ushbu qoida HTTP so'rov URL'larida SQL injection pattern'larini aniqlaydi.

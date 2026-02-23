@@ -1,3 +1,4 @@
+rule_id: 8be90caa-3e3f-4774-b92f-ed7ad2c246c4
 #//RULE-HIPAA-14 — Patient Authorization Missing for PHI Use - §164.508
 #//Requirement: HIPAA Privacy Rule §164.508 - Uses/Disclosures Requiring Authorization
 #//Objective: Detect PHI used for marketing, research, or sale without authorization

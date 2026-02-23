@@ -1,3 +1,4 @@
+rule_id: 33615297-5ce6-4bae-ba62-605585886d8e
 name: "Dynamic .NET Compilation Via Csc.EXE - Hunting"
 description: |
   Detects execution of csc.exe (C# compiler) with command line pattern "/noconfig /fullpaths @" which is

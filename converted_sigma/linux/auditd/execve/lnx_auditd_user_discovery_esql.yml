@@ -1,3 +1,4 @@
+rule_id: d580ad00-a9b0-4409-b83d-0b5aca1ab074
 name: "User Discovery - Linux"
 description: |
   Detects user enumeration and discovery commands.

@@ -1,3 +1,4 @@
+rule_id: c2f11c7c-75ae-42b3-8d97-604274f353d3
 name: "Hidden ZIP Files Steganography"
 description: |
   Detects creation of hidden ZIP files for steganography purposes.

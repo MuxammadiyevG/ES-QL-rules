@@ -1,3 +1,4 @@
+rule_id: aac8e2ae-d220-4d99-9d32-7492508af4e7
 #//RULE-NIST-15 — File Integrity Monitoring Alert (NIST SI-7)
 #//Control Family: SI (System and Information Integrity)
 #//Objective: Detect unauthorized modifications to critical system files

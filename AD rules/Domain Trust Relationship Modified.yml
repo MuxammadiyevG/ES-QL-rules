@@ -1,3 +1,4 @@
+rule_id: c9a36b9d-b738-4161-b622-c76c7d4292f3
 name: Domain Trust Relationship Modified
 description: |
   Ushbu qoida persistence va defense evasion texnikalariga bog'liq bo'lib, `Domain Trust Relationship Modified` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

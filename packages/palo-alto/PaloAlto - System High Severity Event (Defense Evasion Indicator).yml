@@ -1,3 +1,4 @@
+rule_id: bf3f6158-239b-4d7e-9e3c-2ab60af9d531
 name: PaloAlto - System High Severity Event (Defense Evasion Indicator)
 description: |
   Palo Alto NGFW tizimidan HIGH darajadagi system xabari aniqlandi.

@@ -1,3 +1,4 @@
+rule_id: c82f2a25-0cd5-4255-a532-b71f71dda613
 name: VMware ESX - Notice Message Detected
 description: |
   VMware ESX tizimidan notice darajasidagi xabar qayd etildi.

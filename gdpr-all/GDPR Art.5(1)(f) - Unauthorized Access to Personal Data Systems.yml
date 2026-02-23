@@ -1,3 +1,4 @@
+rule_id: 2558a8a5-490a-4191-9d9d-2f88514ca1cb
 name: "GDPR Art.5(1)(f) - Unauthorized Access to Personal Data Systems"
 description: |
   Detects unauthorized or anomalous access attempts against systems that process personal data,

@@ -1,3 +1,4 @@
+rule_id: a082232c-7b33-4ff0-8b7e-5ba86592727d
 name: User Logon Outside Business Hours
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `User Logon Outside Business Hours` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 9771fb71-e1b2-4a73-860c-6ccc52454cde
 name: WAF Attack During Off-Business Hours
 description: |
   Ish soatlaridan tashqarida (kechasi 22:00 dan 06:00 gacha yoki dam olish kunlari)

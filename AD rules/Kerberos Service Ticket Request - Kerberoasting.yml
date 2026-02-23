@@ -1,3 +1,4 @@
+rule_id: ffe32351-ecbe-4604-9816-7190f8629ac8
 name: Kerberos Service Ticket Request - Kerberoasting
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Kerberos Service Ticket Request - Kerberoasting` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 480d40e3-18c2-4445-8032-354455b8d939
 name: "Potential Proxy Execution Via Explorer.EXE From Shell Process"
 description: |
   Detects explorer.exe being spawned from a shell host process (cmd.exe, powershell.exe, pwsh.exe)

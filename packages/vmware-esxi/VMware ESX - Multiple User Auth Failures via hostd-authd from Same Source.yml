@@ -1,3 +1,4 @@
+rule_id: 2bae75f6-753d-4eea-a4ef-facd3a1523e5
 name: VMware ESX - Multiple User Auth Failures via hostd/authd from Same Source (Brute Force)
 description: |
   120 soniya ichida bir xil manba IP'dan vmware-hostd yoki vmware-authd orqali

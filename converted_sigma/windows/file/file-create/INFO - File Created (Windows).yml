@@ -1,3 +1,4 @@
+rule_id: 605185f4-b4bf-4434-b304-c6d0c51c1660
 # =========================
 # FILE EVENT BASELINE RULES (Windows) — Informational
 # Works best with file access/create/delete/rename/change telemetry (ETW/Sysmon/FIM pipelines)

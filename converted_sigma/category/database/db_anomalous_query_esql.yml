@@ -1,3 +1,4 @@
+rule_id: c30d20ea-6cf0-4c5d-afce-a8fad2d0ae77
 name: "Suspicious SQL Query Detection"
 description: |
   Detects suspicious SQL query keywords that are often used during reconnaissance, exfiltration or destructive activities.

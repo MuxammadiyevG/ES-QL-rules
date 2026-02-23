@@ -1,3 +1,4 @@
+rule_id: 37be48df-cf1c-4fde-bfa2-5e499d850ef4
 name: "Access To Windows Outlook Mail Files By Uncommon Applications"
 description: |
   Detects file access requests to Windows Mail/Outlook app mailbox storage locations (Unistore/UnistoreDB)

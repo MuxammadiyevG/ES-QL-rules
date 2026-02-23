@@ -1,3 +1,4 @@
+rule_id: e3efcc1c-d6d0-44eb-9f17-a7b9c9026f3e
 name: "LocaltoNet Tunneling Service Connection"
 description: |
   Detects connections to LocaltoNet tunneling service domains.

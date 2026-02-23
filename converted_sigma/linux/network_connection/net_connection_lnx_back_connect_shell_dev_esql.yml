@@ -1,3 +1,4 @@
+rule_id: 0150e8a4-9791-484f-ab61-a9c48ed61121
 name: "Reverse Shell via Bash Detection"
 description: |
   Detects bash executing a reverse shell connection to an external IP.

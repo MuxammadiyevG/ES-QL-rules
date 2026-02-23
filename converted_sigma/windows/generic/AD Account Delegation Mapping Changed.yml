@@ -1,3 +1,4 @@
+rule_id: 252a5315-103b-4f71-859c-f8b4b5950634
 name: AD Account Delegation Mapping Changed
 description: |
   Foydalanuvchi akkauntining xavfsizlik va delegatsiya sozlamalari o'zgarganini aniqlaydi (Event ID 4738).

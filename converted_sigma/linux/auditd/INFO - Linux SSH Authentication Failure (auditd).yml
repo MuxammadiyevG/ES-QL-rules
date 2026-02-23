@@ -1,3 +1,4 @@
+rule_id: e9dd7257-f7c0-48e9-b8e8-99aaac2d6dd1
 name: "INFO - Linux SSH Authentication Failure (auditd)"
 description: |
   Baselines failed SSH authentication events via auditd.

@@ -1,3 +1,4 @@
+rule_id: 14d77ecc-ba0e-4c1b-8457-d49aec964ac9
 name: Privileged Access Workstation (PAW) Activity
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Privileged Access Workstation (PAW) Activity` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

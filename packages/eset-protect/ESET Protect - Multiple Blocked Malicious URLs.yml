@@ -1,3 +1,4 @@
+rule_id: f3e08559-bfd1-4091-a40f-21d692d7f94f
 name: ESET Protect - Multiple Blocked Malicious URLs
 description: |
   Ushbu qoida ESET web filtering tomonidan block qilingan ko'p malicious URL access urinishlarini aniqlaydi.

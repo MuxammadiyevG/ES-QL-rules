@@ -1,3 +1,4 @@
+rule_id: f254e86c-a479-43fd-9fdf-675ae8227e1a
 #//RULE-NIST-24 — Web Application Attack Patterns (NIST SC-7, SI-4, AC-14)
 #//Control Family: SC (System and Communications Protection), SI (System and Information Integrity)
 #//Objective: Detect common web application attacks (SQLi, XSS, traversal)

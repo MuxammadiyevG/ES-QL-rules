@@ -1,3 +1,4 @@
+rule_id: 58ae92cd-0032-4ef4-8f6c-0512c7e77c33
 name: CheckPoint - VPN or Admin Login Failures
 description: |
   Ushbu qoida CheckPoint Authorize (login) failure hodisalarini aniqlaydi.

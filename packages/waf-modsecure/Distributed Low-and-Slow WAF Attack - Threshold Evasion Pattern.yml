@@ -1,3 +1,4 @@
+rule_id: efffaaf2-90d8-494c-8cd5-a8966be62b93
 name: Distributed Low-and-Slow WAF Attack - Threshold Evasion Pattern
 description: |
   Ko'p sonli turli IP manzillardan har biridan ozgina (1-2 ta) so'rov yuborib,

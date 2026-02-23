@@ -1,3 +1,4 @@
+rule_id: 06f19bdd-2f2e-46b7-ab8f-a662afd05667
 name: "Antivirus Ransomware Detection"
 description: |
   Detects a highly relevant Antivirus alert that reports ransomware.

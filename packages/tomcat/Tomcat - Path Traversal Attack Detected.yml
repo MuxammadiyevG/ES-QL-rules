@@ -1,3 +1,4 @@
+rule_id: 62d055dd-da97-4a80-afe4-065e2da0f49e
 name: Tomcat - Path Traversal Attack Detected
 description: |
   Ushbu qoida HTTP so'rovlarda "../", "%2e%2e", "%252e" kabi path traversal 

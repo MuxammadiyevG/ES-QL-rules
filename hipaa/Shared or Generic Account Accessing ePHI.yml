@@ -1,3 +1,4 @@
+rule_id: baf4328c-144c-417e-87d4-1560d0dfcc12
 #//RULE-HIPAA-03 — Unique User Identification Violation - §164.312(a)(2)(i)
 #//Requirement: HIPAA Security Rule §164.312(a)(2)(i) - Unique User Identification
 #//Objective: Detect shared accounts or generic usernames accessing ePHI

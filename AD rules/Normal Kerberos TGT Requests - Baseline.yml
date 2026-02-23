@@ -1,3 +1,4 @@
+rule_id: a9320141-449c-46fc-a81c-7c7a37ee75f7
 name: Normal Kerberos TGT Requests - Baseline
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Normal Kerberos TGT Requests - Baseline` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

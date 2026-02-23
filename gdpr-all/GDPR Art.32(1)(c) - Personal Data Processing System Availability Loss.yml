@@ -1,3 +1,4 @@
+rule_id: c948a9f5-d10f-4261-80f4-091f8cf3f80d
 name: "GDPR Art.32(1)(c) - Personal Data Processing System Availability Loss"
 description: |
   Detects loss of availability of systems that process personal data, as required by

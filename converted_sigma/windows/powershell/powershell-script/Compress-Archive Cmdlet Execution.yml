@@ -1,3 +1,4 @@
+rule_id: 1ccab74e-df06-4a19-882e-c47adec53f0c
 name: "Compress-Archive Cmdlet Execution"
 description: |
   Detects PowerShell Script Block Logging events where the Compress-Archive cmdlet is used to compress

@@ -1,3 +1,4 @@
+rule_id: 56aee96e-9c05-4987-9ce0-18d3a6514a4f
 name: Nginx - Sensitive File Discovery Attempt
 description: |
   Konfiguratsiya va tizim fayllariga (.env, .git, .bak) kirish urinishlarini aniqlaydi.

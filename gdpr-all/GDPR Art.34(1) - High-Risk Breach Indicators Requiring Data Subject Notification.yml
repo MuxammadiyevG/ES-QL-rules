@@ -1,3 +1,4 @@
+rule_id: 7e61625e-023b-4946-a899-172daa8d8c6c
 name: "GDPR Art.34(1) - High-Risk Breach Indicators Requiring Data Subject Notification"
 description: |
   Detects breach indicators of the highest severity that are likely to result in high risk

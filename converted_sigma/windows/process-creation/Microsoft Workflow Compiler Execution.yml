@@ -1,3 +1,4 @@
+rule_id: cf5ebf5e-5c3a-459b-9870-5b5d2f7e8042
 name: "Microsoft Workflow Compiler Execution"
 description: |
   Detects execution of Microsoft.Workflow.Compiler.exe (Microsoft Workflow Compiler), a LOLBin that may

@@ -1,3 +1,4 @@
+rule_id: f91a19c4-dc3f-49c4-9852-d03114a193d6
 name: "GDPR Art.33(5) - Audit Trail Completeness Gap (Breach Documentation Impaired)"
 description: |
   Detects gaps in audit trail completeness that would impair GDPR Article 33(5) obligation

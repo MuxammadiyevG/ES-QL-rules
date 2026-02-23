@@ -1,3 +1,4 @@
+rule_id: c22bbc9e-5518-4edb-afe5-f5e72b42d802
 name: Nginx - Multiple Web Authentication Failures
 description: |
   Ushbu qoida Nginx web server'da bir xil manbadan ko'p marta authentication failure hodisalarini aniqlaydi.

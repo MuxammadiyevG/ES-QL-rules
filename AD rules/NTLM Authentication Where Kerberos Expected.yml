@@ -1,3 +1,4 @@
+rule_id: 221d1387-706c-41e0-828c-f3c3f79cde65
 name: NTLM Authentication Where Kerberos Expected
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `NTLM Authentication Where Kerberos Expected` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

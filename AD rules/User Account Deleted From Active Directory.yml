@@ -1,3 +1,4 @@
+rule_id: 93a35037-94bd-4a82-9731-87b80e02eb67
 name: User Account Deleted From Active Directory
 description: |
   Ushbu qoida credential access va privilege escalation texnikalariga bog'liq bo'lib, `User Account Deleted From Active Directory` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

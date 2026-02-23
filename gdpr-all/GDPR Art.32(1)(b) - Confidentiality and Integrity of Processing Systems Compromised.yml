@@ -1,3 +1,4 @@
+rule_id: 460ad591-db8e-4081-94b7-270cb8f65698
 name: "GDPR Art.32(1)(b) - Confidentiality and Integrity of Processing Systems Compromised"
 description: |
   Detects events indicating loss of confidentiality or integrity of systems processing

@@ -1,3 +1,4 @@
+rule_id: 3ae3e7f0-82a7-474b-bd69-dfb2b391af79
 name: "Systemd Service Creation Detection"
 description: |
   Detects creation of systemd services which could be used by adversaries to execute malicious code.

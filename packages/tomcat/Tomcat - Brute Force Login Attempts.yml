@@ -1,3 +1,4 @@
+rule_id: 992d85c1-d035-4b32-a9ab-21ef769ca931
 name: Tomcat - Brute Force Login Attempts
 description: |
   Ushbu qoida qisqa vaqt ichida bir xil manba IP'dan ko'p marta 401/403 HTTP 

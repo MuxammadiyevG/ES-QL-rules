@@ -1,3 +1,4 @@
+rule_id: 8d18b5cc-f1a2-408d-8916-033620f2a2cd
 name: WMI Event Subscription for Persistence
 description: |
   Ushbu qoida persistence va lateral movement texnikalariga bog'liq bo'lib, `WMI Event Subscription for Persistence` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

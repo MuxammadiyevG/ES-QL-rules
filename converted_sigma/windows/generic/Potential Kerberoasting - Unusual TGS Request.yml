@@ -1,3 +1,4 @@
+rule_id: 7b50328c-e928-4090-b752-09cbf798bbe9
 name: Potential Kerberoasting - Unusual TGS Request
 description: |
   RC4 shifrlash algoritmi (0x17) yordamida ko'p miqdorda TGS (Service Ticket) so'rovlarini aniqlaydi (Event ID 4769).

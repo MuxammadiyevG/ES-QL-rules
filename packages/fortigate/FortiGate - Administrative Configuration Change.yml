@@ -1,3 +1,4 @@
+rule_id: 02669e62-c69a-4676-9953-be09ca73fd1a
 name: FortiGate - Administrative Configuration Change
 description: |
   Ushbu qoida FortiGate qurilmalarida admin sessiyasi orqali amalga oshirilgan har qanday konfiguratsiya o'zgarishlarini aniqlaydi. 

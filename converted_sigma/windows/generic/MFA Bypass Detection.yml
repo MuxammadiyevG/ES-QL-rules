@@ -1,3 +1,4 @@
+rule_id: 7e790c29-f89d-4bed-a077-c113bec0b34d
 #//RULE-NIST-10 — Multi-Factor Authentication Bypass (NIST IA-2)
 #//Control Family: IA (Identification and Authentication)
 #//Objective: Detect successful logins without MFA when policy requires it

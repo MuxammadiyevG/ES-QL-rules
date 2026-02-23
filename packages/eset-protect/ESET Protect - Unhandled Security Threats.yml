@@ -1,3 +1,4 @@
+rule_id: 290a5a94-8e9a-45d5-b641-f3fd5f132d86
 name: ESET Protect - Unhandled Security Threats
 description: |
   Ushbu qoida ESET tomonidan detect qilingan lekin handle qilinmagan threat'larni aniqlaydi.

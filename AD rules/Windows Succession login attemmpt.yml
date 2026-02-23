@@ -1,3 +1,4 @@
+rule_id: ebfefa1b-33a8-4582-8cb6-a2b8353228ab
 name: Windows Succession login attempt
 description: |
   Ushbu qoida Active Directory muhitida `Windows Succession login attempt` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

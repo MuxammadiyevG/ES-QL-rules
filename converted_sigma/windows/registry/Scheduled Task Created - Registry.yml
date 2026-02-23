@@ -1,3 +1,4 @@
+rule_id: ce3acf5d-4ce3-49d1-97d4-d95299857813
 name: "Scheduled Task Created - Registry"
 description: |
   Detects creation of Windows Scheduled Tasks via registry modifications to TaskCache keys:

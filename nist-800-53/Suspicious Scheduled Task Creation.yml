@@ -1,3 +1,4 @@
+rule_id: 81a83a11-d12a-4465-a129-c6c8b3f1e927
 #//RULE-NIST-31 — Scheduled Task Creation (NIST CM-6, SI-4)
 #//Control Family: CM (Configuration Management), SI (System and Information Integrity)
 #//Objective: Detect creation of scheduled tasks for persistence

@@ -1,3 +1,4 @@
+rule_id: b99c2cd5-421f-4c7e-86d3-7d8f8e629254
 name: "Suspicious Filename with Embedded Base64 Commands"
 description: |
   Detects creation of files with filenames containing embedded bash/base64 payloads.

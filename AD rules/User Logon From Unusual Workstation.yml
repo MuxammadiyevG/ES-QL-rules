@@ -1,3 +1,4 @@
+rule_id: 556f281b-01f2-4179-9ef2-664f776fc13e
 name: User Logon From Unusual Workstation
 description: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `User Logon From Unusual Workstation` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

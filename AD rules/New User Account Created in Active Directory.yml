@@ -1,3 +1,4 @@
+rule_id: 0b186c83-6ec5-4827-b74b-b66540066d52
 name: New User Account Created in Active Directory
 description: |
   Ushbu qoida credential access va privilege escalation texnikalariga bog'liq bo'lib, `New User Account Created in Active Directory` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

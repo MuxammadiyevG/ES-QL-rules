@@ -1,3 +1,4 @@
+rule_id: 278de698-eb83-4a77-9a93-b103ccbe74e6
 name: "GDPR Art.33(2) - Third-Party Vendor or Processor Account Anomaly"
 description: |
   Detects anomalous activity from third-party vendor or processor accounts that may indicate

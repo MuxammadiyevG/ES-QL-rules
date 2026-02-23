@@ -1,3 +1,4 @@
+rule_id: 8c7dd623-ed35-4148-91ab-543908b2e32a
 #//RULE-NIST-16 — Malicious Process Execution (NIST SI-3, SI-4)
 #//Control Family: SI (System and Information Integrity)
 #//Objective: Detect execution of processes with malicious characteristics

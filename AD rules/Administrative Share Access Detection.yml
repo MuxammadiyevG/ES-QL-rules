@@ -1,3 +1,4 @@
+rule_id: 77ceaadc-137c-45dc-a56a-556d8ac4f7dd
 name: Administrative Share Access Detection
 description: |
   Ushbu qoida persistence, privilege escalation va credential access texnikalariga bog'liq bo'lib, `Administrative Share Access Detection` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

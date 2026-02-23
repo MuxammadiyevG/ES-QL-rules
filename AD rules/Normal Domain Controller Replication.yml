@@ -1,3 +1,4 @@
+rule_id: aa9f955e-2101-42b6-bfe8-aab4a272ded5
 name: Normal Domain Controller Replication
 description: |
   Ushbu qoida persistence, privilege escalation va credential access texnikalariga bog'liq bo'lib, `Normal Domain Controller Replication` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 0b7ace96-5045-4489-98a4-eeb1e9228730
 name: "Diskshadow Child Process Spawned"
 description: |
   Detects any child process spawned from Diskshadow.exe. Diskshadow can be used in interpreter/script mode

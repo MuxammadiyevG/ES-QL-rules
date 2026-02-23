@@ -1,3 +1,4 @@
+rule_id: 0e51de10-07db-4dcc-b71a-210d37aefca2
 name: "Non-DLL Extension File Renamed With DLL Extension"
 description: |
   Detects file rename operations where the destination filename ends with ".dll" but the source file

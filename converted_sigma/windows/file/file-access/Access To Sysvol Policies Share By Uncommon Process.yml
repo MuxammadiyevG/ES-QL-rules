@@ -1,3 +1,4 @@
+rule_id: 911ca8c4-ef22-4e3f-bafb-10dca81c45ae
 name: "Access To Sysvol Policies Share By Uncommon Process"
 description: |
   Detects file access requests to the Windows SYSVOL Policies share (UNC paths containing \sysvol\ and \Policies\)

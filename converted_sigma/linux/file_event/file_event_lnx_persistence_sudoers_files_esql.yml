@@ -1,3 +1,4 @@
+rule_id: cc00bd16-e793-466f-ae91-e25107056e11
 name: "Persistence via Sudoers Files"
 description: |
   Detects creation of sudoers files in /etc/sudoers.d/.

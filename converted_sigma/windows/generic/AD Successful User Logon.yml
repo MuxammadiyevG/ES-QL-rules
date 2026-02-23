@@ -1,3 +1,4 @@
+rule_id: 9c5b88c1-4eb9-4547-8bb9-386cb7e436cd
 name: AD Successful User Logon
 description: |
   Foydalanuvchi tizimga muvaffaqiyatli kirganligini aniqlaydi (Event ID 4624).

@@ -1,3 +1,4 @@
+rule_id: 38402529-1a5c-4ec1-8e8a-2f657640aea3
 name: "PCI DSS 1.3.4 - IP Spoofing / Forged Source Address Detected (Palo Alto)"
 description: |
   Detects IP spoofing and forged source address attempts blocked by Palo Alto firewall.

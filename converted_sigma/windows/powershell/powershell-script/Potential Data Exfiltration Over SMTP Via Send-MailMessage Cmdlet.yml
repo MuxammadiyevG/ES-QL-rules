@@ -1,3 +1,4 @@
+rule_id: 8da1016a-9c57-4a98-a11a-33e2b21aad45
 name: "Potential Data Exfiltration Over SMTP Via Send-MailMessage Cmdlet"
 description: |
   Detects PowerShell Script Block Logging events where Send-MailMessage is used with the -Attachments flag.

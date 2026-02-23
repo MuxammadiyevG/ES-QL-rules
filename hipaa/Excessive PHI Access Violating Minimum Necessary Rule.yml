@@ -1,3 +1,4 @@
+rule_id: d4afb06d-d731-46c5-b56f-cdcc0de7e66b
 #//RULE-HIPAA-13 — Minimum Necessary Standard Violation - §164.502(b), §164.514(d)
 #//Requirement: HIPAA Privacy Rule §164.502(b) - Minimum Necessary
 #//Objective: Detect excessive PHI access beyond job requirements

@@ -1,3 +1,4 @@
+rule_id: 7c76ad03-5715-48ed-b600-3d0a08e45934
 name: Nginx - Excessive 403 Forbidden Responses
 description: |
   Bitta IP dan qisqa vaqt ichida ko'plab 403 xatoliklar qaytishini aniqlaydi.

@@ -1,3 +1,4 @@
+rule_id: 203b7759-44c7-4d74-8101-80980fe0ff85
 #//RULE-HIPAA-07 — Patient Record Access Without Audit Trail - §164.312(b)
 #//Requirement: HIPAA Security Rule §164.312(b) - Audit Controls
 #//Objective: Detect patient record access not logged in audit system

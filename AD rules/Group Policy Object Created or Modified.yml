@@ -1,3 +1,4 @@
+rule_id: f4695ec1-a212-401b-b9ae-a70b4a203c13
 name: Group Policy Object Created or Modified
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Group Policy Object Created or Modified` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

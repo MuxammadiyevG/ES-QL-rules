@@ -1,3 +1,4 @@
+rule_id: 4672439c-6ea8-476b-afe3-565b9b2a620b
 name: Fortigate - HTTP Unknown Tunneling Detected
 description: |
   Ushbu qoida HTTP protokoli orqali suspicious tunneling faoliyatini aniqlaydi.

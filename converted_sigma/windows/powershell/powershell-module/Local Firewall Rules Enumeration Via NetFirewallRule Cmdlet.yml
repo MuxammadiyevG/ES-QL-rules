@@ -1,3 +1,4 @@
+rule_id: ace892e4-c0a8-49c0-8ce1-ca3c6e2f9ab6
 name: "Local Firewall Rules Enumeration Via NetFirewallRule Cmdlet"
 description: |
   Detects PowerShell module logging events indicating execution of Get-NetFirewallRule or Show-NetFirewallRule,

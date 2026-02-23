@@ -1,3 +1,4 @@
+rule_id: f8781401-3afb-4079-8be5-df0758cc701e
 name: Security Group Membership Changes - Audit Trail
 description: |
   Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Security Group Membership Changes - Audit Trail` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

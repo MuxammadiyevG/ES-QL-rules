@@ -1,3 +1,4 @@
+rule_id: de992e93-1e24-47da-a8d9-647e72f815c5
 name: "Potential Data Exfiltration Via Curl.EXE"
 description: |
   Detects curl.exe execution with common upload/data submission flags that may indicate potential

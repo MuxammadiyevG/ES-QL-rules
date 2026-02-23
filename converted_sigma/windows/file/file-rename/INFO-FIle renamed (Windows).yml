@@ -1,3 +1,4 @@
+rule_id: 91ba9169-424a-4f08-a9dd-3b0c83112398
 
 # 4) File Renamed (generic hunting / best-effort)
 name: "INFO - File Renamed (Windows) - Hunting"

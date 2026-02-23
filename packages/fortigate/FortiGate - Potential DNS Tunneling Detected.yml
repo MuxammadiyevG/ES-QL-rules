@@ -1,3 +1,4 @@
+rule_id: 2c98b1bc-9244-48c0-b105-14a14f114899
 name: FortiGate - Potential DNS Tunneling Detected
 description: |
   Bitta ichki IPdan haddan tashqari ko'p (1000 dan ortiq) DNS so'rovlari yuborilishini aniqlaydi.

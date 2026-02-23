@@ -1,3 +1,4 @@
+rule_id: 1353bcf6-9279-4fe3-b325-92db9a889ec7
 #//RULE-HIPAA-02 — Terminated Employee Access to ePHI Not Revoked - §164.308(a)(3)(ii)(C)
 #//Requirement: HIPAA Security Rule §164.308(a)(3)(ii)(C) - Termination Procedures
 #//Objective: Detect ePHI access by terminated healthcare workers

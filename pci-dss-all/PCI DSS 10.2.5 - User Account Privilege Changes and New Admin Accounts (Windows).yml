@@ -1,3 +1,4 @@
+rule_id: e380ccc3-333d-458f-b1a5-569a514c92f1
 name: "PCI DSS 10.2.5 - User Account Privilege Changes and New Admin Accounts (Windows)"
 description: |
   Detects creation of new accounts, privilege elevation, and changes to admin group

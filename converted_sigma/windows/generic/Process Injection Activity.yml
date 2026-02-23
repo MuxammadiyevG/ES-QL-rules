@@ -1,3 +1,4 @@
+rule_id: 4f20616c-6684-48c5-9f2c-7f8e2bf56891
 #//RULE-NIST-35 — Process Injection Detection (NIST SI-4, SI-3)
 #//Control Family: SI (System and Information Integrity)
 #//Objective: Detect process injection techniques used for evasion

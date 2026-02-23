@@ -1,3 +1,4 @@
+rule_id: a84a766e-8c22-4552-8891-4343b0a7a828
 # 6) File Permission / Attribute Change (generic hunting)
 name: "INFO - File Permission/Attribute Change (Windows) - Hunting"
 description: |

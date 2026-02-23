@@ -1,3 +1,4 @@
+rule_id: 28148816-86a2-4a55-9ba6-9e2ecdda5370
 #//RULE-HIPAA-20 — Workstation Left Unattended Without Screen Lock - §164.310(b), §164.310(c)
 #//Requirement: HIPAA Security Rule §164.310(b)(c) - Workstation Security
 #//Objective: Detect unattended workstations without automatic screen lock

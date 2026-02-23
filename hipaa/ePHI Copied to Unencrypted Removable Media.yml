@@ -1,3 +1,4 @@
+rule_id: 71cf0619-340a-48c8-91be-ab788a809b28
 #//RULE-HIPAA-21 — Removable Media with ePHI Not Encrypted - §164.310(d)(1)
 #//Requirement: HIPAA Security Rule §164.310(d)(1) - Device and Media Controls
 #//Objective: Detect unencrypted ePHI on removable media

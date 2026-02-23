@@ -1,3 +1,4 @@
+rule_id: c684c02e-1e10-4a5e-928c-f12f6cff0bd3
 #//RULE-HIPAA-36 — VIP/Celebrity Patient Snooping - Unauthorized Access
 #//Requirement: HIPAA Privacy Rule §164.502(a) - Unauthorized Access
 #//Objective: Detect inappropriate access to high-profile patient records

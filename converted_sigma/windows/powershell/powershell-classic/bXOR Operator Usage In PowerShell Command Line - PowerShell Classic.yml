@@ -1,3 +1,4 @@
+rule_id: 261571f2-f789-48b1-a84d-2739748b4835
 name: "bXOR Operator Usage In PowerShell Command Line - PowerShell Classic"
 description: |
   Detects PowerShell Classic start events where the command line contains the bitwise XOR operator (-bxor)

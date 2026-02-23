@@ -1,3 +1,4 @@
+rule_id: aadce2f5-b8e7-4f99-bf54-c27f9083cfa6
 name: VMware ESX - Successful Authentication (logged in)
 description: |
   VMware ESX tizimiga muvaffaqiyatli autentifikatsiya qayd etildi.

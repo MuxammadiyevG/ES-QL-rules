@@ -1,3 +1,4 @@
+rule_id: 9e0f2d7e-dccf-4f8a-9232-d4c7a0d8c1ec
 name: Computer Account Deleted From Active Directory
 description: |
   Ushbu qoida credential access va privilege escalation texnikalariga bog'liq bo'lib, `Computer Account Deleted From Active Directory` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.

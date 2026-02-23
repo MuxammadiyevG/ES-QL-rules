@@ -1,3 +1,4 @@
+rule_id: 8fd61d8c-b390-42f9-a9a7-460e45837520
 name: "Binary Padding Detection"
 description: |
   Adversaries may use binary padding to add junk data and change the on-disk representation of malware.

@@ -1,3 +1,4 @@
+rule_id: a9587e41-6523-4648-832d-c149770e2fee
 name: Nginx - Suspicious POST Request Flood
 description: |
   Ushbu qoida bir xil manbadan qisqa vaqt ichida ko'p POST request'larni aniqlaydi.

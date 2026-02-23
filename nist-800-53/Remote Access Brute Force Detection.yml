@@ -1,3 +1,4 @@
+rule_id: 47d45aa7-fb7a-4485-ab51-71281dffe813
 #//RULE-NIST-04 — Remote Desktop Brute Force (NIST AC-17)
 #//Control Family: AC (Access Control)
 #//Objective: Detect RDP/SSH brute force attacks on remote access services

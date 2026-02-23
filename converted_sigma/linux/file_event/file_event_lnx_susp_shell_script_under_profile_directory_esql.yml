@@ -1,3 +1,4 @@
+rule_id: 8547207e-8609-4fdc-a3fd-393e22f7dce6
 name: "Suspicious Shell Script in Profile Directory"
 description: |
   Detects creation of shell scripts (.sh, .csh) in /etc/profile.d/.

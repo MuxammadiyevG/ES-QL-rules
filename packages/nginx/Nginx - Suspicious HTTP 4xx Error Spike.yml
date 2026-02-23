@@ -1,3 +1,4 @@
+rule_id: 3d22b12c-5ddd-4ebf-8a7d-0707ce0020d8
 name: Nginx - Suspicious HTTP 4xx Error Spike
 description: |
   Ushbu qoida Nginx access log'da bir xil manbadan ko'p 4xx status code'larni aniqlaydi.
