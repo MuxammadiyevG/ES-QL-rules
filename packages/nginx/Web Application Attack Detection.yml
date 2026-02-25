@@ -46,7 +46,7 @@ query: |
       unique_payloads = COUNT_DISTINCT(event.original),
       attack_paths = VALUES(event.original),
       scanner_detected = SUM(CASE(suspicious_user_agent == true, 1, 0))
-    BY source.ip, attack_pattern, bucket = DATE_TRUNC(15 minutes, @timestamp)
+    BY agent_id, source.ip, attack_pattern, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE attack_count >= 3
   | EVAL risk_score = attack_count * 15 + scanner_detected * 20
   | WHERE risk_score >= 45

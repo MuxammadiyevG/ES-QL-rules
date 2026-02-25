@@ -15,7 +15,7 @@ description: |
   Focus on suspicious executable paths (temp folders, AppData) or encoded commands.
   False positives: Software installations, Windows updates, legitimate startup programs.
   Triage: Review registry value data (what executable?), check file signature,
-  verify if modification by legitimate installer, scan referenced executable.
+  verify if modification by agent_id, legitimate installer, scan referenced executable.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -45,7 +45,7 @@ query: |
       registry_keys = VALUES(event.original),
       registry_values = VALUES(event.original),
       modifiers = VALUES(winlog.event_data.TargetUserName)
-    BY host.name, persistence_key_type
+    BY agent_id, host.name, persistence_key_type
     , bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE modification_count >= 1
   | EVAL risk_score = modification_count * 35

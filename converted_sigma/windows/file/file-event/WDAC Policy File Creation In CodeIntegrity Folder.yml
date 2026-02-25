@@ -2,7 +2,7 @@ rule_id: f574b6df-1d26-4287-9463-453a987c8db2
 name: "WDAC Policy File Creation In CodeIntegrity Folder"
 description: |
   Detects creation of WDAC policy-related files (.cip / .p7b) inside the privileged
-  Windows Code Integrity directory (C:\Windows\System32\CodeIntegrity\) by a high-integrity
+  Windows Code Integrity directory (C:\Windows\System32\CodeIntegrity\) by agent_id, a high-integrity
   (elevated) process. Attackers can weaponize WDAC to block EDR drivers while allowing
   malicious code, requiring a reboot to take effect.
   Note: This rule expects IntegrityLevel telemetry; if you don't ingest it, treat this as
@@ -38,7 +38,7 @@ query: |
       cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")),
       raw_samples = VALUES(event.original)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

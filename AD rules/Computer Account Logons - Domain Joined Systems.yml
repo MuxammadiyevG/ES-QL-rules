@@ -41,7 +41,7 @@ query: |
       source_ips = VALUES(source_ip),
       first_auth = MIN(@timestamp),
       last_auth = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE auth_count >= 1
   | KEEP agent_id, bucket, winlog.computer_name, auth_count, unique_computers, computer_accounts,
       source_ips, first_auth, last_auth

@@ -15,7 +15,7 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - filebeat-tomcat-*
+- filebeat-tomcat-*
 query_language: esql
 query: |
   FROM filebeat-tomcat-*
@@ -29,26 +29,26 @@ query: |
       source_ips = VALUES(source.ip),
       unique_ips = COUNT_DISTINCT(source.ip),
       methods = VALUES(rsa.web.p_web_method)
-    BY rsa.network.host_dst, bucket = DATE_TRUNC(5 minutes, @timestamp)
+    BY agent_id, rsa.network.host_dst, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE error_count >= 50
   | KEEP agent_id, bucket, rsa.network.host_dst, error_count, unique_ips, error_codes, affected_urls, source_ips, methods
   | SORT error_count DESC
   | LIMIT 50
 enabled: true
 tags:
-  - attack.impact
-  - attack.t1499
-  - attack.initial-access
-  - attack.t1190
-  - tomcat
-  - dos
-  - availability
+- attack.impact
+- attack.t1499
+- attack.initial-access
+- attack.t1190
+- tomcat
+- dos
+- availability
 severity: high
 risk_score: 70
 references:
-  - "https://attack.mitre.org/techniques/T1499/"
+- "https://attack.mitre.org/techniques/T1499/"
 nist: ["SI-2", "SC-5"]
-pci_dss: ["6.5.6", "12.10"]
+pci_dss: [6.5.6, 12.10.1]
 gdpr: ["32.1"]
 mitre_attack:
   TA0040:

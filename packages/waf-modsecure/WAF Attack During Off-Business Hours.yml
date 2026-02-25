@@ -16,7 +16,7 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - logs-nginx.waf*
+- logs-nginx.waf*
 query_language: esql
 query: |
   FROM logs-nginx.waf*
@@ -38,7 +38,7 @@ query: |
       reasons            = VALUES(event.reason),
       first_seen         = MIN(@timestamp),
       last_seen          = MAX(@timestamp)
-    BY source.ip, source.geo.country_name, source.geo.country_iso_code,
+    BY agent_id, source.ip, source.geo.country_name, source.geo.country_iso_code,
        source.geo.city_name, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE off_hours_attacks >= 3
   | KEEP agent_id, bucket, source.ip, source.geo.country_name, source.geo.country_iso_code,
@@ -49,14 +49,14 @@ query: |
   | LIMIT 200
 enabled: true
 tags:
-  - attack.initial-access
-  - attack.t1190
-  - attack.t1078
-  - detection.medium
+- attack.initial-access
+- attack.t1190
+- attack.t1078
+- detection.medium
 severity: medium
 risk_score: 70
 nist: ["SI-4", "AU-6", "AC-2"]
-pci_dss: ["10.2.4", "11.4", "8.3.9"]
+pci_dss: [10.2.4, '11.4', '8.3']
 gdpr: ["32.1.a"]
 mitre_attack:
   TA0001:

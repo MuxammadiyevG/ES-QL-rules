@@ -2,7 +2,7 @@ rule_id: 07c6d069-4ca0-4a90-9714-689496fc9286
 #//RULE-NIST-11 — Shared Account Usage (NIST IA-4, AC-2)
 #//Control Family: IA (Identification and Authentication), AC (Access Control)
 #//Objective: Detect concurrent logins from shared/generic accounts
-#//Threat scenario: Shared credentials used by multiple individuals violating accountability
+#//Threat scenario: Shared credentials used by agent_id, multiple individuals violating accountability
 #//Data sources: Windows Security 4624, concurrent sessions from same account
 #//ECS fields used: event.code, user.name, source.ip, host.name
 #//Field validation: Verify all ECS fields exist in your indices before enabling
@@ -21,10 +21,10 @@ params: '{}'
 schedule_interval: 10m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE event.outcome == "success"
     AND (event.code == "4624" OR event.action IN ("ssh_login", "login", "user-login"))
   | STATS 
@@ -33,7 +33,7 @@ query: |
       source_ips = VALUES(host.ip),
       unique_hosts = COUNT_DISTINCT(host.name),
       hosts = VALUES(host.name)
-    BY user.name
+    BY agent_id, user.name
     , bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE unique_ips >= 2 OR unique_hosts >= 2
   | EVAL account_type = CASE(

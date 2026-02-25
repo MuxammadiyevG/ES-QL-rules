@@ -30,7 +30,7 @@ query: |
   | EVAL 
       accessing_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
       object_type = COALESCE(winlog.event_data.ObjectType, "Unknown"),
-      operation = COALESCE(winlog.event_data.Operation, "Unknown")
+      operation = COALESCE(event.action, "Unknown")
   /* Exclude system accounts */
   | WHERE NOT (accessing_user RLIKE "(?i)(SYSTEM|\\$$)")
   | STATS 
@@ -42,7 +42,7 @@ query: |
       operations = VALUES(operation),
       first_access = MIN(@timestamp),
       last_access = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 day, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 day, @timestamp)
   | WHERE total_accesses >= 1
   | KEEP agent_id, bucket, winlog.computer_name, total_accesses, unique_users, unique_object_types,
       users, object_types, operations, first_access, last_access

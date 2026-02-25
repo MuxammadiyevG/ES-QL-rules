@@ -37,7 +37,7 @@ query: |
       paths_sample = VALUES(rsa.web.urlpage),
       scanner_agents = VALUES(rsa.misc.client),
       response_codes = VALUES(rsa.misc.result_code)
-    BY source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE scan_count >= 10
   | KEEP agent_id, bucket, source.ip, scan_count, unique_paths, paths_sample, scanner_agents, response_codes
   | SORT scan_count DESC

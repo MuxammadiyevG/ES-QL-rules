@@ -21,10 +21,10 @@ params: '{}'
 schedule_interval: 10m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE event.category == "network"
     AND destination.ip IS NOT NULL 
     AND NOT CIDR_MATCH(auditd.log.addr, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.0/8", "::1/128")
@@ -46,7 +46,7 @@ query: |
       destination_ips = VALUES(auditd.log.addr),
       destination_ports = VALUES(auditd.log.addr),
       connecting_processes = VALUES(process.name)
-    BY host.name, user.name, bucket = DATE_TRUNC(15 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE connection_count >= 3 OR unique_destinations >= 2
   | EVAL risk_score = (connection_count * 10) + (unique_destinations * 20)
   | WHERE risk_score >= 40

@@ -47,7 +47,7 @@ query: |
       logon_processes = VALUES(logon_process),
       first_logon = MIN(@timestamp),
       last_logon = MAX(@timestamp)
-    BY source_user, source_ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
+    BY agent_id, source_user, source_ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE unique_hosts >= 5
   | EVAL 
       logon_rate = ROUND(unique_hosts * 60.0 / DATE_DIFF("seconds", first_logon, last_logon), 2),

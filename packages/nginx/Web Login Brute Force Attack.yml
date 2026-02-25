@@ -35,7 +35,7 @@ query: |
       success_count = SUM(CASE(is_success == true, 1, 0)),
       unique_paths = COUNT_DISTINCT(event.original),
       login_paths = VALUES(event.original)
-    BY source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE failure_count >= 10
   | EVAL attack_type = CASE(
       success_count >= 1 AND failure_count >= 20, "Successful-After-BruteForce",

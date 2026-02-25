@@ -16,10 +16,10 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-audit*
+  FROM logs-updive.audit*
   | WHERE event.dataset == "auditd.log"
     AND event.action IN ("opened-file", "changed-file-attributes-of",
                           "write", "truncated-file", "renamed",
@@ -48,7 +48,7 @@ query: |
       actors             = VALUES(user.name),
       processes_used     = VALUES(process.name),
       change_types       = VALUES(event.action)
-    BY host.name,
+    BY agent_id, host.name,
        user.name,
        bucket = DATE_TRUNC(5 minutes, @timestamp)
   | EVAL severity_level = CASE(
@@ -63,7 +63,7 @@ query: |
       unique_files >= 2,  55,
       40
     )
-  | KEEP bucket, host.name, user.name, file_changes,
+  | KEEP agent_id, bucket, host.name, user.name, file_changes,
          unique_files, modified_files, actors, processes_used,
          change_types, severity_level, risk_score
   | SORT risk_score DESC

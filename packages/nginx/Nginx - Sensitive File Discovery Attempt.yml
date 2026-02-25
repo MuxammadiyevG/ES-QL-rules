@@ -20,7 +20,7 @@ query: |
   | STATS
       attempt_count = COUNT(*),
       requested_files = VALUES(url.original)
-    BY source.ip
+    BY agent_id, source.ip
   | WHERE attempt_count >= 1
   | KEEP agent_id, source.ip, attempt_count, requested_files
   | SORT attempt_count DESC

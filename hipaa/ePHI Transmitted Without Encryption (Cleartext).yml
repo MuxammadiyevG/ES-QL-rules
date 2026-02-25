@@ -48,7 +48,7 @@ query: |
           destinations = VALUES(event.original),
           data_volume_mb = SUM(event.original) / 1048576,
           urls = VALUES(event.original)
-    BY event.original, event.original
+    BY agent_id, event.original, event.original
   | WHERE cleartext_transmissions > 0
   | EVAL risk_score = CASE(
       protocols IN ("http", "ftp"), 100,

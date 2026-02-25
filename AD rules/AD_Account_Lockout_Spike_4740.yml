@@ -1,0 +1,50 @@
+rule_id: 06f19bdd-2f2e-46b7-ab8f-a662afd05667
+name: AD Account Lockout Spike on Domain Controller (4740)
+description: |
+  Ushbu qoida credential access va brute-force faoliyatiga oid bo'lib, lockout hodisalarining keskin oshishini aniqlaydi.
+  Ko'p sonli lockout odatda password spray yoki noto'g'ri autentikatsiya kampaniyasini bildiradi; bu AD xizmatlarida uzilish va keyingi buzilish ehtimolini oshiradi.
+  Qonuniy holatlar: noto'g'ri parol bilan ishlayotgan servislar, eskirgan scheduled task credentiallari yoki ommaviy parol almashinuvi.
+  SOC triage bosqichlari:
+  - `actor`/`target_user` kombinatsiyasi va lockout qilingan akkauntlarni aniqlang.
+  - Tegishli change ticket (masalan, parol rotatsiyasi) mavjudligini tekshiring.
+  - `src_ip` bo'yicha hujum manbasini, subnet va host kontekstini tekshiring.
+  - Lockout bo'lgan akkauntlarning guruh a'zoligi, ayniqsa privileged rollarni tekshiring.
+  - Hujum tasdiqlansa manba IP ni bloklash, vaqtinchalik conditional access qo'llash va ta'sirlangan akkauntlarni reset qilishni boshlang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  | WHERE event.code == "4740"
+  | STATS lockout_count = COUNT(*), unique_targets = COUNT_DISTINCT(target_user) BY agent_id, hostn, src_ip
+  | WHERE lockout_count >= 10 OR unique_targets >= 6
+  | EVAL dyn_risk = CASE(lockout_count >= 30 OR unique_targets >= 15, 88, lockout_count >= 20 OR unique_targets >= 10, 80, 70)
+  | KEEP agent_id, hostn, src_ip, lockout_count, unique_targets, dyn_risk
+  | SORT dyn_risk DESC, lockout_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - AD
+  - Account Lifecycle
+  - Credential Access
+severity: high
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1110/003/"
+
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]
+mitre_attack:
+  TA0006:
+    T1110: [T1110.003]

@@ -36,7 +36,7 @@ query: |
       originals = VALUES(raw),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY 
-      host.name, 
+      agent_id, host.name, 
       cmdlet, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1

@@ -44,7 +44,7 @@ query: |
       access_masks = VALUES(access_mask),
       first_access = MIN(@timestamp),
       last_access = MAX(@timestamp)
-    BY winlog.computer_name, accessing_user, source_ip, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, accessing_user, source_ip, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE access_count >= 1
   | KEEP agent_id, bucket, winlog.computer_name, accessing_user, source_ip, access_count, unique_shares,
       shares_accessed, access_masks, first_access, last_access

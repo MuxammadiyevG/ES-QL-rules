@@ -7,10 +7,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* auditd PATH type events with execution */
   | WHERE event.action RLIKE "(?i)(executed|exec)" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "start")
   /* selection: files in hidden directories */
@@ -21,10 +21,10 @@ query: |
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
       file_paths = VALUES(file.path),
-      parent_processes = VALUES(process.parent.name),
+      parent_processes = VALUES(process.parent.pid),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, file_paths, parent_processes, hosts, raw_samples
   | SORT event_count DESC

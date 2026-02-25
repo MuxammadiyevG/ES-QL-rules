@@ -1,0 +1,51 @@
+rule_id: 1573ea17-6924-4b41-9093-d11d01ed452a
+name: AD Disabled Account Enabled on Domain Controller (4722)
+description: |
+  Ushbu qoida persistence va privilege escalation bilan bog'liq bo'lib, oldin o'chirilgan akkauntning qayta yoqilishini kuzatadi.
+  Hujumchi yashirin yoki unutilgan akkauntni qayta faollashtirib AD ichida sezilmas kirish kanalini tiklashi mumkin, bu esa keyingi lateral movement uchun xavf tug'diradi.
+  Qonuniy sabablar sifatida helpdesk tiklash ishlari, vaqtinchalik blokdan chiqarish yoki IAM sinxronizatsiyasi uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `actor` va `target_user` ni aniqlang.
+  - Ushbu enable amali bo'yicha change ticket/deployment asosini tekshiring.
+  - `src_ip` manzilining qayerdan kelganini va u administrativ host ekanini tasdiqlang.
+  - Faollashgan akkauntning mavjud guruh a'zoligini, ayniqsa Tier-0 guruhlarini tekshiring.
+  - Shubhali bo'lsa akkauntni qayta disable qiling, parolni reset qiling va kirishlarni cheklang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  | WHERE event.code == "4722"
+  | WHERE actor IS NOT NULL
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | STATS event_count = COUNT(*) BY agent_id, hostn, actor, target_user, src_ip
+  | WHERE event_count >= 1
+  | EVAL dyn_risk = CASE(target_user RLIKE "(?i)^(Administrator|krbtgt|svc_.*|backup_.*|sqlsvc.*)$", 92, event_count >= 3, 85, 78)
+  | KEEP agent_id, hostn, actor, target_user, src_ip, event_count, dyn_risk
+  | SORT dyn_risk DESC, event_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - AD
+  - Account Lifecycle
+  - Privilege Escalation
+severity: high
+risk_score: 78
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+mitre_attack:
+  TA0003:
+    T1098: []
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

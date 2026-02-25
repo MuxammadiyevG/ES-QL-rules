@@ -1,0 +1,226 @@
+rule_id: a7c3e9f2-1b45-4d8a-9c6e-2f0b8d4a7e3c
+name: Windows Credential Dumping Detected (SAM / NTDS / DCSync / Suspicious Privilege)
+description: |
+  Ushbu qoida credential access kategoriyasiga oid bo'lib, Windows tizimlarida credentials dump qilish
+  urinishlarini aniqlaydi. SAM/SECURITY/SYSTEM registry dump, NTDS.dit fayl kirish, DCSync replication
+  huquqlari va SeDebugPrivilege imtiyozlari orqali amalga oshiriladigan hujumlarni qamrab oladi.
+
+  Qonuniy holatlar:
+  - EDR/AV agentlarining memory scan operatsiyalari
+  - Muayyan backup toollarning SYSTEM hive kirishi
+  - Administratorning manual diagnostika jarayonlari (juda kam, tasdiqlash kerak)
+
+  SOC triage bosqichlari:
+  - `actor` kim — privileged account yoki xizmat akkounti?
+  - `sample_target` — qaysi ob'ektga kirilgan: SAM, SECURITY, SYSTEM, NTDS.dit?
+  - `sample_access_mask` — 0x1010 yoki 0x1fffff LSASS dump uchun klassik maskalar.
+  - DCSync bo'lsa: `dcsync_hits > 0` — DC bo'lmagan hostdan kelayotganini tekshiring.
+  - `actor_logon_id` orqali 4624 logon event bilan bog'lang (qaysi session?).
+  - Bir xil hostda 4624 Type 3/10 (lateral movement) bilan kombinatsiyasini solishtiring.
+  - Tasdiqlansa: hostni izolyatsiya qiling, ta'sirlangan akkauntlarni reset qiling, IR boshlang.
+
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel IN ("Security", "Microsoft-Windows-Sysmon/Operational")
+
+  // === FIELD NORMALIZATION ===
+  | EVAL hostn          = winlog.computer_name
+  | EVAL actor          = COALESCE(winlog.event_data.SubjectUserName, winlog.user.name, "-")
+  | EVAL actor_domain   = COALESCE(winlog.event_data.SubjectDomainName, winlog.user.domain, "-")
+  | EVAL actor_sid      = COALESCE(winlog.event_data.SubjectUserSid, winlog.user.identifier, "-")
+  | EVAL actor_logon_id = COALESCE(winlog.event_data.SubjectLogonId, "-")
+  | EVAL target_obj     = COALESCE(winlog.event_data.ObjectName, "-")
+  | EVAL access_mask    = COALESCE(winlog.event_data.AccessMask, "-")
+  | EVAL object_type    = COALESCE(winlog.event_data.ObjectType, "-")
+  | EVAL priv_list      = COALESCE(winlog.event_data.PrivilegeList, "-")
+  | EVAL event_code     = winlog.event_id
+
+  // === SIGNAL 1: SAM / SECURITY / SYSTEM Registry Dump ===
+  // Event 4656 = Handle Request, 4663 = Object Access
+  // Triggers: reg save SAM, reg save SECURITY, reg save SYSTEM
+  | EVAL is_sam_dump = CASE(
+      event_code IN ("4656", "4663")
+      AND target_obj RLIKE "(?i).*\\\\(SAM|SECURITY|SYSTEM)$",
+      1, 0
+    )
+
+  // === SIGNAL 2: NTDS.dit File Access ===
+  // Event 4656, 4663
+  // Triggers: ntdsutil ifm, vssadmin shadow + robocopy, esentutl
+  | EVAL is_ntds_access = CASE(
+      event_code IN ("4656", "4663")
+      AND target_obj RLIKE "(?i).*(ntds\\.dit|ntds\\\\ntds\\.dit).*",
+      1, 0
+    )
+
+  // === SIGNAL 3: DCSync — Directory Replication Rights ===
+  // Event 4662 — DS Object Access
+  // GUIDs:
+  //   1131f6aa = DS-Replication-Get-Changes
+  //   1131f6ad = DS-Replication-Get-Changes-All  (eng xavfli)
+  //   89e95b76 = DS-Replication-Get-Changes-In-Filtered-Set
+  | EVAL is_dcsync = CASE(
+      event_code == "4662"
+      AND object_type RLIKE "(?i).*domainDNS.*"
+      AND (
+        target_obj RLIKE "(?i).*(1131f6aa|1131f6ad|89e95b76).*"
+        OR priv_list RLIKE "(?i).*(1131f6aa|1131f6ad|89e95b76).*"
+      ),
+      1, 0
+    )
+
+  // === SIGNAL 4: SeDebugPrivilege / SeTcbPrivilege (4672) ===
+  // Bu imtiyozlar LSASS dump, token manipulation uchun talab qilinadi
+  // Faqat non-system akkauntlar uchun alert (SYSTEM akkauntlar normal ishlatadi)
+  | EVAL is_debug_priv = CASE(
+      event_code == "4672"
+      AND priv_list RLIKE "(?i).*(SeDebugPrivilege|SeTcbPrivilege).*"
+      AND actor NOT RLIKE "(?i).*(SYSTEM|LOCAL SERVICE|NETWORK SERVICE|DWM-|UMFD-).*"
+      AND actor != "-",
+      1, 0
+    )
+
+  // === SIGNAL 5: Sensitive Privilege Use (4673) ===
+  // SeDebugPrivilege ishlatilganda — process o'qish/yozish
+  | EVAL is_sensitive_priv = CASE(
+      event_code == "4673"
+      AND priv_list RLIKE "(?i).*(SeDebugPrivilege|SeTcbPrivilege|SeBackupPrivilege).*"
+      AND actor NOT RLIKE "(?i).*(SYSTEM|LOCAL SERVICE|NETWORK SERVICE).*",
+      1, 0
+    )
+
+  // === SIGNAL 6: Audit Policy Change — Covering Tracks (4719) ===
+  // Attacker audit loglarni o'chirmoqchi bo'ladi
+  | EVAL is_audit_change = CASE(
+      event_code == "4719"
+      AND winlog.event_data.AuditPolicyChanges RLIKE "(?i).*(removed|No Auditing).*",
+      1, 0
+    )
+
+  // === JAMI SIGNAL SCORE ===
+  | EVAL dump_score = is_sam_dump
+                    + is_ntds_access
+                    + is_dcsync
+                    + is_debug_priv
+                    + is_sensitive_priv
+                    + is_audit_change
+
+  // === FAQAT HIT BO'LGAN EVENTLAR ===
+  | WHERE dump_score >= 1
+
+  // === AGGREGATION ===
+  | STATS
+      total_events         = COUNT(*),
+      sam_dump_hits        = SUM(is_sam_dump),
+      ntds_hits            = SUM(is_ntds_access),
+      dcsync_hits          = SUM(is_dcsync),
+      debug_priv_hits      = SUM(is_debug_priv),
+      sensitive_priv_hits  = SUM(is_sensitive_priv),
+      audit_change_hits    = SUM(is_audit_change),
+      unique_objects       = COUNT_DISTINCT(target_obj),
+      unique_actors        = COUNT_DISTINCT(actor),
+      sample_target        = MAX(target_obj),
+      sample_access_mask   = MAX(access_mask),
+      sample_priv          = MAX(priv_list)
+    BY agent_id,hostn, actor, actor_domain, actor_sid, actor_logon_id
+
+  // === DYNAMIC RISK SCORE ===
+  | EVAL dyn_risk = CASE(
+
+      // Eng yuqori: DCSync + SAM/NTDS bir vaqtda — to'liq domain compromise
+      dcsync_hits >= 1 AND (sam_dump_hits + ntds_hits) >= 1,
+      99,
+
+      // DCSync + NTDS alohida — domain hash extraction
+      ntds_hits >= 1 AND sensitive_priv_hits >= 1,
+      97,
+
+      // Faqat DCSync — replication hujumi
+      dcsync_hits >= 1,
+      95,
+
+      // NTDS.dit kirish — offline crack imkoniyati
+      ntds_hits >= 1,
+      92,
+
+      // SAM dump + debug privilege — local credential harvest
+      sam_dump_hits >= 1 AND (debug_priv_hits + sensitive_priv_hits) >= 1,
+      88,
+
+      // Audit o'chirish + istalgan dump signal — tracks covering
+      audit_change_hits >= 1 AND (sam_dump_hits + ntds_hits + dcsync_hits) >= 1,
+      85,
+
+      // Debug privilege + sensitive priv — tool ishga tushirish holati
+      debug_priv_hits >= 1 AND sensitive_priv_hits >= 1,
+      80,
+
+      // Faqat SAM dump
+      sam_dump_hits >= 1,
+      75,
+
+      // Faqat debug/sensitive privilege
+      (debug_priv_hits + sensitive_priv_hits) >= 1,
+      68,
+
+      // Faqat audit o'zgartirish
+      audit_change_hits >= 1,
+      60
+    )
+
+  // === FINAL OUTPUT ===
+  | KEEP
+      agent_id,
+      hostn,
+      actor,
+      actor_domain,
+      actor_sid,
+      actor_logon_id,
+      total_events,
+      sam_dump_hits,
+      ntds_hits,
+      dcsync_hits,
+      debug_priv_hits,
+      sensitive_priv_hits,
+      audit_change_hits,
+      unique_objects,
+      unique_actors,
+      sample_target,
+      sample_access_mask,
+      sample_priv,
+      dyn_risk
+  | SORT dyn_risk DESC, total_events DESC
+  | LIMIT 200
+
+enabled: false
+tags:
+  - Credential Dumping
+  - SAM
+  - NTDS
+  - DCSync
+  - SeDebugPrivilege
+  - Credential Access
+  - Windows
+  - T1003
+severity: critical
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1003/"
+  - "https://attack.mitre.org/techniques/T1003/002/"
+  - "https://attack.mitre.org/techniques/T1003/003/"
+  - "https://attack.mitre.org/techniques/T1003/006/"
+  - "https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventid=4662"
+  - "https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventid=4673"
+nist: ["AC-6", "AU-12", "SI-3", "IR-4", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2", "10.6.1"]
+gdpr: ["32.1.a", "32.1.b"]
+mitre_attack:
+  TA0006:
+    T1003: ["T1003.002", "T1003.003", "T1003.006"]

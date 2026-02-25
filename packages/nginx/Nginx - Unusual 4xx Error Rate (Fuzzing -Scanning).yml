@@ -14,7 +14,7 @@ query: |
       error_count = COUNT(*),
       unique_pages = COUNT_DISTINCT(url.original),
       status_codes = VALUES(http.response.status_code)
-    BY source.ip, bucket = DATE_TRUNC(2 minutes, @timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(2 minutes, @timestamp)
   | WHERE error_count >= 40 AND unique_pages >= 20
   | SORT error_count DESC
 severity: medium

@@ -9,10 +9,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* auditd execve telemetry */
   | WHERE event.action == "execve" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "process_started")
   /* selection: --cpu-priority flag in any argument position */
@@ -23,10 +23,10 @@ query: |
       processes = VALUES(process.name),
       command_lines = VALUES(process.command_line),
       executables = VALUES(process.executable),
-      parent_processes = VALUES(process.parent.name),
+      parent_processes = VALUES(process.parent.pid),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, executables, parent_processes, hosts, raw_samples
   | SORT event_count DESC

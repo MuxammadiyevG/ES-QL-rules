@@ -38,7 +38,7 @@ query: |
       child_cmdlines = VALUES(winlog.event_data.CommandLine),
       pids = VALUES(winlog.event_data.ProcessPid)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

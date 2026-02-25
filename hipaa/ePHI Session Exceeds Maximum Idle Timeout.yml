@@ -36,7 +36,7 @@ query: |
   | STATS session_duration_min = MAX(event.original) / 60000000, 
           last_activity = MAX(@timestamp),
           sessions = VALUES(event.code)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE session_duration_min > 15  
   | EVAL risk_score = CASE(
       session_duration_min > 60, 90,  

@@ -15,7 +15,7 @@ query: |
   | WHERE NOT http.version IN ("1.1", "2.0", "3.0")
   | STATS
       legacy_count = COUNT(*)
-    BY source.ip, http.version, user_agent.original
+    BY agent_id, source.ip, http.version, user_agent.original
   | WHERE legacy_count >= 5
 severity: low
 risk_score: 20

@@ -11,7 +11,7 @@ name: "PHI Used for Marketing/Research Without Patient Authorization"
 description: |
   Identifies use of Protected Health Information for marketing communications,
   research studies, or sale of PHI without valid patient authorization as required
-  by HIPAA §164.508. Detects patient data exports to marketing platforms (Mailchimp,
+  by agent_id, HIPAA §164.508. Detects patient data exports to marketing platforms (Mailchimp,
   Salesforce), PHI queries by research databases without IRB protocol numbers,
   commercial data sharing agreements, or targeted advertising using health data.
   Marketing and research use of PHI requires explicit written authorization except
@@ -45,7 +45,7 @@ query: |
           use_types = VALUES(event.action),
           systems = VALUES(event.original),
           destinations = VALUES(event.original)
-    BY host.name, user.name
+    BY agent_id, host.name, user.name
   | WHERE unauthorized_uses > 0
   | EVAL risk_score = CASE(
       use_types RLIKE "(?i).*(sale|sell|commercial).*", 100,

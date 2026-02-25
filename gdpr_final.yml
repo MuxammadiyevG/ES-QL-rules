@@ -1,0 +1,2230 @@
+# GDPR (General Data Protection Regulation) - EU Regulation 2016/679
+# Effective Date: May 25, 2018
+# Scope: Processing of personal data of EU/EEA data subjects
+
+5:
+  chapter: 'I - General Provisions'
+  name: Principles relating to processing of personal data
+  
+5.1.a:
+  article: '5'
+  name: Lawfulness, fairness and transparency
+  description: "Personal data shall be processed lawfully, fairly and in a transparent manner"
+
+5.1.b:
+  article: '5'
+  name: Purpose limitation
+  description: "Collected for specified, explicit and legitimate purposes and not further processed incompatibly"
+
+5.1.c:
+  article: '5'
+  name: Data minimisation
+  description: "Adequate, relevant and limited to what is necessary in relation to the purposes"
+
+5.1.d:
+  article: '5'
+  name: Accuracy
+  description: "Accurate and, where necessary, kept up to date; inaccurate data erased or rectified"
+
+5.1.e:
+  article: '5'
+  name: Storage limitation
+  description: "Kept in a form which permits identification for no longer than necessary"
+
+5.1.f:
+  article: '5'
+  name: Integrity and confidentiality
+  description: "Processed in a manner ensuring appropriate security including protection against unauthorised or unlawful processing"
+
+5.2:
+  article: '5'
+  name: Accountability
+  description: "Controller shall be responsible for and able to demonstrate compliance with principles"
+
+6:
+  chapter: 'II - Principles'
+  name: Lawfulness of processing
+
+6.1.a:
+  article: '6'
+  name: Consent
+  description: "Data subject has given consent to the processing for one or more specific purposes"
+
+6.1.b:
+  article: '6'
+  name: Contract
+  description: "Processing is necessary for the performance of a contract"
+
+6.1.c:
+  article: '6'
+  name: Legal obligation
+  description: "Processing is necessary for compliance with a legal obligation"
+
+6.1.d:
+  article: '6'
+  name: Vital interests
+  description: "Processing is necessary to protect vital interests of the data subject"
+
+6.1.e:
+  article: '6'
+  name: Public interest
+  description: "Processing is necessary for the performance of a task carried out in the public interest"
+
+6.1.f:
+  article: '6'
+  name: Legitimate interests
+  description: "Processing is necessary for legitimate interests pursued by controller or third party"
+
+7:
+  chapter: 'II - Principles'
+  name: Conditions for consent
+
+7.1:
+  article: '7'
+  name: Demonstrate consent
+  description: "Controller shall be able to demonstrate that data subject has consented"
+
+7.2:
+  article: '7'
+  name: Intelligible and accessible
+  description: "Request for consent shall be presented in intelligible and easily accessible form"
+
+7.3:
+  article: '7'
+  name: Right to withdraw
+  description: "Data subject shall have the right to withdraw consent at any time"
+
+7.4:
+  article: '7'
+  name: Freely given assessment
+  description: "Account shall be taken of whether performance of contract is conditional on consent"
+
+8:
+  chapter: 'II - Principles'
+  name: Conditions applicable to child's consent
+
+8.1:
+  article: '8'
+  name: Age of consent
+  description: "Processing of child's data lawful where child is at least 16 years old (Member States may lower to 13)"
+
+8.2:
+  article: '8'
+  name: Parental consent
+  description: "Where child is below age, processing lawful only if consent given by holder of parental responsibility"
+
+9:
+  chapter: 'II - Principles'
+  name: Processing of special categories of personal data
+
+9.1:
+  article: '9'
+  name: Prohibition of sensitive data processing
+  description: "Processing of personal data revealing racial/ethnic origin, political opinions, religious beliefs, trade union membership, genetic/biometric data, health data, or sex life/sexual orientation prohibited"
+
+9.2.a:
+  article: '9'
+  name: Explicit consent exception
+  description: "Data subject has given explicit consent to processing for one or more specified purposes"
+
+9.2.b:
+  article: '9'
+  name: Employment exception
+  description: "Processing necessary for carrying out obligations in field of employment and social security law"
+
+9.2.c:
+  article: '9'
+  name: Vital interests exception
+  description: "Processing necessary to protect vital interests where data subject physically or legally incapable of giving consent"
+
+9.2.d:
+  article: '9'
+  name: Legitimate activities exception
+  description: "Processing carried out by foundation, association or non-profit body with political, philosophical, religious or trade union aim"
+
+9.2.e:
+  article: '9'
+  name: Made public exception
+  description: "Processing relates to personal data manifestly made public by the data subject"
+
+9.2.f:
+  article: '9'
+  name: Legal claims exception
+  description: "Processing necessary for establishment, exercise or defence of legal claims"
+
+9.2.g:
+  article: '9'
+  name: Substantial public interest exception
+  description: "Processing necessary for reasons of substantial public interest on basis of Union or Member State law"
+
+9.2.h:
+  article: '9'
+  name: Health and social care exception
+  description: "Processing necessary for purposes of preventive or occupational medicine, medical diagnosis, provision of health or social care"
+
+9.2.i:
+  article: '9'
+  name: Public health exception
+  description: "Processing necessary for reasons of public interest in area of public health"
+
+9.2.j:
+  article: '9'
+  name: Archiving exception
+  description: "Processing necessary for archiving purposes in public interest, scientific or historical research, or statistical purposes"
+
+12:
+  chapter: 'III - Rights of Data Subject'
+  name: Transparent information, communication and modalities
+
+12.1:
+  article: '12'
+  name: Transparent and accessible information
+  description: "Controller shall take measures to provide information in concise, transparent, intelligible and easily accessible form"
+
+12.2:
+  article: '12'
+  name: Facilitate rights exercise
+  description: "Controller shall facilitate exercise of data subject rights"
+
+12.3:
+  article: '12'
+  name: Response deadline
+  description: "Controller shall provide information without undue delay and in any event within one month of receipt of request"
+
+12.4:
+  article: '12'
+  name: Fee for excessive requests
+  description: "Controller may charge reasonable fee for manifestly unfounded or excessive requests"
+
+12.5:
+  article: '12'
+  name: Refusal requirements
+  description: "Where controller does not take action, shall inform data subject of reasons and possibility of lodging complaint"
+
+13:
+  chapter: 'III - Rights of Data Subject'
+  name: Information to be provided where data collected from data subject
+
+13.1.a:
+  article: '13'
+  name: Identity of controller
+  description: "Identity and contact details of controller and data protection officer"
+
+13.1.b:
+  article: '13'
+  name: Purposes of processing
+  description: "Purposes of processing and legal basis for processing"
+
+13.1.c:
+  article: '13'
+  name: Legitimate interests
+  description: "Legitimate interests pursued by controller or third party where applicable"
+
+13.1.d:
+  article: '13'
+  name: Recipients
+  description: "Recipients or categories of recipients of personal data"
+
+13.1.e:
+  article: '13'
+  name: International transfers
+  description: "Controller intends to transfer personal data to third country or international organisation"
+
+13.2.a:
+  article: '13'
+  name: Retention period
+  description: "Period for which personal data will be stored"
+
+13.2.b:
+  article: '13'
+  name: Rights information
+  description: "Existence of right to request access, rectification, erasure, restriction, objection, and data portability"
+
+13.2.c:
+  article: '13'
+  name: Consent withdrawal
+  description: "Right to withdraw consent at any time"
+
+13.2.d:
+  article: '13'
+  name: Complaint right
+  description: "Right to lodge complaint with supervisory authority"
+
+13.2.e:
+  article: '13'
+  name: Contractual requirement
+  description: "Whether provision of personal data is statutory or contractual requirement"
+
+13.2.f:
+  article: '13'
+  name: Automated decision-making
+  description: "Existence of automated decision-making including profiling and meaningful information about logic involved"
+
+14:
+  chapter: 'III - Rights of Data Subject'
+  name: Information where data not obtained from data subject
+
+14.1:
+  article: '14'
+  name: Information requirements for indirect collection
+  description: "Same as Article 13 plus source of personal data and whether it came from publicly accessible sources"
+
+14.3.a:
+  article: '14'
+  name: Provide information within reasonable period
+  description: "Within one month of obtaining data, at latest"
+
+14.3.b:
+  article: '14'
+  name: Provide information at first communication
+  description: "If data used for communication, at latest at time of first communication"
+
+14.3.c:
+  article: '14'
+  name: Provide information before disclosure
+  description: "If disclosure to another recipient envisaged, at latest when data first disclosed"
+
+15:
+  chapter: 'III - Rights of Data Subject'
+  name: Right of access by the data subject
+
+15.1:
+  article: '15'
+  name: Confirmation and access
+  description: "Data subject shall have right to obtain confirmation whether personal data are being processed and access to the data"
+
+15.3:
+  article: '15'
+  name: Copy of data
+  description: "Controller shall provide copy of personal data undergoing processing"
+
+16:
+  chapter: 'III - Rights of Data Subject'
+  name: Right to rectification
+
+16:
+  article: '16'
+  name: Rectification of inaccurate data
+  description: "Data subject shall have right to obtain rectification of inaccurate personal data and completion of incomplete data"
+
+17:
+  chapter: 'III - Rights of Data Subject'
+  name: Right to erasure (right to be forgotten)
+
+17.1.a:
+  article: '17'
+  name: No longer necessary
+  description: "Personal data no longer necessary in relation to purposes for which collected or processed"
+
+17.1.b:
+  article: '17'
+  name: Consent withdrawn
+  description: "Data subject withdraws consent and there is no other legal ground for processing"
+
+17.1.c:
+  article: '17'
+  name: Objection to processing
+  description: "Data subject objects to processing and there are no overriding legitimate grounds"
+
+17.1.d:
+  article: '17'
+  name: Unlawfully processed
+  description: "Personal data have been unlawfully processed"
+
+17.1.e:
+  article: '17'
+  name: Legal obligation
+  description: "Personal data have to be erased for compliance with legal obligation"
+
+17.1.f:
+  article: '17'
+  name: Child's consent
+  description: "Personal data collected in relation to offer of information society services to child"
+
+17.2:
+  article: '17'
+  name: Inform other controllers
+  description: "Where controller has made data public, shall inform other controllers to erase links, copies or replications"
+
+18:
+  chapter: 'III - Rights of Data Subject'
+  name: Right to restriction of processing
+
+18.1.a:
+  article: '18'
+  name: Accuracy contested
+  description: "Data subject contests accuracy of personal data for period enabling verification"
+
+18.1.b:
+  article: '18'
+  name: Unlawful processing
+  description: "Processing is unlawful and data subject opposes erasure and requests restriction instead"
+
+18.1.c:
+  article: '18'
+  name: No longer needed but required for legal claims
+  description: "Controller no longer needs data but required by data subject for legal claims"
+
+18.1.d:
+  article: '18'
+  name: Pending objection verification
+  description: "Data subject has objected to processing pending verification of legitimate grounds"
+
+20:
+  chapter: 'III - Rights of Data Subject'
+  name: Right to data portability
+
+20.1:
+  article: '20'
+  name: Receive and transmit data
+  description: "Right to receive personal data in structured, commonly used and machine-readable format and transmit to another controller"
+
+20.2:
+  article: '20'
+  name: Direct transmission
+  description: "Right to have data transmitted directly from one controller to another where technically feasible"
+
+21:
+  chapter: 'III - Rights of Data Subject'
+  name: Right to object
+
+21.1:
+  article: '21'
+  name: Object to processing
+  description: "Right to object at any time to processing based on public interest or legitimate interests"
+
+21.2:
+  article: '21'
+  name: Object to direct marketing
+  description: "Absolute right to object to processing for direct marketing purposes"
+
+21.3:
+  article: '21'
+  name: Inform about objection right
+  description: "Right to object shall be explicitly brought to attention of data subject at latest at first communication"
+
+22:
+  chapter: 'III - Rights of Data Subject'
+  name: Automated individual decision-making, including profiling
+
+22.1:
+  article: '22'
+  name: Right not to be subject to automated decisions
+  description: "Right not to be subject to decision based solely on automated processing producing legal or similarly significant effects"
+
+22.2.a:
+  article: '22'
+  name: Necessary for contract exception
+  description: "Automated decision necessary for entering into or performance of contract"
+
+22.2.b:
+  article: '22'
+  name: Legal authorization exception
+  description: "Authorized by Union or Member State law to which controller is subject"
+
+22.2.c:
+  article: '22'
+  name: Explicit consent exception
+  description: "Based on data subject's explicit consent"
+
+22.3:
+  article: '22'
+  name: Right to human intervention
+  description: "Right to obtain human intervention, express point of view and contest decision"
+
+25:
+  chapter: 'IV - Controller and Processor'
+  name: Data protection by design and by default
+
+25.1:
+  article: '25'
+  name: Data protection by design
+  description: "Implement appropriate technical and organisational measures designed to implement data protection principles effectively"
+
+25.2:
+  article: '25'
+  name: Data protection by default
+  description: "Ensure that by default only personal data necessary for each specific purpose are processed"
+
+26:
+  chapter: 'IV - Controller and Processor'
+  name: Joint controllers
+
+26.1:
+  article: '26'
+  name: Joint responsibility arrangement
+  description: "Where two or more controllers jointly determine purposes and means, they shall determine respective responsibilities by arrangement"
+
+26.2:
+  article: '26'
+  name: Essence of arrangement available
+  description: "Essence of arrangement shall be made available to data subject"
+
+28:
+  chapter: 'IV - Controller and Processor'
+  name: Processor
+
+28.1:
+  article: '28'
+  name: Process only on documented instructions
+  description: "Processor shall process personal data only on documented instructions from controller"
+
+28.2:
+  article: '28'
+  name: Ensure processor compliance
+  description: "Controller shall use only processors providing sufficient guarantees"
+
+28.3:
+  article: '28'
+  name: Binding contract required
+  description: "Processing by processor shall be governed by contract or legal act binding processor to controller"
+
+28.3.a:
+  article: '28'
+  name: Process only on instructions
+  description: "Processes data only on documented instructions"
+
+28.3.b:
+  article: '28'
+  name: Ensure confidentiality
+  description: "Ensures persons authorised to process data have committed to confidentiality"
+
+28.3.c:
+  article: '28'
+  name: Implement security measures
+  description: "Takes all measures required pursuant to Article 32"
+
+28.3.d:
+  article: '28'
+  name: Respect sub-processor conditions
+  description: "Respects conditions for engaging another processor"
+
+28.3.e:
+  article: '28'
+  name: Assist with data subject rights
+  description: "Assists controller in ensuring compliance with data subject rights"
+
+28.3.f:
+  article: '28'
+  name: Assist with security obligations
+  description: "Assists controller in compliance with Articles 32-36"
+
+28.3.g:
+  article: '28'
+  name: Delete or return data
+  description: "Deletes or returns all personal data after end of provision of services"
+
+28.3.h:
+  article: '28'
+  name: Make available information for audits
+  description: "Makes available all information necessary to demonstrate compliance and allow for audits"
+
+30:
+  chapter: 'IV - Controller and Processor'
+  name: Records of processing activities
+
+30.1:
+  article: '30'
+  name: Controller record keeping
+  description: "Controller shall maintain record of processing activities under its responsibility"
+
+30.1.a:
+  article: '30'
+  name: Record controller details
+  description: "Name and contact details of controller, DPO and representative"
+
+30.1.b:
+  article: '30'
+  name: Record purposes
+  description: "Purposes of the processing"
+
+30.1.c:
+  article: '30'
+  name: Record categories
+  description: "Categories of data subjects and personal data"
+
+30.1.d:
+  article: '30'
+  name: Record recipients
+  description: "Categories of recipients to whom data disclosed"
+
+30.1.e:
+  article: '30'
+  name: Record transfers
+  description: "Transfers of personal data to third countries"
+
+30.1.f:
+  article: '30'
+  name: Record retention
+  description: "Envisaged time limits for erasure of different categories"
+
+30.1.g:
+  article: '30'
+  name: Record security measures
+  description: "General description of technical and organisational security measures"
+
+30.2:
+  article: '30'
+  name: Processor record keeping
+  description: "Processor shall maintain record of categories of processing activities"
+
+32:
+  chapter: 'IV - Controller and Processor'
+  name: Security of processing
+
+32.1:
+  article: '32'
+  name: Implement appropriate security
+  description: "Implement appropriate technical and organisational measures to ensure security appropriate to risk"
+
+32.1.a:
+  article: '32'
+  name: Pseudonymisation and encryption
+  description: "Pseudonymisation and encryption of personal data"
+
+32.1.b:
+  article: '32'
+  name: Ongoing confidentiality and integrity
+  description: "Ability to ensure ongoing confidentiality, integrity, availability and resilience of processing systems"
+
+32.1.c:
+  article: '32'
+  name: Restore availability
+  description: "Ability to restore availability and access to data in timely manner after incident"
+
+32.1.d:
+  article: '32'
+  name: Test and evaluate effectiveness
+  description: "Process for regularly testing, assessing and evaluating effectiveness of technical and organisational measures"
+
+32.2:
+  article: '32'
+  name: Assess risk
+  description: "In assessing security, account taken of risks from accidental or unlawful destruction, loss, alteration, unauthorised disclosure or access"
+
+32.4:
+  article: '32'
+  name: Adherence to codes and certification
+  description: "Adherence to approved code of conduct or certification mechanism may be used to demonstrate compliance"
+
+33:
+  chapter: 'IV - Controller and Processor'
+  name: Notification of personal data breach to supervisory authority
+
+33.1:
+  article: '33'
+  name: Notify within 72 hours
+  description: "Controller shall notify supervisory authority without undue delay and where feasible not later than 72 hours after becoming aware"
+
+33.2:
+  article: '33'
+  name: Processor notification to controller
+  description: "Processor shall notify controller without undue delay after becoming aware of breach"
+
+33.3:
+  article: '33'
+  name: Breach notification contents
+  description: "Notification shall describe nature of breach, categories and approximate numbers affected, likely consequences, and measures taken"
+
+33.5:
+  article: '33'
+  name: Document all breaches
+  description: "Controller shall document all personal data breaches"
+
+34:
+  chapter: 'IV - Controller and Processor'
+  name: Communication of personal data breach to data subject
+
+34.1:
+  article: '34'
+  name: Communicate high-risk breaches
+  description: "When breach likely to result in high risk to rights and freedoms, controller shall communicate to data subject without undue delay"
+
+34.2:
+  article: '34'
+  name: Clear and plain language
+  description: "Communication shall describe nature of breach in clear and plain language"
+
+34.3:
+  article: '34'
+  name: Exceptions to communication
+  description: "Not required if: appropriate technical protection applied, subsequent measures ensure high risk no longer likely, or disproportionate effort"
+
+35:
+  chapter: 'IV - Controller and Processor'
+  name: Data protection impact assessment
+
+35.1:
+  article: '35'
+  name: DPIA for high risk processing
+  description: "Where processing likely to result in high risk, controller shall carry out assessment of impact on protection of personal data"
+
+35.3:
+  article: '35'
+  name: DPIA required for
+  description: "Systematic evaluation of personal aspects, large scale processing of special categories, or systematic monitoring of publicly accessible area"
+
+35.7:
+  article: '35'
+  name: DPIA shall contain
+  description: "Systematic description of processing and purposes, assessment of necessity and proportionality, assessment of risks, and measures to address risks"
+
+36:
+  chapter: 'IV - Controller and Processor'
+  name: Prior consultation
+
+36.1:
+  article: '36'
+  name: Consult supervisory authority
+  description: "Controller shall consult supervisory authority prior to processing where DPIA indicates high risk absent measures to mitigate"
+
+37:
+  chapter: 'IV - Controller and Processor'
+  name: Designation of data protection officer
+
+37.1:
+  article: '37'
+  name: DPO appointment required
+  description: "Controller and processor shall designate DPO where: public authority, core activities require regular systematic monitoring, or large scale processing of special categories"
+
+37.5:
+  article: '37'
+  name: DPO designation based on qualities
+  description: "Designated on basis of professional qualities and knowledge of data protection law and practices"
+
+37.7:
+  article: '37'
+  name: Publish DPO contact details
+  description: "Controller and processor shall publish contact details of DPO and communicate to supervisory authority"
+
+38:
+  chapter: 'IV - Controller and Processor'
+  name: Position of data protection officer
+
+38.1:
+  article: '38'
+  name: Involve DPO in all data protection matters
+  description: "Controller and processor shall ensure DPO involved properly and in timely manner in all issues relating to protection of personal data"
+
+38.2:
+  article: '38'
+  name: Support DPO performance
+  description: "Support DPO in performing tasks by providing resources and access to data and processing operations"
+
+38.3:
+  article: '38'
+  name: No instructions regarding tasks
+  description: "DPO shall not receive instructions regarding exercise of tasks and shall not be dismissed for performing tasks"
+
+39:
+  chapter: 'IV - Controller and Processor'
+  name: Tasks of data protection officer
+
+39.1.a:
+  article: '39'
+  name: Inform and advise
+  description: "Inform and advise controller or processor and employees of obligations under GDPR"
+
+39.1.b:
+  article: '39'
+  name: Monitor compliance
+  description: "Monitor compliance with GDPR and controller's data protection policies"
+
+39.1.c:
+  article: '39'
+  name: Advise on DPIA
+  description: "Provide advice where requested regarding data protection impact assessment"
+
+39.1.d:
+  article: '39'
+  name: Cooperate with supervisory authority
+  description: "Cooperate with supervisory authority"
+
+39.1.e:
+  article: '39'
+  name: Act as contact point
+  description: "Act as contact point for supervisory authority on processing issues"
+
+44:
+  chapter: 'V - Transfers'
+  name: General principle for transfers
+
+44:
+  article: '44'
+  name: Transfers subject to other provisions
+  description: "Transfer to third country or international organisation only if controller and processor comply with conditions in Chapter V"
+
+45:
+  chapter: 'V - Transfers'
+  name: Transfers on basis of adequacy decision
+
+45.1:
+  article: '45'
+  name: Transfer to adequate country
+  description: "Transfer may take place where Commission has decided third country ensures adequate level of protection"
+
+45.3:
+  article: '45'
+  name: Adequacy assessment factors
+  description: "Commission shall assess rule of law, human rights, data protection legislation, supervisory authorities, and international commitments"
+
+46:
+  chapter: 'V - Transfers'
+  name: Transfers subject to appropriate safeguards
+
+46.1:
+  article: '46'
+  name: Appropriate safeguards required
+  description: "Transfer may take place if controller or processor has provided appropriate safeguards and enforceable rights available"
+
+46.2.a:
+  article: '46'
+  name: Legally binding instrument
+  description: "Legally binding and enforceable instrument between public authorities or bodies"
+
+46.2.b:
+  article: '46'
+  name: Binding corporate rules
+  description: "Binding corporate rules (BCRs)"
+
+46.2.c:
+  article: '46'
+  name: Standard contractual clauses - Commission
+  description: "Standard data protection clauses adopted by Commission"
+
+46.2.d:
+  article: '46'
+  name: Standard contractual clauses - Supervisory authority
+  description: "Standard data protection clauses adopted by supervisory authority and approved by Commission"
+
+46.2.e:
+  article: '46'
+  name: Code of conduct
+  description: "Approved code of conduct with binding enforceable commitments"
+
+46.2.f:
+  article: '46'
+  name: Certification mechanism
+  description: "Approved certification mechanism with binding enforceable commitments"
+
+49:
+  chapter: 'V - Transfers'
+  name: Derogations for specific situations
+
+49.1.a:
+  article: '49'
+  name: Explicit consent derogation
+  description: "Data subject has explicitly consented to proposed transfer after being informed of risks"
+
+49.1.b:
+  article: '49'
+  name: Contract performance derogation
+  description: "Transfer necessary for performance of contract between data subject and controller"
+
+49.1.c:
+  article: '49'
+  name: Public interest derogation
+  description: "Transfer necessary for important reasons of public interest"
+
+49.1.d:
+  article: '49'
+  name: Legal claims derogation
+  description: "Transfer necessary for establishment, exercise or defence of legal claims"
+
+49.1.e:
+  article: '49'
+  name: Vital interests derogation
+  description: "Transfer necessary to protect vital interests where data subject incapable of giving consent"
+
+58:
+  chapter: 'VI - Supervisory Authorities'
+  name: Powers
+
+58.1:
+  article: '58'
+  name: Investigative powers
+  description: "Order controller and processor to provide information, carry out investigations, access premises, and obtain access to data"
+
+58.2:
+  article: '58'
+  name: Corrective powers
+  description: "Issue warnings and reprimands, order compliance, order operations limited or banned, and impose administrative fines"
+
+77:
+  chapter: 'VIII - Remedies, Liability and Penalties'
+  name: Right to lodge complaint
+
+77.1:
+  article: '77'
+  name: Lodge complaint with supervisory authority
+  description: "Every data subject shall have right to lodge complaint with supervisory authority if considers processing infringes GDPR"
+
+82:
+  chapter: 'VIII - Remedies, Liability and Penalties'
+  name: Right to compensation
+
+82.1:
+  article: '82'
+  name: Right to compensation for damage
+  description: "Person who suffered material or non-material damage as result of infringement shall have right to receive compensation"
+
+83:
+  chapter: 'VIII - Remedies, Liability and Penalties'
+  name: General conditions for imposing administrative fines
+
+83.1:
+  article: '83'
+  name: Effective, proportionate and dissuasive fines
+  description: "Supervisory authority shall ensure fines are effective, proportionate and dissuasive"
+
+83.4:
+  article: '83'
+  name: Lower tier fines up to €10M or 2%
+  description: "Infringements of Articles 8, 11, 25-39, 42, 43 subject to fines up to €10M or 2% of annual worldwide turnover"
+
+83.5:
+  article: '83'
+  name: Upper tier fines up to €20M or 4%
+  description: "Infringements of Articles 5, 6, 7, 9, 12-22, 44-49, 58 subject to fines up to €20M or 4% of annual worldwide turnover"
+# ===== QOLGAN BANDLAR (TO'LDIRILGAN) =====
+
+# Article 6 - qolganlar
+6.2:
+  article: '6'
+  name: Specify conditions by Union or Member State law
+  description: "Member States may maintain or introduce more specific provisions to adapt application of rules with regard to processing"
+
+6.3:
+  article: '6'
+  name: Legal basis must be laid down by law
+  description: "Legal basis for processing referred to in points (c) and (e) shall be laid down by Union or Member State law"
+
+6.4:
+  article: '6'
+  name: Compatibility assessment for further processing
+  description: "Where processing for purpose other than original, controller shall take into account link between purposes, context, nature of data, consequences, safeguards"
+
+# Article 8 - qolgan
+8.3:
+  article: '8'
+  name: Authorisation of Member State law
+  description: "This Article shall not affect general contract law of Member States including rules on validity, formation or effect of contract in relation to a child"
+
+# Article 9 - qolganlar
+9.3:
+  article: '9'
+  name: Health data processing by health professionals
+  description: "Processing referred to in 9.2.h shall be subject to professional secrecy obligations"
+
+9.4:
+  article: '9'
+  name: Additional conditions by Member States
+  description: "Member States may maintain or introduce further conditions including limitations with regard to processing of genetic, biometric or health data"
+
+# Article 10 - To'liq
+10:
+  chapter: 'II - Principles'
+  name: Processing of personal data relating to criminal convictions and offences
+  description: "Processing of personal data relating to criminal convictions and offences or related security measures shall be carried out only under control of official authority or when authorised by Union or Member State law"
+
+# Article 11 - To'liq
+11:
+  chapter: 'II - Principles'
+  name: Processing which does not require identification
+
+11.1:
+  article: '11'
+  name: No identification required
+  description: "If purposes for which controller processes data do not or no longer require identification of data subject, controller not obliged to maintain or acquire additional information"
+
+11.2:
+  article: '11'
+  name: Cannot comply with rights requests without identification
+  description: "Where controller cannot identify data subject, shall inform data subject accordingly unless data subject provides additional information to enable identification"
+
+# Article 12 - qolganlar
+12.6:
+  article: '12'
+  name: Identity verification
+  description: "Where controller has reasonable doubts concerning identity, may request additional information necessary to confirm identity of data subject"
+
+12.7:
+  article: '12'
+  name: Standardised icons
+  description: "Information may be provided in combination with standardised icons to give meaningful overview of intended processing"
+
+12.8:
+  article: '12'
+  name: Machine-readable icons
+  description: "Where icons presented electronically they shall be machine-readable"
+
+# Article 13 - qolgan
+13.3:
+  article: '13'
+  name: Further processing information
+  description: "Where controller intends to further process data for purpose other than collected, shall provide information on that further purpose prior to that processing"
+
+# Article 14 - qolganlar
+14.2:
+  article: '14'
+  name: Additional information for fair processing
+  description: "Controller shall provide information on retention period, rights to access/rectification/erasure/restriction/objection/portability, consent withdrawal, complaint right, source of data, and automated decision-making"
+
+14.4:
+  article: '14'
+  name: Further processing information
+  description: "Where controller intends to process data for purpose other than obtained, shall provide information on that further purpose"
+
+14.5:
+  article: '14'
+  name: Exceptions to information obligation
+  description: "Information obligation does not apply where data subject already has information, recording expressly laid down by law, provision of information proves impossible or disproportionate, or data must remain confidential"
+
+# Article 15 - qolganlar
+15.2:
+  article: '15'
+  name: Information on third country transfers
+  description: "Where data transferred to third country, data subject shall have right to be informed of appropriate safeguards pursuant to Article 46"
+
+15.4:
+  article: '15'
+  name: No adverse effect on rights of others
+  description: "Right to obtain copy shall not adversely affect the rights and freedoms of others"
+
+# Article 17 - qolgan
+17.3:
+  article: '17'
+  name: Exceptions to erasure right
+  description: "Erasure right shall not apply where processing is necessary for freedom of expression, compliance with legal obligation, reasons of public interest in public health, archiving purposes, or establishment of legal claims"
+
+# Article 18 - qolganlar
+18.2:
+  article: '18'
+  name: Storage only during restriction
+  description: "Where processing restricted, such data shall only be processed with data subject's consent or for legal claims or for protection of rights of another person or public interest"
+
+18.3:
+  article: '18'
+  name: Inform before lifting restriction
+  description: "Data subject who obtained restriction shall be informed by controller before restriction is lifted"
+
+# Article 19 - To'liq
+19:
+  chapter: 'III - Rights of Data Subject'
+  name: Notification obligation regarding rectification or erasure of personal data or restriction of processing
+  description: "Controller shall communicate any rectification or erasure or restriction to each recipient to whom personal data have been disclosed unless impossible or disproportionate effort; shall inform data subject about recipients if requested"
+
+# Article 20 - qolganlar
+20.3:
+  article: '20'
+  name: Does not apply to public interest tasks
+  description: "Right to data portability shall not apply to processing necessary for performance of task carried out in public interest or exercise of official authority"
+
+20.4:
+  article: '20'
+  name: No adverse effect on rights of others
+  description: "Right to data portability shall not adversely affect rights and freedoms of others"
+
+# Article 21 - qolganlar
+21.4:
+  article: '21'
+  name: Research exception to direct marketing objection
+  description: "By way of derogation, data subject may not exercise right to object where processing necessary for scientific/historical research or statistical purposes in public interest"
+
+21.5:
+  article: '21'
+  name: Objection by automated means
+  description: "In context of information society services, data subject may exercise right to object by automated means using technical specifications"
+
+21.6:
+  article: '21'
+  name: Object to profiling for direct marketing
+  description: "Where personal data processed for direct marketing purposes including profiling, data subject shall have right to object to processing including profiling"
+
+# Article 22 - qolgan
+22.4:
+  article: '22'
+  name: No automated decisions on special categories
+  description: "Decisions based solely on automated processing shall not be based on special categories unless explicit consent or substantial public interest with suitable safeguards"
+
+# Article 23 - To'liq
+23:
+  chapter: 'III - Rights of Data Subject'
+  name: Restrictions
+
+23.1:
+  article: '23'
+  name: Restrictions on rights and obligations
+  description: "Union or Member State law may restrict obligations and rights in Articles 12-22 and 34 to safeguard national security, defence, public security, criminal offences, legal proceedings, official inquiries, economic interests, or data subject protection"
+
+23.2:
+  article: '23'
+  name: Restrictions must contain specific provisions
+  description: "Legislative measures restricting rights shall contain provisions on purposes of processing, categories of data, scope of restrictions, safeguards, controller, storage periods, risks, and right to be informed"
+
+# Article 24 - To'liq
+24:
+  chapter: 'IV - Controller and Processor'
+  name: Responsibility of the controller
+
+24.1:
+  article: '24'
+  name: Demonstrate compliance
+  description: "Taking into account nature, scope, context, purposes and risks, controller shall implement appropriate technical and organisational measures to ensure and demonstrate compliance"
+
+24.2:
+  article: '24'
+  name: Data protection policies
+  description: "Where proportionate, implementation of appropriate data protection policies by controller"
+
+24.3:
+  article: '24'
+  name: Codes of conduct and certification
+  description: "Adherence to approved codes of conduct or approved certification mechanisms may be used to demonstrate compliance"
+
+# Article 25 - qolgan
+25.3:
+  article: '25'
+  name: Certification as demonstration of compliance
+  description: "Approved certification mechanism may be used as element to demonstrate compliance with data protection by design and by default"
+
+# Article 26 - qolgan
+26.3:
+  article: '26'
+  name: Data subject may exercise rights against each controller
+  description: "Regardless of terms of arrangement between joint controllers, data subject may exercise rights against and in respect of each of the controllers"
+
+# Article 27 - To'liq
+27:
+  chapter: 'IV - Controller and Processor'
+  name: Representatives of controllers or processors not established in the Union
+
+27.1:
+  article: '27'
+  name: Designate representative
+  description: "Where Article 3(2) applies, controller or processor not established in Union shall designate in writing a representative in Union"
+
+27.2:
+  article: '27'
+  name: Obligation does not apply where
+  description: "Obligation does not apply to processing which is occasional, does not include large scale processing of special categories, and unlikely to result in risk to rights and freedoms; or to public authority or body"
+
+27.3:
+  article: '27'
+  name: Representative in Member State
+  description: "Representative shall be established in one of Member States where data subjects are"
+
+27.4:
+  article: '27'
+  name: Representative may be addressed
+  description: "Representative shall be mandated by controller or processor to be addressed by supervisory authorities and data subjects on all issues related to processing"
+
+27.5:
+  article: '27'
+  name: Designation does not affect liability
+  description: "Designation of representative shall be without prejudice to legal actions which could be initiated against controller or processor"
+
+# Article 28 - qolganlar
+28.4:
+  article: '28'
+  name: Sub-processor same obligations
+  description: "Same data protection obligations as set out in contract between controller and processor shall be imposed on sub-processor"
+
+28.5:
+  article: '28'
+  name: Initial processor liability for sub-processor
+  description: "Where sub-processor fails to fulfil data protection obligations, initial processor remains fully liable to controller"
+
+28.6:
+  article: '28'
+  name: Codes of conduct as safeguard
+  description: "Adherence of processor to approved code of conduct or certification mechanism may be used as element to demonstrate sufficient guarantees"
+
+28.7:
+  article: '28'
+  name: Commission standard contractual clauses
+  description: "Commission may lay down standard contractual clauses for matters in paragraphs 3 and 4"
+
+28.8:
+  article: '28'
+  name: Supervisory authority standard clauses
+  description: "Supervisory authority may adopt standard contractual clauses for matters in paragraphs 3 and 4"
+
+28.9:
+  article: '28'
+  name: Contract in writing
+  description: "Contract or other legal act referred to in paragraphs 3 and 4 shall be in writing including in electronic form"
+
+28.10:
+  article: '28'
+  name: Processor determining purposes becomes controller
+  description: "If processor infringes this Regulation by determining purposes and means of processing, shall be considered controller in respect of that processing"
+
+# Article 29 - To'liq
+29:
+  chapter: 'IV - Controller and Processor'
+  name: Processing under the authority of the controller or processor
+  description: "Processor and any person acting under authority of controller or processor who has access to personal data shall not process except on instructions from controller unless required by Union or Member State law"
+
+# Article 30 - qolganlar
+30.3:
+  article: '30'
+  name: Records in writing including electronic form
+  description: "Records referred to in paragraphs 1 and 2 shall be in writing including in electronic form"
+
+30.4:
+  article: '30'
+  name: Make records available to supervisory authority
+  description: "Controller and processor and representatives shall make records available to supervisory authority on request"
+
+30.5:
+  article: '30'
+  name: Exemption for small organisations
+  description: "Obligations do not apply to organisation employing fewer than 250 persons unless processing likely results in risk, is not occasional, or includes special categories or criminal convictions data"
+
+# Article 31 - To'liq
+31:
+  chapter: 'IV - Controller and Processor'
+  name: Cooperation with the supervisory authority
+  description: "Controller and processor and their representatives shall cooperate on request with supervisory authority in performance of its tasks"
+
+# Article 32 - qolgan
+32.3:
+  article: '32'
+  name: Adherence to codes and certification
+  description: "Controller and processor shall ensure persons under their authority who have access to personal data do not process unless on instructions from controller"
+
+# Article 33 - qolgan
+33.4:
+  article: '33'
+  name: Phased notification
+  description: "Where information cannot be provided at same time, may be provided in phases without undue further delay"
+
+# Article 35 - qolganlar
+35.2:
+  article: '35'
+  name: DPO involved in DPIA
+  description: "Controller shall seek advice of data protection officer where designated when carrying out data protection impact assessment"
+
+35.4:
+  article: '35'
+  name: Supervisory authority list of required DPIAs
+  description: "Supervisory authority shall establish and make public list of processing operations requiring DPIA"
+
+35.5:
+  article: '35'
+  name: Supervisory authority list of non-required DPIAs
+  description: "Supervisory authority may establish and make public list of processing operations for which no DPIA is required"
+
+35.6:
+  article: '35'
+  name: Consistency mechanism for lists
+  description: "Prior to adoption of lists in paragraphs 4 and 5, supervisory authority shall apply consistency mechanism where lists involve cross-border processing activities"
+
+35.7.a:
+  article: '35'
+  name: DPIA systematic description of processing
+  description: "Systematic description of envisaged processing operations and purposes including legitimate interests pursued by controller"
+
+35.7.b:
+  article: '35'
+  name: DPIA assessment of necessity
+  description: "Assessment of necessity and proportionality of processing operations in relation to the purposes"
+
+35.7.c:
+  article: '35'
+  name: DPIA assessment of risks
+  description: "Assessment of risks to rights and freedoms of data subjects referred to in paragraph 1"
+
+35.7.d:
+  article: '35'
+  name: DPIA measures to address risks
+  description: "Measures envisaged to address risks including safeguards, security measures and mechanisms to ensure protection of personal data and demonstrate compliance"
+
+35.8:
+  article: '35'
+  name: Compliance with codes of conduct considered
+  description: "Compliance with approved codes of conduct shall be taken into due account in assessing impact of processing operations"
+
+35.9:
+  article: '35'
+  name: Seek views of data subjects
+  description: "Where appropriate, controller shall seek views of data subjects or their representatives on intended processing without prejudice to protection of commercial or public interests"
+
+35.10:
+  article: '35'
+  name: Exception where prior assessment carried out
+  description: "DPIA not required where processing pursuant to Article 6(1)(c) or (e) has legal basis in Union or Member State law and assessment already carried out in context of adopting that legal basis"
+
+35.11:
+  article: '35'
+  name: Review DPIA periodically
+  description: "Where necessary, controller shall carry out review to assess if processing performed in accordance with DPIA at least when change of risk represented by processing operations"
+
+# Article 36 - qolganlar
+36.2:
+  article: '36'
+  name: Supervisory authority provides advice
+  description: "Supervisory authority shall provide written advice to controller and processor within period of up to eight weeks"
+
+36.3:
+  article: '36'
+  name: Controller must provide information to supervisory authority
+  description: "Controller shall provide supervisory authority with contact details of DPO, purposes and means of processing, measures and safeguards, contact details of representative, DPIA, and any other information requested"
+
+# Article 37 - qolganlar
+37.2:
+  article: '37'
+  name: Group of undertakings may designate single DPO
+  description: "Group of undertakings may designate single data protection officer provided easily accessible from each establishment"
+
+37.3:
+  article: '37'
+  name: Public authorities may share DPO
+  description: "Public authority or body may designate single DPO taking into account organisational structure and size"
+
+37.4:
+  article: '37'
+  name: Controllers or processors should consult DPO
+  description: "In cases other than those referred to in paragraph 1, controller, processor or associations representing categories of controllers or processors may designate DPO"
+
+37.6:
+  article: '37'
+  name: DPO may be staff or external
+  description: "Data protection officer may be staff member of controller or processor or fulfil tasks on basis of service contract"
+
+# Article 38 - qolganlar
+38.4:
+  article: '38'
+  name: DPO bound by confidentiality
+  description: "Data protection officer shall be bound by secrecy or confidentiality concerning performance of tasks in accordance with Union or Member State law"
+
+38.5:
+  article: '38'
+  name: DPO may fulfil other tasks
+  description: "Data protection officer may fulfil other tasks and duties; controller or processor shall ensure such tasks do not result in conflict of interests"
+
+38.6:
+  article: '38'
+  name: Data subjects may contact DPO
+  description: "Data subjects may contact data protection officer with regard to all issues related to processing of their data and exercise of rights"
+
+# Article 39 - qolgan
+39.2:
+  article: '39'
+  name: Regard to risks in tasks
+  description: "DPO shall in performance of tasks have due regard to risk associated with processing operations taking into account nature, scope, context, and purposes of processing"
+
+# Article 40 - To'liq
+40:
+  chapter: 'IV - Controller and Processor'
+  name: Codes of conduct
+
+40.1:
+  article: '40'
+  name: Encourage codes of conduct
+  description: "Member States, supervisory authorities, Board and Commission shall encourage drawing up of codes of conduct to contribute to proper application of this Regulation"
+
+40.2:
+  article: '40'
+  name: Associations may prepare codes
+  description: "Associations and other bodies representing categories of controllers or processors may prepare codes of conduct or amend existing codes"
+
+40.3:
+  article: '40'
+  name: Submit code to supervisory authority
+  description: "Codes of conduct shall be submitted to supervisory authority for opinion on compliance with this Regulation"
+
+40.4:
+  article: '40'
+  name: Registration of compliant codes
+  description: "Where code relates only to processing activities in one Member State, supervisory authority shall register code if compliant"
+
+40.5:
+  article: '40'
+  name: Transmit to Board for European codes
+  description: "Where code relates to processing activities in several Member States, supervisory authority shall submit code to Board before approval"
+
+40.6:
+  article: '40'
+  name: Obligations legally binding
+  description: "Commitments under codes of conduct may be rendered legally binding by controllers or processors"
+
+# Article 41 - To'liq
+41:
+  chapter: 'IV - Controller and Processor'
+  name: Monitoring of approved codes of conduct
+
+41.1:
+  article: '41'
+  name: Monitoring by accredited bodies
+  description: "Compliance with approved code may be monitored by body which has appropriate level of expertise and is accredited by supervisory authority"
+
+41.2:
+  article: '41'
+  name: Requirements for monitoring bodies
+  description: "Body may be accredited to monitor code of conduct where it has demonstrated independence, expertise, accountability, and absence of conflict of interests"
+
+41.3:
+  article: '41'
+  name: Inform supervisory authority of actions
+  description: "Monitoring body shall take appropriate action in cases of infringement and shall inform supervisory authority of those actions and reasons"
+
+41.4:
+  article: '41'
+  name: Supervisory authority revokes accreditation
+  description: "Supervisory authority shall revoke accreditation where requirements for accreditation are not met or actions taken by body infringe this Regulation"
+
+# Article 42 - To'liq
+42:
+  chapter: 'IV - Controller and Processor'
+  name: Certification
+
+42.1:
+  article: '42'
+  name: Encourage certification mechanisms
+  description: "Member States, supervisory authorities, Board and Commission shall encourage establishment of data protection certification mechanisms"
+
+42.2:
+  article: '42'
+  name: Demonstrate compliance
+  description: "Certification procedure is voluntary and available via process that is transparent"
+
+42.3:
+  article: '42'
+  name: Certification does not reduce responsibility
+  description: "Certification does not reduce responsibility of controller or processor for compliance and is without prejudice to tasks and powers of supervisory authorities"
+
+42.4:
+  article: '42'
+  name: Application by controller or processor
+  description: "Certification may be applied for by controllers and processors and shall be issued to controller or processor taking into account measures"
+
+42.5:
+  article: '42'
+  name: Certification by accredited bodies or supervisory authority
+  description: "Certification shall be issued by certification bodies accredited under Article 43 or by supervisory authority"
+
+42.6:
+  article: '42'
+  name: Maximum three year period
+  description: "Certification shall be issued for maximum period of three years and may be renewed under same conditions"
+
+42.7:
+  article: '42'
+  name: Register of certified controllers
+  description: "Certification shall be communicated to Board and register shall be made publicly available"
+
+42.8:
+  article: '42'
+  name: Revoke certification
+  description: "Certification body shall revoke certification where requirements for certification are not or no longer met"
+
+# Article 43 - To'liq
+43:
+  chapter: 'IV - Controller and Processor'
+  name: Certification bodies
+
+43.1:
+  article: '43'
+  name: Accreditation of certification bodies
+  description: "Certification bodies shall be accredited by supervisory authority or national accreditation body in accordance with EN-ISO/IEC 17065/2012"
+
+43.2:
+  article: '43'
+  name: Requirements for certification bodies
+  description: "Certification body shall demonstrate independence, expertise in data protection, established procedures, transparent procedures, and absence of conflict of interests"
+
+43.3:
+  article: '43'
+  name: Accreditation based on criteria
+  description: "Accreditation shall be granted on basis of criteria approved by supervisory authority or Board"
+
+43.4:
+  article: '43'
+  name: Supervisory authority may certify directly
+  description: "Supervisory authority may issue certification in addition to or instead of certification body"
+
+43.5:
+  article: '43'
+  name: Commission may adopt delegated acts
+  description: "Commission is empowered to adopt delegated acts for technical standards for certification mechanisms and data protection seals and marks"
+
+# Article 44 - (mavjud, lekin qo'shimcha)
+# Article 45 - qolganlar
+45.2:
+  article: '45'
+  name: Monitor adequacy decisions
+  description: "Commission shall monitor developments in third countries and international organisations that could affect functioning of adequacy decisions"
+
+45.4:
+  article: '45'
+  name: Repeal or amend adequacy decision
+  description: "Where Commission concludes that third country no longer ensures adequate level of protection, shall repeal, amend or suspend adequacy decision"
+
+45.5:
+  article: '45'
+  name: Consult third country before repeal
+  description: "Commission shall enter into consultations with third country before repealing adequacy decision in order to remedy situation"
+
+# Article 46 - qolgan
+46.3:
+  article: '46'
+  name: Authorisation by supervisory authority
+  description: "Subject to authorisation from competent supervisory authority, appropriate safeguards may also be provided by contractual clauses or administrative arrangements"
+
+# Article 47 - To'liq
+47:
+  chapter: 'V - Transfers'
+  name: Binding corporate rules
+
+47.1:
+  article: '47'
+  name: Supervisory authority approves BCRs
+  description: "Competent supervisory authority shall approve binding corporate rules in accordance with consistency mechanism provided they are legally binding, confer enforceable rights, and contain specific minimum information"
+
+47.2:
+  article: '47'
+  name: BCR minimum content
+  description: "Binding corporate rules shall specify structure and contact details of group, categories of transfers, legally binding nature, application of general data protection principles, data subject rights, controller liability, and complaint mechanisms"
+
+47.3:
+  article: '47'
+  name: Commission may specify BCR format
+  description: "Commission may specify format and procedures for exchange of information between controllers, processors and supervisory authorities for binding corporate rules"
+
+# Article 48 - To'liq
+48:
+  chapter: 'V - Transfers'
+  name: Transfers or disclosures not authorised by Union law
+  description: "Any judgment of court or tribunal and any decision of administrative authority of third country requiring controller or processor to transfer or disclose personal data only recognised if based on international agreement such as mutual legal assistance treaty in force between requesting third country and Union or Member State"
+
+# Article 49 - qolganlar
+49.1.f:
+  article: '49'
+  name: Compelling legitimate interests derogation
+  description: "Transfer necessary for purposes of compelling legitimate interests pursued by controller which are not overridden by interests or rights of data subject, and where transfer not repetitive and concerns only limited number of data subjects"
+
+49.1.g:
+  article: '49'
+  name: Register open to public derogation
+  description: "Transfer made from register which according to Union or Member State law is intended to provide information to public"
+
+49.2:
+  article: '49'
+  name: Inform supervisory authority of compelling interests transfers
+  description: "Where transfer based on compelling legitimate interests, controller shall inform supervisory authority of transfer and bring to attention of data subject"
+
+49.3:
+  article: '49'
+  name: Derogations for public registers
+  description: "Transfer from public register shall not involve entirety of personal data or categories of personal data in register"
+
+49.4:
+  article: '49'
+  name: Not applicable to public authority transfers
+  description: "Points (a), (b) and (c) of paragraph 1 shall not apply to activities carried out by public authorities in exercise of public powers"
+
+49.5:
+  article: '49'
+  name: Public interest derogation must be recognised in Union law
+  description: "In absence of adequacy decision, transfer for important public interest shall be recognised in Union or Member State law"
+
+# Article 50 - To'liq
+50:
+  chapter: 'V - Transfers'
+  name: International cooperation for protection of personal data
+  description: "Commission and supervisory authorities shall take appropriate steps to develop international cooperation mechanisms to facilitate enforcement of legislation for protection of personal data"
+
+# Article 51 - To'liq
+51:
+  chapter: 'VI - Independent Supervisory Authorities'
+  name: Supervisory authority
+
+51.1:
+  article: '51'
+  name: Establish supervisory authority
+  description: "Each Member State shall provide for one or more independent public authorities to be responsible for monitoring the application of this Regulation"
+
+51.2:
+  article: '51'
+  name: Supervisory authority contributes to consistent application
+  description: "Each supervisory authority shall contribute to consistent application of this Regulation throughout Union"
+
+# Article 52 - To'liq
+52:
+  chapter: 'VI - Independent Supervisory Authorities'
+  name: Independence
+
+52.1:
+  article: '52'
+  name: Act with complete independence
+  description: "Each supervisory authority shall act with complete independence in performing its tasks and exercising its powers"
+
+52.2:
+  article: '52'
+  name: No external instructions
+  description: "Member of supervisory authority shall remain free from external influence and shall not take instructions from anybody in performance of tasks"
+
+52.3:
+  article: '52'
+  name: Refrain from incompatible activities
+  description: "Members of supervisory authority shall refrain from any action incompatible with their duties and engaging in incompatible occupation"
+
+52.4:
+  article: '52'
+  name: Adequate resources
+  description: "Each Member State shall ensure supervisory authority is provided with human, technical and financial resources, premises and infrastructure"
+
+# Article 53 - To'liq
+53:
+  chapter: 'VI - Independent Supervisory Authorities'
+  name: General conditions for the members of the supervisory authority
+
+53.1:
+  article: '53'
+  name: Appointment by transparent procedure
+  description: "Member States shall provide for each member of supervisory authority to be appointed by means of transparent procedure"
+
+53.2:
+  article: '53'
+  name: Eligible for reappointment
+  description: "Each member shall hold office for term of between four and seven years and shall be eligible for reappointment once"
+
+# Article 54 - To'liq
+54:
+  chapter: 'VI - Independent Supervisory Authorities'
+  name: Rules on establishment of the supervisory authority
+
+54.1:
+  article: '54'
+  name: Establishment rules
+  description: "Each Member State shall provide by law for establishment of supervisory authority, qualifications and eligibility conditions for appointment, rules and procedures"
+
+# Article 55 - To'liq
+55:
+  chapter: 'VI - Independent Supervisory Authorities'
+  name: Competence
+
+55.1:
+  article: '55'
+  name: Competent in own territory
+  description: "Each supervisory authority shall be competent for performance of tasks assigned and exercise of powers conferred on it in territory of its Member State"
+
+55.2:
+  article: '55'
+  name: Not competent to supervise courts
+  description: "Supervisory authorities shall not be competent to supervise processing operations of courts acting in judicial capacity"
+
+# Article 56 - To'liq
+56:
+  chapter: 'VI - Independent Supervisory Authorities'
+  name: Competence of the lead supervisory authority
+
+56.1:
+  article: '56'
+  name: Lead supervisory authority
+  description: "Supervisory authority of main establishment or single establishment of controller or processor shall be competent to act as lead supervisory authority"
+
+56.2:
+  article: '56'
+  name: Any authority may handle local complaints
+  description: "Notwithstanding paragraph 1, each supervisory authority shall be competent to handle complaint lodged with it or possible infringement of this Regulation if subject matter relates only to establishment in its Member State"
+
+# Article 57 - To'liq
+57:
+  chapter: 'VI - Independent Supervisory Authorities'
+  name: Tasks
+
+57.1:
+  article: '57'
+  name: Monitor and enforce application
+  description: "Supervisory authority shall on its territory monitor and enforce application of this Regulation"
+
+57.1.a:
+  article: '57'
+  name: Monitor and enforce
+  description: "Monitor and enforce the application of this Regulation"
+
+57.1.b:
+  article: '57'
+  name: Promote public awareness
+  description: "Promote public awareness and understanding of risks, rules, safeguards and rights in relation to processing"
+
+57.1.c:
+  article: '57'
+  name: Advise national institutions
+  description: "Advise in accordance with Member State law national parliament, government and other institutions on legislative and administrative measures relating to protection of rights"
+
+57.1.d:
+  article: '57'
+  name: Promote awareness for controllers and processors
+  description: "Promote awareness of controllers and processors of their obligations under this Regulation"
+
+57.1.e:
+  article: '57'
+  name: Provide information on request
+  description: "Provide information to any data subject concerning exercise of their rights and cooperate with supervisory authorities in other Member States"
+
+57.1.f:
+  article: '57'
+  name: Handle complaints
+  description: "Handle complaints lodged by data subjects and investigate the subject matter of complaints to extent appropriate"
+
+57.1.g:
+  article: '57'
+  name: Cooperate with other authorities
+  description: "Cooperate with other supervisory authorities including sharing information and providing mutual assistance"
+
+57.1.h:
+  article: '57'
+  name: Conduct investigations
+  description: "Conduct investigations on application of this Regulation including investigations based on information from other supervisory authority"
+
+57.1.i:
+  article: '57'
+  name: Monitor relevant developments
+  description: "Monitor relevant developments including developments in information and communication technologies and commercial practices"
+
+57.1.j:
+  article: '57'
+  name: Adopt standard contractual clauses
+  description: "Adopt standard contractual clauses referred to in Articles 28(8) and 46(2)(d)"
+
+57.1.k:
+  article: '57'
+  name: Establish and maintain list of DPIAs
+  description: "Establish and maintain list in relation to requirement for DPIA pursuant to Article 35(4)"
+
+57.1.l:
+  article: '57'
+  name: Give advice on processing operations
+  description: "Give advice on processing operations referred to in Article 36(2)"
+
+57.1.m:
+  article: '57'
+  name: Encourage codes of conduct
+  description: "Encourage drawing up of codes of conduct pursuant to Article 40 and provide opinion on them"
+
+57.1.n:
+  article: '57'
+  name: Encourage certification mechanisms
+  description: "Encourage establishment of data protection certification mechanisms and data protection seals"
+
+57.1.o:
+  article: '57'
+  name: Carry out periodic reviews of certifications
+  description: "Where applicable, carry out periodic review of certifications issued in accordance with Article 42(7)"
+
+57.1.p:
+  article: '57'
+  name: Draft and publish criteria for accreditation
+  description: "Draft and publish criteria for accreditation of body for monitoring codes of conduct and of certification body"
+
+57.1.q:
+  article: '57'
+  name: Conduct accreditation
+  description: "Conduct accreditation of body for monitoring codes of conduct and of certification body"
+
+57.1.r:
+  article: '57'
+  name: Authorise contractual clauses and provisions
+  description: "Authorise contractual clauses and provisions referred to in Article 46(3)"
+
+57.1.s:
+  article: '57'
+  name: Approve binding corporate rules
+  description: "Approve binding corporate rules pursuant to Article 47"
+
+57.1.t:
+  article: '57'
+  name: Contribute to Board activities
+  description: "Contribute to activities of Board"
+
+57.1.u:
+  article: '57'
+  name: Keep internal records
+  description: "Keep internal records of infringements of this Regulation and of measures taken"
+
+57.2:
+  article: '57'
+  name: Free of charge for data subjects
+  description: "Each supervisory authority shall facilitate submission of complaints by measures such as complaint submission form electronically, without other communication means being excluded"
+
+57.3:
+  article: '57'
+  name: Perform tasks free of charge
+  description: "Performance of tasks of supervisory authority shall be free of charge for data subject and where applicable for DPO"
+
+# Article 58 - qolganlar (mavjud 58.1, 58.2)
+58.3:
+  article: '58'
+  name: Advisory powers
+  description: "Each supervisory authority shall have advisory powers to advise controller in accordance with prior consultation procedure in Article 36 and issue own initiative opinions to national parliament, government or institutions"
+
+58.4:
+  article: '58'
+  name: Exercise of powers subject to safeguards
+  description: "Exercise of powers conferred shall be subject to appropriate safeguards including effective judicial remedy and due process in accordance with Union and Member State law"
+
+58.5:
+  article: '58'
+  name: Supervisory authority notify controller of infringement
+  description: "Each Member State shall provide for supervisory authority to have power to bring infringements to attention of judicial authorities and to commence legal proceedings"
+
+58.6:
+  article: '58'
+  name: Member States may confer additional powers
+  description: "Each Member State may provide for its supervisory authority to have additional powers to those in paragraphs 1, 2 and 3"
+
+# Articles 59-76 (Chapter VI-VII) - Key articles
+59:
+  chapter: 'VI - Independent Supervisory Authorities'
+  name: Activity reports
+  description: "Each supervisory authority shall draw up annual report on its activities which may include list of types of infringement notified and types of measures taken"
+
+60:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Cooperation between lead supervisory authority and other supervisory authorities
+
+60.1:
+  article: '60'
+  name: Lead authority cooperates with other authorities
+  description: "Lead supervisory authority shall cooperate with other supervisory authorities concerned in endeavour to reach consensus"
+
+60.3:
+  article: '60'
+  name: Other authorities may submit objection
+  description: "Any supervisory authority concerned may request joint operation with lead authority; lead authority shall give weight to views of those authorities"
+
+60.7:
+  article: '60'
+  name: Lead authority informs controller
+  description: "Lead authority shall inform controller or processor of decision; controller or processor shall implement decision"
+
+61:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Mutual assistance
+
+61.1:
+  article: '61'
+  name: Provide each other mutual assistance
+  description: "Supervisory authorities shall provide each other with relevant information and mutual assistance in order to implement and apply this Regulation in consistent manner"
+
+62:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Joint operations of supervisory authorities
+
+62.1:
+  article: '62'
+  name: Conduct joint operations
+  description: "Supervisory authorities shall where appropriate conduct joint operations including joint investigations and enforcement measures in which members or staff of supervisory authorities of other Member States participate"
+
+63:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Consistency mechanism
+  description: "Supervisory authorities shall cooperate with each other and with Commission through consistency mechanism to ensure consistent application of this Regulation throughout Union"
+
+64:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Opinion of the Board
+
+64.1:
+  article: '64'
+  name: Board shall issue opinion on measures
+  description: "Board shall issue opinion where competent supervisory authority intends to adopt list of types of processing requiring DPIA, guidance on breaches, BCRs, standard contractual clauses, or criteria for accreditation"
+
+65:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Dispute resolution by the Board
+
+65.1:
+  article: '65'
+  name: Binding decisions by Board
+  description: "Board shall issue binding decision where supervisory authority concerned has raised objection which lead authority has not followed, or where lead authorities have conflicting views on competence"
+
+66:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Urgency procedure
+
+66.1:
+  article: '66'
+  name: Provisional measures in urgent cases
+  description: "In exceptional circumstances supervisory authority may take provisional measures intended to produce legal effects on own territory with specified period of validity not exceeding three months"
+
+67:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Exchange of information
+  description: "Commission may adopt implementing acts to specify arrangements for exchange of information by electronic means between supervisory authorities and with Board"
+
+68:
+  chapter: 'VII - Cooperation and Consistency'
+  name: European Data Protection Board
+
+68.1:
+  article: '68'
+  name: Establish Board
+  description: "European Data Protection Board is established as body of Union and shall have legal personality"
+
+68.3:
+  article: '68'
+  name: Board composition
+  description: "Board shall be composed of head of supervisory authority of each Member State and of European Data Protection Supervisor or their representatives"
+
+69:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Independence
+
+69.1:
+  article: '69'
+  name: Board acts independently
+  description: "Board shall act independently when performing tasks or exercising powers"
+
+70:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Tasks of the Board
+
+70.1:
+  article: '70'
+  name: Board tasks
+  description: "Board shall ensure consistent application of this Regulation, issue guidelines, recommendations and best practices, issue opinions, and advise Commission"
+
+71:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Reports
+
+71.1:
+  article: '71'
+  name: Annual report
+  description: "Board shall draw up annual report regarding protection of natural persons with regard to processing in Union and where relevant in third countries and international organisations"
+
+72:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Procedure
+
+72.1:
+  article: '72'
+  name: Board decides by simple majority
+  description: "Board shall take decisions by simple majority of its members unless otherwise provided in this Regulation"
+
+73:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Chair
+
+73.1:
+  article: '73'
+  name: Elect chair and deputy chairs
+  description: "Board shall elect chair and two deputy chairs from amongst its members by simple majority"
+
+74:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Tasks of the chair
+
+74.1:
+  article: '74'
+  name: Chair convenes meetings
+  description: "Chair shall convene meetings of Board and prepare agenda, notify decisions, ensure timely performance of tasks of Board"
+
+75:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Secretariat
+
+75.1:
+  article: '75'
+  name: Secretariat provided by EDPS
+  description: "Board shall have secretariat which shall be provided by European Data Protection Supervisor"
+
+76:
+  chapter: 'VII - Cooperation and Consistency'
+  name: Confidentiality
+
+76.1:
+  article: '76'
+  name: Deliberations confidential
+  description: "Discussions of Board shall be confidential where Board deems it necessary as provided in its rules of procedure"
+
+# Article 77 - mavjud ✅
+
+# Article 78 - To'liq
+78:
+  chapter: 'VIII - Remedies, Liability and Penalties'
+  name: Right to an effective judicial remedy against a supervisory authority
+
+78.1:
+  article: '78'
+  name: Effective judicial remedy against supervisory authority
+  description: "Each natural or legal person shall have right to effective judicial remedy against legally binding decision of supervisory authority concerning them"
+
+78.2:
+  article: '78'
+  name: Judicial remedy for inaction
+  description: "Each natural or legal person shall have right to effective judicial remedy where supervisory authority does not handle complaint or does not inform data subject within three months"
+
+# Article 79 - To'liq
+79:
+  chapter: 'VIII - Remedies, Liability and Penalties'
+  name: Right to an effective judicial remedy against a controller or processor
+
+79.1:
+  article: '79'
+  name: Judicial remedy against controller or processor
+  description: "Each data subject shall have right to effective judicial remedy where considers rights under this Regulation infringed as result of processing of personal data in non-compliance"
+
+79.2:
+  article: '79'
+  name: Courts of Member State where controller established
+  description: "Proceedings against controller or processor shall be brought before courts of Member State where controller or processor has establishment or where data subject has habitual residence"
+
+# Article 80 - To'liq
+80:
+  chapter: 'VIII - Remedies, Liability and Penalties'
+  name: Representation of data subjects
+
+80.1:
+  article: '80'
+  name: Data subject may mandate non-profit body
+  description: "Data subject shall have right to mandate non-profit body, organisation or association which has been properly constituted to lodge complaint, exercise rights, and receive compensation on their behalf"
+
+80.2:
+  article: '80'
+  name: Member States may allow bodies to act independently
+  description: "Member States may provide that bodies may independently lodge complaints and exercise rights without mandate of data subject"
+
+# Article 81 - To'liq
+81:
+  chapter: 'VIII - Remedies, Liability and Penalties'
+  name: Suspension of proceedings
+
+81.1:
+  article: '81'
+  name: Suspend proceedings pending Board decision
+  description: "Where court of Member State has information that proceedings concerning same subject matter are pending before court in another Member State, it shall contact other court to confirm existence of proceedings"
+
+81.2:
+  article: '81'
+  name: Court in non-main establishment may stay proceedings
+  description: "Where those proceedings are pending in Member State of main establishment or single establishment, any court in any other Member State may stay its proceedings"
+
+# Article 82 - qolgan (mavjud 82.1)
+82.2:
+  article: '82'
+  name: Controller or processor exempt if not at fault
+  description: "Controller or processor shall be exempt from liability if proves not in any way responsible for event giving rise to damage"
+
+82.3:
+  article: '82'
+  name: Joint and several liability
+  description: "Where more than one controller or processor involved in same processing and responsible for damage, each controller or processor shall be held liable for entire damage"
+
+82.4:
+  article: '82'
+  name: Right of recovery
+  description: "Where controller or processor has paid full compensation, may claim back part corresponding to part of responsibility for damage from other controllers or processors"
+
+# Article 83 - qolganlar (mavjud 83.1, 83.4, 83.5)
+83.2:
+  article: '83'
+  name: Factors for imposing fines
+  description: "In deciding to impose fine and amount, due regard shall be given to nature, gravity and duration, intentional or negligent character, actions to mitigate damage, degree of responsibility, relevant previous infringements, categories of data affected, and cooperation with supervisory authority"
+
+83.3:
+  article: '83'
+  name: Single fine for multiple infringements
+  description: "If controller or processor intentionally or negligently infringes several provisions, total amount of fine shall not exceed amount specified for gravest infringement"
+
+83.6:
+  article: '83'
+  name: Fines instead of supervisory authority decisions
+  description: "Member States may lay down rules on whether and to what extent administrative fines may be imposed on public authorities and bodies established in that Member State"
+
+83.7:
+  article: '83'
+  name: Exercise of corrective powers
+  description: "Exercise by supervisory authority of its powers under this Article shall be subject to appropriate procedural safeguards in accordance with Union and Member State law including effective judicial remedy"
+
+83.8:
+  article: '83'
+  name: Right of defence
+  description: "Supervisory authority shall give natural or legal person opportunity to be heard before imposing fine"
+
+83.9:
+  article: '83'
+  name: Administrative fines as component of system
+  description: "In proceedings before supervisory authority, fines shall be component of comprehensive system of supervisory authority powers"
+
+# Article 84 - To'liq
+84:
+  chapter: 'VIII - Remedies, Liability and Penalties'
+  name: Penalties
+
+84.1:
+  article: '84'
+  name: Other penalties
+  description: "Member States shall lay down rules on other penalties applicable to infringements of this Regulation in particular for infringements which are not subject to administrative fines pursuant to Article 83"
+
+84.2:
+  article: '84'
+  name: Notify Commission of penalty rules
+  description: "Member States shall notify to Commission those provisions of their laws adopted pursuant to paragraph 1 by 25 May 2018 and shall notify it of any subsequent amendment affecting them"
+
+# Articles 85-91 (Chapter IX - Specific Processing Situations)
+85:
+  chapter: 'IX - Specific Processing Situations'
+  name: Processing and freedom of expression and information
+
+85.1:
+  article: '85'
+  name: Reconcile protection with freedom of expression
+  description: "Member States shall by law reconcile right to protection of personal data pursuant to this Regulation with right to freedom of expression and information"
+
+85.2:
+  article: '85'
+  name: Derogations for journalism and academic expression
+  description: "For processing for journalistic, academic, artistic or literary expression, Member States shall provide derogations where necessary to reconcile right to data protection with freedom of expression"
+
+86:
+  chapter: 'IX - Specific Processing Situations'
+  name: Processing and public access to official documents
+  description: "Personal data in official documents held by public authority may be disclosed in accordance with Union or Member State law to reconcile public access to official documents with right to protection of personal data"
+
+87:
+  chapter: 'IX - Specific Processing Situations'
+  name: Processing of the national identification number
+  description: "Member States may further determine specific conditions for processing of national identification number or any other identifier of general application; in this case identifier shall be used only under appropriate safeguards"
+
+88:
+  chapter: 'IX - Specific Processing Situations'
+  name: Processing in the context of employment
+
+88.1:
+  article: '88'
+  name: Employment-specific rules by Member States
+  description: "Member States may by law or by collective agreements provide for more specific rules to ensure protection of rights and freedoms in respect of processing of employees' personal data in employment context"
+
+88.2:
+  article: '88'
+  name: Rules include suitable safeguards
+  description: "Those rules shall include suitable and specific measures to safeguard human dignity, legitimate interests and fundamental rights of data subjects"
+
+89:
+  chapter: 'IX - Specific Processing Situations'
+  name: Safeguards and derogations relating to processing for archiving purposes in the public interest, scientific or historical research purposes or statistical purposes
+
+89.1:
+  article: '89'
+  name: Technical and organisational measures for research
+  description: "Processing for archiving, scientific, historical research or statistical purposes shall be subject to appropriate safeguards including pseudonymisation where purposes can be fulfilled that way"
+
+89.2:
+  article: '89'
+  name: Derogations for research from data subject rights
+  description: "Where processing for scientific or historical research or statistical purposes, Member States may provide for derogations from rights in Articles 15, 16, 18, 21"
+
+89.3:
+  article: '89'
+  name: Derogations for archiving in public interest
+  description: "Where processing for archiving purposes in public interest, Member States may provide for derogations from rights in Articles 15, 16, 18, 19, 20, 21"
+
+89.4:
+  article: '89'
+  name: Derogations where likely to render purposes impossible
+  description: "Where processing for statistical purposes, Member States may provide for derogations where exercising rights would render impossible or seriously impair purposes"
+
+90:
+  chapter: 'IX - Specific Processing Situations'
+  name: Obligations of secrecy
+
+90.1:
+  article: '90'
+  name: Rules for secrecy obligations
+  description: "Member States may adopt specific rules to set out investigative powers of supervisory authorities in relation to controllers or processors subject to obligation of professional secrecy"
+
+91:
+  chapter: 'IX - Specific Processing Situations'
+  name: Existing data protection rules of churches and religious associations
+
+91.1:
+  article: '91'
+  name: Church rules that comply may continue
+  description: "Where Member State applies comprehensive rules relating to protection of natural persons in respect of processing by churches and religious associations, such rules may continue to apply provided they are brought into line with this Regulation"
+
+91.2:
+  article: '91'
+  name: Churches have own supervisory authority
+  description: "Churches and religious associations applying comprehensive rules shall be subject to supervision of independent supervisory authority which may be specific provided it meets conditions laid down in Chapter VI"
+
+# Articles 92-99 (Chapter X-XI - Delegated and Implementing Acts, Final Provisions)
+92:
+  chapter: 'X - Delegated Acts and Implementing Acts'
+  name: Exercise of the delegation
+
+92.1:
+  article: '92'
+  name: Power to adopt delegated acts
+  description: "Power to adopt delegated acts is conferred on Commission subject to conditions laid down in this Article"
+
+93:
+  chapter: 'X - Delegated Acts and Implementing Acts'
+  name: Committee procedure
+
+93.1:
+  article: '93'
+  name: Commission assisted by committee
+  description: "Commission shall be assisted by committee"
+
+93.2:
+  article: '93'
+  name: Examination procedure
+  description: "Where reference is made to this paragraph, Article 5 of Regulation (EU) No 182/2011 shall apply"
+
+94:
+  chapter: 'XI - Final Provisions'
+  name: Repeal of Directive 95/46/EC
+
+94.1:
+  article: '94'
+  name: Repeal of Directive 95/46/EC
+  description: "Directive 95/46/EC is repealed with effect from 25 May 2018"
+
+94.2:
+  article: '94'
+  name: References to repealed Directive
+  description: "References to the repealed Directive shall be construed as references to this Regulation"
+
+95:
+  chapter: 'XI - Final Provisions'
+  name: Relationship with Directive 2002/58/EC
+  description: "This Regulation shall not impose additional obligations on natural or legal persons in relation to processing in connection with provision of publicly available electronic communications services in public communications networks in Union in relation to matters for which subject to specific obligations in Directive 2002/58/EC"
+
+96:
+  chapter: 'XI - Final Provisions'
+  name: Relationship with previously concluded Agreements
+  description: "International agreements involving transfer of personal data to third countries which were concluded by Member States prior to 24 May 2016 and comply with Union law as applicable prior to that date shall remain in force until amended, replaced or revoked"
+
+97:
+  chapter: 'XI - Final Provisions'
+  name: Commission reports
+
+97.1:
+  article: '97'
+  name: Commission reports to Parliament and Council
+  description: "By 25 May 2020 and every four years thereafter Commission shall submit reports on evaluation and review of this Regulation to European Parliament and Council"
+
+98:
+  chapter: 'XI - Final Provisions'
+  name: Review of other Union legal acts on data protection
+  description: "Commission shall, where appropriate, submit legislative proposals with a view to amending other Union legal acts on protection of personal data in order to ensure uniform and consistent protection of natural persons"
+
+99:
+  chapter: 'XI - Final Provisions'
+  name: Entry into force and application
+
+99.1:
+  article: '99'
+  name: Entry into force
+  description: "This Regulation shall enter into force on the twentieth day following publication in Official Journal of European Union"
+
+99.2:
+  article: '99'
+  name: Applicable from 25 May 2018
+  description: "It shall apply from 25 May 2018"

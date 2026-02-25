@@ -2,7 +2,7 @@ rule_id: e4b3571e-c6dc-429f-bd92-7324d6abd469
 name: "GDPR Art.30(1)(g) - Security Measures Record Completeness Failure"
 description: |
   Detects conditions that undermine the ability to maintain accurate records of technical
-  and organisational security measures as required by GDPR Article 30(1)(g), which mandates
+  and organisational security measures as required by agent_id, GDPR Article 30(1)(g), which mandates
   that records of processing activities include a general description of security measures.
   Monitors: (1) new hosts appearing in logs without prior registration (undocumented systems
   processing personal data), (2) new event sources/datasets appearing unexpectedly
@@ -20,10 +20,10 @@ params: '{}'
 schedule_interval: 1h
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE @timestamp >= NOW() - 2 hours
   | STATS
       event_count           = COUNT(*),
@@ -33,8 +33,8 @@ query: |
       last_seen_in_window   = MAX(@timestamp),
       os_types              = VALUES(host.os.type),
       ip_addresses          = VALUES(host.ip),
-      event_categories      = VALUES(event.category)
-    BY host.name,
+      event_categories      = VALUES(event.kind)
+    BY agent_id, host.name,
        bucket = DATE_TRUNC(1 hour, @timestamp)
   | EVAL hours_in_window = DATE_DIFF("hours", first_seen_in_window, last_seen_in_window)
   | WHERE event_count >= 5
@@ -65,7 +65,7 @@ query: |
       discovery_type == "new_host_partially_operational", 45,
       20
     )
-  | KEEP bucket, host.name, event_count, event_types,
+  | KEEP agent_id, bucket, host.name, event_count, event_types,
          datasets, os_types, ip_addresses, hours_in_window,
          event_categories, discovery_type, gdpr_30_implication,
          severity_level, risk_score
@@ -83,7 +83,7 @@ references:
   - "GDPR Article 30(1)(g): Records of processing must include description of security measures"
   - "GDPR Article 30(1): Controller must maintain record of processing activities"
   - "GDPR Article 35(1): DPIA required for new high-risk processing activities"
-  - "GDPR Article 25(1): Data protection by design for new processing systems"
+  - "GDPR Article 25(1): Data protection by agent_id, design for new processing systems"
 gdpr: ["30.1.g", "30.1.b", "25.1", "35.1"]
 nist: ["CM-8", "CM-3", "PL-1", "CA-7"]
 pci_dss: ["2.4", "11.1"]

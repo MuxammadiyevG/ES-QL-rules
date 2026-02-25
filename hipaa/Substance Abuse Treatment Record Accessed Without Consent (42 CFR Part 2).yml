@@ -37,7 +37,7 @@ query: |
           accessing_users = VALUES(user.name),
           programs = VALUES(event.original  # FIXME: program.type not available),
           patients_affected = COUNT_DISTINCT(event.original  # FIXME: patient.id not available)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE part2_violations > 0
   | EVAL risk_score = CASE(
       part2_violations > 10, 100,

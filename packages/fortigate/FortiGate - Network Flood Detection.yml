@@ -16,7 +16,7 @@ query: |
   | STATS 
       session_count = COUNT(*),
       last_seen = MAX(@timestamp)
-    BY source.ip, event.action
+    BY agent_id, source.ip, event.action
   | WHERE session_count > 5000
   | SORT session_count DESC
   | LIMIT 50

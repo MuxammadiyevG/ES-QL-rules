@@ -9,30 +9,38 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
-  /* auditd execve telemetry */
-  | WHERE event.action == "execve" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "process_started")
-  /* selection: iptables with specific BPFDoor pattern */
+  FROM logs-updive.audit-*
+  // Filter for process execution events in Linux Audit logs
+  | WHERE event.action == "execve" 
+     OR (event.dataset RLIKE "(?i).*auditd.*" AND event.type == "process_started")
+  // Selection: Identify iptables being used to establish BPFDoor-style port redirection
+  | EVAL cmd = COALESCE(process.command_line, "")
   | WHERE process.name == "iptables" 
-    AND COALESCE(process.command_line, "") RLIKE "(?i)-t\\s+nat"
-    AND COALESCE(process.command_line, "") RLIKE "(?i)PREROUTING"
-    AND COALESCE(process.command_line, "") RLIKE "(?i)--dport"
-    AND COALESCE(process.command_line, "") RLIKE "(?i)REDIRECT"
+      AND cmd RLIKE "(?i).*\\\\-t\\\\s+nat.*"
+      AND cmd RLIKE "(?i).*PREROUTING.*"
+      AND cmd RLIKE "(?i).*\\\\-\\\\-dport.*"
+      AND cmd RLIKE "(?i).*REDIRECT.*"
+      AND cmd RLIKE "(?i).*\\\\-\\\\-to\\\\-ports.*"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(cmd),
       executables = VALUES(process.executable),
-      parent_processes = VALUES(process.parent.name),
+      parent_pids = VALUES(process.parent.pid),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      agent_id, host.name, 
+      user.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, executables, parent_processes, hosts, raw_samples
+  | KEEP 
+      bucket, host.name, user.name, event_count, users, processes, 
+      command_lines, executables, parent_pids, hosts, raw_samples
   | SORT event_count DESC
 enabled: false
 tags:

@@ -11,7 +11,7 @@ name: "Workforce Member Accessing ePHI Without Security Training"
 description: |
   Identifies workforce members (employees, contractors, volunteers) accessing ePHI
   systems without documented completion of HIPAA security awareness training as
-  required by §164.308(a)(5). Detects authentication to EHR/EMR by users without
+  required by agent_id, §164.308(a)(5). Detects authentication to EHR/EMR by users without
   training records in past 12 months, new hires accessing PHI before orientation
   completion, or expired training certifications. Security training must cover
   password management, malware protection, login monitoring, and security reminders.
@@ -42,7 +42,7 @@ query: |
           systems_accessed = VALUES(host.name),
           first_access = MIN(@timestamp),
           last_access = MAX(@timestamp)
-    BY user.name
+    BY agent_id, user.name
   | WHERE untrained_access_count > 0
   | EVAL risk_score = CASE(
       untrained_access_count > 50, 100,

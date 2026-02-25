@@ -1,0 +1,54 @@
+rule_id: c30d20ea-6cf0-4c5d-afce-a8fad2d0ae77
+name: AD Directory Object Modified Suspiciously (5136)
+description: |
+  Ushbu qoida persistence va privilege escalation hujumlarida ishlatiladigan AD obyekt atributlari o'zgarishini aniqlaydi.
+  `adminCount`, `servicePrincipalName`, delegatsiya yoki ACLga oid atributlar o'zgarishi hujumchiga yashirin huquqlar berishi va keyingi lateral movementni osonlashtirishi mumkin.
+  Qonuniy holatlar: AD administratsiyasi, ilova servis akkauntlarini sozlash, migration yoki identity governance jarayonlari.
+  SOC triage bosqichlari:
+  - O'zgartiruvchi `actor` va ta'sirlangan `target_user`/obyektni aniqlang.
+  - Change ticket bilan aynan qaysi atribut o'zgarganini tasdiqlang.
+  - `src_ip` manbasi va AD management hostining legitimligini tekshiring.
+  - O'zgargan obyektning guruh a'zoligi va imtiyoz darajasini tekshiring.
+  - Tasdiqlanmasa atributni rollback qiling, huquqlarni qayta baholang va potensial komprometatsiyani containment qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  | EVAL attr = "Unknown"
+  | EVAL op = COALESCE(event.action, "")
+  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  | WHERE event.code == "5136"
+  | WHERE actor IS NOT NULL
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | WHERE attr RLIKE "(?i)(admincount|serviceprincipalname|scriptpath|msds-allowedtodelegateto|useraccountcontrol|nTSecurityDescriptor)"
+  | STATS modify_count = COUNT(*) BY agent_id, hostn, actor, target_user, src_ip, attr, op
+  | WHERE modify_count >= 1
+  | EVAL dyn_risk = CASE(attr RLIKE "(?i)(nTSecurityDescriptor|admincount|msds-allowedtodelegateto)", 93, modify_count >= 3, 89, 84)
+  | KEEP agent_id, hostn, actor, target_user, src_ip, attr, op, modify_count, dyn_risk
+  | SORT dyn_risk DESC, modify_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - AD
+  - Directory Changes
+  - Persistence
+severity: high
+risk_score: 84
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+mitre_attack:
+  TA0003:
+    T1098: []
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

@@ -5,7 +5,7 @@ description: |
   Adversaries may redirect the output of reconnaissance commands (e.g., hostname, whoami, dir)
   to files for later collection or exfiltration.
   False positives: Common in scripting and administration; use as a hunting baseline and
-  tune by excluding known scripts and benign parent processes.
+  tune by agent_id, excluding known scripts and benign parent processes.
   Triage: Review the full command line to identify redirected output files, verify the parent
   process and user context, and correlate with subsequent file access, compression, or exfiltration.
 type: esql
@@ -49,7 +49,7 @@ query: |
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
       suspicious_parent_hits = SUM(CASE(suspicious_parent == true, 1, 0))
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   // Risk Scoring: Weighted towards suspicious parent-child relationships

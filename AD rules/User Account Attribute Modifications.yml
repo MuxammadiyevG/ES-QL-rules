@@ -40,7 +40,7 @@ query: |
       target_users = VALUES(target_user),
       first_modification = MIN(@timestamp),
       last_modification = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE modifications >= 1
   | KEEP agent_id, bucket, winlog.computer_name, modifications, unique_targets, modifiers,
       target_users, first_modification, last_modification

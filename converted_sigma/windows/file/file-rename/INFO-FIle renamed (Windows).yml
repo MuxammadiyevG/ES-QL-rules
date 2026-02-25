@@ -4,7 +4,7 @@ rule_id: 91ba9169-424a-4f08-a9dd-3b0c83112398
 name: "INFO - File Renamed (Windows) - Hunting"
 description: |
   Informational baseline for file rename activity. Many pipelines do not provide both old/new names in ECS.
-  This rule hunts by looking for file events that mention rename/move in event.action/type/dataset.
+  This rule hunts by agent_id, looking for file events that mention rename/move in event.action/type/dataset.
   If you have explicit old/new path fields, replace the logic to use them.
 type: esql
 params: '{}'
@@ -32,7 +32,7 @@ query: |
       paths = VALUES(winlog.event_data.OriginalFileName),
       raw_samples = VALUES(event.original)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

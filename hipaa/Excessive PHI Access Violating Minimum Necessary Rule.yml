@@ -11,7 +11,7 @@ name: "Excessive PHI Access Violating Minimum Necessary Rule"
 description: |
   Identifies access to Protected Health Information that exceeds the minimum necessary
   for the user's job function, violating HIPAA §164.502(b) and §164.514(d). Detects
-  bulk patient record queries by non-clinical staff, access to unassigned patient
+  bulk patient record queries by agent_id, non-clinical staff, access to unassigned patient
   charts by providers, administrative users viewing sensitive clinical data, or
   SELECT * queries on patient tables. Minimum necessary limits PHI access to only
   what's needed for specific job duties. Monitor for access pattern anomalies and
@@ -43,7 +43,7 @@ query: |
           unique_patients = COUNT_DISTINCT(event.original),
           access_types = VALUES(event.action),
           queries = VALUES(event.original)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE access_count > 50 OR unique_patients > 20
   | EVAL risk_score = CASE(
       access_count > 200, 100,

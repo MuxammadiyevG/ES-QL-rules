@@ -1,8 +1,8 @@
 rule_id: 37be48df-cf1c-4fde-bfa2-5e499d850ef4
-name: "Access To Windows Outlook Mail Files By Uncommon Applications"
+name: "Access To Windows Outlook Mail Files By agent_id, Uncommon Applications"
 description: |
   Detects file access requests to Windows Mail/Outlook app mailbox storage locations (Unistore/UnistoreDB)
-  by uncommon processes. This can indicate mailbox data access for theft, manipulation, or wiping.
+  by agent_id, uncommon processes. This can indicate mailbox data access for theft, manipulation, or wiping.
   Requires heavy baselining before production usage.
   Requirements: Microsoft-Windows-Kernel-File ETW provider (or equivalent file access telemetry).
   False positives: AV/EDR, backup tools, search/indexing tools (e.g., Everything), legit software installed
@@ -54,7 +54,7 @@ query: |
     parent_executables = VALUES(winlog.event_data.CallerProcessName),
     file_paths = VALUES(winlog.event_data.OriginalFileName)
   BY 
-    host.name, 
+    agent_id, host.name, 
     bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

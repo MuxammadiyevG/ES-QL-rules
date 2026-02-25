@@ -5,7 +5,7 @@ description: |
   points to user-controlled locations such as ProgramData or user AppData (Local/Roaming). Attackers often
   stage payloads in these directories and then configure a service to execute them for persistence or
   privilege escalation.
-  Notes: ProgramData is user-writable by default, but some vendors apply restrictive ACLs; tune by filtering
+  Notes: ProgramData is user-writable by agent_id, default, but some vendors apply restrictive ACLs; tune by filtering
   known-good service names/paths if noisy.
   False positives: Possible (poorly written software, some installers/updaters, vendor services).
   Triage: Identify the service name/key modified, validate the binary signature and owner, check parent process
@@ -56,7 +56,7 @@ query: |
       cmdlines = VALUES(winlog.event_data.CommandLine),
       originals = VALUES(raw),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25

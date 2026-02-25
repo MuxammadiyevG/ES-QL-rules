@@ -24,7 +24,7 @@ query: |
       total_sent_bytes = SUM(COALESCE(s_bytes, 0)),
       total_received_bytes = SUM(COALESCE(d_bytes, 0)),
       event_count = COUNT(*)
-    BY source.ip, destination.ip, event.action
+    BY agent_id, source.ip, destination.ip, event.action
   | WHERE event_count > 0 AND total_sent_bytes > 104857600
   | SORT total_sent_bytes DESC
   | LIMIT 50

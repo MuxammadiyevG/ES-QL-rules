@@ -15,10 +15,10 @@ params: '{}'
 schedule_interval: 5m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE event.outcome == "failure"
     AND (
       event.code == "4625"
@@ -31,7 +31,7 @@ query: |
       targeted_hosts        = VALUES(host.name),
       source_ip_list        = VALUES(source.ip),
       failure_types         = VALUES(event.action)
-    BY source.ip,
+    BY agent_id, source.ip,
        bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE total_failures >= 20
   | EVAL attack_pattern = CASE(
@@ -52,7 +52,7 @@ query: |
       total_failures >= 50,  55,
       35
     )
-  | KEEP bucket, source.ip, total_failures, unique_targets,
+  | KEEP agent_id, bucket, source.ip, total_failures, unique_targets,
          unique_source_ips, targeted_hosts, attack_pattern,
          severity_level, risk_score
   | SORT total_failures DESC

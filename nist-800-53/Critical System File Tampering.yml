@@ -43,7 +43,7 @@ query: |
       modified_files = VALUES(file.path),
       modifiers = VALUES(user.name),
       file_hashes = VALUES(event.original.sha256)
-    BY host.name, system_criticality
+    BY agent_id, host.name, system_criticality
     , bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE modification_count >= 1
   | EVAL risk_score = CASE(

@@ -65,7 +65,7 @@ query: |
       target_paths = VALUES(tgt),
       raw_samples = VALUES(raw)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

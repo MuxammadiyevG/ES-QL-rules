@@ -46,7 +46,7 @@ query: |
       logon_processes = VALUES(logon_process),
       first_auth = MIN(@timestamp),
       last_auth = MAX(@timestamp)
-    BY winlog.computer_name, target_user, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, target_user, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE ntlm_auth_count >= 5
   | EVAL 
       risk_level = CASE(

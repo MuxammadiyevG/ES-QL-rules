@@ -1,0 +1,52 @@
+rule_id: 86ad84ea-8b12-4f56-92bd-2f7200710e7a
+name: AD Suspicious User Account Change on Domain Controller (4738)
+description: |
+  Ushbu qoida persistence va privilege escalation faoliyatlariga tegishli bo'lib, foydalanuvchi atributlaridagi xavfli o'zgarishlarni kuzatadi.
+  4738 orqali parol siyosati, UAC flaglari, SPN yoki delegatsiya parametrlaridagi manipulyatsiya aniqlanishi mumkin; bular AD'da yashirin hukmronlikka olib keladi.
+  Qonuniy holatlar: helpdesk profili yangilashi, IAM platforma sync, servis akkaunt konfiguratsiyasi o'zgarishi.
+  SOC triage bosqichlari:
+  - O'zgarishni boshlagan `actor` va ta'sirlangan `target_user` ni aniqlang.
+  - Change ticket/deployment hujjati bilan aniq mosligini tekshiring.
+  - `src_ip` manbasi va boshqaruv vositasi (jump host/script runner)ni tekshiring.
+  - Target akkauntning guruh a'zoligi va yangi huquq kontekstini tekshiring.
+  - Shubhali bo'lsa atributni oldingi holatga qaytaring, parol/kalitlarni yangilang va komprometatsiya doirasini cheklang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  | EVAL changed_attrs = CONCAT(COALESCE(winlog.event_data.UserAccountControl, ""), " ", COALESCE(winlog.event_data.ServicePrincipalNames, ""), " ", COALESCE(winlog.event_data.ScriptPath, ""), " ", COALESCE(winlog.event_data.HomeDirectory, ""))
+  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  | WHERE event.code == "4738"
+  | WHERE actor IS NOT NULL
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | STATS event_count = COUNT(*) BY agent_id, hostn, actor, target_user, src_ip, changed_attrs
+  | WHERE event_count >= 1
+  | EVAL dyn_risk = CASE(changed_attrs RLIKE "(?i)(spn|script|delegat|trustedfor|admincount)", 90, event_count >= 3, 82, 74)
+  | KEEP agent_id, hostn, actor, target_user, src_ip, changed_attrs, event_count, dyn_risk
+  | SORT dyn_risk DESC, event_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - AD
+  - Account Lifecycle
+  - Privilege Escalation
+severity: high
+risk_score: 74
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+mitre_attack:
+  TA0003:
+    T1098: []
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

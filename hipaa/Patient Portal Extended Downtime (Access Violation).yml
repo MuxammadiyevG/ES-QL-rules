@@ -38,7 +38,7 @@ query: |
           first_error = MIN(@timestamp),
           last_error = MAX(@timestamp),
           duration_hours = (MAX(@timestamp) - MIN(@timestamp)) / 3600000
-    BY host.name
+    BY agent_id, host.name
   | WHERE duration_hours > 2 OR downtime_events > 100
   | EVAL risk_score = CASE(
       duration_hours > 24, 100,  // >24h downtime

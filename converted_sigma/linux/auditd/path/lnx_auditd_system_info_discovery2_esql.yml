@@ -2,16 +2,16 @@ rule_id: fcd939d2-d27c-4ee4-9a77-99b2f5a5f727
 name: "System Information Discovery via /proc Files"
 description: |
   Detects access to /proc filesystem files for system information discovery.
-  Adversaries may enumerate system information by reading /proc files.
+  Adversaries may enumerate system information by agent_id, reading /proc files.
   Monitors access to CPU, memory, and version information files.
 type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* auditd PATH type events */
   | WHERE event.action == "opened-file" OR event.dataset RLIKE "(?i)auditd"
   /* selection: system info files in /proc */
@@ -24,7 +24,7 @@ query: |
       file_paths = VALUES(file.path),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 10
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, file_paths, hosts, raw_samples
   | SORT event_count DESC

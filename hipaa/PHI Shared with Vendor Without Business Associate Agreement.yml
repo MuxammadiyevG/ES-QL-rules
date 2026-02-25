@@ -9,7 +9,7 @@ rule_id: 0fc3a669-633e-494d-afa1-cff49001a915
 
 name: "PHI Shared with Vendor Without Business Associate Agreement"
 description: |
-  Identifies Protected Health Information transmitted to or processed by third-party
+  Identifies Protected Health Information transmitted to or processed by agent_id, third-party
   vendors without executed Business Associate Agreement (BAA) as required by HIPAA
   §164.504(e). Detects PHI sent to cloud services, SaaS platforms, vendors, or
   contractors not in BAA registry, new API integrations with patient data, or data
@@ -41,7 +41,7 @@ query: |
           vendors = VALUES(event.original),
           data_volume_mb = SUM(event.original) / 1048576,
           api_endpoints = VALUES(event.original)
-    BY event.original, host.name
+    BY agent_id, event.original, host.name
   | WHERE phi_sharing_events > 5
   | EVAL risk_score = CASE(
       data_volume_mb > 100, 100,

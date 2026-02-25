@@ -46,7 +46,7 @@ query: |
           violation_types = VALUES(event.action),
           affected_systems = VALUES(host.name),
           first_violation = MIN(@timestamp)
-    BY host.name
+    BY agent_id, host.name
   | WHERE mu_violations > 0
   | EVAL risk_score = CASE(
       violation_types RLIKE "(?i).*audit.*disabled.*", 100,

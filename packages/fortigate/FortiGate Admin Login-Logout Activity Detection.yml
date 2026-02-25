@@ -31,7 +31,7 @@ query: |
   | STATS 
       event_count = COUNT(*),
       last_event = MAX(@timestamp)
-    BY Dev, message
+    BY agent_id, Dev, message
   | KEEP last_event, Dev, message, event_count
   | SORT last_event DESC
   | LIMIT 100

@@ -43,7 +43,7 @@ query: |
       elevated_tokens = VALUES(elevated_token),
       first_seen = MIN(@timestamp),
       last_seen = MAX(@timestamp)
-    BY winlog.computer_name, target_user, logon_id, bucket = DATE_TRUNC(5 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, target_user, logon_id, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE elevations >= 1 AND logons >= 1
   | KEEP agent_id, bucket, winlog.computer_name, target_user, logon_id, elevations, logons,
       logon_types, elevated_tokens, first_seen, last_seen

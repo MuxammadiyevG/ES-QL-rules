@@ -50,7 +50,7 @@ query: |
       group_sids = VALUES(group_sid),
       first_addition = MIN(@timestamp),
       last_addition = MAX(@timestamp)
-    BY winlog.computer_name, added_by, added_by_domain, bucket = DATE_TRUNC(15 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, added_by, added_by_domain, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE privileged_additions >= 1
   | KEEP agent_id, bucket, winlog.computer_name, added_by, added_by_domain, privileged_additions,
       users_added, privileged_groups, group_sids, first_addition, last_addition

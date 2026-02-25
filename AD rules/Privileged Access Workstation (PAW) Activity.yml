@@ -43,7 +43,7 @@ query: |
       source_ips = VALUES(source_ip),
       first_logon = MIN(@timestamp),
       last_logon = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE logon_count >= 1
   | KEEP agent_id, bucket, winlog.computer_name, logon_count, unique_users, admin_users,
       workstations, source_ips, first_logon, last_logon

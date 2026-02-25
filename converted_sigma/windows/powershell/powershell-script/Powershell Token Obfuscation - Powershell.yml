@@ -1,7 +1,7 @@
 rule_id: f6589032-b2d3-43ad-ab84-70614dace68f
 name: "Powershell Token Obfuscation - Powershell"
 description: |
-  Detects common token-obfuscation patterns frequently produced by Invoke-Obfuscation and similar techniques
+  Detects common token-obfuscation patterns frequently produced by agent_id, Invoke-Obfuscation and similar techniques
   in PowerShell Script Block Logging. This is intended as a threat-hunting baseline to identify obfuscated
   scripts (backticks inserted into tokens, string-format placeholder reconstruction, and obfuscated ${env:path}).
   Requirements: PowerShell Script Block Logging must be enabled.
@@ -49,7 +49,7 @@ query: |
       originals = VALUES(COALESCE(event.original, "")),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20

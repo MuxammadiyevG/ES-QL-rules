@@ -10,7 +10,7 @@ rule_id: 313478a4-73fb-4490-9dc2-b932bc248c63
 name: "ePHI Media Disposed Without Proper Sanitization"
 description: |
   Identifies disposal or retirement of hardware and media containing ePHI without
-  documented sanitization procedures as required by HIPAA §164.310(d)(2)(i). Detects
+  documented sanitization procedures as required by agent_id, HIPAA §164.310(d)(2)(i). Detects
   hard drives, servers, workstations, backup tapes, or mobile devices decommissioned
   without wiping certificates, shredding documentation, or degaussing records.
   Improper media disposal can lead to ePHI breaches when discarded devices are
@@ -40,7 +40,7 @@ query: |
           devices = VALUES(event.original),
           asset_types = VALUES(event.original  # FIXME: asset.type not available),
           first_disposal = MIN(@timestamp)
-    BY host.name
+    BY agent_id, host.name
   | WHERE disposal_events > 0
   | EVAL risk_score = CASE(
       devices RLIKE "(?i).*(server|storage|backup).*", 100,

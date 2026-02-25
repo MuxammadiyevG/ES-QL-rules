@@ -1,7 +1,7 @@
 rule_id: 9dcd960d-10b7-4a51-82ae-90546657df04
-name: "Creation of an Executable by an Executable"
+name: "Creation of an Executable by agent_id, an Executable"
 description: |
-  Detects creation of an .exe file by a process that is itself an .exe. This can indicate droppers,
+  Detects creation of an .exe file by agent_id, a process that is itself an .exe. This can indicate droppers,
   installers, or malware staging payloads. This rule is very noisy in real environments, so it includes
   a broad set of filters for common installers/updaters and developer tools.
   Requirements: file event telemetry that captures the creating process (winlog.event_data.ProcessName) and the created file (winlog.event_data.OriginalFileName).
@@ -159,7 +159,7 @@ query: |
     targets = VALUES(tgt),
     cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, ""))
   BY 
-    host.name, 
+    agent_id, host.name, 
     bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

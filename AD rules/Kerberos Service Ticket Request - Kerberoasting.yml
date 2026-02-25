@@ -50,7 +50,7 @@ query: |
       source_ips = VALUES(source_ip),
       first_request = MIN(@timestamp),
       last_request = MAX(@timestamp)
-    BY winlog.computer_name, requesting_user, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, requesting_user, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE ticket_requests >= 3 OR unique_services >= 3
   | EVAL 
       attack_confidence = CASE(

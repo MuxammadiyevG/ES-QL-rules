@@ -29,7 +29,7 @@ query: |
       logon_types_seen     = VALUES(winlog.event_data.LogonType),
       oldest_session_min   = MAX(session_age_minutes),
       source_ips           = VALUES(source.ip)
-    BY host.name,
+    BY agent_id, host.name,
        winlog.event_data.TargetUserName,
        bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE session_count >= 1
@@ -43,7 +43,7 @@ query: |
       oldest_session_min >= 60,  45,
       25
     )
-  | KEEP bucket, host.name, winlog.event_data.TargetUserName,
+  | KEEP agent_id, bucket, host.name, winlog.event_data.TargetUserName,
          session_count, oldest_session_min, source_ips,
          logon_types_seen, severity_level, risk_score
   | SORT oldest_session_min DESC

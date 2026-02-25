@@ -11,7 +11,7 @@ name: "Patient Access to Medical Records Request Overdue"
 description: |
   Identifies patient requests for access to their medical records that have not
   been fulfilled within the HIPAA §164.524 mandatory 30-day deadline (extendable
-  once by 30 days with written explanation). Detects open medical record requests
+  once by agent_id, 30 days with written explanation). Detects open medical record requests
   in patient portals, pending chart copy requests, or access requests stuck in
   processing status beyond timeframe. Timely access to medical records is fundamental
   patient right. Monitor request timestamps and status changes to ensure compliance
@@ -37,7 +37,7 @@ query: |
           request_status = VALUES(event.original),
           first_request = MIN(@timestamp),
           patient = VALUES(user.name)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE request_age_days > 30
   | EVAL risk_score = CASE(
       request_age_days > 90, 100,  // >90 days = severe violation

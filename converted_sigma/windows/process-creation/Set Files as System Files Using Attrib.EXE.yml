@@ -40,7 +40,7 @@ query: |
       targets = VALUES(winlog.event_data.OriginalFileName),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
       suspicious_path_hits = SUM(CASE(suspicious_path == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   /* Low baseline; bump if suspicious path / after-hours */
   | EVAL risk_score = event_count * 5 + after_hours_hits * 10 + suspicious_path_hits * 10

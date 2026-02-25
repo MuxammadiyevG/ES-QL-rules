@@ -50,7 +50,7 @@ query: |
           data_volume_mb = SUM(event.original) / 1048576,
           affected_systems = VALUES(host.name),
           users_involved = VALUES(user.name)
-    BY host.name
+    BY agent_id, host.name
   | WHERE breach_indicators > 0
   | EVAL estimated_individuals = CASE(
       data_volume_mb > 1000, ">500",

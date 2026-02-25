@@ -36,7 +36,7 @@ query: |
   | STATS idle_duration_min = MAX(event.original) / 60000000,
           last_activity = MAX(@timestamp),
           sessions = VALUES(event.code)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE idle_duration_min > 10  // >10 min idle without lock
   | EVAL risk_score = CASE(
       idle_duration_min > 30, 90,

@@ -42,7 +42,7 @@ query: |
       methods_used = VALUES(event.action),
       target_paths = VALUES(event.original),
       status_codes = VALUES(event.outcome)
-    BY source.ip, method_risk
+    BY agent_id, source.ip, method_risk
     , bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE method_count >= 3
   | EVAL risk_score = CASE(

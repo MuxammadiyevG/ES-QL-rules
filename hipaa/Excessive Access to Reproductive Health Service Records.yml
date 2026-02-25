@@ -13,7 +13,7 @@ description: |
   contraception, fertility, STD treatment) that may indicate privacy violations,
   especially post-Dobbs decision with state-level legal implications. Detects
   unusual access volumes to OB/GYN charts, reproductive procedure documentation
-  viewed by non-clinical staff, or access to sensitive diagnosis codes (Z30-Z33,
+  viewed by agent_id, non-clinical staff, or access to sensitive diagnosis codes (Z30-Z33,
   O00-O08) without clear clinical need. While HIPAA doesn't specifically restrict
   these records, heightened sensitivity requires monitoring for potential misuse,
   unauthorized disclosure, or state law violations. Monitor reproductive health
@@ -38,7 +38,7 @@ query: |
           user_roles = VALUES(event.original  # FIXME: user.role not available),
           unique_patients = COUNT_DISTINCT(event.original  # FIXME: patient.id not available),
           service_types = VALUES(event.original  # FIXME: diagnosis.code not available)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE sensitive_access > 20 OR unique_patients > 10
   | EVAL risk_score = CASE(
       user_roles RLIKE "(?i).*(admin|billing|legal|compliance).*", 95,

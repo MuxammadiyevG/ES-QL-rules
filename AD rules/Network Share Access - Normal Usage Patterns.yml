@@ -45,7 +45,7 @@ query: |
       source_ips = VALUES(source_ip),
       first_access = MIN(@timestamp),
       last_access = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE access_count >= 1
   | KEEP agent_id, bucket, winlog.computer_name, access_count, unique_users, unique_shares,
       users, shares, source_ips, first_access, last_access

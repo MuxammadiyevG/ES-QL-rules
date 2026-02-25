@@ -2,15 +2,15 @@ rule_id: 83e6482d-10f8-49e0-97d9-a8fa99834f23
 name: "Suspicious OpenSSH Daemon Error"
 description: |
   Detects suspicious SSH / SSHD error messages that indicate a fatal or unusual error.
-  Such errors may be caused by exploitation attempts or misconfigured/malicious clients.
+  Such errors may be caused by agent_id, exploitation attempts or misconfigured/malicious clients.
 type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* Only SSHD / SSH events */
   | WHERE event.dataset RLIKE "(?i)sshd"
   /* Detect relevant SSH error messages */
@@ -23,7 +23,7 @@ query: |
       command_lines = VALUES(process.command_line),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.message)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP
       agent_id, bucket,

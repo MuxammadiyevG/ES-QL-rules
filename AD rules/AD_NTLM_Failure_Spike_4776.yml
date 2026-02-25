@@ -1,0 +1,50 @@
+rule_id: 4dace9ad-a840-4c04-9b7b-545204a182aa
+name: AD NTLM Authentication Failure Spike (4776)
+description: |
+  Ushbu qoida credential access faoliyatiga taalluqli bo'lib, NTLM autentikatsiya xatolarining spike holatini aniqlaydi.
+  Ko'p sonli 4776 hodisalari password spray, credential stuffing yoki eski protokollar orqali AD hisoblarini buzishga urinishdan darak beradi.
+  Qonuniy holatlar: legacy ilovalar, noto'g'ri saqlangan servis parollari, parol rotatsiyasidan keyingi kechikkan yangilanishlar.
+  SOC triage bosqichlari:
+  - Hujum manbasi sifatida `src_ip` va nishonlangan `target_user` larni aniqlang.
+  - Change ticket/deployment bo'yicha NTLM bilan bog'liq o'zgarishlar borligini tekshiring.
+  - `src_ip` manzilining reputatsiyasi va tarmoq segmentini tekshirib chiqing.
+  - Nishon akkauntlarning guruh a'zoligi va imtiyoz darajasini tekshiring.
+  - Tasdiqlansa manbani cheklang, parollarni yangilang va NTLM qisqartirish strategiyasini ishga tushiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.Workstation, winlog.event_data.IpAddress)
+  | EVAL status = COALESCE(winlog.event_data.Status, "")
+  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  | WHERE event.code == "4776"
+  | STATS fail_count = COUNT(*), distinct_users = COUNT_DISTINCT(target_user) BY agent_id, hostn, src_ip, status
+  | WHERE fail_count >= 20 OR distinct_users >= 8
+  | EVAL dyn_risk = CASE(fail_count >= 80 OR distinct_users >= 25, 92, fail_count >= 40 OR distinct_users >= 12, 87, 82)
+  | KEEP agent_id, hostn, src_ip, status, fail_count, distinct_users, dyn_risk
+  | SORT dyn_risk DESC, fail_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - AD
+  - Authentication
+  - Credential Access
+severity: high
+risk_score: 82
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+mitre_attack:
+  TA0006:
+    T1110: []
+nist: ["AU-2", "AU-12", "AC-7", "IA-2"]
+pci_dss: ["10.2.4", "10.2.5", "8.1.6"]
+gdpr: ["32.1.a", "32.2"]

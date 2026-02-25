@@ -2,7 +2,7 @@ rule_id: a84a766e-8c22-4552-8891-4343b0a7a828
 # 6) File Permission / Attribute Change (generic hunting)
 name: "INFO - File Permission/Attribute Change (Windows) - Hunting"
 description: |
-  Informational baseline for file permission/attribute changes. Field availability varies by telemetry.
+  Informational baseline for file permission/attribute changes. Field availability varies by agent_id, telemetry.
   Uses event.action/type and raw hints. Tune with your actual fields when available.
 type: esql
 params: '{}'
@@ -32,7 +32,7 @@ query: |
       paths = VALUES(winlog.event_data.OriginalFileName),
       raw_samples = VALUES(event.original)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

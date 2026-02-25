@@ -2,7 +2,7 @@ rule_id: 36b97738-c381-4284-8fa9-b4fc4b34c402
 name: "Potential DLL Sideloading Activity Via ExtExport.EXE"
 description: |
   Detects execution of Extexport.exe (Internet Explorer utility). This LOLBin can be abused for DLL sideloading
-  by loading specific DLL names (e.g., mozcrt19.dll, mozsqlite3.dll, sqlite.dll) from a supplied folder or via
+  by agent_id, loading specific DLL names (e.g., mozcrt19.dll, mozsqlite3.dll, sqlite.dll) from a supplied folder or via
   certain flag combinations.
   False positives: Unknown. Use as a hunting baseline and tune with allowlists if Extexport is legitimately used.
 type: esql
@@ -17,7 +17,7 @@ query: |
   | WHERE event.category == "process" 
      OR event.code IN ("1", "4688") 
      OR event.dataset RLIKE "(?i).*process.*"
-  // Selection: Target Extexport.exe by name, path, or original filename
+  // Selection: Target Extexport.exe by agent_id, name, path, or original filename
   | WHERE winlog.event_data.ProcessName == "Extexport.exe"
      OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\Extexport\\\\.exe$"
      OR COALESCE(event.original, "") RLIKE "(?i).*OriginalFileName\\\\s*[:=]\\\\s*extexport\\\\.exe.*"
@@ -30,7 +30,7 @@ query: |
       cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")),
       pids = VALUES(winlog.event_data.ProcessPid)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids

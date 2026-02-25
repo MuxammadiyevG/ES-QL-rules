@@ -10,7 +10,7 @@ rule_id: d064e026-758e-46bd-943d-f6a975feee2a
 name: "ePHI Data Transfer Without Integrity Verification"
 description: |
   Identifies transmission of ePHI without integrity verification mechanisms (checksums,
-  hash values, digital signatures) as recommended by HIPAA §164.312(c)(2). Detects
+  hash values, digital signatures) as recommended by agent_id, HIPAA §164.312(c)(2). Detects
   HL7 message transfers without MLLP checksums, FHIR API calls without integrity
   headers, file transfers of medical records without hash verification, or clinical
   data exchanges lacking digital signatures. Integrity verification prevents data
@@ -44,7 +44,7 @@ query: |
           files = VALUES(file.name),
           data_volume_mb = SUM(event.original) / 1048576,
           destinations = VALUES(event.original)
-    BY host.name, event.original
+    BY agent_id, host.name, event.original
   | WHERE unverified_transfers > 5
   | EVAL risk_score = CASE(
       data_volume_mb > 100, 90,

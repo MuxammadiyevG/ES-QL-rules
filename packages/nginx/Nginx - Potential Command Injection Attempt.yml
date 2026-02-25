@@ -19,7 +19,7 @@ query: |
   | STATS
       injection_count = COUNT(*),
       full_urls = VALUES(url.original)
-    BY source.ip
+    BY agent_id, source.ip
   | WHERE injection_count >= 1
   | KEEP agent_id, source.ip, injection_count, full_urls
 enabled: true

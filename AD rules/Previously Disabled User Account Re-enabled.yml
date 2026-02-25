@@ -38,7 +38,7 @@ query: |
       sids = VALUES(target_sid),
       first_enable = MIN(@timestamp),
       last_enable = MAX(@timestamp)
-    BY winlog.computer_name, enabler, enabler_domain, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, enabler, enabler_domain, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE accounts_enabled >= 1
   | KEEP agent_id, bucket, winlog.computer_name, enabler, enabler_domain, accounts_enabled,
       enabled_accounts, sids, first_enable, last_enable

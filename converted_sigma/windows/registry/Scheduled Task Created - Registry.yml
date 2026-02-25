@@ -5,7 +5,7 @@ description: |
   \Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\ and \...\TaskCache\Tree\.
   Attackers may create scheduled tasks for persistence, execution, or privilege escalation.
   False positives: Likely (normal Windows/admin behavior). Use as hunting baseline and tune by
-  filtering known task paths, approved management tooling, and narrowing to suspicious users/hosts/times.
+  agent_id, filtering known task paths, approved management tooling, and narrowing to suspicious users/hosts/times.
   Triage: Identify the task name/path and associated actions (schtasks.exe, TaskScheduler COM),
   review the creating user and parent process chain, and correlate with new service creation,
   script drops, or unusual binaries referenced by the task.
@@ -37,7 +37,7 @@ query: |
       cmdlines = VALUES(winlog.event_data.CommandLine),
       originals = VALUES(raw),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, taskcache_area, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, taskcache_area, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   /* Low severity baseline; bump risk a bit if after-hours spikes */
   | EVAL risk_score = event_count * 5 + after_hours_hits * 10

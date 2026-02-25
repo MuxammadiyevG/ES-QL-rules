@@ -6,7 +6,7 @@ description: |
   This can indicate a persistence / hijack technique (Shell\Open\Command) that decrypts payloads on-the-fly for defense
   evasion (e.g., decrypting a malicious payload before execution).
   False positives: Rare but possible (legitimate scripts using crypto classes), though it is less common in Shell\Open\Command
-  handlers. Tune by allowlisting known-good software and correlating with suspicious parent process / low-prevalence users.
+  handlers. Tune by agent_id, allowlisting known-good software and correlating with suspicious parent process / low-prevalence users.
   Triage: Identify which key is modified (file association/protocol), extract the full command data, verify parent process/user,
   and correlate with subsequent PowerShell execution, file writes in Temp/Downloads, and any newly spawned processes.
 type: esql
@@ -39,7 +39,7 @@ query: |
       cmdlines = VALUES(winlog.event_data.CommandLine),
       originals = VALUES(raw),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25

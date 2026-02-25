@@ -7,21 +7,32 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
-  | WHERE event.action == "execve" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "process_started")
-  | WHERE process.name == "dd" AND COALESCE(process.command_line, "") RLIKE "(?i)(if=/dev/zero|if=/dev/random|if=/dev/urandom)"
+  FROM logs-updive.audit-*
+  // Filter for process execution events in Linux Audit logs
+  | WHERE event.action == "execve" 
+     OR (event.dataset RLIKE "(?i).*auditd.*" AND event.type == "process_started")
+  // Selection: Identify the 'dd' utility being used to read from zero/random devices
+  | WHERE process.name == "dd" 
+    AND COALESCE(process.command_line, "") RLIKE "(?i).*if=/dev/(zero|random|urandom).*"
+  // Selection: Look for 'of=' to identify the target file being modified/created
+  | EVAL cmd = COALESCE(process.command_line, "")
+  | WHERE cmd RLIKE "(?i).*of=.*"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(cmd),
       hosts = VALUES(host.name)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY 
+      agent_id, host.name, 
+      user.name, 
+      bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
-  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, hosts
+  | KEEP 
+      bucket, host.name, user.name, event_count, processes, command_lines
   | SORT event_count DESC
 enabled: false
 tags:

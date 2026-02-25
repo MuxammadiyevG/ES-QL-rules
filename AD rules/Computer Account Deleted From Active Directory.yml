@@ -37,7 +37,7 @@ query: |
       computer_sids = VALUES(computer_sid),
       first_deletion = MIN(@timestamp),
       last_deletion = MAX(@timestamp)
-    BY winlog.computer_name, deleter, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, deleter, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE computers_deleted >= 1
   | EVAL 
       severity_level = CASE(

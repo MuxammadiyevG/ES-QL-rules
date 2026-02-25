@@ -7,10 +7,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   | WHERE event.action == "execve" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "process_started")
   | WHERE process.name IN ("touch", "mkdir") AND COALESCE(process.command_line, "") RLIKE "(?i)/\\."
   | STATS
@@ -20,7 +20,7 @@ query: |
       command_lines = VALUES(process.command_line),
       file_paths = VALUES(file.path),
       hosts = VALUES(host.name)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 3
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, file_paths, hosts
   | SORT event_count DESC

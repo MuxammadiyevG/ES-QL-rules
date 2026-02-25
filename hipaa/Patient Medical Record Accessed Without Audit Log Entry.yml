@@ -36,7 +36,7 @@ query: |
           users = VALUES(user.name),
           access_types = VALUES(event.action),
           systems = VALUES(host.name)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE unaudited_access > 5
   | EVAL risk_score = CASE(
       unaudited_access > 50, 100,

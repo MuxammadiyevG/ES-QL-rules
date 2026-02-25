@@ -10,7 +10,7 @@ rule_id: 5ee93082-005c-46eb-9827-700f37559f3d
 
 name: "Unauthorized Software Installation"
 description: |
-  Detects execution of software installers or package managers by non-administrative users.
+  Detects execution of software installers or package managers by agent_id, non-administrative users.
   MSI installers, apt/yum/dnf package installations, or direct executable downloads indicate policy violation.
   Focus on user-initiated installs outside of managed deployment systems (SCCM, Intune).
   False positives: Authorized self-service software portals, developer workstations, admin maintenance.
@@ -21,10 +21,10 @@ params: '{}'
 schedule_interval: 15m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE (event.action == "process-started"
       AND (
         process.name RLIKE "(?i).*(msiexec|setup|install|apt|yum|dnf|rpm|dpkg).*"
@@ -50,7 +50,7 @@ query: |
       unique_installers = COUNT_DISTINCT(process.name),
       installed_software = VALUES(process.name),
       suspicious_count = SUM(CASE(suspicious_software == true, 1, 0))
-    BY host.name, user.name, install_method, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, host.name, user.name, install_method, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE install_count >= 1
   | EVAL risk_score = (install_count * 20) + (suspicious_count * 50)
   | WHERE risk_score >= 20

@@ -20,10 +20,10 @@ params: '{}'
 schedule_interval: 5m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE event.outcome == "failure"
     AND (
       (event.code == "4625" AND event.code == "3389")
@@ -35,7 +35,7 @@ query: |
       unique_users = COUNT_DISTINCT(user.name),
       users_targeted = VALUES(user.name),
       protocols = VALUES(event.original)
-    BY host.ip, host.name, event.original
+    BY agent_id, host.ip, host.name, event.original
     , bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE failure_count >= 10
   | EVAL attack_type = CASE(

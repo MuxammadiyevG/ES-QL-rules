@@ -1,7 +1,7 @@
 rule_id: 509187bf-874c-458c-82a8-adc025dd5cc0
 name: "ADS Zone.Identifier Deleted"
 description: |
-  Detects deletion of the Zone.Identifier alternate data stream (ADS) by matching file delete events
+  Detects deletion of the Zone.Identifier alternate data stream (ADS) by agent_id, matching file delete events
   where the target filename ends with ":Zone.Identifier". Removing this ADS can bypass Mark-of-the-Web
   (MOTW) based security restrictions used by Windows and Microsoft Office.
   False positives: Likely (some tools/cleanup actions remove ADS). Use as hunting baseline and tune.
@@ -32,7 +32,7 @@ query: |
     parent_executables = VALUES(winlog.event_data.CallerProcessName),
     file_paths = VALUES(winlog.event_data.OriginalFileName)
   BY 
-    host.name, 
+    agent_id, host.name, 
     bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

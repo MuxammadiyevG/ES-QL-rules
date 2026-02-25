@@ -41,7 +41,7 @@ query: |
           ciphers = VALUES(event.original),
           destinations = VALUES(event.original),
           hosts = VALUES(host.name)
-    BY event.original, event.original
+    BY agent_id, event.original, event.original
   | WHERE weak_crypto_connections > 0
   | EVAL severity_level = CASE(
       event.original IN ("SSLv2", "SSLv3"), "critical",

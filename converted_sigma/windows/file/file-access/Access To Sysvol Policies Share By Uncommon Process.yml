@@ -1,8 +1,8 @@
 rule_id: 911ca8c4-ef22-4e3f-bafb-10dca81c45ae
-name: "Access To Sysvol Policies Share By Uncommon Process"
+name: "Access To Sysvol Policies Share By agent_id, Uncommon Process"
 description: |
   Detects file access requests to the Windows SYSVOL Policies share (UNC paths containing \sysvol\ and \Policies\)
-  by uncommon processes. Attackers may access SYSVOL to discover or retrieve sensitive data from Group Policy
+  by agent_id, uncommon processes. Attackers may access SYSVOL to discover or retrieve sensitive data from Group Policy
   (e.g., legacy cpassword in GPP) or to perform credential-related reconnaissance.
   Requirements: Microsoft-Windows-Kernel-File ETW provider (or equivalent file access telemetry).
   False positives: Unknown. Use as hunting baseline and tune based on environment.
@@ -41,7 +41,7 @@ query: |
     parent_executables = VALUES(winlog.event_data.CallerProcessName),
     file_paths = VALUES(winlog.event_data.OriginalFileName)
   BY 
-    host.name, 
+    agent_id, host.name, 
     bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

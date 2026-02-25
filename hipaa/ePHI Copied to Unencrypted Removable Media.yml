@@ -46,7 +46,7 @@ query: |
           files = VALUES(file.name),
           devices = VALUES(event.original  # FIXME: observer.type not available),
           users = VALUES(user.name)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE file_transfers > 0
   | EVAL risk_score = CASE(
       total_size_mb > 100, 100,

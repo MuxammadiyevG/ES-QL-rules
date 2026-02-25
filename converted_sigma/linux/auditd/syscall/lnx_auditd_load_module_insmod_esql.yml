@@ -8,10 +8,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* auditd SYSCALL events */
   | WHERE event.dataset RLIKE "(?i)auditd"
   /* selection: insmod execution */
@@ -24,7 +24,7 @@ query: |
       command_lines = VALUES(process.command_line),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, command_lines, hosts, raw_samples
   | SORT event_count DESC

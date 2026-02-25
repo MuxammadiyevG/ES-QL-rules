@@ -50,7 +50,7 @@ query: |
       elevated_tokens = VALUES(elevated_token),
       first_logon = MIN(@timestamp),
       last_logon = MAX(@timestamp)
-    BY winlog.computer_name, target_user, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, target_user, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE logon_count >= 1
   | KEEP agent_id, bucket, winlog.computer_name, target_user, logon_count, source_ips,
       workstations, logon_processes, elevated_tokens, first_logon, last_logon

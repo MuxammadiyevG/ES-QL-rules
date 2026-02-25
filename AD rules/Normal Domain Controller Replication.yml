@@ -29,7 +29,7 @@ query: |
   | WHERE event.code == "4662"
   | EVAL 
       accessing_account = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
-      properties = COALESCE(winlog.event_data.Operation, "Unknown")
+      properties = COALESCE(event.action, "Unknown")
   /* Filter for replication GUIDs from actual DCs */
   | WHERE properties RLIKE "(?i)(1131f6aa-9c07-11d1-f79f-00c04fc2dcd2)"
     AND accessing_account RLIKE "\\$$"
@@ -39,7 +39,7 @@ query: |
       dc_accounts = VALUES(accessing_account),
       first_replication = MIN(@timestamp),
       last_replication = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE replication_count >= 1
   | KEEP agent_id, bucket, winlog.computer_name, replication_count, dc_accounts,
       first_replication, last_replication

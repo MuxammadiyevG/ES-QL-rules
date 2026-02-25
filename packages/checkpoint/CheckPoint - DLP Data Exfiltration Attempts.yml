@@ -31,7 +31,7 @@ query: |
       rules = VALUES(checkpoint.dlp_rule_name),
       file_names = VALUES(file.name),
       protocols = VALUES(checkpoint.dlp_transint)
-    BY source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 5
   | KEEP bucket, source.ip, event_count, users, dst_ips, data_types, categories, rules, file_names, protocols
   | SORT event_count DESC

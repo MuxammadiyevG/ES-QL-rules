@@ -46,7 +46,7 @@ query: |
       service_names = VALUES(service_name),
       first_attempt = MIN(@timestamp),
       last_attempt = MAX(@timestamp)
-    BY winlog.computer_name, accessing_user, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, accessing_user, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE enum_attempts >= 3
   | KEEP agent_id, bucket, winlog.computer_name, accessing_user, enum_attempts,
       objects_accessed, object_types, service_names, first_attempt, last_attempt

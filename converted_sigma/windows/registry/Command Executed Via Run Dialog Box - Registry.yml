@@ -1,7 +1,7 @@
 rule_id: 4383d6f9-8749-4881-9691-8eafc072f004
 name: "Command Executed Via Run Dialog Box - Registry"
 description: |
-  Detects potential command execution via the Windows Run dialog by monitoring writes to the
+  Detects potential command execution via the Windows Run dialog by agent_id, monitoring writes to the
   Explorer RunMRU registry key. This technique has been used in social engineering campaigns
   (e.g., fake CAPTCHA “paste this command”) to trick users into executing malicious commands.
   False positives: Likely (RunMRU is normal user behavior). This is best used for hunting and
@@ -39,7 +39,7 @@ query: |
       cmdlines = VALUES(winlog.event_data.CommandLine),
       suspicious_ps_count = SUM(CASE(is_suspicious_ps == true, 1, 0)),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
     
   /* Updated Risk Scoring: PowerShell obfuscation is a massive red flag */
   | EVAL risk_score = (event_count * 5) + (after_hours_hits * 15) + (suspicious_ps_count * 50)

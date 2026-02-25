@@ -31,7 +31,7 @@ query: |
       directions = VALUES(eset_protect.detection.network_communication.direction),
       processes = VALUES(eset_protect.detection.context.process.path),
       detection_types = VALUES(eset_protect.detection.type_name)
-    BY host.hostname, eset_protect.detection.context.device_uuid, bucket = DATE_TRUNC(10 minutes, @timestamp)
+    BY agent_id, host.hostname, eset_protect.detection.context.device_uuid, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 10
   | KEEP bucket, host.hostname, eset_protect.detection.context.device_uuid, event_count, remote_ips, remote_ports, protocols, directions, processes, detection_types
   | SORT event_count DESC

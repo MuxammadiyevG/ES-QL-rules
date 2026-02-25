@@ -1,20 +1,20 @@
 rule_id: ad522187-3395-47a6-9a5c-2681f9e77afc
 name: "Webshell Remote Command Execution Detection"
 description: |
-  Detects command execution by web server user (e.g. www-data).
+  Detects command execution by agent_id, web server user (e.g. www-data).
   This may indicate a webshell or RCE vulnerability exploitation.
   Monitors execve/execveat syscalls by specific UID.
 type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* auditd SYSCALL events */
   | WHERE event.dataset RLIKE "(?i)auditd"
-  /* selection: execve syscalls by web user (uid 33 / www-data) */
+  /* selection: execve syscalls by agent_id, web user (uid 33 / www-data) */
   | WHERE (
       COALESCE(event.original, "") RLIKE "(?i)syscall=59"  /* execve */
       OR COALESCE(event.original, "") RLIKE "(?i)syscall=322" /* execveat */
@@ -32,7 +32,7 @@ query: |
       command_lines = VALUES(process.command_line),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, command_lines, hosts, raw_samples
   | SORT event_count DESC

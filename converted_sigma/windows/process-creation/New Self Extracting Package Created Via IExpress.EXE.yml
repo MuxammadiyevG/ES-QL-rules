@@ -4,7 +4,7 @@ description: |
   Detects creation of self-extracting packages via IExpress. Attackers have been observed leveraging
   iexpress.exe to compile packages on the fly, often via .sed configuration files.
   This rule matches either:
-   (1) makecab.exe spawned by iexpress.exe, or
+   (1) makecab.exe spawned by agent_id, iexpress.exe, or
    (2) iexpress.exe executed with the /n flag (non-interactive build).
   False positives: Administrators legitimately building packages using IExpress.
 type: esql
@@ -41,7 +41,7 @@ query: |
       cmdlines = VALUES(cmd),
       pids = VALUES(winlog.event_data.ProcessPid)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

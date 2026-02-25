@@ -21,10 +21,10 @@ params: '{}'
 schedule_interval: 5m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE event.code == "4719"
     OR (event.action == "modified-file" AND file.path RLIKE "(?i).*(auditd\\.conf|audit\\.rules|rsyslog\\.conf).*")
     OR (event.original RLIKE "(?i).*\\\\Policies\\\\Microsoft\\\\Windows\\\\EventLog.*")
@@ -38,7 +38,7 @@ query: |
       change_count = COUNT(*),
       changed_items = VALUES(COALESCE(event.original, file.path, event.original)),
       modifiers = VALUES(user.name)
-    BY host.name
+    BY agent_id, host.name
     , bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE change_count >= 1
   | EVAL risk_score = change_count * 35

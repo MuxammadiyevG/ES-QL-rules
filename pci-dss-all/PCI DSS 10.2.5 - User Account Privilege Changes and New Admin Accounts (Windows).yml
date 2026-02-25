@@ -39,7 +39,7 @@ query: |
       target_accounts     = VALUES(winlog.event_data.TargetUserName),
       groups_modified     = VALUES(winlog.event_data.TargetUserName),
       change_types        = VALUES(change_type)
-    BY host.name,
+    BY agent_id, host.name,
        change_type,
        winlog.event_data.SubjectUserName,
        bucket = DATE_TRUNC(5 minutes, @timestamp)
@@ -59,7 +59,7 @@ query: |
       change_type == "account_enabled",         45,
       30
     )
-  | KEEP bucket, host.name, change_type, change_count,
+  | KEEP agent_id, bucket, host.name, change_type, change_count,
          unique_actors, unique_targets, actors,
          target_accounts, groups_modified,
          severity_level, risk_score

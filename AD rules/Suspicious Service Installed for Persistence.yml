@@ -55,7 +55,7 @@ query: |
       start_types = VALUES(start_type),
       first_install = MIN(@timestamp),
       last_install = MAX(@timestamp)
-    BY winlog.computer_name, installer, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, installer, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE services_installed >= 1
   | KEEP agent_id, bucket, winlog.computer_name, installer, services_installed, service_names,
       service_files, service_accounts, start_types, first_install, last_install

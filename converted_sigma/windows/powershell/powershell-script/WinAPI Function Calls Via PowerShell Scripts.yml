@@ -40,7 +40,7 @@ query: |
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
       suspicious_path_hits = SUM(CASE(suspicious_script_path == true, 1, 0))
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   // Risk Scoring: 20 per event + 15 for night activity + 10 for suspicious paths

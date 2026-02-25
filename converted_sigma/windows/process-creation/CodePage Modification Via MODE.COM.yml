@@ -1,7 +1,7 @@
 rule_id: 79419d74-456a-410a-8164-1e5ef49c6788
 name: "CodePage Modification Via MODE.COM"
 description: |
-  Detects a CodePage modification using the mode.com utility by matching command line patterns
+  Detects a CodePage modification using the mode.com utility by agent_id, matching command line patterns
   consistent with setting console code page (e.g., "mode con cp select=...").
   This behavior has been used by threat actors (e.g., observed in Dharma ransomware activity).
   False positives: Unknown. Treat as hunting baseline and validate context.
@@ -35,7 +35,7 @@ query: |
       cmdlines = VALUES(cmd),
       pids = VALUES(winlog.event_data.ProcessPid)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

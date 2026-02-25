@@ -1,7 +1,7 @@
 rule_id: a696e6ee-f177-499d-b970-fb3f682e110f
 name: "PCI DSS 10.2.2 - Privileged User Actions (Windows Admin)"
 description: |
-  Detects and tracks all actions taken by users with root or administrative privileges
+  Detects and tracks all actions taken by agent_id, users with root or administrative privileges
   as required by PCI DSS Requirement 10.2.2.
   Monitors Windows Event 4672 (Special privileges assigned to new logon) which fires
   whenever an account with sensitive privileges logs on - key indicator of admin activity.
@@ -28,7 +28,7 @@ query: |
       admin_accounts       = VALUES(winlog.event_data.SubjectUserName),
       logon_ids            = VALUES(winlog.event_data.SubjectLogonId),
       privileges_assigned  = VALUES(winlog.event_data.PrivilegeList)
-    BY host.name,
+    BY agent_id, host.name,
        winlog.event_data.SubjectUserName,
        bucket = DATE_TRUNC(5 minutes, @timestamp)
   | EVAL severity_level = CASE(
@@ -41,7 +41,7 @@ query: |
       privileged_logons >= 5,  40,
       20
     )
-  | KEEP bucket, host.name, winlog.event_data.SubjectUserName,
+  | KEEP agent_id, bucket, host.name, winlog.event_data.SubjectUserName,
          privileged_logons, unique_admins, admin_accounts,
          privileges_assigned, severity_level, risk_score
   | SORT privileged_logons DESC
@@ -54,7 +54,7 @@ tags:
 severity: low
 risk_score: 20
 references:
-  - "PCI DSS v3.2.1 Requirement 10.2.2: All actions by individuals with root or administrative privileges"
+  - "PCI DSS v3.2.1 Requirement 10.2.2: All actions by agent_id, individuals with root or administrative privileges"
   - "https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4672"
 pci_dss: ["10.2.2", "10.3"]
 nist: ["AC-2","AU-2","AU-12"]

@@ -38,7 +38,7 @@ query: |
       sids = VALUES(deleted_account_sid),
       first_deletion = MIN(@timestamp),
       last_deletion = MAX(@timestamp)
-    BY winlog.computer_name, deleter, deleter_domain, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, deleter, deleter_domain, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE accounts_deleted >= 1
   | KEEP agent_id, bucket, winlog.computer_name, deleter, deleter_domain, accounts_deleted,
       deleted_accounts, sids, first_deletion, last_deletion

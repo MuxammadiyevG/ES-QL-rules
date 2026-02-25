@@ -17,7 +17,7 @@ query: |
       dns_queries = COUNT(*),
       unique_dns_servers = COUNT_DISTINCT(destination.ip),
       last_query_time = MAX(@timestamp)
-    BY source.ip
+    BY agent_id, source.ip
   | WHERE dns_queries > 1000
   | SORT dns_queries DESC
   | LIMIT 100

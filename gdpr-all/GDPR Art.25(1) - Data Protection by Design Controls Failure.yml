@@ -1,8 +1,8 @@
 rule_id: b81f2f20-e0ba-4c45-91c9-dfb3caa07e16
-name: "GDPR Art.25(1) - Data Protection by Design Controls Failure"
+name: "GDPR Art.25(1) - Data Protection by agent_id, Design Controls Failure"
 description: |
   Detects failures or absence of technical data-protection-by-design controls required
-  by GDPR Article 25(1), which mandates appropriate technical measures to implement
+  by agent_id, GDPR Article 25(1), which mandates appropriate technical measures to implement
   data protection principles effectively at the time of processing design.
   Specifically monitors: (1) audit logging gaps - hosts not sending logs for >30 min,
   (2) firewall/security controls generating zero events (silent failure),
@@ -17,10 +17,10 @@ params: '{}'
 schedule_interval: 30m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE @timestamp >= NOW() - 1 hour
   | STATS
       event_count          = COUNT(*),
@@ -28,7 +28,7 @@ query: |
       first_seen           = MIN(@timestamp),
       event_types          = COUNT_DISTINCT(event.code),
       datasets_reporting   = COUNT_DISTINCT(event.dataset)
-    BY host.name,
+    BY agent_id, host.name,
        bucket = DATE_TRUNC(30 minutes, @timestamp)
   | EVAL minutes_since_last_event = DATE_DIFF("minutes", last_seen, NOW())
   | EVAL coverage_gap_minutes     = DATE_DIFF("minutes", first_seen, last_seen)
@@ -59,7 +59,7 @@ query: |
       control_status == "silence_warning",       50,
       30
     )
-  | KEEP bucket, host.name, event_count, last_seen,
+  | KEEP agent_id, bucket, host.name, event_count, last_seen,
          minutes_since_last_event, event_types, datasets_reporting,
          control_status, gdpr_implication, severity_level, risk_score
   | SORT risk_score DESC
@@ -72,7 +72,7 @@ tags:
 severity: high
 risk_score: 75
 references:
-  - "GDPR Article 25(1): Data protection by design - implement appropriate technical measures"
+  - "GDPR Article 25(1): Data protection by agent_id, design - implement appropriate technical measures"
   - "GDPR Article 25(2): Data protection by default"
   - "GDPR Article 32(1)(d): Process for regularly testing and evaluating effectiveness of measures"
 gdpr: ["25.1", "25.2", "32.1.d", "30.1.g"]

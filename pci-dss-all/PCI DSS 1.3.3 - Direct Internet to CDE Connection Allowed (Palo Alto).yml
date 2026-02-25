@@ -23,9 +23,7 @@ query: |
     AND event.action IN ("allow", "allowed")
     AND event.outcome == "success"
     AND network.direction == "ingress"
-    -- Internet/untrusted source zones (update to match your zone names)
     AND observer.ingress.zone IN ("untrust", "internet", "external", "wan", "outside")
-    -- CDE destination zones (update to match your CDE zone names)
     AND observer.egress.zone IN ("cde", "cardholder", "pci", "secure", "internal-cde")
   | STATS
       allowed_connections    = COUNT(*),
@@ -36,7 +34,7 @@ query: |
       destination_ports      = VALUES(destination.port),
       applications_allowed   = VALUES(network.application),
       permitting_rules       = VALUES(rule.name)
-    BY observer.hostname,
+    BY agent_id, observer.hostname,
        rule.name,
        bucket = DATE_TRUNC(5 minutes, @timestamp)
   | EVAL severity_level = CASE(
@@ -45,7 +43,7 @@ query: |
       "critical"
     )
   | EVAL risk_score = 99
-  | KEEP bucket, observer.hostname, rule.name, allowed_connections,
+  | KEEP agent_id, bucket, observer.hostname, rule.name, allowed_connections,
          unique_sources, unique_destinations, source_ips,
          destination_ips, destination_ports, applications_allowed,
          permitting_rules, severity_level, risk_score

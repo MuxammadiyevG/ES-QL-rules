@@ -16,7 +16,7 @@ query: |
   | WHERE NOT winlog.event_data.TargetUserName RLIKE ".*\\$$"
   | STATS 
       ticket_count = COUNT(*) 
-    BY winlog.event_data.IpAddress, winlog.event_data.TargetUserName, bucket = DATE_TRUNC(10 minutes, @timestamp)
+    BY agent_id, winlog.event_data.IpAddress, winlog.event_data.TargetUserName, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE ticket_count > 20
   | SORT ticket_count DESC
 enabled: false

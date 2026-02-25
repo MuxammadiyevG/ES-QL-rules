@@ -47,7 +47,7 @@ query: |
       source_processes = VALUES(winlog.event_data.ProcessName),
       target_processes = VALUES(target_process),
       access_rights = VALUES(winlog.event_data.AccessGranted)
-    BY host.name, winlog.event_data.TargetUserName, target_process_category, bucket = DATE_TRUNC(15 minutes, @timestamp)
+    BY agent_id, host.name, winlog.event_data.TargetUserName, target_process_category, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE injection_count >= 1
   | EVAL risk_score = CASE(
       target_process_category == "Critical-Process", injection_count * 50,

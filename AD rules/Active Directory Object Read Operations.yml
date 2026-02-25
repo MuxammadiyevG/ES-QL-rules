@@ -31,7 +31,7 @@ query: |
       accessing_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
       object_type = COALESCE(winlog.event_data.ObjectType, "Unknown"),
       object_name = COALESCE(winlog.event_data.ObjectName, "Unknown"),
-      access_mask = COALESCE(winlog.event_data.Operation, "Unknown")
+      access_mask = COALESCE(event.action, "Unknown")
   /* Filter for read operations */
   | WHERE access_mask RLIKE "(?i)(READ|0x10000)"
   /* Exclude system accounts */
@@ -43,7 +43,7 @@ query: |
       object_types = VALUES(object_type),
       first_read = MIN(@timestamp),
       last_read = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE read_count >= 1
   | KEEP agent_id, bucket, winlog.computer_name, read_count, unique_objects, users,
       object_types, first_read, last_read

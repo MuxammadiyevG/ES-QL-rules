@@ -1,0 +1,52 @@
+rule_id: 0150e8a4-9791-484f-ab61-a9c48ed61121
+name: AD Domain Policy Changed (4739)
+description: |
+  Ushbu qoida privilege escalation va defense evasion bilan bog'liq bo'lib, domen siyosati parametrlarining o'zgarishini aniqlaydi.
+  Domain policy (password, lockout, kerberos) o'zgarishi hujumchiga himoya cheklovlarini yumshatish va hisoblarni egallashni osonlashtirish imkonini beradi.
+  Qonuniy holatlar: rasmiy security baseline yangilanishi, audit/compliance talabiga ko'ra policy tuning.
+  SOC triage bosqichlari:
+  - `actor` va ta'sirlangan policy hodisasini aniq identifikatsiya qiling.
+  - Change ticket/deployment asosida policy o'zgarishining legitimligini tekshiring.
+  - `src_ip` manbasi va boshqaruv hostini tekshirib, noodatiy manbani ajrating.
+  - O'zgarishdan keyin imtiyozli guruhlarga ta'sir qiluvchi authentikatsiya parametrlarini tekshiring.
+  - Shubhali bo'lsa policy'ni qayta tiklang, aktorni cheklang va domen bo'ylab qo'shimcha monitoringni kuchaytiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  | EVAL changed = COALESCE(event.action, "")
+  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  | WHERE event.code == "4739"
+  | WHERE actor IS NOT NULL
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | STATS change_count = COUNT(*) BY agent_id, hostn, actor, src_ip, changed
+  | WHERE change_count >= 1
+  | EVAL dyn_risk = CASE(change_count >= 3, 94, changed RLIKE "(?i)(0|1)", 91, 88)
+  | KEEP agent_id, hostn, actor, src_ip, changed, change_count, dyn_risk
+  | SORT dyn_risk DESC, change_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - AD
+  - Policy Change
+  - Privilege Escalation
+severity: high
+risk_score: 88
+references:
+  - "https://attack.mitre.org/techniques/T1484/001/"
+mitre_attack:
+  TA0004:
+    T1484: [T1484.001]
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

@@ -2,7 +2,7 @@ rule_id: 460ad591-db8e-4081-94b7-270cb8f65698
 name: "GDPR Art.32(1)(b) - Confidentiality and Integrity of Processing Systems Compromised"
 description: |
   Detects events indicating loss of confidentiality or integrity of systems processing
-  personal data, as required by GDPR Article 32(1)(b) to ensure ongoing confidentiality,
+  personal data, as required by agent_id, GDPR Article 32(1)(b) to ensure ongoing confidentiality,
   integrity, availability and resilience of processing systems and services.
   Aggregates high-severity security events: privilege escalation, account takeover indicators,
   critical file modifications, and audit policy changes across Windows and Linux hosts.
@@ -17,15 +17,13 @@ params: '{}'
 schedule_interval: 10m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE (
-      -- Windows: privilege escalation, account changes, audit tampering, lateral movement
       event.code IN ("4672", "4720", "4728", "4732", "1102", "4719", "4624", "4648")
       OR
-      -- Linux: sudo abuse, file tampering, authentication anomalies
       (event.dataset == "auditd.log" AND event.action IN (
         "sudo", "user-cmd", "changed-file-attributes-of",
         "opened-file", "user-login"
@@ -49,7 +47,7 @@ query: |
       involved_users        = VALUES(user.name),
       event_codes_seen      = VALUES(event.code),
       source_ips            = VALUES(source.ip)
-    BY host.name,
+    BY agent_id, host.name,
        bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE distinct_threat_types >= 2
   | EVAL compromise_likelihood = CASE(
@@ -74,7 +72,7 @@ query: |
       distinct_threat_types >= 3, 75,
       55
     )
-  | KEEP bucket, host.name, total_events, distinct_threat_types,
+  | KEEP agent_id, bucket, host.name, total_events, distinct_threat_types,
          threat_types_seen, involved_users, source_ips,
          compromise_likelihood, gdpr_obligation, severity_level, risk_score
   | SORT risk_score DESC

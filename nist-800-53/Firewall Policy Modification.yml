@@ -13,10 +13,10 @@ params: '{}'
 schedule_interval: 10m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE event.code IN ("4946", "4947", "4950", "4954", "5025")
     OR (event.action IN ("firewall-rule-add", "firewall-rule-modified", "firewall-disabled")
         OR file.path RLIKE "(?i).*(iptables|ufw|firewalld).*")
@@ -35,7 +35,7 @@ query: |
       changed_rules = VALUES(COALESCE(event.original, event.original)),
       modifiers = VALUES(user.name),
       after_hours_changes = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, change_type
+    BY agent_id, host.name, change_type
     , bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE rule_changes >= 1
   | EVAL risk_score = rule_changes * 25 + after_hours_changes * 20

@@ -2,15 +2,15 @@ rule_id: e9dd7257-f7c0-48e9-b8e8-99aaac2d6dd1
 name: "INFO - Linux SSH Authentication Failure (auditd)"
 description: |
   Baselines failed SSH authentication events via auditd.
-  Source: auditbeat auditd events (type=USER_AUTH/USER_LOGIN) with outcome=failure or res=failed.
+  Source: logs-updive.audit auditd events (type=USER_AUTH/USER_LOGIN) with outcome=failure or res=failed.
 type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   | WHERE event.dataset == "auditd"
   | WHERE COALESCE(event.original, "") RLIKE "(?i)type=(USER_AUTH|USER_LOGIN)"
   | WHERE event.outcome == "failure"
@@ -23,7 +23,7 @@ query: |
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
       raws = VALUES(event.original)
-    BY host.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+    BY agent_id, host.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, fail_count, users, user_ids, src_ips, processes, executables, raws
   | SORT fail_count DESC
 enabled: false

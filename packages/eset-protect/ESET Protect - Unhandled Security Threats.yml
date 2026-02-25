@@ -30,7 +30,7 @@ query: |
       severities = VALUES(eset_protect.event.severity),
       processes = VALUES(eset_protect.event.processname),
       users = VALUES(eset_protect.event.username)
-    BY host.hostname, source.ip, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, host.hostname, source.ip, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE event_count >= 3
   | KEEP bucket, host.hostname, source.ip, event_count, threat_names, threat_types, object_types, severities, processes, users
   | SORT event_count DESC

@@ -48,7 +48,7 @@ query: |
       suspicious_child_hits = SUM(CASE(suspicious_child == true, 1, 0)),
       suspicious_path_hits = SUM(CASE(suspicious_path == true, 1, 0))
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   // Risk Scoring: Heavily weighted toward suspicious children and hidden execution

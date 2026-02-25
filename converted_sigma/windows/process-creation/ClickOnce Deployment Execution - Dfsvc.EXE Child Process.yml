@@ -1,7 +1,7 @@
 rule_id: ba76aecd-6a28-43f2-99e0-d391edae5f9b
 name: "ClickOnce Deployment Execution - Dfsvc.EXE Child Process"
 description: |
-  Detects child processes spawned by dfsvc.exe (ClickOnce service) where the executed image path
+  Detects child processes spawned by agent_id, dfsvc.exe (ClickOnce service) where the executed image path
   is within the typical ClickOnce cache directory under the user profile:
   \AppData\Local\Apps\2.0\ . This indicates ClickOnce deployment execution.
   False positives: Expected in environments that legitimately use ClickOnce. Baselining and
@@ -33,7 +33,7 @@ query: |
       child_cmdlines = VALUES(winlog.event_data.CommandLine),
       pids = VALUES(winlog.event_data.ProcessPid)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

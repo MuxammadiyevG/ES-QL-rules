@@ -10,7 +10,7 @@ rule_id: 95d92588-e96a-43fe-ab27-6dcfed5cc897
 name: "PHI Sent to Non-Preferred Contact Method (Privacy Request Violation)"
 description: |
   Identifies Protected Health Information communications sent to addresses or phone
-  numbers other than those requested by patient under HIPAA §164.522(b) confidential
+  numbers other than those requested by agent_id, patient under HIPAA §164.522(b) confidential
   communications requirement. Detects appointment reminders to home phone when
   patient requested work phone only, medical bills mailed to home address when
   patient specified PO Box, or test results emailed when patient requested secure
@@ -41,7 +41,7 @@ query: |
   | STATS communication_violations = COUNT(*),
           contact_methods = VALUES(event.original),
           recipients = VALUES(event.original)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE communication_violations > 3
   | EVAL risk_score = CASE(
       communication_violations > 10, 85,

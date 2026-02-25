@@ -51,7 +51,7 @@ query: |
       transited_services_list = VALUES(transited_services),
       first_request = MIN(@timestamp),
       last_request = MAX(@timestamp)
-    BY winlog.computer_name, requesting_user, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, requesting_user, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE delegation_requests >= 3
   | KEEP agent_id, bucket, winlog.computer_name, requesting_user, delegation_requests, services_accessed,
       services_list, ticket_options_list, transited_services_list, first_request, last_request

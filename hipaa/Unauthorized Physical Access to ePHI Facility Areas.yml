@@ -14,7 +14,7 @@ description: |
   medical records storage, workstation areas, and network equipment rooms. HIPAA
   §164.310(a)(1) requires facility access controls to limit physical access to
   ePHI. Detects failed badge swipes to restricted areas, door forced open alarms,
-  after-hours access by non-authorized personnel, or tailgating incidents. Physical
+  after-hours access by agent_id, non-authorized personnel, or tailgating incidents. Physical
   security breaches can lead to ePHI theft or system compromise.
 type: esql
 params: '{}'
@@ -41,7 +41,7 @@ query: |
           locations = VALUES(event.original),
           first_attempt = MIN(@timestamp),
           last_attempt = MAX(@timestamp)
-    BY user.name, event.dataset
+    BY agent_id, user.name, event.dataset
   | WHERE access_attempts > 2
   | EVAL risk_score = CASE(
       event.action RLIKE "(?i).*(forced|alarm|tailgate).*", 100,

@@ -47,7 +47,7 @@ query: |
       paths_accessed = VALUES(event.original),
       user_agents = VALUES(event.original),
       http_methods = VALUES(event.action)
-    BY source.ip, tool_category
+    BY agent_id, source.ip, tool_category
     , bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE request_count >= 5
   | EVAL risk_score = request_count * 10 + unique_paths * 5

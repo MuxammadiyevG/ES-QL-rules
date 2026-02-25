@@ -35,7 +35,7 @@ query: |
       cmdlines = VALUES(winlog.event_data.CommandLine),
       originals = VALUES(COALESCE(event.original, \"\")),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25

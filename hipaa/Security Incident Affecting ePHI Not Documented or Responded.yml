@@ -20,11 +20,11 @@ type: esql
 params: '{}'
 schedule_interval: 30m
 index:
-  - winlogbeat-*
-  - auditbeat-*
-  - filebeat-ehr-*
-  - winlogbeat-*
-  - auditbeat-*
+- winlogbeat-*
+- auditbeat-*
+- filebeat-ehr-*
+- winlogbeat-*
+- auditbeat-*
 query_language: esql
 query: |
   FROM winlogbeat-*, auditbeat-*
@@ -44,7 +44,7 @@ query: |
           affected_systems = VALUES(host.name),
           first_incident = MIN(@timestamp),
           last_incident = MAX(@timestamp)
-    BY host.name, event.action
+    BY agent_id, host.name, event.action
   | WHERE undocumented_incidents > 0
   | EVAL hours_without_response = (NOW() - first_incident) / 3600000
   | EVAL risk_score = CASE(
@@ -57,21 +57,21 @@ query: |
   | SORT risk_score DESC
 enabled: false
 tags:
-  - hipaa
-  - security_rule
-  - section_164_308_a_6
-  - security_incident
-  - incident_response
-  - ephi
+- hipaa
+- security_rule
+- section_164_308_a_6
+- security_incident
+- incident_response
+- ephi
 severity: critical
 risk_score: 100
 references:
-  - "45 CFR §164.308(a)(6) - Security Incident Procedures"
-  - "45 CFR §164.308(a)(6)(ii) - Response and Reporting"
+- "45 CFR §164.308(a)(6) - Security Incident Procedures"
+- "45 CFR §164.308(a)(6)(ii) - Response and Reporting"
 nist: ["IR-4"]
 gdpr: ["33"]
-pci_dss: ["12.10"]
+pci_dss: [12.10.1]
 hipaa: ["164.308.a.6"]
 mitre_attack:
-  TA0005: 
+  TA0005:
     T1562: []

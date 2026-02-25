@@ -6,7 +6,7 @@ description: |
   security including protection against unauthorised or unlawful processing.
   Monitors both Windows (Event 4625) and Linux (auditd) failed authentication events
   combined with subsequent successful logins that may indicate account compromise.
-  Trigger: >10 failed attempts followed by a success from same source within 10 minutes
+  Trigger: >10 failed attempts followed by agent_id, a success from same source within 10 minutes
   (potential successful brute force), or >30 failures from single IP across multiple hosts.
   False positives: Misconfigured service accounts, password sync issues after resets.
   Triage: Check if the successful login came after failures (compromise indicator),
@@ -17,10 +17,10 @@ params: '{}'
 schedule_interval: 5m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE event.outcome == "failure"
     AND (
       event.code == "4625"
@@ -34,7 +34,7 @@ query: |
       targeted_users        = VALUES(user.name),
       source_ip_list        = VALUES(source.ip),
       failure_methods       = VALUES(event.action)
-    BY source.ip,
+    BY agent_id, source.ip,
        bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE failed_attempts >= 10
   | EVAL attack_scope = CASE(
@@ -61,7 +61,7 @@ query: |
       failed_attempts >= 20,  55,
       35
     )
-  | KEEP bucket, source.ip, failed_attempts, unique_target_hosts,
+  | KEEP agent_id, bucket, source.ip, failed_attempts, unique_target_hosts,
          unique_target_users, targeted_hosts, targeted_users,
          attack_scope, gdpr_risk, severity_level, risk_score
   | SORT risk_score DESC

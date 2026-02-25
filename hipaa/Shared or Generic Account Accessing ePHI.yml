@@ -41,7 +41,7 @@ query: |
           systems = VALUES(host.name),
           first_login = MIN(@timestamp),
           last_login = MAX(@timestamp)
-    BY user.name
+    BY agent_id, user.name
   | WHERE login_count > 0
   | EVAL concurrent_use = CASE(
       unique_sources > 1, 1,

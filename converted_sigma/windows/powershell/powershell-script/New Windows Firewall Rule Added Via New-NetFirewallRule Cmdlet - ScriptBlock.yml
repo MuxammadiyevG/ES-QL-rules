@@ -33,7 +33,7 @@ query: |
       originals = VALUES(COALESCE(event.original, "")),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   // Risk: High base score (20) because rule creation is rare for standard users

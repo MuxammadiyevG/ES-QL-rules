@@ -7,10 +7,10 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   | WHERE event.dataset == "auditd"
   | WHERE
       COALESCE(event.original, "") RLIKE "(?i)type=USER_CMD"
@@ -29,9 +29,9 @@ query: |
       src_ips = VALUES(source.ip),
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
-      parents = VALUES(process.parent.name),
+      parents = VALUES(process.parent.pid),
       raws = VALUES(event.original)
-    BY host.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+    BY agent_id, host.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, event_count, users, user_ids, src_ips, processes, executables, parents, raws
   | SORT event_count DESC
 enabled: false

@@ -47,7 +47,7 @@ query: |
           destinations = VALUES(event.original),
           data_types = VALUES(file.name),
           users = VALUES(user.name)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE unauthorized_disclosures > 0
   | EVAL risk_score = CASE(
       unauthorized_disclosures > 10, 100,

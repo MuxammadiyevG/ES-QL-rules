@@ -27,7 +27,7 @@ query: |
       methods = VALUES(http.request.method),
       user_agents = VALUES(user_agent.original),
       hosts = VALUES(host.name)
-    BY source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 5
   | KEEP agent_id, bucket, source.ip, event_count, urls, methods, user_agents, hosts
   | SORT event_count DESC

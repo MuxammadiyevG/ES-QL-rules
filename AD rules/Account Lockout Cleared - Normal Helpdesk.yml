@@ -37,7 +37,7 @@ query: |
       unlocked_accounts = VALUES(target_user),
       first_unlock = MIN(@timestamp),
       last_unlock = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE unlock_count >= 1
   | KEEP agent_id, bucket, winlog.computer_name, unlock_count, unique_targets, unlockers,
       unlocked_accounts, first_unlock, last_unlock
@@ -53,3 +53,4 @@ risk_score: 75
 nist: ["AC-6", "AU-12", "AC-2"]
 pci_dss: ["7.1", "7.2", "10.2.2"]
 gdpr: ["32.1.a", "32.1.b"]
+mitre_attack: []

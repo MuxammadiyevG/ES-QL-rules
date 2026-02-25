@@ -2,15 +2,15 @@ rule_id: bef33e2e-9dab-47d9-932b-03523a0cce90
 name: "Suspicious Named Error"
 description: |
   Detects suspicious DNS (BIND/named) error messages that indicate fatal or abnormal behavior.
-  Such errors may be caused by exploitation attempts, zone transfer abuse, or malformed packets.
+  Such errors may be caused by agent_id, exploitation attempts, zone transfer abuse, or malformed packets.
 type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* auditd events only */
   | WHERE event.dataset RLIKE "(?i)auditd"
   /* Detect suspicious named / DNS error messages */
@@ -23,7 +23,7 @@ query: |
       command_lines = VALUES(process.command_line),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP
       agent_id, bucket,

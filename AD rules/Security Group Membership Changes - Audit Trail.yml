@@ -45,7 +45,7 @@ query: |
       change_types = VALUES(change_type),
       first_change = MIN(@timestamp),
       last_change = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE changes >= 1
   | KEEP agent_id, bucket, winlog.computer_name, changes, unique_groups, modifiers,
       affected_users, groups, change_types, first_change, last_change

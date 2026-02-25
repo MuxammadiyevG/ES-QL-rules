@@ -2,15 +2,15 @@ rule_id: 703c526f-5d44-4af2-8113-0595b0371be3
 name: "Suspicious VSFTPD Error Messages"
 description: |
   Detects suspicious VSFTPD error messages that indicate fatal or abnormal behavior.
-  Such errors may be caused by exploitation attempts, misconfigurations, or malicious clients.
+  Such errors may be caused by agent_id, exploitation attempts, misconfigurations, or malicious clients.
 type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* auditd events only */
   | WHERE event.dataset RLIKE "(?i)vsftpd"
   /* Detect relevant VSFTPD error messages */
@@ -23,7 +23,7 @@ query: |
       command_lines = VALUES(process.command_line),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.message)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP
       agent_id, bucket,

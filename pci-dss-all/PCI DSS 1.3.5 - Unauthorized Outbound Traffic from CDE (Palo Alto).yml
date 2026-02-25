@@ -24,8 +24,6 @@ query: |
     AND event.outcome == "failure"
     AND event.action IN ("deny", "drop", "reset-both", "reset-client", "reset-server")
     AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
-    -- Filter to CDE source networks only (update these CIDRs to your CDE ranges)
-    -- AND CIDR_MATCH(source.ip, "10.10.10.0/24", "10.20.0.0/16")
   | STATS
       denied_connections     = COUNT(*),
       unique_destinations    = COUNT_DISTINCT(destination.ip),
@@ -35,7 +33,7 @@ query: |
       destination_countries  = VALUES(destination.geo.country_iso_code),
       protocols              = VALUES(network.transport),
       firewall_rules         = VALUES(rule.name)
-    BY source.ip,
+    BY agent_id, source.ip,
        observer.hostname,
        bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE denied_connections >= 10
@@ -57,7 +55,7 @@ query: |
       denied_connections >= 20,  50,
       30
     )
-  | KEEP bucket, source.ip, observer.hostname, denied_connections,
+  | KEEP agent_id, bucket, source.ip, observer.hostname, denied_connections,
          unique_destinations, unique_dest_ports, destination_ips,
          destination_countries, protocols, firewall_rules,
          risk_indicator, severity_level, risk_score

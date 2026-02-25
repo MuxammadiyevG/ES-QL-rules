@@ -14,7 +14,7 @@ description: |
   patient records, billing systems, and clinical applications. HIPAA Security Rule
   §164.312(a)(1) requires unique user identification and emergency access procedures.
   Detects failed authentication to ePHI systems, privilege escalation to PHI databases,
-  access from unauthorized IP ranges, and off-hours access by non-clinical users.
+  access from unauthorized IP ranges, and off-hours access by agent_id, non-clinical users.
   Correlate with user roles, access policies, and emergency access logs.
 type: esql
 params: '{}'
@@ -44,7 +44,7 @@ query: |
           sources = VALUES(source.ip),
           systems = VALUES(host.name),
           users = VALUES(user.name)
-    BY source.ip, user.name
+    BY agent_id, source.ip, user.name
   | WHERE access_attempts > 0
   | EVAL risk_score = CASE(
       success_count > 0 AND NOT CIDR_MATCH(source.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"), 100,

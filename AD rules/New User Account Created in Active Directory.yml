@@ -42,7 +42,7 @@ query: |
       sam_accounts = VALUES(sam_account),
       first_creation = MIN(@timestamp),
       last_creation = MAX(@timestamp)
-    BY winlog.computer_name, creator, creator_domain, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, creator, creator_domain, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE accounts_created >= 1
   | KEEP agent_id, bucket, winlog.computer_name, creator, creator_domain, accounts_created,
       new_accounts, sam_accounts, sids, first_creation, last_creation

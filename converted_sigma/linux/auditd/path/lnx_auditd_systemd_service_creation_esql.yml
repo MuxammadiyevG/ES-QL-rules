@@ -1,17 +1,17 @@
 rule_id: 3ae3e7f0-82a7-474b-bd69-dfb2b391af79
 name: "Systemd Service Creation Detection"
 description: |
-  Detects creation of systemd services which could be used by adversaries to execute malicious code.
+  Detects creation of systemd services which could be used by agent_id, adversaries to execute malicious code.
   Monitors systemd service directories for new .service files.
   Adversaries may create or modify systemd services to establish persistence.
 type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* auditd PATH type events with CREATE */
   | WHERE event.action == "created" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "creation")
   /* selection: systemd service directories */
@@ -29,7 +29,7 @@ query: |
       file_names = VALUES(file.name),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, file_paths, file_names, hosts, raw_samples
   | SORT event_count DESC

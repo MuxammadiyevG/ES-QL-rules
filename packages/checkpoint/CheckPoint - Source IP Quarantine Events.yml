@@ -28,7 +28,7 @@ query: |
       attack_info = VALUES(checkpoint.attack_info),
       protection_names = VALUES(checkpoint.protection_name),
       verdict = VALUES(checkpoint.verdict)
-    BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP bucket, source.ip, event_count, dst_ips, attacks, attack_info, protection_names, verdict
   | SORT event_count DESC

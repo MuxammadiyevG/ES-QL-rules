@@ -10,7 +10,7 @@ rule_id: 44aca027-8a49-493a-9cd3-b71c07809958
 name: "Psychotherapy Notes Accessed Without Patient Authorization"
 description: |
   Identifies access to psychotherapy notes without specific patient authorization
-  as required by HIPAA §164.508(a)(2). Psychotherapy notes have heightened privacy
+  as required by agent_id, HIPAA §164.508(a)(2). Psychotherapy notes have heightened privacy
   protection beyond general mental health records. Detects chart access to behavioral
   health notes by non-treating providers, psychotherapy documentation viewed for
   TPO purposes (not allowed), or mental health session notes accessed by administrative
@@ -39,7 +39,7 @@ query: |
           accessing_users = VALUES(user.name),
           user_roles = VALUES(event.original  # FIXME: user.role not available),
           patients_affected = COUNT_DISTINCT(event.original  # FIXME: patient.id not available)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE unauthorized_access > 0
   | EVAL risk_score = CASE(
       patients_affected > 10, 100,

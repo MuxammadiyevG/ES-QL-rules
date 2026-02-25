@@ -29,7 +29,7 @@ query: |
   | WHERE event.code IN ("5136", "5137", "5141")
   | EVAL 
       modifier = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
-      operation_type = COALESCE(winlog.event_data.Operation, "Unknown"),
+      operation_type = COALESCE(event.action, "Unknown"),
       target_object = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName, "Unknown"),
       attribute_modified = "Unknown",
       new_value = "Unknown"
@@ -41,7 +41,7 @@ query: |
       values_set = VALUES(new_value),
       first_change = MIN(@timestamp),
       last_change = MAX(@timestamp)
-    BY winlog.computer_name, modifier, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, modifier, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE modifications >= 1
   | KEEP agent_id, bucket, winlog.computer_name, modifier, modifications, objects_modified,
       operation_types, attributes_changed, values_set, first_change, last_change

@@ -15,7 +15,7 @@ query: |
   | WHERE http.request.method IN ("PUT", "DELETE", "TRACK", "DEBUG", "CONNECT")
   | STATS
       method_count = COUNT(*)
-    BY source.ip, http.request.method, url.original
+    BY agent_id, source.ip, http.request.method, url.original
   | WHERE method_count >= 5
   | KEEP agent_id, source.ip, http.request.method, url.original, method_count
 enabled: true

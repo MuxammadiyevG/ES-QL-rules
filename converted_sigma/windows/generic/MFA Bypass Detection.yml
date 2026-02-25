@@ -4,7 +4,7 @@ rule_id: 7e790c29-f89d-4bed-a077-c113bec0b34d
 #//Objective: Detect successful logins without MFA when policy requires it
 #//Threat scenario: Attacker bypasses MFA via legacy protocol or stolen session token
 #//Data sources: Windows Security 4624 (LogonType 3/10 without MFA claim), Azure AD logs
-#//ECS fields used: event.code, winlog.logon.type, winlog.event_data.TargetUserName, event.action
+#//ECS fields used: event.code, winlog.event_data.LogonType, winlog.event_data.TargetUserName, event.action
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Requires MFA enforcement baseline, allowlist service accounts, legacy apps
 
@@ -36,7 +36,7 @@ query: |
       unique_sources = COUNT_DISTINCT(host.ip),
       source_ips = VALUES(host.ip),
       logon_types = VALUES(winlog.event_data.LogonType)
-    BY host.name, host.name
+    BY agent_id, host.name, host.name
     , bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE non_mfa_logins >= 1
   | EVAL risk_score = non_mfa_logins * 20 + unique_sources * 10

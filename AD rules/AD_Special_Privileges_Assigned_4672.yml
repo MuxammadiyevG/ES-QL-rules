@@ -1,0 +1,52 @@
+rule_id: aa70f6ee-c9d4-4ef0-bf71-4b8a72f0a4d7
+name: AD Special Privileges Assigned to New Logon (4672)
+description: |
+  Ushbu qoida privilege escalation hamda lateral movement xavfini ifodalovchi 4672 hodisalarini aniqlaydi.
+  SeDebugPrivilege, SeTcbPrivilege kabi maxsus huquqlar bilan logon bo'lish hujumchiga credential dumping, token manipulation va DC ustidan chuqur nazorat imkonini beradi.
+  Qonuniy holatlar: Domain Admin logonlari, zaxira agentlari, ayrim monitoring/EDR xizmat hisoblari.
+  SOC triage bosqichlari:
+  - `actor` va huquq berilgan logon kontekstini (`target_user`) aniqlang.
+  - Change ticket yoki ruxsatli administrativ ish borligini tasdiqlang.
+  - `src_ip` manbasi va logon boshlangan hostni tekshiring.
+  - Akkauntning imtiyozli guruhlardagi a'zoligini va yangi huquqlar zarurligini tekshiring.
+  - Tasdiqlanmagan holatda sessiyani tugating, akkauntni cheklang va komprometatsiya doirasini keng tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName, winlog.event_data.SubjectUserName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  | EVAL priv_list = COALESCE(winlog.event_data.PrivilegeList, "")
+  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  | WHERE event.code == "4672"
+  | WHERE actor IS NOT NULL
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | STATS event_count = COUNT(*) BY agent_id, hostn, actor, target_user, src_ip, priv_list
+  | WHERE event_count >= 1
+  | EVAL dyn_risk = CASE(priv_list RLIKE "(?i)(SeDebugPrivilege|SeTcbPrivilege|SeImpersonatePrivilege)", 92, event_count >= 4, 86, 80)
+  | KEEP agent_id, hostn, actor, target_user, src_ip, priv_list, event_count, dyn_risk
+  | SORT dyn_risk DESC, event_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - AD
+  - Privilege Escalation
+  - Lateral Movement
+severity: high
+risk_score: 80
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+mitre_attack:
+  TA0004:
+    T1078: []
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

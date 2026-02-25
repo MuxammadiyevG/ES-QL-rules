@@ -31,7 +31,7 @@ query: |
       configuring_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
       category = "Unknown",
       subcategory = "Unknown",
-      audit_changes = COALESCE(winlog.event_data.Operation, "Unknown")
+      audit_changes = COALESCE(event.action, "Unknown")
   | STATS 
       config_changes = COUNT(*),
       categories = VALUES(category),
@@ -40,7 +40,7 @@ query: |
       users = VALUES(configuring_user),
       first_change = MIN(@timestamp),
       last_change = MAX(@timestamp)
-    BY winlog.computer_name, bucket = DATE_TRUNC(1 day, @timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 day, @timestamp)
   | WHERE config_changes >= 1
   | KEEP agent_id, bucket, winlog.computer_name, config_changes, categories, subcategories,
       changes, users, first_change, last_change

@@ -32,7 +32,7 @@ query: |
       category = "Unknown",
       subcategory = "Unknown",
       subcategory_guid = "Unknown",
-      audit_policy_changes = COALESCE(winlog.event_data.Operation, "Unknown")
+      audit_policy_changes = COALESCE(event.action, "Unknown")
   | STATS 
       policy_changes = COUNT(*),
       categories = VALUES(category),
@@ -41,7 +41,7 @@ query: |
       changes = VALUES(audit_policy_changes),
       first_change = MIN(@timestamp),
       last_change = MAX(@timestamp)
-    BY winlog.computer_name, modifier, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, modifier, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE policy_changes >= 1
   | KEEP agent_id, bucket, winlog.computer_name, modifier, policy_changes, categories,
       subcategories, subcategory_guids, changes, first_change, last_change

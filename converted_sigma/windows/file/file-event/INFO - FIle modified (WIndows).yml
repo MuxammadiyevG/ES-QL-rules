@@ -32,7 +32,7 @@ query: |
     parent_executables = VALUES(winlog.event_data.CallerProcessName),
     modified_paths = VALUES(winlog.event_data.OriginalFileName)
   BY 
-    host.name, 
+    agent_id, host.name, 
     bucket = DATE_TRUNC(20m, @timestamp)
   // (Optional: You will likely want to raise this threshold to filter noise)
   | WHERE event_count >= 1

@@ -1,7 +1,7 @@
 rule_id: a84d410e-1c86-4f3c-b185-46f4d83f4b8d
 name: "Potential File Override/Append Via SET Command"
 description: |
-  Detects cmd.exe usage of the internal SET command with the /p flag followed directly by "=" (set /p=),
+  Detects cmd.exe usage of the internal SET command with the /p flag followed directly by agent_id, "=" (set /p=),
   which can be abused to indirectly write/append content to files when combined with redirection (>>, >).
   Example: cmd /c >> example.txt set /p="test data" (appends "test data" to example.txt).
   While set /p= is normally used to prompt for user input, threat actors have used this pattern in ransomware
@@ -48,7 +48,7 @@ query: |
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
       suspicious_parent_hits = SUM(CASE(suspicious_parent == true, 1, 0))
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   // Risk Scoring: 5 base + redirection bonus + after-hours bonus + high-risk parent bonus

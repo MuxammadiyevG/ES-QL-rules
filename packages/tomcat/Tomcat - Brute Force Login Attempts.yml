@@ -28,7 +28,7 @@ query: |
       user_agents = VALUES(rsa.misc.client),
       methods = VALUES(rsa.web.p_web_method),
       dst_hosts = VALUES(rsa.network.host_dst)
-    BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE event_count >= 20
   | KEEP agent_id, bucket, source.ip, event_count, target_urls, user_agents, methods, dst_hosts
   | SORT event_count DESC

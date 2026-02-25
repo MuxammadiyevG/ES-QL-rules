@@ -38,7 +38,7 @@ query: |
       logon_ids = VALUES(logon_id),
       first_clear = MIN(@timestamp),
       last_clear = MAX(@timestamp)
-    BY winlog.computer_name, clearer, clearer_domain, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, clearer, clearer_domain, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE clear_events >= 1
   | KEEP agent_id, bucket, winlog.computer_name, clearer, clearer_domain, clear_events,
       clearer_sids, logon_ids, first_clear, last_clear

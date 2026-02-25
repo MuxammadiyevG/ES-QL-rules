@@ -31,7 +31,7 @@ query: |
       originals = VALUES(event.original),
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   // Calculate risk: 10 points per event + 10 bonus points if it happened at night

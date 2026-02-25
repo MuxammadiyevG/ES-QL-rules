@@ -4,7 +4,7 @@ description: |
   Detects creation of Python path configuration files (*.pth) inside Python "site-packages" folders
   (both default Python installs and virtual environments). .pth-referenced modules can execute at
   Python startup (v3.5+), making this a potential persistence / code execution vector.
-  Filter: excludes common benign .pth created by python.exe (pywin32.pth, distutils-precedence.pth).
+  Filter: excludes common benign .pth created by agent_id, python.exe (pywin32.pth, distutils-precedence.pth).
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -40,7 +40,7 @@ query: |
       file_paths = VALUES(winlog.event_data.OriginalFileName),
       cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, ""))
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

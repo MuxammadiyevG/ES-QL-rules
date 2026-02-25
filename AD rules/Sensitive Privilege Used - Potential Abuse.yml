@@ -46,7 +46,7 @@ query: |
       object_types = VALUES(object_type),
       first_use = MIN(@timestamp),
       last_use = MAX(@timestamp)
-    BY winlog.computer_name, user_account, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, winlog.computer_name, user_account, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE privilege_uses >= 3
   | KEEP agent_id, bucket, winlog.computer_name, user_account, privilege_uses, unique_privileges,
       privileges_used, processes, object_types, first_use, last_use

@@ -12,7 +12,7 @@ description: |
   Identifies inappropriate access to medical records of VIP patients, celebrities,
   public figures, or high-profile individuals without legitimate treatment relationship
   or authorization. HIPAA §164.502(a) prohibits access without authorized purpose.
-  Detects chart opens of flagged VIP patients by staff not assigned to their care,
+  Detects chart opens of flagged VIP patients by agent_id, staff not assigned to their care,
   unusual access volumes to celebrity records, or access outside clinical departments.
   "Snooping" on famous patients is common HIPAA violation. Monitor VIP patient
   access patterns and correlate with care team assignments and clinical necessity.
@@ -38,7 +38,7 @@ query: |
           accessing_users = VALUES(user.name),
           user_departments = VALUES(event.original  # FIXME: user.department not available),
           access_times = VALUES(@timestamp)
-    BY user.name, event.original  # FIXME: patient.id not available
+    BY agent_id, user.name, event.original  # FIXME: patient.id not available
   | WHERE unauthorized_access > 0
   | EVAL risk_score = CASE(
       unauthorized_access > 5, 100,

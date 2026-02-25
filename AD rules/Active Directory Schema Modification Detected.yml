@@ -31,7 +31,7 @@ query: |
       modifier = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
       object_dn = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName, "Unknown"),
       object_class = "Unknown",
-      operation = COALESCE(winlog.event_data.Operation, "Unknown")
+      operation = COALESCE(event.action, "Unknown")
   /* Filter for schema partition changes */
   | WHERE object_dn RLIKE "(?i)(CN=Schema,CN=Configuration)"
   | STATS 
@@ -41,7 +41,7 @@ query: |
       operations = VALUES(operation),
       first_change = MIN(@timestamp),
       last_change = MAX(@timestamp)
-    BY winlog.computer_name, modifier, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, modifier, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE schema_changes >= 1
   | KEEP agent_id, bucket, winlog.computer_name, modifier, schema_changes, objects_created,
       object_classes, operations, first_change, last_change

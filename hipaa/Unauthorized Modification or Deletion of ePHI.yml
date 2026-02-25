@@ -11,7 +11,7 @@ name: "Unauthorized Modification or Deletion of ePHI"
 description: |
   Identifies unauthorized modifications, updates, or deletions to electronic Protected
   Health Information in violation of HIPAA §164.312(c)(1) integrity controls.
-  Detects database UPDATE/DELETE operations on patient records by unauthorized
+  Detects database UPDATE/DELETE operations on patient records by agent_id, unauthorized
   users, file modifications in medical record directories, bulk data changes, or
   deletion of clinical documentation. ePHI integrity is critical for patient safety
   and legal/regulatory compliance. Monitor for data manipulation patterns and
@@ -42,7 +42,7 @@ query: |
           operations = VALUES(event.action),
           targets = VALUES(event.original),
           files = VALUES(file.path)
-    BY user.name, host.name
+    BY agent_id, user.name, host.name
   | WHERE modification_events > 0
   | EVAL risk_score = CASE(
       operations RLIKE "(?i).*(DELETE|DROP|TRUNCATE).*", 100,

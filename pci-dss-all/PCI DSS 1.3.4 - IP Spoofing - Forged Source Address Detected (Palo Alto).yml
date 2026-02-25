@@ -1,7 +1,7 @@
 rule_id: 38402529-1a5c-4ec1-8e8a-2f657640aea3
 name: "PCI DSS 1.3.4 - IP Spoofing / Forged Source Address Detected (Palo Alto)"
 description: |
-  Detects IP spoofing and forged source address attempts blocked by Palo Alto firewall.
+  Detects IP spoofing and forged source address attempts blocked by agent_id, Palo Alto firewall.
   PCI DSS Requirement 1.3.4 mandates anti-spoofing measures to detect and block
   forged source IP addresses entering the network.
   Monitors zone protection profile actions for IP spoofing, and threat logs
@@ -21,10 +21,8 @@ query: |
   FROM filebeat-paloalto*
   | WHERE event.dataset == "panw.panos"
     AND (
-      -- Spoofing threat category
-      (event.category LIKE "*spoof*" OR panw.panos.threat_name LIKE "*spoof*")
+      (event.kind LIKE "*spoof*" OR panw.panos.threat_name LIKE "*spoof*")
       OR
-      -- Private IPs arriving on external interface (RFC1918 source from internet)
       (
         network.direction == "ingress"
         AND observer.ingress.zone IN ("untrust", "internet", "external", "wan")
@@ -53,7 +51,7 @@ query: |
       target_ips            = VALUES(destination.ip),
       spoof_types           = VALUES(spoof_type),
       ingress_interfaces    = VALUES(observer.ingress.interface.name)
-    BY observer.hostname,
+    BY agent_id, observer.hostname,
        spoof_type,
        bucket = DATE_TRUNC(5 minutes, @timestamp)
   | EVAL severity_level = CASE(
@@ -66,7 +64,7 @@ query: |
       spoof_attempts >= 20,  65,
       45
     )
-  | KEEP bucket, observer.hostname, spoof_type, spoof_attempts,
+  | KEEP agent_id, bucket, observer.hostname, spoof_type, spoof_attempts,
          unique_sources, unique_destinations, spoofed_ips,
          target_ips, ingress_interfaces, severity_level, risk_score
   | SORT spoof_attempts DESC

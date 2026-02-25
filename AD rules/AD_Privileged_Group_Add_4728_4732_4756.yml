@@ -1,0 +1,53 @@
+rule_id: 88c322c7-b8ef-48d4-9e4e-d1cbaa5cc4f7
+name: AD Privileged Group Membership Added (4728/4732/4756)
+description: |
+  Ushbu qoida privilege escalation va persistence texnikalariga to'g'ridan-to'g'ri bog'liq bo'lib, imtiyozli guruhlarga yangi a'zo qo'shilishini aniqlaydi.
+  Domain Admins, Enterprise Admins yoki Administrators kabi guruhlarga qo'shilish hujumchiga butun AD ustidan nazorat berishi mumkin, shuning uchun bu eng kritik indikatorlardan biridir.
+  Qonuniy holatlar: rejalashtirilgan admin tayinlovi, emergency access berish, migration paytidagi vaqtinchalik rol o'zgarishi.
+  SOC triage bosqichlari:
+  - `actor`, qo'shilgan subyekt (`target_user`) va `group_name` ni aniqlang.
+  - Ushbu a'zolik o'zgarishi uchun change ticket yoki tasdiqlangan ruxsat borligini tekshiring.
+  - `src_ip` manzilining administrativ segmentdan ekanini tekshiring.
+  - Target akkauntning boshqa imtiyozli guruhlardagi a'zoligini ham tekshirib, chain-escalation ehtimolini baholang.
+  - Tasdiqlanmasa darhol a'zolikni olib tashlang, aktor sessiyalarini uzing va Tier-0 containment protsedurasini ishga tushiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.MemberName, winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL group_name = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  | WHERE event.code IN ("4728", "4732", "4756")
+  | WHERE actor IS NOT NULL
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | WHERE group_name RLIKE "(?i)(Domain Admins|Enterprise Admins|Schema Admins|Administrators|Account Operators|Backup Operators|Server Operators|DnsAdmins|Cert Publishers|Remote Desktop Users)"
+  | STATS add_count = COUNT(*) BY agent_id, hostn, actor, target_user, group_name, src_ip
+  | WHERE add_count >= 1
+  | EVAL dyn_risk = CASE(group_name RLIKE "(?i)(Domain Admins|Enterprise Admins|Schema Admins)", 98, group_name RLIKE "(?i)(Administrators|DnsAdmins)", 95, 90)
+  | KEEP agent_id, hostn, actor, target_user, group_name, src_ip, add_count, dyn_risk
+  | SORT dyn_risk DESC, add_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - AD
+  - Privilege Escalation
+  - Tier0
+severity: high
+risk_score: 95
+references:
+  - "https://attack.mitre.org/techniques/T1098/007/"
+mitre_attack:
+  TA0004:
+    T1098: [T1098.007]
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

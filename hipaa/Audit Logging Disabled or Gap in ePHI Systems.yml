@@ -37,7 +37,7 @@ query: |
   | STATS event_count = COUNT(*),
           last_event = MAX(@timestamp),
           event_types = VALUES(event.category)
-    BY host.name, event.category
+    BY agent_id, host.name, event.category
   | EVAL hours_since_last = (NOW() - last_event) / 3600000
   | WHERE hours_since_last > 6  // No events in 6+ hours (suspicious)
     OR event_count < 5  // Very few events in 2-hour window

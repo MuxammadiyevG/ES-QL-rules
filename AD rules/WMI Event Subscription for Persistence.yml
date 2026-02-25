@@ -29,7 +29,7 @@ query: |
   | WHERE event.code IN ("5859", "5860", "5861")
   | EVAL 
       creator = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
-      operation = COALESCE(winlog.event_data.Operation, "Unknown"),
+      operation = COALESCE(event.action, "Unknown"),
       namespace = "Unknown",
       event_type = CASE(
         event.code == "5859", "WMI Filter Activity",
@@ -46,7 +46,7 @@ query: |
       namespaces = VALUES(namespace),
       first_operation = MIN(@timestamp),
       last_operation = MAX(@timestamp)
-    BY winlog.computer_name, creator, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, winlog.computer_name, creator, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE wmi_operations >= 1
   | KEEP agent_id, bucket, winlog.computer_name, creator, wmi_operations, operations,
       event_types, namespaces, first_operation, last_operation

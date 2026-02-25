@@ -54,7 +54,7 @@ query: |
       workstations = VALUES(workstation),
       first_logon = MIN(@timestamp),
       last_logon = MAX(@timestamp)
-    BY winlog.computer_name, target_user, bucket = DATE_TRUNC(4 hours, @timestamp)
+    BY agent_id, winlog.computer_name, target_user, bucket = DATE_TRUNC(4 hours, @timestamp)
   | WHERE logon_count >= 1
   | KEEP agent_id, bucket, winlog.computer_name, target_user, logon_count, logon_types, 
       source_ips, workstations, first_logon, last_logon

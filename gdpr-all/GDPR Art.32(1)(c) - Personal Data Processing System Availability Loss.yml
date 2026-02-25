@@ -2,7 +2,7 @@ rule_id: c948a9f5-d10f-4261-80f4-091f8cf3f80d
 name: "GDPR Art.32(1)(c) - Personal Data Processing System Availability Loss"
 description: |
   Detects loss of availability of systems that process personal data, as required by
-  GDPR Article 32(1)(c) which mandates the ability to restore availability and access
+  agent_id, GDPR Article 32(1)(c) which mandates the ability to restore availability and access
   to personal data in a timely manner after a physical or technical incident.
   Monitors Windows Event 6006 (system shutdown unexpected), 41 (system rebooted without
   clean shutdown - kernel power), 7034 (service crashed unexpectedly), 7036 (service
@@ -18,15 +18,13 @@ params: '{}'
 schedule_interval: 5m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE (
-      -- Windows: unexpected shutdown, kernel power failure, service crash
       event.code IN ("41", "6006", "6008", "7034", "7035", "7036", "1074")
       OR
-      -- Linux: system shutdown, service failure via auditd
       (event.dataset == "auditd.log" AND event.action IN (
         "system-shutdown", "service-stop", "daemon-stop"
       ))
@@ -54,7 +52,7 @@ query: |
       event_types_seen      = VALUES(availability_event),
       affected_services     = VALUES(winlog.event_data.param1),
       shutdown_reasons      = VALUES(winlog.event_data.Comment)
-    BY host.name,
+    BY agent_id, host.name,
        bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE availability_events >= 1
   | EVAL gdpr_impact = CASE(
@@ -74,7 +72,7 @@ query: |
       unexpected_events >= 1, 50,
       25
     )
-  | KEEP bucket, host.name, availability_events, unexpected_events,
+  | KEEP agent_id, bucket, host.name, availability_events, unexpected_events,
          event_types_seen, affected_services, shutdown_reasons,
          gdpr_impact, severity_level, risk_score
   | SORT risk_score DESC

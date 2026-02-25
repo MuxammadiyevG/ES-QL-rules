@@ -2,17 +2,17 @@ rule_id: b505d9f5-367d-419e-817f-41ff1207bf09
 name: "LD_SO_PRELOAD Modification Detection"
 description: |
   Identifies modification of /etc/ld.so.preload for shared object injection.
-  This technique is used by attackers to load arbitrary code into processes.
+  This technique is used by agent_id, attackers to load arbitrary code into processes.
   ld.so.preload forces the dynamic linker to load specified libraries before any others.
   This is a common persistence and privilege escalation technique on Linux.
 type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - auditbeat-*
+  - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM auditbeat-*
+  FROM logs-updive.audit-*
   /* auditd PATH type events */
   | WHERE event.action == "opened-file" OR event.dataset RLIKE "(?i)auditd"
   /* selection: /etc/ld.so.preload file access */
@@ -25,7 +25,7 @@ query: |
       file_operations = VALUES(event.action),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, file_operations, hosts, raw_samples
   | SORT event_count DESC

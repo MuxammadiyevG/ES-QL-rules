@@ -31,8 +31,8 @@ query: |
       event_count = COUNT(*),
       users = VALUES(winlog.event_data.SubjectUserName),
       hosts = VALUES(winlog.computer_name),
-      policy_changes = VALUES(winlog.event_data.Operation)
-    BY bucket = DATE_TRUNC(1 hour, @timestamp)
+      policy_changes = VALUES(event.action)
+    BY agent_id, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE event_count >= 1
   | KEEP agent_id, bucket, event_count, users, hosts, policy_changes
   | SORT event_count DESC

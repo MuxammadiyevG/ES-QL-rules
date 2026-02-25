@@ -15,7 +15,7 @@ query: |
   | STATS
       ua_count = COUNT_DISTINCT(user_agent.original),
       ua_list = VALUES(user_agent.original)
-    BY source.ip
+    BY agent_id, source.ip
   | WHERE ua_count >= 10
   | KEEP agent_id, source.ip, ua_count, ua_list
 severity: low

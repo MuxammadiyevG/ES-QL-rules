@@ -21,10 +21,10 @@ params: '{}'
 schedule_interval: 5m
 index:
   - logs-winlog*
-  - logs-audit*
+  - logs-updive.audit*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-audit*
+  FROM logs-winlog*, logs-updive.audit*
   | WHERE event.action IN ("process-started", "ProcessCreate")
     AND (
       process.command_line RLIKE "(?i).*(Invoke-WebRequest|IEX|DownloadString|DownloadFile|encodedcommand|bypass|hidden).*"
@@ -46,7 +46,7 @@ query: |
       command_lines = VALUES(process.command_line),
       processes = VALUES(process.name),
       parent_processes = VALUES(process.parent.name)
-    BY host.name, user.name, attack_pattern
+    BY agent_id, host.name, user.name, attack_pattern
     , bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE execution_count >= 1
   | EVAL risk_score = CASE(

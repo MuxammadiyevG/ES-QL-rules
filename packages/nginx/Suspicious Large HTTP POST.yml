@@ -42,7 +42,7 @@ query: |
       upload_endpoints = SUM(CASE(is_upload_endpoint == true, 1, 0)),
       non_upload_endpoints = SUM(CASE(is_upload_endpoint == false, 1, 0)),
       target_paths = VALUES(url.path)
-    BY source.ip, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE large_post_count >= 3 OR non_upload_endpoints >= 1
   | EVAL attack_likelihood = CASE(
       non_upload_endpoints >= 1 AND max_size_mb >= 50, "high",

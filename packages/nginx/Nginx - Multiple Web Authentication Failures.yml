@@ -27,7 +27,7 @@ query: |
       /* url.original ham bo'lmasligi mumkin, shuning uchun message ni o'zini olamiz */
       sample_messages = VALUES(message),
       hosts = VALUES(host.name)
-    BY source.ip, bucket = DATE_TRUNC(30 minutes, @timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE event_count >= 8
   | KEEP agent_id, bucket, source.ip, event_count, sample_messages, hosts
   | SORT event_count DESC

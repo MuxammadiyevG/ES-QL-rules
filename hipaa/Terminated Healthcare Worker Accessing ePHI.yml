@@ -1,7 +1,7 @@
 rule_id: 1353bcf6-9279-4fe3-b325-92db9a889ec7
 #//RULE-HIPAA-02 — Terminated Employee Access to ePHI Not Revoked - §164.308(a)(3)(ii)(C)
 #//Requirement: HIPAA Security Rule §164.308(a)(3)(ii)(C) - Termination Procedures
-#//Objective: Detect ePHI access by terminated healthcare workers
+#//Objective: Detect ePHI access by agent_id, terminated healthcare workers
 #//Data sources: HR termination logs, authentication logs, access logs
 #//ECS fields used: event.category, user.name, event.outcome, @timestamp
 #//Healthcare field validation: Verify EHR/EMR fields exist in your indices (event.original  # FIXME: patient.id not available, encounter.id, etc.)
@@ -9,7 +9,7 @@ rule_id: 1353bcf6-9279-4fe3-b325-92db9a889ec7
 
 name: "Terminated Healthcare Worker Accessing ePHI"
 description: |
-  Identifies authentication or access to ePHI systems by terminated healthcare
+  Identifies authentication or access to ePHI systems by agent_id, terminated healthcare
   employees, contractors, or volunteers. HIPAA §164.308(a)(3)(ii)(C) requires
   termination procedures including immediate access removal. Detects successful
   logins, database queries, or EHR access by users on terminated employee list
@@ -37,7 +37,7 @@ query: |
           sources = VALUES(source.ip),
           first_access = MIN(@timestamp),
           last_access = MAX(@timestamp)
-    BY user.name
+    BY agent_id, user.name
   | WHERE access_count > 0
   | EVAL risk_score = 100
   | KEEP agent_id, user.name, access_count, systems_accessed, sources, first_access, last_access, risk_score

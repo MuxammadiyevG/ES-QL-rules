@@ -29,7 +29,7 @@ query: |
       users = VALUES(eset_protect.event.username),
       rule_ids = VALUES(eset_protect.event.rule_id),
       scanner_ids = VALUES(eset_protect.event.scanner_id)
-    BY host.hostname, source.ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
+    BY agent_id, host.hostname, source.ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE event_count >= 10
   | KEEP bucket, host.hostname, source.ip, event_count, urls, processes, users, rule_ids, scanner_ids
   | SORT event_count DESC

@@ -1,7 +1,7 @@
 rule_id: 6b092f22-03b6-4847-9604-970556cc0662
 name: "File Download Via Curl.EXE"
 description: |
-  Detects file download activity using curl.exe by identifying curl execution with output flags such as
+  Detects file download activity using curl.exe by agent_id, identifying curl execution with output flags such as
   -O/--remote-name/--output. Attackers may use curl to download tools or payloads from remote servers.
   False positives: Developer/admin scripts and legitimate automation; Git for Windows may use curl with
   --output in temp (gfw-httpget-xxxxxxxx.txt). Use as a hunting baseline and tune with allowlists.
@@ -36,7 +36,7 @@ query: |
       cmdlines = VALUES(cmd),
       pids = VALUES(winlog.event_data.ProcessPid)
     BY 
-      host.name, 
+      agent_id, host.name, 
       bucket = DATE_TRUNC(20m, @timestamp)
   | WHERE event_count >= 1
   | KEEP 

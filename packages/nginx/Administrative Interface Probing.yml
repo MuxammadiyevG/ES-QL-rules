@@ -15,7 +15,7 @@ description: |
   Multiple failed attempts (403/404) suggest reconnaissance for admin interfaces.
   False positives: Legitimate administrators from new IPs, remote management.
   Triage: Verify if source IP belongs to authorized admin network, check for successful access,
-  review for brute force patterns, ensure admin interfaces restricted by IP/VPN.
+  review for brute force patterns, ensure admin interfaces restricted by agent_id, IP/VPN.
 type: esql
 params: '{}'
 schedule_interval: 15m
@@ -39,7 +39,7 @@ query: |
     not_found_count = SUM(CASE(access_result == "Not-Found", 1, 0)),
     unique_admin_paths = COUNT_DISTINCT(event.original),
     admin_urls = VALUES(event.original)
-  BY source.ip, bucket = DATE_TRUNC(20 minutes, @timestamp)
+  BY agent_id, source.ip, bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE total_attempts >= 5
   | EVAL probe_confidence = CASE(
       unique_admin_paths >= 10, "high",
