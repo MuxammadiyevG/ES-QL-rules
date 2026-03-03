@@ -1,0 +1,61 @@
+rule_id: e5f6a7b8-c9d0-1234-eeee-555555555555
+name: PostgreSQL - Multiple Database Errors Detected
+description: |
+  Ushbu qoida PostgreSQL da qisqa vaqt ichida ko'p ERROR xato hodisalarini kuzatadi (Rule 50581).
+  Takroriy ERROR hodisalari SQL injection, noto'g'ri so'rovlar yoki servis ta'sirlanishiga ishora qilishi mumkin (T1499).
+  Qonuniy holatlar: dastur xatosi, noto'g'ri SQL so'rovlar, schema muammolari.
+  SOC triage bosqichlari:
+  - `postgresql.log.message` xato turini aniq aniqlang.
+  - Duplicate key, permission denied yoki syntax error ekanligini tekshiring.
+  - Bir xil `actor` yoki `db.name` dan kelayotganini ko'ring.
+  - SQL injection belgisi bo'lsa: WAF qoidasini yangilang, manbani cheklang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-postgresql.log-*
+query_language: esql
+query: |
+  FROM logs-postgresql.log-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "postgresql.log"
+  | WHERE event.outcome == "failure"
+  | WHERE postgresql.log.severity == "ERROR"
+  | WHERE event.action IN ("postgres-error", "postgres-duplicate-key",
+                            "postgres-permission-denied", "postgres-connection-refused")
+  | EVAL actor    = COALESCE(user.name, "Unknown")
+  | EVAL db       = COALESCE(db.name, "Unknown")
+  | EVAL hostn    = COALESCE(host.hostname, "Unknown")
+  | EVAL pg_msg   = COALESCE(postgresql.log.message, "Unknown")
+  | EVAL pid      = COALESCE(process.pid, 0)
+  | EVAL sql_op   = COALESCE(postgresql.log.sql_operation, "Unknown")
+  | STATS
+      error_count = COUNT(*),
+      databases   = VALUES(db),
+      messages    = VALUES(pg_msg),
+      sql_ops     = VALUES(sql_op),
+      pids        = VALUES(pid),
+      hosts       = VALUES(hostn),
+      first_seen  = MIN(@timestamp),
+      last_seen   = MAX(@timestamp)
+    BY agent.id, actor, bucket = DATE_TRUNC(2 minutes, @timestamp)
+  /* Rule 50581: timeframe 120s ichida 8 ta ERROR (analog) */
+  | WHERE error_count >= 8
+  | KEEP agent.id, bucket, actor, error_count, databases,
+         messages, sql_ops, pids, hosts, first_seen, last_seen
+  | SORT error_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.impact
+  - attack.t1499
+  - detection.postgresql
+  - service.availability
+severity: high
+risk_score: 73
+nist: ["AU-2", "AU-12", "AU-6", "SI-4"]
+pci_dss: ["10.6.1", "11.4"]
+gdpr: ["32.1.a", "32.2", "35.7.d"]
+mitre_attack:
+  TA0040:
+    T1499: []

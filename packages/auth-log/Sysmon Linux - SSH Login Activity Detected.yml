@@ -1,0 +1,76 @@
+rule_id: f7a8b9c0-d1e2-3456-fabc-666666666666
+name: Sysmon Linux - SSH Login Activity Detected
+description: |
+  Ushbu qoida Linux tizimlarida SSH kirish va chiqish hodisalarini kuzatadi.
+  Muvaffaqiyatli va muvaffaqiyatsiz SSH urinishlari, noma'lum foydalanuvchilar
+  hamda session ochilish/yopilish hodisalari monitoring qilinadi.
+  Bu qoida asosan audit va visibility maqsadida low severity darajasida belgilangan.
+  Qonuniy holatlar: administratorlar, DevOps, servis akkauntlarining oddiy SSH kirishlari.
+  SOC triage bosqichlari:
+  - `actor` (user.name) va `source.ip` ni tekshiring.
+  - GeoIP ma'lumotlarini (`source.geo`) tekshiring — noodatiy mamlakat/shahardan kirish bormi.
+  - Muvaffaqiyatsiz urinishlar soni ortib borayotgan bo'lsa brute-force ehtimolini ko'rib chiqing.
+  - `event.outcome` failure bo'lsa va takrorlanayotgan bo'lsa escalation bajaring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-linux.auth-*
+query_language: esql
+query: |
+  FROM logs-linux.auth-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "linux.auth"
+  | WHERE event.category == "authentication"
+     OR event.category == "session"
+  | WHERE event.action IN (
+      "ssh-login-success",
+      "ssh-login-failed",
+      "ssh-invalid-user",
+      "ssh-session-start",
+      "ssh-session-end"
+    )
+  | EVAL actor       = COALESCE(user.name, "Unknown")
+  | EVAL hostn       = COALESCE(host.hostname, "Unknown")
+  | EVAL src_ip      = COALESCE(source.ip, "Unknown")
+  | EVAL src_port    = COALESCE(source.port, 0)
+  | EVAL outcome     = COALESCE(event.outcome, "Unknown")
+  | EVAL action      = COALESCE(event.action, "Unknown")
+  | EVAL geo_city    = COALESCE(source.geo.city_name, "Unknown")
+  | EVAL geo_country = COALESCE(source.geo.country_name, "Unknown")
+  | EVAL related_ip  = COALESCE(related.ip, "Unknown")
+  | STATS
+      event_count    = COUNT(*),
+      success_count  = COUNT_IF(outcome == "success"),
+      failure_count  = COUNT_IF(outcome == "failure"),
+      actions        = VALUES(action),
+      src_ips        = VALUES(src_ip),
+      src_ports      = VALUES(src_port),
+      geo_cities     = VALUES(geo_city),
+      geo_countries  = VALUES(geo_country),
+      hosts          = VALUES(hostn),
+      related_ips    = VALUES(related_ip),
+      first_seen     = MIN(@timestamp),
+      last_seen      = MAX(@timestamp)
+    BY agent.id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP agent.id, bucket, actor, event_count, success_count,
+         failure_count, actions, src_ips, src_ports,
+         geo_cities, geo_countries, hosts, related_ips,
+         first_seen, last_seen
+  | SORT event_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.initial_access
+  - attack.t1078
+  - detection.linux
+  - sysmon.ssh
+severity: low
+risk_score: 21
+nist: ["AU-2", "AU-12", "AC-17", "IA-2"]
+pci_dss: ["10.2.1", "10.2.4", "10.2.5", "8.1.6"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0001:
+    T1078: []

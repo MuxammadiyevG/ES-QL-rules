@@ -1,0 +1,63 @@
+rule_id: a2b3c4d5-e6f7-8901-bcde-222222222222
+name: Sysmon Linux - Suspicious Outbound Network Connection
+description: |
+  Ushbu qoida Linux tizimlarida Sysmon Event 3 (Network Connection) hodisalarini kuzatadi.
+  Bir xil manzilga ko'p ulanish urinishlari C2 aloqa, port scanning yoki data exfiltration belgisi bo'lishi mumkin (T1043).
+  Qonuniy holatlar: monitoring agentlari, backup servislar, deployment pipeline ulanishlari.
+  SOC triage bosqichlari:
+  - `actor` (user.name) va `source.ip` ni tekshiring.
+  - `destination.ip` va port legitimligini tekshiring.
+  - Ulanish chastotasi va vaqt intervalini tahlil qiling.
+  - GeoIP ma'lumotlarini (`source.geo`) tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa: firewall qoidasi qo'shing, manbani izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-linux.auth-*
+query_language: esql
+query: |
+  FROM logs-linux.auth-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "linux.auth"
+  | WHERE event.category == "authentication" OR event.category == "session"
+  | EVAL actor    = COALESCE(user.name, "Unknown")
+  | EVAL hostn    = COALESCE(host.hostname, "Unknown")
+  | EVAL src_ip   = COALESCE(source.ip, "Unknown")
+  | EVAL src_port = COALESCE(source.port, 0)
+  | EVAL geo_city    = COALESCE(source.geo.city_name, "Unknown")
+  | EVAL geo_country = COALESCE(source.geo.country_name, "Unknown")
+  | EVAL related_ips = COALESCE(related.ip, "Unknown")
+  /* Monitoring agentlarini chiqarib tashlash */
+  | WHERE NOT actor RLIKE "(?i)(wazuh|zabbix|nagios|elastic)"
+  /* Bir xil IP dan ko'p ulanish */
+  | STATS
+      conn_count    = COUNT(*),
+      actors        = VALUES(actor),
+      src_ports     = VALUES(src_port),
+      geo_cities    = VALUES(geo_city),
+      geo_countries = VALUES(geo_country),
+      hosts         = VALUES(hostn),
+      first_seen    = MIN(@timestamp),
+      last_seen     = MAX(@timestamp)
+    BY agent.id, src_ip, bucket = DATE_TRUNC(1 hour, @timestamp)
+  /* Event 3 frequency rule: bir xil dst IP ga >= 2 ulanish (timeframe 60s analog) */
+  | WHERE conn_count >= 2
+  | KEEP agent.id, bucket, src_ip, conn_count, actors,
+         src_ports, geo_cities, geo_countries, hosts, first_seen, last_seen
+  | SORT conn_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - attack.command_and_control
+  - attack.t1043
+  - detection.linux
+  - sysmon.event3
+severity: medium
+risk_score: 60
+nist: ["AU-2", "AU-12", "SC-7"]
+pci_dss: ["10.2.4", "10.2.5", "1.3.2"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0011:
+    T1043: []

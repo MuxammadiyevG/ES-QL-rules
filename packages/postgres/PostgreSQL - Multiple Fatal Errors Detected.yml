@@ -1,0 +1,59 @@
+rule_id: d4e5f6a7-b8c9-0123-dddd-444444444444
+name: PostgreSQL - Multiple Fatal Errors Detected
+description: |
+  Ushbu qoida PostgreSQL da qisqa vaqt ichida ko'p FATAL xato hodisalarini kuzatadi (Rule 50580).
+  Ko'p xato servis ta'siriga (T1499 - Endpoint Denial of Service) yoki konfiguratsiya muammosiga ishora qilishi mumkin.
+  Qonuniy holatlar: dastur xatosi, noto'g'ri konfiguratsiya, connection pool muammosi.
+  SOC triage bosqichlari:
+  - `postgresql.log.message` xato turini aniq aniqlang.
+  - `actor` va `db.name` takrorlanayotganligini tekshiring.
+  - Xatolar bir xil manba yoki jarayondan kelayotganini ko'ring.
+  - Noqonuniy faoliyat tasdiqlansa: manbani cheklang, DBA xabardor qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-postgresql.log-*
+query_language: esql
+query: |
+  FROM logs-postgresql.log-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "postgresql.log"
+  | WHERE event.outcome == "failure"
+  | WHERE postgresql.log.severity == "FATAL"
+  | WHERE event.action IN ("postgres-fatal", "postgres-auth-failed",
+                            "postgres-connection-refused", "postgres-error")
+  | EVAL actor    = COALESCE(user.name, "Unknown")
+  | EVAL db       = COALESCE(db.name, "Unknown")
+  | EVAL hostn    = COALESCE(host.hostname, "Unknown")
+  | EVAL pg_msg   = COALESCE(postgresql.log.message, "Unknown")
+  | EVAL pid      = COALESCE(process.pid, 0)
+  | STATS
+      fatal_count = COUNT(*),
+      databases   = VALUES(db),
+      messages    = VALUES(pg_msg),
+      pids        = VALUES(pid),
+      hosts       = VALUES(hostn),
+      first_seen  = MIN(@timestamp),
+      last_seen   = MAX(@timestamp)
+    BY agent.id, actor, bucket = DATE_TRUNC(2 minutes, @timestamp)
+  /* Rule 50580: timeframe 120s ichida 8 ta FATAL (analog) */
+  | WHERE fatal_count >= 8
+  | KEEP agent.id, bucket, actor, fatal_count, databases,
+         messages, pids, hosts, first_seen, last_seen
+  | SORT fatal_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.impact
+  - attack.t1499
+  - detection.postgresql
+  - service.availability
+severity: high
+risk_score: 73
+nist: ["AU-2", "AU-12", "AU-6", "SI-4"]
+pci_dss: ["10.6.1", "11.4"]
+gdpr: ["32.1.a", "32.2", "35.7.d"]
+mitre_attack:
+  TA0040:
+    T1499: []

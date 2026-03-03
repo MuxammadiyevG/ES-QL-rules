@@ -59,9 +59,10 @@ tags:
   - detection.reconnaissance
 severity: high
 risk_score: 75
-mitre_attack:
-  TA0007:
-    T1482: []
 nist: ["AU-2", "AU-12", "AC-7", "IA-2"]
 pci_dss: ["10.2.4", "10.2.5", "8.1.6"]
 gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0007:
+    T1482: []
+

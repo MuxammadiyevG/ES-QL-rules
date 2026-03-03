@@ -39,7 +39,7 @@ enabled: true
 tags:
   - fortinet.fortigate
   - detection.compliance
-severity: "information"
+severity: low
 risk_score: 50
 references:
   - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference/"

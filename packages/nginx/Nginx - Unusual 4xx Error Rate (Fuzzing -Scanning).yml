@@ -2,27 +2,60 @@ rule_id: a48548c7-dd4e-4569-8727-4b90eec7fc8d
 name: Nginx - Unusual 4xx Error Rate (Fuzzing/Scanning)
 description: |
   Bitta IP manzilidan ko'p miqdorda mavjud bo'lmagan sahifalarga so'rov yuborilishini aniqlaydi.
-  Bu ko'pincha "dirbuster" yoki "ffuf" kabi vositalar yordamida yashirin fayllarni qidirishdir.
+  Bu ko'pincha "dirbuster", "ffuf" yoki "gobuster" kabi vositalar yordamida
+  yashirin fayl va kataloglarni qidirishdir (Wordlist Scanning).
+  Qonuniy holatlar: load testing, broken link checker, misconfigured crawler.
+  SOC triage bosqichlari:
+  - `source.ip` manzilini tekshiring — tashqi yoki ichkimi.
+  - `user_agent` ni tekshiring — scanning tool belgisi bormi.
+  - `url.original` pattern ini tekshiring — wordlist asosidami.
+  - Noqonuniy faoliyat tasdiqlansa: IP ni bloklang, WAF qoidasini yangilang.
 type: esql
+params: '{}'
 schedule_interval: 10m
+index:
+  - logs-nginx*
+query_language: esql
 query: |
   FROM logs-nginx*
   | WHERE @timestamp >= NOW() - 10 minutes
   | WHERE data_stream.dataset == "nginx.access"
   | WHERE http.response.status_code >= 400 AND http.response.status_code < 500
+  | EVAL actor      = COALESCE(user_agent.original, "Unknown")
+  | EVAL src_ip     = COALESCE(source.ip, "Unknown")
+  | EVAL geo_country = COALESCE(source.geo.country_name, "Unknown")
   | STATS
-      error_count = COUNT(*),
-      unique_pages = COUNT_DISTINCT(url.original),
-      status_codes = VALUES(http.response.status_code)
-    BY agent_id, source.ip, bucket = DATE_TRUNC(2 minutes, @timestamp)
+      error_count   = COUNT(*),
+      unique_pages  = COUNT_DISTINCT(url.original),
+      status_codes  = VALUES(http.response.status_code),
+      urls          = VALUES(url.original),
+      user_agents   = VALUES(actor),
+      geo_countries = VALUES(geo_country),
+      first_seen    = MIN(@timestamp),
+      last_seen     = MAX(@timestamp)
+    BY agent.id, src_ip, bucket = DATE_TRUNC(2 minutes, @timestamp)
   | WHERE error_count >= 40 AND unique_pages >= 20
+  | KEEP agent.id, bucket, src_ip, error_count, unique_pages,
+         status_codes, urls, user_agents, geo_countries,
+         first_seen, last_seen
   | SORT error_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - nginx
+  - attack.reconnaissance
+  - attack.t1595
+  - attack.t1595.003
+  - scanning
+  - fuzzing
 severity: medium
 risk_score: 50
-tags:
-- nginx
-- reconnaissance
-- scanning
+nist: ["SI-4", "SC-7", "AU-12"]
+pci_dss: ["10.2.4", "11.4"]
+gdpr: ["32.1.a"]
+references:
+  - "https://attack.mitre.org/techniques/T1595/003/"
+  - "https://owasp.org/www-project-web-security-testing-guide/"
 mitre_attack:
   TA0043:
-    T1595: []
+    T1595: ['T1595.003'] 

@@ -1,0 +1,67 @@
+rule_id: e5f6a7b8-c9d0-1234-efab-555555555555
+name: Sysmon Linux - Suspicious File Deletion Detected
+description: |
+  Ushbu qoida Linux tizimlarida Sysmon Event 23 (FileDelete) hodisalarini kuzatadi.
+  Muhim fayllar yoki log fayllarning o'chirilishi indicator removal (T1107) yoki
+  data destruction (T1485) texnikalariga ishora qilishi mumkin.
+  Qonuniy holatlar: rejalashtirilgan cleanup skriptlari, disk space management.
+  SOC triage bosqichlari:
+  - `actor` (user.name) va `user.effective.name` ni tekshiring.
+  - O'chirilgan fayl yo'lini (`process.working_directory`) tahlil qiling.
+  - Log fayllari yoki konfiguratsiya fayllar o'chirilganini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa: backup dan tiklang, manbani cheklang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-linux.auth-*
+query_language: esql
+query: |
+  FROM logs-linux.auth-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "linux.auth"
+  | WHERE event.action == "sudo-command"
+  | EVAL actor       = COALESCE(user.name, "Unknown")
+  | EVAL hostn       = COALESCE(host.hostname, "Unknown")
+  | EVAL src_ip      = COALESCE(source.ip, "Unknown")
+  | EVAL cmd         = COALESCE(process.command_line, "Unknown")
+  | EVAL working_dir = COALESCE(process.working_directory, "Unknown")
+  | EVAL eff_user    = COALESCE(user.effective.name, "Unknown")
+  /* wazuh-agentd tomonidan o'chirishlarni chiqarib tashlash */
+  | WHERE NOT actor RLIKE "(?i)(wazuh|zabbix)"
+  /* Shubhali o'chirish komandalari */
+  | WHERE cmd RLIKE "(?i)(rm\\s.*-rf|shred\\s|wipe\\s|unlink\\s|truncate\\s|dd\\s.*\\/dev\\/null)"
+     OR cmd RLIKE "(?i)(rm\\s.*/var/log|rm\\s.*/etc|rm\\s.*/tmp|rm\\s.*/home)"
+  | STATS
+      delete_count = COUNT(*),
+      commands     = VALUES(cmd),
+      working_dirs = VALUES(working_dir),
+      eff_users    = VALUES(eff_user),
+      src_ips      = VALUES(src_ip),
+      hosts        = VALUES(hostn),
+      first_seen   = MIN(@timestamp),
+      last_seen    = MAX(@timestamp)
+    BY agent.id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE delete_count >= 2
+  | KEEP agent.id, bucket, actor, delete_count, commands,
+         working_dirs, eff_users, src_ips, hosts, first_seen, last_seen
+  | SORT delete_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - attack.defense_evasion
+  - attack.impact
+  - attack.t1107
+  - attack.t1485
+  - detection.linux
+  - sysmon.event23
+severity: high
+risk_score: 75
+nist: ["AU-2", "AU-12", "CP-9", "SI-12"]
+pci_dss: ["10.2.4", "10.5.5", "12.10.5"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0005:
+    T1107: []
+  TA0040:
+    T1485: []

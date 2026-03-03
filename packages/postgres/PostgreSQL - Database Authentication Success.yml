@@ -1,0 +1,58 @@
+rule_id: a1b2c3d4-e5f6-7890-aaaa-111111111111
+name: PostgreSQL - Database Authentication Success
+description: |
+  Ushbu qoida PostgreSQL da muvaffaqiyatli autentifikatsiya hodisalarini kuzatadi (Rule 50511).
+  Muvaffaqiyatli kirish odatda qonuniy bo'lsa ham, noodatiy vaqt, IP yoki foydalanuvchidan
+  kirish hisobni egallash (T1078) belgisi bo'lishi mumkin.
+  Qonuniy holatlar: oddiy foydalanuvchi va servis akkauntlarining kirishlari.
+  SOC triage bosqichlari:
+  - `actor` (user.name) va `db.name` ni tekshiring.
+  - `source.ip` manzili va vaqtni tekshiring — noodatiy soatda kirish bormi.
+  - GeoIP ma'lumotlarini tekshiring.
+  - Ko'p muvaffaqiyatli kirish brute-force dan keyin bo'lishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-postgresql.log-*
+query_language: esql
+query: |
+  FROM logs-postgresql.log-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "postgresql.log"
+  | WHERE event.action == "postgres-connection"
+  | WHERE event.outcome == "success"
+  | WHERE postgresql.log.message RLIKE "(?i)(connection authorized|connection authenticated)"
+  | EVAL actor    = COALESCE(user.name, "Unknown")
+  | EVAL db       = COALESCE(db.name, "Unknown")
+  | EVAL hostn    = COALESCE(host.hostname, "Unknown")
+  | EVAL pg_level = COALESCE(postgresql.log.severity, "Unknown")
+  | EVAL pg_msg   = COALESCE(postgresql.log.message, "Unknown")
+  | EVAL pid      = COALESCE(process.pid, 0)
+  | STATS
+      auth_count  = COUNT(*),
+      databases   = VALUES(db),
+      pids        = VALUES(pid),
+      messages    = VALUES(pg_msg),
+      hosts       = VALUES(hostn),
+      first_seen  = MIN(@timestamp),
+      last_seen   = MAX(@timestamp)
+    BY agent.id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE auth_count >= 1
+  | KEEP agent.id, bucket, actor, auth_count, databases,
+         pids, messages, hosts, first_seen, last_seen
+  | SORT auth_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.initial_access
+  - attack.t1078
+  - detection.postgresql
+severity: low
+risk_score: 21
+nist: ["AU-2", "AU-12", "AU-14", "AC-7"]
+pci_dss: ["10.2.5", "8.1.6"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0001:
+    T1078: []

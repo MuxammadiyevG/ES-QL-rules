@@ -1,0 +1,58 @@
+rule_id: d4e5f6a7-b8c9-0123-defa-444444444444
+name: Sysmon Linux - Monitoring Configuration Tampering Detected
+description: |
+  Ushbu qoida Linux tizimlarida Sysmon Event 16 (Config State Changed) hodisalarini kuzatadi.
+  Monitoring konfiguratsiyasining o'zgartirilishi defense evasion texnikasiga (T1562) ishora qiladi.
+  Bu turdagi hodisa hujumchi monitoring tizimini o'chirib qo'yishga urinayotganligini ko'rsatishi mumkin.
+  Qonuniy holatlar: rejalashtirilgan administrativ konfiguratsiya yangilanishlari.
+  SOC triage bosqichlari:
+  - `actor` (user.name) va `user.effective.name` ni aniq identifikatsiya qiling.
+  - Change ticket yoki deployment yozuvi borligini tekshiring.
+  - `process.command_line` da qaysi konfiguratsiya o'zgartirilganini aniqlang.
+  - Noqonuniy faoliyat tasdiqlansa: darhol containment bajaring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-linux.auth-*
+query_language: esql
+query: |
+  FROM logs-linux.auth-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "linux.auth"
+  | WHERE event.action == "sudo-command"
+  | EVAL actor       = COALESCE(user.name, "Unknown")
+  | EVAL hostn       = COALESCE(host.hostname, "Unknown")
+  | EVAL src_ip      = COALESCE(source.ip, "Unknown")
+  | EVAL cmd         = COALESCE(process.command_line, "Unknown")
+  | EVAL eff_user    = COALESCE(user.effective.name, "Unknown")
+  /* Sysmon / auditd konfiguratsiya o'zgartirish komandalari */
+  | WHERE cmd RLIKE "(?i)(sysmon|auditd|auditctl|systemctl.*(stop|disable|mask)|service.*(stop|disable)|rm.*\\.conf|sed.*\\.conf|truncate.*log)"
+  | STATS
+      config_changes = COUNT(*),
+      commands       = VALUES(cmd),
+      eff_users      = VALUES(eff_user),
+      src_ips        = VALUES(src_ip),
+      hosts          = VALUES(hostn),
+      first_seen     = MIN(@timestamp),
+      last_seen      = MAX(@timestamp)
+    BY agent.id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE config_changes >= 1
+  | KEEP agent.id, bucket, actor, config_changes, commands,
+         eff_users, src_ips, hosts, first_seen, last_seen
+  | SORT config_changes DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - attack.defense_evasion
+  - attack.t1562
+  - detection.linux
+  - sysmon.event16
+severity: high
+risk_score: 75
+nist: ["AU-2", "AU-12", "CM-6", "SI-3"]
+pci_dss: ["10.2.4", "10.5.5"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0005:
+    T1562: []

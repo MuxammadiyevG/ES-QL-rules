@@ -1,0 +1,59 @@
+rule_id: c3d4e5f6-a7b8-9012-cccc-333333333333
+name: PostgreSQL - Database Shutdown Detected
+description: |
+  Ushbu qoida PostgreSQL da kutilmagan to'xtatilish va shutdown hodisalarini kuzatadi (Rule 50520, 50521).
+  Servis mavjudligiga ta'sir etuvchi hodisalar T1529 (System Shutdown/Reboot) texnikasiga ishora qiladi.
+  Qonuniy holatlar: rejalashtirilgan maintenance, versiya yangilash.
+  SOC triage bosqichlari:
+  - Change ticket yoki maintenance oynasi borligini tekshiring.
+  - `actor` (user.name) va `process.pid` ni tekshiring.
+  - `postgresql.log.message` tafsilotini o'qing — sababi nima.
+  - Rejalashtirilmagan bo'lsa: darhol DBA va infra jamoasini xabardor qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-postgresql.log-*
+query_language: esql
+query: |
+  FROM logs-postgresql.log-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "postgresql.log"
+  | WHERE event.action IN ("postgres-fatal", "postgres-log")
+  | WHERE postgresql.log.message RLIKE
+      "(?i)(terminating connection due|aborting any active transactions|shutting down|database system is shut down)"
+  | EVAL actor    = COALESCE(user.name, "Unknown")
+  | EVAL db       = COALESCE(db.name, "Unknown")
+  | EVAL hostn    = COALESCE(host.hostname, "Unknown")
+  | EVAL pg_level = COALESCE(postgresql.log.severity, "Unknown")
+  | EVAL pg_msg   = COALESCE(postgresql.log.message, "Unknown")
+  | EVAL pid      = COALESCE(process.pid, 0)
+  | STATS
+      shutdown_count = COUNT(*),
+      databases      = VALUES(db),
+      pg_levels      = VALUES(pg_level),
+      messages       = VALUES(pg_msg),
+      pids           = VALUES(pid),
+      hosts          = VALUES(hostn),
+      first_seen     = MIN(@timestamp),
+      last_seen      = MAX(@timestamp)
+    BY agent.id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE shutdown_count >= 1
+  | KEEP agent.id, bucket, actor, shutdown_count, databases,
+         pg_levels, messages, pids, hosts, first_seen, last_seen
+  | SORT shutdown_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.impact
+  - attack.t1529
+  - detection.postgresql
+  - service.availability
+severity: critical
+risk_score: 90
+nist: ["AU-2", "AU-12", "AU-6", "CP-10"]
+pci_dss: ["10.6.1"]
+gdpr: ["32.1.a", "32.2", "35.7.d"]
+mitre_attack:
+  TA0040:
+    T1529: []

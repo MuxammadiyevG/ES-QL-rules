@@ -1,0 +1,62 @@
+rule_id: c3d4e5f6-a7b8-9012-cdef-333333333333
+name: Sysmon Linux - Suspicious File Creation via Privileged User
+description: |
+  Ushbu qoida Linux tizimlarida Sysmon Event 11 (FileCreate) hodisalarini kuzatadi.
+  Imtiyozli foydalanuvchi tomonidan shubhali fayl yaratilishi T1044 texnikasiga ishora qilishi mumkin.
+  Qonuniy holatlar: rejalashtirilgan deployment skriptlari, paket o'rnatishlari, konfiguratsiya yangilanishlari.
+  SOC triage bosqichlari:
+  - `actor` (user.name) va `user.effective.name` ni tekshiring.
+  - `process.command_line` va `process.working_directory` ni tahlil qiling.
+  - Yaratilgan fayl yo'li shubhali katalogda emasligini tasdiqlang (/tmp, /dev/shm, /var/tmp).
+  - Noqonuniy faoliyat tasdiqlansa: faylni karantinga oling, manbani cheklang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-linux.auth-*
+query_language: esql
+query: |
+  FROM logs-linux.auth-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "linux.auth"
+  | WHERE event.action == "sudo-command"
+  | EVAL actor       = COALESCE(user.name, "Unknown")
+  | EVAL hostn       = COALESCE(host.hostname, "Unknown")
+  | EVAL src_ip      = COALESCE(source.ip, "Unknown")
+  | EVAL cmd         = COALESCE(process.command_line, "Unknown")
+  | EVAL working_dir = COALESCE(process.working_directory, "Unknown")
+  | EVAL eff_user    = COALESCE(user.effective.name, "Unknown")
+  /* wazuh-agentd tomonidan yaratilgan fayllarni chiqarib tashlash */
+  | WHERE NOT actor RLIKE "(?i)(wazuh|zabbix)"
+  /* Shubhali kataloglarda fayl yaratish */
+  | WHERE working_dir RLIKE "(?i)(/tmp|/dev/shm|/var/tmp|/run|/proc)"
+     OR cmd RLIKE "(?i)(touch\\s|cp\\s|mv\\s|tee\\s|dd\\s|install\\s)"
+  | STATS
+      file_create_count = COUNT(*),
+      commands          = VALUES(cmd),
+      working_dirs      = VALUES(working_dir),
+      eff_users         = VALUES(eff_user),
+      src_ips           = VALUES(src_ip),
+      hosts             = VALUES(hostn),
+      first_seen        = MIN(@timestamp),
+      last_seen         = MAX(@timestamp)
+    BY agent.id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE file_create_count >= 2
+  | KEEP agent.id, bucket, actor, file_create_count, commands,
+         working_dirs, eff_users, src_ips, hosts, first_seen, last_seen
+  | SORT file_create_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - attack.persistence
+  - attack.t1044
+  - detection.linux
+  - sysmon.event11
+severity: medium
+risk_score: 60
+nist: ["AU-2", "AU-12", "SI-7"]
+pci_dss: ["10.2.4", "10.2.7"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack:
+  TA0003:
+    T1044: []
