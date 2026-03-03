@@ -1,0 +1,54 @@
+rule_id: b3c4d5e6-f7a8-9012-bcde-777777777777
+name: Fortinet FortiGate - VPN Activity Monitoring
+description: |
+  Ushbu qoida FortiGate VPN hodisalarini kuzatadi.
+  Noodatiy VPN ulanishlari, muvaffaqiyatsiz autentifikatsiya yoki
+  ruxsatsiz kirish urinishlari credential access va initial access
+  texnikalariga ishora qilishi mumkin (T1078, T1133).
+  Qonuniy holatlar: remote workers, site-to-site VPN, IT administratorlar.
+  SOC triage bosqichlari:
+  - `actor` (user.name) va `src_ip` (remip) ni tekshiring.
+  - GeoIP ma'lumotlarini tekshiring — noodatiy mamlakat/shahardan kirish bormi.
+  - VPN ulanish vaqtini tekshiring — ish soatlaridan tashqarimi.
+  - Muvaffaqiyatsiz uricnishlar soni ortib borayotgan bo'lsa brute-force ehtimolini ko'rib chiqing.
+  - Noqonuniy faoliyat tasdiqlansa: VPN akkauntini bloklang, credentiallarni yangilang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-fortinet*
+query_language: esql
+query: |
+  FROM logs-fortinet*
+  | WHERE @timestamp >= NOW() - 300 minutes
+  | WHERE fortinet.fortigate.subtype == "vpn"
+  /* Statistikani filtrlab, faqat muhim voqealarni qoldirishingiz ham mumkin */
+  /* | WHERE fortinet.fortigate.logdesc != "IPsec tunnel statistics" */
+  | EVAL foydalanuvchi = user.name
+  | EVAL ulanish_ip = fortinet.fortigate.remip
+  | EVAL xabar = fortinet.fortigate.logdesc
+  | KEEP @timestamp, foydalanuvchi, ulanish_ip, xabar
+  | SORT @timestamp DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.initial_access
+  - attack.credential_access
+  - attack.t1078
+  - attack.t1133
+  - detection.fortinet
+  - detection.vpn
+severity: medium
+risk_score: 50
+nist: ["AU-2", "AU-12", "AC-17", "IA-2", "SC-7"]
+pci_dss: ["10.2.4", "10.2.5", "8.1.6", "1.3.2"]
+gdpr: ["32.1.a", "32.2"]
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+  - "https://attack.mitre.org/techniques/T1133/"
+  - "https://docs.fortinet.com/document/fortigate/7.4.0/log-message-reference/log-types"
+mitre_attack:
+  TA0001:
+    T1133: []  # External Remote Services - VPN
+  TA0006:
+    T1078: []  # Valid Accounts - credential misuse
