@@ -1,4 +1,4 @@
-rule_id: f7826dac-eea6-4a76-8410-3e9cf75d96c5
+rule_id: 1f66ed1f-bbfa-4a51-a30f-11f27bbf8286
 name: "Suspicious Crontab Modification"
 description: |
   Detects suspicious modification of crontab files on Linux systems.

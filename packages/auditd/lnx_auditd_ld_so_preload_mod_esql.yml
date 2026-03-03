@@ -1,4 +1,4 @@
-rule_id: b505d9f5-367d-419e-817f-41ff1207bf09
+rule_id: 68fd378f-fd24-4280-ae76-0cb310c4e5dc
 name: "LD_SO_PRELOAD Modification Detection"
 description: |
   Identifies modification of /etc/ld.so.preload for shared object injection.

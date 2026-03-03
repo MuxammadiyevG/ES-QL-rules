@@ -1,4 +1,4 @@
-rule_id: ee471fa6-b996-45c1-a71b-ef0a000d5cbb
+rule_id: 1facfe98-2b02-48ce-9813-a51cbce226ba
 name: "BPFDoor File Access Detection"
 description: |
   Detects access to files associated with BPFDoor malware.

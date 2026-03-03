@@ -1,4 +1,4 @@
-rule_id: f1a2b3c4-d5e6-7890-abcd-111111111111
+rule_id: 77e202c3-bc17-453a-add3-9a714c5bcd70
 name: Sysmon Linux - Suspicious Process Creation Detected
 description: |
   Ushbu qoida Linux tizimlarida Sysmon Event 1 (Process Creation) hodisalarini kuzatadi.

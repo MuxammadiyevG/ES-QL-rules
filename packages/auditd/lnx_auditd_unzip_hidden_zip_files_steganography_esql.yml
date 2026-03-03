@@ -1,4 +1,4 @@
-rule_id: d28fc524-263c-4ec4-a908-41ac67ed9095
+rule_id: 8a53fec0-9b94-4096-8721-f7361050f007
 name: "Unzip Hidden ZIP Steganography"
 description: |
   Detects extraction of ZIP files from images (steganography).

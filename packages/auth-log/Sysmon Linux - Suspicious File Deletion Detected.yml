@@ -1,4 +1,4 @@
-rule_id: e5f6a7b8-c9d0-1234-efab-555555555555
+rule_id: 517d2ffe-9af4-4da0-9c75-53c4cf8d268e
 name: Sysmon Linux - Suspicious File Deletion Detected
 description: |
   Ushbu qoida Linux tizimlarida Sysmon Event 23 (FileDelete) hodisalarini kuzatadi.

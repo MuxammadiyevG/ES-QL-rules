@@ -1,4 +1,4 @@
-rule_id: d4e5f6a7-b8c9-0123-defa-444444444444
+rule_id: 869ba50f-daf9-44c1-b61c-1305dfa94074
 name: Sysmon Linux - Monitoring Configuration Tampering Detected
 description: |
   Ushbu qoida Linux tizimlarida Sysmon Event 16 (Config State Changed) hodisalarini kuzatadi.

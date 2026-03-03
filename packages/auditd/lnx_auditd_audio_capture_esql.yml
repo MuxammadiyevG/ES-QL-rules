@@ -1,4 +1,4 @@
-rule_id: d28c9b3d-dc55-462d-9ee5-1f43770024b0
+rule_id: b5710dff-9242-429f-a9e4-147035f5e1a4
 name: "Audio Capture Detection"
 description: |
   Detects attempts to record audio using arecord or ecasound utilities.

@@ -1,4 +1,4 @@
-rule_id: bef33e2e-9dab-47d9-932b-03523a0cce90
+rule_id: aea78bea-08ec-4daa-9063-4e0dc91c058f
 name: "Suspicious Named Error"
 description: |
   Detects suspicious DNS (BIND/named) error messages that indicate fatal or abnormal behavior.

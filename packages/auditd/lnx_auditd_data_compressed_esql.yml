@@ -1,4 +1,4 @@
-rule_id: bea0117b-002b-4de4-a90b-79068ad5a2f8
+rule_id: 9407d2b1-fe0c-43fa-aadb-c161d53cbc48
 name: "Data Compression Detection - Linux"
 description: |
   Detects data being compressed on Linux systems.

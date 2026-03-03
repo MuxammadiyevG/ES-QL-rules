@@ -1,4 +1,4 @@
-rule_id: a1b2c3d4-e5f6-7890-aaaa-111111111111
+rule_id: 44f53f18-11cb-47a9-9541-25dfce182ac6
 name: PostgreSQL - Database Authentication Success
 description: |
   Ushbu qoida PostgreSQL da muvaffaqiyatli autentifikatsiya hodisalarini kuzatadi (Rule 50511).
@@ -37,9 +37,9 @@ query: |
       hosts       = VALUES(hostn),
       first_seen  = MIN(@timestamp),
       last_seen   = MAX(@timestamp)
-    BY agent.id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE auth_count >= 1
-  | KEEP agent.id, bucket, actor, auth_count, databases,
+  | KEEP agent_id, bucket, actor, auth_count, databases,
          pids, messages, hosts, first_seen, last_seen
   | SORT auth_count DESC
   | LIMIT 200

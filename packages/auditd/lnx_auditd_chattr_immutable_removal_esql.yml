@@ -1,4 +1,4 @@
-rule_id: e4e4361e-1dca-436c-90f7-bc7873c0ead9
+rule_id: 6c0f7b48-307b-43dc-8b52-75813025ad1c
 name: "Chattr Immutable Attribute Removal"
 description: |
   Detects removal of immutable file attribute using chattr.

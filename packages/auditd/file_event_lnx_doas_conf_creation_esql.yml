@@ -1,4 +1,4 @@
-rule_id: 84e6a0ea-0099-4966-a234-cc09e11b53b6
+rule_id: 58ef1815-0a23-41c3-a860-256a677d4ef9
 name: "Doas Configuration File Creation"
 description: |
   Detects the creation of doas.conf file.

@@ -1,4 +1,4 @@
-rule_id: f1623a18-d9c0-4039-803d-c7fed6376d9f
+rule_id: f21208cd-3564-4a3b-8248-30e334cde122
 name: "Data Exfiltration with Wget Detection"
 description: |
   Detects attempts to post files using the wget utility.

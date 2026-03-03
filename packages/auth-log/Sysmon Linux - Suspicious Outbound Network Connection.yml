@@ -1,4 +1,4 @@
-rule_id: a2b3c4d5-e6f7-8901-bcde-222222222222
+rule_id: 35c9f69c-c94d-4e36-b618-e5565954417c
 name: Sysmon Linux - Suspicious Outbound Network Connection
 description: |
   Ushbu qoida Linux tizimlarida Sysmon Event 3 (Network Connection) hodisalarini kuzatadi.

@@ -1,4 +1,4 @@
-rule_id: 2095cc09-472c-43cd-83dc-b681a7d107bf
+rule_id: 225fc821-21dd-4a97-9228-8b3f522689c3
 name: "Suspicious Linux Commands Detection"
 description: |
   Detects relevant commands often related to malware or hacking activity on Linux systems.

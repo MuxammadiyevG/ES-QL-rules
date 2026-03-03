@@ -1,4 +1,4 @@
-rule_id: f7a8b9c0-d1e2-3456-fabc-666666666666
+rule_id: d4411e69-12d7-479f-a4a8-019d0b8c9808
 name: Sysmon Linux - SSH Login Activity Detected
 description: |
   Ushbu qoida Linux tizimlarida SSH kirish va chiqish hodisalarini kuzatadi.
