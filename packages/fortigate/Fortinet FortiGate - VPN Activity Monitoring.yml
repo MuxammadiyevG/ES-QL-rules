@@ -27,7 +27,8 @@ query: |
   | EVAL foydalanuvchi = user.name
   | EVAL ulanish_ip = fortinet.fortigate.remip
   | EVAL xabar = fortinet.fortigate.logdesc
-  | KEEP @timestamp, foydalanuvchi, ulanish_ip, xabar
+  | EVAL agentid = agent_id
+  | KEEP @timestamp,agentid, foydalanuvchi, ulanish_ip, xabar
   | SORT @timestamp DESC
   | LIMIT 200
 enabled: true
