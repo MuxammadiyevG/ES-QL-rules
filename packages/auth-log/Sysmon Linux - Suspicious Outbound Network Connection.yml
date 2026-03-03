@@ -40,10 +40,10 @@ query: |
       hosts         = VALUES(hostn),
       first_seen    = MIN(@timestamp),
       last_seen     = MAX(@timestamp)
-    BY agent.id, src_ip, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, src_ip, bucket = DATE_TRUNC(1 hour, @timestamp)
   /* Event 3 frequency rule: bir xil dst IP ga >= 2 ulanish (timeframe 60s analog) */
   | WHERE conn_count >= 2
-  | KEEP agent.id, bucket, src_ip, conn_count, actors,
+  | KEEP agent_id, bucket, src_ip, conn_count, actors,
          src_ports, geo_cities, geo_countries, hosts, first_seen, last_seen
   | SORT conn_count DESC
   | LIMIT 200
