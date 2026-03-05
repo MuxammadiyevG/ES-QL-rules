@@ -1,0 +1,109 @@
+rule_id: 8b2d6f4a-1e9c-4a7d-c583-9f1e4b8d2c67
+name: "Agent FIM: Windows File or Directory Deleted"
+description: |
+  Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File or Directory Deleted` kontekstida FortiSIEM Windows Agent FIM tomonidan fayl yoki directory o'chirilganligini aniqlaydi.
+  Bu turdagi hodisa hujumchi iz qoldirmaslik, forensic tahlilni qiyinlashtirish, log fayllarini yo'q qilish yoki muhim tizim fayllarini o'chirish maqsadida faoliyat yuritayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan tozalash ishlari, administrator tomonidan bajarilgan maintenance, dastur o'chirish yoki temp fayllarni tozalash jarayonlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `winlog.computer_name`, `winlog.event_data.SubjectUserName` va o'chirilgan `winlog.event_data.ObjectName` ni aniq identifikatsiya qiling.
+  - O'chirishni amalga oshirgan `winlog.event_data.ProcessName` ni tekshiring — noma'lum yoki shubhali process bo'lsa ustuvor ko'rib chiqing.
+  - O'chirilgan fayl kritik Windows fayli yoki log fayli bo'lsa ustuvor ko'rib chiqing.
+  - O'zgarishni amalga oshirgan foydalanuvchining roli va huquqlarini tekshiring.
+  - Tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: faylni backup dan tiklang, processni to'xtating va hostni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE winlog.channel == "Security"
+  | WHERE winlog.event_id == "4663"
+  | WHERE winlog.event_data.AccessList RLIKE ".*%%4419.*"
+     OR winlog.event_data.AccessList RLIKE ".*DELETE.*"
+     OR winlog.event_data.AccessList RLIKE ".*%%4416.*"
+  | WHERE winlog.event_data.ObjectType IN ("File", "Directory")
+  | WHERE winlog.event_data.ObjectName != "-"
+  | WHERE winlog.event_data.ObjectName IS NOT NULL
+  | EVAL host_name   = winlog.computer_name
+  | EVAL actor       = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName)
+  | EVAL file_path   = winlog.event_data.ObjectName
+  | EVAL process     = winlog.event_data.ProcessName
+  | EVAL object_type = winlog.event_data.ObjectType
+  | EVAL logon_id    = winlog.event_data.SubjectLogonId
+  | EVAL handle_id   = winlog.event_data.HandleId
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | EVAL is_critical = CASE(
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\System32\\\\.*",    "YES - System32",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\SysWOW64\\\\.*",    "YES - SysWOW64",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\.*",                "YES - Windows dir",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\System32\\\\winevt\\\\Logs\\\\.*", "YES - Event Logs",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\drivers\\\\etc\\\\hosts",      "YES - hosts file",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Program Files\\\\.*",          "YES - Program Files",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\boot\\\\.*",                   "YES - Boot dir",
+      "NO"
+    )
+  | EVAL is_suspicious_proc = CASE(
+      winlog.event_data.ProcessName RLIKE "(?i).*(powershell|cmd|wscript|cscript|mshta|rundll32|regsvr32|certutil|bitsadmin|wmic).*", "YES",
+      "NO"
+    )
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count       = COUNT(*),
+      host_names        = VALUES(winlog.computer_name),
+      actors            = VALUES(winlog.event_data.SubjectUserName),
+      file_paths        = VALUES(winlog.event_data.ObjectName),
+      processes         = VALUES(winlog.event_data.ProcessName),
+      object_types      = VALUES(winlog.event_data.ObjectType),
+      critical_files    = VALUES(is_critical),
+      suspicious_procs  = VALUES(is_suspicious_proc),
+      last_seen         = MAX(@timestamp),
+      first_seen        = MIN(@timestamp)
+    BY agent_id, winlog.computer_name, winlog.event_data.ObjectName, winlog.event_data.SubjectUserName, winlog.event_data.ProcessName
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = winlog.computer_name,
+      file_name         = winlog.event_data.ObjectName,
+      user              = winlog.event_data.SubjectUserName,
+      process_name      = winlog.event_data.ProcessName
+  | KEEP
+      agent_id,
+      host_name,
+      file_name,
+      user,
+      process_name,
+      event_count,
+      host_names,
+      actors,
+      file_paths,
+      processes,
+      object_types,
+      critical_files,
+      suspicious_procs,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.impact
+  - attack.t1070.004
+  - attack.t1565.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1070/004/"
+  - "https://attack.mitre.org/techniques/T1565/001/"
+  - "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4663"
+nist: ["SI-7", "AU-9", "CM-3", "IR-4"]
+pci_dss: ["10.5.1", "11.5", "6.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.004"]
+  TA0040:
+    T1565: ["T1565.001"]
