@@ -1,0 +1,76 @@
+rule_id: 2f8b3e7a-5c1d-4a9f-b847-3e6d2f094c81
+name: Account Locked FortiSIEM
+description: |
+  Ushbu qoida Credential Access texnikalariga bog'liq bo'lib, `Account Locked: FortiSIEM` kontekstida haddan tashqari noto'g'ri kirish urinishlari natijasida FortiSIEM tizim akkauntining bloklanishini aniqlaydi.
+  Bu turdagi hodisa hujumchi brute force yoki password spraying orqali FortiSIEM tizimiga ruxsatsiz kirish huquqini egallashga urinayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida foydalanuvchi parolini unutganligi, boshqa tizimda keshlangan eski credential yoki avtomatik monitoring skriptlardagi noto'g'ri konfiguratsiya uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `user.name` (bloklangan foydalanuvchi) va `source.ip` (manba IP) ni aniq identifikatsiya qiling.
+  - FortiSIEM Internet'ga ochiq bo'lsa, firewall yoki ACL orqali kirish cheklovlarini tekshiring.
+  - Foydalanuvchining boshqa tizimlarda keshlangan credential borligini tekshiring.
+  - Manba hostda boshqa shubhali hodisalar (malware, lateral movement) borligini tekshiring.
+  - Manba host ichki tarmoqda bo'lsa, zaifliklar borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, credentiallarni yangilang va FortiSIEM ga kirish cheklovlarini kuchaytiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 600 seconds
+  | WHERE event.dataset == "fortinet.fortigate"
+  | WHERE observer.vendor == "Fortinet"
+  | WHERE observer.type == "firewall"
+  | WHERE event.outcome == "failure"
+     AND event.action == "blocked"
+  | EVAL src_ip      = source.ip
+  | EVAL actor       = user.name
+  | EVAL dest_host   = observer.name
+  | EVAL proto       = network.transport
+  | WHERE source.ip IS NOT NULL
+  | STATS
+      event_count  = COUNT(*),
+      users        = VALUES(user.name),
+      src_ips      = VALUES(source.ip),
+      dest_hosts   = VALUES(observer.name),
+      src_ports    = VALUES(source.port),
+      protocols    = VALUES(network.transport),
+      actions      = VALUES(event.action),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY source.ip, user.name, observer.name
+  | WHERE event_count >= 1
+  | EVAL
+      destination_host  = observer.name,
+      user              = user.name
+  | KEEP
+      destination_host,
+      user,
+      source.ip,
+      event_count,
+      users,
+      src_ips,
+      dest_hosts,
+      protocols,
+      actions,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.t1110.001
+  - detection.threat-hunting
+severity: high
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1110/001/"
+  - "https://docs.fortinet.com/product/fortisiem"
+nist: ["AC-7", "IA-5", "SI-4"]
+pci_dss: ["8.1.6", "8.1.7", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0006:
+    T1110: ["T1110.001"]

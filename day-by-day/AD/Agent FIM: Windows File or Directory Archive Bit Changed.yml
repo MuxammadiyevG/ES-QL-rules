@@ -1,0 +1,117 @@
+rule_id: 6e1c8d4f-3a7b-4f2e-b961-7d5c3e8f1a46
+name: "Agent FIM: Windows File or Directory Archive Bit Changed"
+description: |
+  Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File or Directory Archive Bit Changed` kontekstida FortiSIEM Windows Agent FIM tomonidan fayl yoki directory archive bitining o'zgarganligini aniqlaydi.
+  Archive bit (A attributi) Windows da faylning backup qilinishi kerakligini belgilovchi flag bo'lib, hujumchi bu bitni o'zgartirish orqali backup tizimlarini chalg'itish, forensic tahlilni qiyinlashtirish yoki fayl o'zgarishlarini yashirish maqsadida foydalanishi mumkin.
+  Qonuniy holatlar sifatida rejalashtirilgan backup operatsiyalari, Windows robocopy/xcopy jarayonlari, dastur o'rnatish yoki administrator tomonidan bajarilgan fayl operatsiyalari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `winlog.computer_name`, `winlog.event_data.SubjectUserName` va o'zgartirilgan `winlog.event_data.ObjectName` ni aniq identifikatsiya qiling.
+  - Archive bit o'zgarishini amalga oshirgan `winlog.event_data.ProcessName` ni tekshiring.
+  - O'zgarish backup jarayoni bilan bog'liq emasligini tasdiqlang.
+  - O'zgarishni amalga oshirgan foydalanuvchining roli va huquqlarini tekshiring.
+  - Tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: fayl atributlarini tiklang, processni tekshiring va hostni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE winlog.channel == "Security"
+  | WHERE winlog.event_id == "4670"
+  | WHERE winlog.event_data.OldSd RLIKE ".*A.*"
+     OR winlog.event_data.NewSd RLIKE ".*A.*"
+  | EVAL host_name    = winlog.computer_name
+  | EVAL actor        = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName)
+  | EVAL file_path    = winlog.event_data.ObjectName
+  | EVAL old_attrib   = winlog.event_data.OldSd
+  | EVAL new_attrib   = winlog.event_data.NewSd
+  | EVAL process      = winlog.event_data.ProcessName
+  | EVAL object_type  = winlog.event_data.ObjectType
+  | EVAL logon_id     = winlog.event_data.SubjectLogonId
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | EVAL archive_set = CASE(
+      winlog.event_data.NewSd RLIKE ".*A.*"
+        AND NOT winlog.event_data.OldSd RLIKE ".*A.*", "Archive bit SET",
+      NOT winlog.event_data.NewSd RLIKE ".*A.*"
+        AND winlog.event_data.OldSd RLIKE ".*A.*",     "Archive bit CLEARED",
+      "Archive bit MODIFIED"
+    )
+  | EVAL is_critical = CASE(
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\System32\\\\.*",  "YES - System32",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\SysWOW64\\\\.*",  "YES - SysWOW64",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\.*",              "YES - Windows dir",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Program Files\\\\.*",        "YES - Program Files",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\drivers\\\\etc\\\\hosts",    "YES - hosts file",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\SAM",                        "YES - SAM registry",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\SYSTEM",                     "YES - SYSTEM registry",
+      "NO"
+    )
+  | EVAL is_suspicious_proc = CASE(
+      winlog.event_data.ProcessName RLIKE "(?i).*(powershell|cmd|wscript|cscript|mshta|rundll32|regsvr32|certutil|bitsadmin|wmic).*", "YES",
+      "NO"
+    )
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count       = COUNT(*),
+      host_names        = VALUES(winlog.computer_name),
+      actors            = VALUES(winlog.event_data.SubjectUserName),
+      file_paths        = VALUES(winlog.event_data.ObjectName),
+      old_attribs       = VALUES(winlog.event_data.OldSd),
+      new_attribs       = VALUES(winlog.event_data.NewSd),
+      archive_sets      = VALUES(archive_set),
+      processes         = VALUES(winlog.event_data.ProcessName),
+      object_types      = VALUES(winlog.event_data.ObjectType),
+      critical_files    = VALUES(is_critical),
+      suspicious_procs  = VALUES(is_suspicious_proc),
+      last_seen         = MAX(@timestamp),
+      first_seen        = MIN(@timestamp)
+    BY agent_id, winlog.computer_name, winlog.event_data.ObjectName, winlog.event_data.SubjectUserName
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = winlog.computer_name,
+      file_name         = winlog.event_data.ObjectName,
+      user              = winlog.event_data.SubjectUserName
+  | KEEP
+      agent_id,
+      host_name,
+      file_name,
+      user,
+      event_count,
+      host_names,
+      actors,
+      file_paths,
+      old_attribs,
+      new_attribs,
+      archive_sets,
+      processes,
+      object_types,
+      critical_files,
+      suspicious_procs,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.impact
+  - attack.t1070.004
+  - attack.t1565.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1070/004/"
+  - "https://attack.mitre.org/techniques/T1565/001/"
+  - "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4670"
+nist: ["SI-7", "AU-9", "CM-3", "IR-4"]
+pci_dss: ["10.5.1", "11.5", "6.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.004"]
+  TA0040:
+    T1565: ["T1565.001"]

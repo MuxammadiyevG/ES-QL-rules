@@ -1,0 +1,102 @@
+rule_id: 2c7e4a9f-6b3d-4f1e-c825-8d3f7e2c4a19
+name: "Agent FIM: Windows File Changed From Baseline"
+description: |
+  Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File Changed From Baseline` kontekstida FortiSIEM Windows Agent FIM tomonidan faylning baseline dan o'zgarganligini aniqlaydi.
+  Bu turdagi hodisa hujumchi Windows tizim fayllarini, konfiguratsiya fayllarini yoki muhim binary fayllarni o'zgartirishi orqali persistence, privilege escalation yoki anti-forensics maqsadida faoliyat yuritayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan Windows Update, patch management jarayonlari, dastur o'rnatish yoki administrator tomonidan bajarilgan konfiguratsiya o'zgarishlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `winlog.computer_name`, `winlog.event_data.SubjectUserName` va o'zgartirilgan `winlog.event_data.ObjectName` ni aniq identifikatsiya qiling.
+  - Fayl hash qiymatlarini (`winlog.event_data.OldSd` va `winlog.event_data.NewSd`) solishtiring.
+  - O'zgartirilgan fayl kritik Windows fayli bo'lsa (`C:\Windows\System32`, `C:\Windows\SysWOW64`) ustuvor ko'rib chiqing.
+  - O'zgarishni amalga oshirgan foydalanuvchining roli va huquqlarini tekshiring.
+  - O'zgarish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: faylni baseline dan tiklang, foydalanuvchi sessiyasini to'xtating va hostni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE winlog.channel == "Security"
+  | WHERE winlog.event_id IN ("4663", "4670")
+  | EVAL host_name   = winlog.computer_name
+  | EVAL actor       = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName)
+  | EVAL file_path   = winlog.event_data.ObjectName
+  | EVAL old_hash    = winlog.event_data.OldSd
+  | EVAL new_hash    = winlog.event_data.NewSd
+  | EVAL hash_algo   = "SHA256"
+  | EVAL object_type = winlog.event_data.ObjectType
+  | EVAL process     = winlog.event_data.ProcessName
+  | EVAL logon_id    = winlog.event_data.SubjectLogonId
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | EVAL is_critical = CASE(
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\System32\\\\.*",   "YES - System32",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\SysWOW64\\\\.*",   "YES - SysWOW64",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\.*",               "YES - Windows dir",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Program Files\\\\.*",         "YES - Program Files",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\drivers\\\\etc\\\\hosts",     "YES - hosts file",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\SAM",                         "YES - SAM registry",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\SYSTEM",                      "YES - SYSTEM registry",
+      "NO"
+    )
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count    = COUNT(*),
+      host_names     = VALUES(winlog.computer_name),
+      actors         = VALUES(winlog.event_data.SubjectUserName),
+      file_paths     = VALUES(winlog.event_data.ObjectName),
+      old_hashes     = VALUES(winlog.event_data.OldSd),
+      new_hashes     = VALUES(winlog.event_data.NewSd),
+      processes      = VALUES(winlog.event_data.ProcessName),
+      object_types   = VALUES(winlog.event_data.ObjectType),
+      critical_files = VALUES(is_critical),
+      last_seen      = MAX(@timestamp),
+      first_seen     = MIN(@timestamp)
+    BY agent_id, winlog.computer_name, winlog.event_data.ObjectName, winlog.event_data.SubjectUserName
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = winlog.computer_name,
+      file_name         = winlog.event_data.ObjectName,
+      user              = winlog.event_data.SubjectUserName
+  | KEEP
+      agent_id,
+      host_name,
+      file_name,
+      user,
+      event_count,
+      host_names,
+      actors,
+      file_paths,
+      old_hashes,
+      new_hashes,
+      processes,
+      object_types,
+      critical_files,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.impact
+  - attack.t1070.004
+  - attack.t1565.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1070/004/"
+  - "https://attack.mitre.org/techniques/T1565/001/"
+  - "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4663"
+  - "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4670"
+nist: ["SI-7", "AU-9", "CM-3", "IR-4"]
+pci_dss: ["10.5.1", "11.5", "6.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.004"]
+  TA0040:
+    T1565: ["T1565.001"]

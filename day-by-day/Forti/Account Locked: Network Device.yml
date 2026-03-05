@@ -1,0 +1,95 @@
+rule_id: 9c3d5f1a-7e2b-4d8c-a963-1f4b8e2d7a56
+name: Account Locked - Network Device
+description: |
+  Ushbu qoida Credential Access texnikalariga bog'liq bo'lib, `Account Locked: Network Device` kontekstida haddan tashqari noto'g'ri kirish urinishlari natijasida tarmoq qurilmasi akkauntining bloklanishini aniqlaydi.
+  Bu turdagi hodisa hujumchi brute force yoki password spraying orqali FortiGate, FortiProxy, Cisco ASA, Cisco IOS, FortiDeceptor yoki FortiSwitch kabi tarmoq qurilmalariga ruxsatsiz kirish huquqini egallashga urinayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida administrator parolini unutganligi, boshqa tizimda keshlangan eski credential, servis konfiguratsiyasidagi noto'g'ri autentifikatsiya sozlamalari yoki avtomatik monitoring skriptlardagi muammolar uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `user.name` (bloklangan foydalanuvchi) va `source.ip` (manba IP) ni aniq identifikatsiya qiling.
+  - Bloklash sodir bo'lgan tarmoq qurilmasini (`observer.name`, `observer.ip`) aniqlab, uning tarmoq segmentidagi roliga baho bering.
+  - Manba IP Internet'dan kelayotgan bo'lsa, firewall yoki ACL orqali kirish cheklovlarini tekshiring va kuchaytiring.
+  - Manba hostda boshqa shubhali hodisalar (lateral movement, port scanning) borligini tekshiring.
+  - Manba va manzil hostlarda zaifliklar borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, qurilma credentiallarini yangilang va ta'sir doirasini izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 600 seconds
+  | WHERE event.dataset == "fortinet.fortigate"
+  | WHERE observer.type == "firewall"
+     OR observer.type == "proxy"
+     OR observer.type == "switch"
+     OR observer.type == "router"
+  | WHERE observer.vendor IN ("Fortinet", "Cisco")
+  | WHERE event.outcome == "failure"
+     AND event.action IN ("blocked", "deny", "denied")
+  | EVAL src_ip       = source.ip
+  | EVAL actor        = user.name
+  | EVAL dest_host    = observer.name
+  | EVAL dest_ip      = destination.ip
+  | EVAL src_geo      = source.geo.location
+  | EVAL proto        = network.transport
+  | EVAL fw_rule_id   = rule.id
+  | EVAL fw_rule_uuid = rule.uuid
+  | WHERE source.ip IS NOT NULL
+  | STATS
+      event_count  = COUNT(*),
+      users        = VALUES(user.name),
+      src_ips      = VALUES(source.ip),
+      src_geos     = VALUES(source.geo.location),
+      dest_hosts   = VALUES(observer.name),
+      dest_ips     = VALUES(destination.ip),
+      protocols    = VALUES(network.transport),
+      actions      = VALUES(event.action),
+      vendors      = VALUES(observer.vendor),
+      products     = VALUES(observer.product),
+      rule_ids     = VALUES(rule.id),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY source.ip, user.name, observer.name, destination.ip
+  | WHERE event_count >= 1
+  | EVAL
+      destination_host  = observer.name,
+      destination_ip    = destination.ip,
+      user              = user.name
+  | KEEP
+      destination_host,
+      destination_ip,
+      user,
+      source.ip,
+      src_geos,
+      event_count,
+      users,
+      src_ips,
+      dest_hosts,
+      dest_ips,
+      protocols,
+      actions,
+      vendors,
+      products,
+      rule_ids,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.t1110.001
+  - detection.threat-hunting
+severity: high
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1110/001/"
+  - "https://docs.fortinet.com/product/fortigate"
+  - "https://www.cisco.com/c/en/us/support/security/asa-5500-series-next-generation-firewalls/products-installation-and-configuration-guides-list.html"
+nist: ["AC-7", "IA-5", "SI-4", "SC-7"]
+pci_dss: ["8.1.6","8.1.7","10.6.1","1.3.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0006:
+    T1110: ["T1110.001"]

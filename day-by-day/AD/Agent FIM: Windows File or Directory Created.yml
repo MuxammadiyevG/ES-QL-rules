@@ -1,0 +1,114 @@
+rule_id: 3f7a5c2e-8d1b-4e9f-b274-5c8a3f7e2d91
+name: "Agent FIM: Windows File or Directory Created"
+description: |
+  Ushbu qoida Impact va Collection texnikalariga bog'liq bo'lib, `Agent FIM: Windows File or Directory Created` kontekstida FortiSIEM Windows Agent FIM tomonidan yangi fayl yoki directory yaratilganligini aniqlaydi.
+  Bu turdagi hodisa hujumchi tizimda yangi zararli fayl, backdoor, web shell yoki ma'lumot to'plash uchun saqlash joyi yaratayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan dastur o'rnatish, administrator tomonidan bajarilgan konfiguratsiya o'zgarishlari yoki deployment jarayonlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `winlog.computer_name`, `winlog.event_data.SubjectUserName` va yaratilgan `winlog.event_data.ObjectName` ni aniq identifikatsiya qiling.
+  - Yaratilgan fayl yoki directory ning joylashuvi xavfli bo'lsa (`C:\Temp`, `C:\Windows\Temp`, `C:\Users\Public`) ustuvor ko'rib chiqing.
+  - Faylni yaratgan `winlog.event_data.ProcessName` ni tekshiring — noma'lum yoki shubhali process bo'lsa ustuvor ko'rib chiqing.
+  - Fayl kengaytmasini tekshiring — `.exe`, `.ps1`, `.bat`, `.dll` kabi bajariladigan fayllar ayniqsa xavfli.
+  - Tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: faylni o'chiring, processni to'xtating va hostni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE winlog.channel == "Security"
+  | WHERE winlog.event_id == "4663"
+  | WHERE winlog.event_data.AccessList RLIKE ".*%%4418.*"
+     OR winlog.event_data.AccessList RLIKE ".*CreateFile.*"
+     OR winlog.event_data.AccessList RLIKE ".*%%4432.*"
+  | WHERE winlog.event_data.ObjectType IN ("File", "Directory")
+  | WHERE winlog.event_data.ObjectName != "-"
+  | WHERE winlog.event_data.ObjectName IS NOT NULL
+  | EVAL host_name   = winlog.computer_name
+  | EVAL actor       = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName)
+  | EVAL file_path   = winlog.event_data.ObjectName
+  | EVAL process     = winlog.event_data.ProcessName
+  | EVAL object_type = winlog.event_data.ObjectType
+  | EVAL logon_id    = winlog.event_data.SubjectLogonId
+  | EVAL handle_id   = winlog.event_data.HandleId
+  | WHERE NOT actor RLIKE ".*\\$$"
+  | EVAL is_suspicious_path = CASE(
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Temp\\\\.*",         "YES - Temp dir",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Users\\\\Public\\\\.*", "YES - Public dir",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\AppData\\\\Roaming\\\\.*", "YES - AppData Roaming",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\ProgramData\\\\.*",  "YES - ProgramData",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Windows\\\\Temp\\\\.*", "YES - Windows Temp",
+      winlog.event_data.ObjectName RLIKE "(?i).*\\\\Downloads\\\\.*",    "YES - Downloads",
+      "NO"
+    )
+  | EVAL is_suspicious_ext = CASE(
+      winlog.event_data.ObjectName RLIKE "(?i).*\\.(exe|dll|bat|cmd|ps1|vbs|js|hta|scr|pif|com|jar|msi|msp)$", "YES",
+      "NO"
+    )
+  | EVAL is_suspicious_proc = CASE(
+      winlog.event_data.ProcessName RLIKE "(?i).*(powershell|cmd|wscript|cscript|mshta|rundll32|regsvr32|certutil|bitsadmin|wmic).*", "YES",
+      "NO"
+    )
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count        = COUNT(*),
+      host_names         = VALUES(winlog.computer_name),
+      actors             = VALUES(winlog.event_data.SubjectUserName),
+      file_paths         = VALUES(winlog.event_data.ObjectName),
+      processes          = VALUES(winlog.event_data.ProcessName),
+      object_types       = VALUES(winlog.event_data.ObjectType),
+      suspicious_paths   = VALUES(is_suspicious_path),
+      suspicious_exts    = VALUES(is_suspicious_ext),
+      suspicious_procs   = VALUES(is_suspicious_proc),
+      last_seen          = MAX(@timestamp),
+      first_seen         = MIN(@timestamp)
+    BY agent_id, winlog.computer_name, winlog.event_data.ObjectName, winlog.event_data.SubjectUserName
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = winlog.computer_name,
+      file_name         = winlog.event_data.ObjectName,
+      user              = winlog.event_data.SubjectUserName
+  | KEEP
+      agent_id,
+      host_name,
+      file_name,
+      user,
+      event_count,
+      host_names,
+      actors,
+      file_paths,
+      processes,
+      object_types,
+      suspicious_paths,
+      suspicious_exts,
+      suspicious_procs,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.impact
+  - attack.collection
+  - attack.t1565.001
+  - attack.t1074.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1565/001/"
+  - "https://attack.mitre.org/techniques/T1074/001/"
+  - "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4663"
+nist: ["SI-7", "AU-9", "CM-3", "IR-4"]
+pci_dss: ["10.5.1", "11.5", "6.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0040:
+    T1565:
+      - "T1565.001"
+  TA0009:
+    T1074:
+      - "T1074.001"

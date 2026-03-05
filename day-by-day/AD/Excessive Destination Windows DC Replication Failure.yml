@@ -1,0 +1,72 @@
+rule_id: a3f72c1e-9b4d-4e8a-bc3f-7d2e5f891034
+name: Excessive Destination Windows DC Replication Failure
+description: |
+  Ushbu qoida server monitoring va availability texnikalariga bog'liq bo'lib, `Excessive Destination Windows DC Replication Failure` kontekstidagi shubhali Active Directory replikatsiya xatolarini aniqlaydi.
+  Bu turdagi hodisa AD muhitida Domain Controller'lar o'rtasidagi replikatsiya jarayoni buzilgan bo'lib, hujumchi yoki texnik nosozlik natijasida parol o'zgarishlari, yangi foydalanuvchilar va Group Policy yangilanishlari boshqa DC larga yetib bormasligi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan DC maintenance ishlari, tarmoq uzilishlari, DNS muammolari yoki AD replikatsiya topologiyasidagi o'zgarishlar uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `source_host` (manba DC) va `destination_dc` (manzil DC) ni aniq identifikatsiya qiling.
+  - Xato event ID sini tekshiring: 1925 (ulanish o'rnatilmadi), 1926 (replikatsiya muvaffaqiyatsiz), 2087/2088 (DNS muammosi).
+  - DC lar o'rtasidagi tarmoq ulanishi va DNS resolution ni tekshiring.
+  - Replication topology va site link konfiguratsiyasini tekshiring (`repadmin /showrepl`).
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: ta'sirlangan DC ni izolyatsiya qiling, replikatsiyani qayta tiklang va root cause ni bartaraf eting.
+type: esql
+params: '{}'
+schedule_interval: 2m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 120 seconds
+  | WHERE winlog.channel == "Directory Service"
+  | WHERE winlog.event_id IN ("1925", "1926", "2087", "2088")
+  | EVAL source_host    = winlog.computer_name
+  | EVAL destination_dc = winlog.event_data.param1
+  | EVAL failure_reason = winlog.event_data.param2
+  | EVAL repl_status    = winlog.event_data.Status
+  | STATS
+      event_count    = COUNT(*),
+      source_hosts   = VALUES(winlog.computer_name),
+      dest_dcs       = VALUES(winlog.event_data.param1),
+      failure_reason = VALUES(winlog.event_data.param2),
+      event_ids      = VALUES(winlog.event_id),
+      last_seen      = MAX(@timestamp),
+      first_seen     = MIN(@timestamp)
+    BY agent_id, winlog.computer_name, winlog.event_data.param1
+  | WHERE event_count >= 1
+  | EVAL
+      source_host       = winlog.computer_name,
+      destination_dc    = winlog.event_data.param1
+  | KEEP
+      agent_id,
+      source_host,
+      destination_dc,
+      event_count,
+      source_hosts,
+      dest_dcs,
+      failure_reason,
+      event_ids,
+      last_seen,
+      first_seen
+  | SORT last_seen DESC
+enabled: false
+tags:
+  - attack.impact
+  - attack.defense-evasion
+  - detection.threat-hunting
+  - availability.monitoring
+severity: high
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1490/"
+  - "https://docs.microsoft.com/en-us/troubleshoot/windows-server/identity/replication-error-1925"
+  - "https://docs.microsoft.com/en-us/troubleshoot/windows-server/identity/replication-error-1926"
+nist: ["SI-6", "SI-7", "AU-6"]
+pci_dss: ["10.6.1", "12.10.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0040:
+    T1490: []
+  TA0005:
+    T1562: []
