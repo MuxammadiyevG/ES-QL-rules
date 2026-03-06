@@ -1,0 +1,91 @@
+rule_id: 2d7f4b9e-8c1a-4e3f-b527-6f2d7c4b9e18
+name: "Compromised Host Detected by Network IPS"
+description: |
+  Ushbu qoida tarmoq IPS/IDS tizimlari tomonidan aniqlangan kompromatlangan (buzilgan) hostlarni kuzatadi.
+  Bu turdagi hodisa tarmoq qurilmasi (FortiGate, FortiProxy, Checkpoint, Palo Alto) tomonidan ichki hostdan zararli trafik aniqlanganda ishga tushadi.
+  Kompromatlangan host botnet, C2 server bilan aloqa, malware tarqatish yoki lateral movement uchun ishlatilayotgan bo'lishi mumkin.
+  Qonuniy holatlar sifatida IPS false positive, penetration testing yoki red team mashqlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `source.ip` (kompromatlangan host) ni aniq identifikatsiya qiling.
+  - IPS signature ID va event type ni tekshiring — qanday turdagi zararli trafik aniqlangan.
+  - Manba hostning tarmoq segmentini va rolini aniqlang.
+  - Hostdan chiqayotgan barcha tarmoq ulanishlarini tekshiring.
+  - Destination IP lar C2 server yoki malware distribution point bo'lishi mumkin.
+  - Manba IP ni `Malware Likely IP` watch list ga qo'shing.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: hostni tarmoqdan izolyatsiya qiling, to'liq forensic tahlil bajaring va compromised credentiallarni yangilang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.dataset == "fortinet.fortigate"
+  | WHERE observer.type IN ("firewall", "proxy", "ids", "ips")
+  | WHERE message RLIKE "(?i).*(compromised|infected|botnet|c2.traffic|command.and.control|malware.detected|trojan|ransomware|backdoor|zombie|bot.traffic|cnc|call.home|malicious.traffic|known.malicious|threat.detected|intrusion.detected).*"
+     OR event.action RLIKE "(?i).*(block|blocked|deny|denied|drop|dropped|detected|alert).*"
+     AND message RLIKE "(?i).*(compromised|botnet|malware|trojan|ransomware|backdoor).*"
+  | WHERE source.ip IS NOT NULL
+  | EVAL is_internal = CASE(
+      CIDR_MATCH(source.ip, "10.0.0.0/8"),     "YES",
+      CIDR_MATCH(source.ip, "172.16.0.0/12"),  "YES",
+      CIDR_MATCH(source.ip, "192.168.0.0/16"), "YES",
+      "NO"
+    )
+  | STATS
+      event_count   = COUNT(*),
+      src_ips       = VALUES(source.ip),
+      dst_ips       = VALUES(destination.ip),
+      dst_ports     = VALUES(destination.port),
+      src_ports     = VALUES(source.port),
+      src_geos      = VALUES(source.geo.region_name),
+      sig_ids       = VALUES(rule.id),
+      sig_uuids     = VALUES(rule.uuid),
+      actions       = VALUES(event.action),
+      observers     = VALUES(observer.name),
+      is_internals  = VALUES(is_internal),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY source.ip, source.geo.region_name, rule.id, event.action
+  | WHERE event_count >= 1
+  | KEEP
+      source.ip,
+      source.geo.region_name,
+      event_count,
+      src_ips,
+      dst_ips,
+      src_ports,
+      dst_ports,
+      src_geos,
+      sig_ids,
+      sig_uuids,
+      actions,
+      observers,
+      is_internals,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.command-and-control
+  - attack.lateral-movement
+  - attack.t1071
+  - attack.t1090
+  - detection.threat-hunting
+severity: high
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1071/"
+  - "https://attack.mitre.org/techniques/T1090/"
+  - "https://docs.fortinet.com/product/fortigate"
+nist: ["SI-3", "SI-4", "SC-7", "IR-4"]
+pci_dss: ["1.3.1", "6.4.1", "10.6.1", "12.10.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0011:
+    T1071: []
+    T1090: []
+  TA0008:
+    T1021: []

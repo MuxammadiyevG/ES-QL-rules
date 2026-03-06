@@ -1,0 +1,96 @@
+rule_id: 4f8b2e7d-9c1a-4d3f-b628-5e4f8b2d7c91
+name: "Code Injection Attack detected by NIPS"
+description: |
+  Ushbu qoida tarmoq IPS/IDS tizimlari tomonidan aniqlangan yuqori darajali Code Injection hujumlarini kuzatadi.
+  Ichki tarmoqdan kelgan barcha hujumlar va tashqi tarmoqdan kelgan ruxsat etilgan (permitted) hujumlar alert qiladi.
+  SQL Injection, Command Injection, LDAP Injection va boshqa kod kiritish hujumlari bu rule doirasiga kiradi.
+  Bu turdagi hodisa hujumchi web ilova yoki tizim orqali zararli kod bajarishga urinayotganligini ko'rsatishi mumkinligi sababli juda xavfli hisoblanadi.
+  Qonuniy holatlar sifatida penetration testing, red team mashqlari yoki IPS false positive holatlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `source.ip` (ichki yoki tashqi) va `destination.ip` ni aniq identifikatsiya qiling.
+  - Hujum nomi va signature ID ni tekshiring.
+  - Manba IP ichki tarmoqdan kelayotgan bo'lsa — compromised host bo'lishi mumkin.
+  - Tashqi IP dan kelayotgan bo'lsa — internet hujumi yoki C2 bo'lishi mumkin.
+  - Destination hostda web ilova yoki DB xizmati ishlayotganini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, destination hostni tekshiring va WAF qoidalarini yangilang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.dataset == "fortinet.fortigate"
+  | WHERE event.action IN ("accept", "allow", "permitted", "detected", "blocked")
+  | WHERE message RLIKE "(?i).*(sqli|sql.inject|code.inject|command.inject|cmd.inject|ldap.inject|xpath.inject|xss|cross.site|script.inject|remote.code|rce|os.command|shell.inject|eval.inject|ognl|struts|log4j|log4shell|shellshock).*"
+     OR message RLIKE "(?i).*(union.select|select.from|insert.into|drop.table|exec.xp|sp_executesql|information_schema|sys.tables|0x[0-9a-f]+).*"
+  | WHERE source.ip IS NOT NULL
+  | WHERE destination.ip IS NOT NULL
+  | EVAL is_internal = CASE(
+      CIDR_MATCH(source.ip, "10.0.0.0/8"),      "YES",
+      CIDR_MATCH(source.ip, "172.16.0.0/12"),   "YES",
+      CIDR_MATCH(source.ip, "192.168.0.0/16"),  "YES",
+      "NO"
+    )
+  | WHERE is_internal == "YES"
+     OR event.action IN ("accept", "allow", "permitted")
+  | STATS
+      event_count  = COUNT(*),
+      src_ips      = VALUES(source.ip),
+      dst_ips      = VALUES(destination.ip),
+      src_ports    = VALUES(source.port),
+      dst_ports    = VALUES(destination.port),
+      src_geos     = VALUES(source.geo.region_name),
+      protocols    = VALUES(network.transport),
+      sig_ids      = VALUES(rule.id),
+      sig_uuids    = VALUES(rule.uuid),
+      actions      = VALUES(event.action),
+      observers    = VALUES(observer.name),
+      is_internals = VALUES(is_internal),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY source.ip, destination.ip, rule.id, event.action
+  | WHERE event_count >= 1
+  | KEEP
+      source.ip,
+      destination.ip,
+      event_count,
+      src_ips,
+      dst_ips,
+      src_ports,
+      dst_ports,
+      src_geos,
+      protocols,
+      sig_ids,
+      sig_uuids,
+      actions,
+      observers,
+      is_internals,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.execution
+  - attack.t1190
+  - attack.t1059
+  - attack.t1566
+  - detection.threat-hunting
+severity: high
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://attack.mitre.org/techniques/T1059/"
+  - "https://owasp.org/www-community/attacks/SQL_Injection"
+  - "https://owasp.org/www-community/attacks/Command_Injection"
+nist: ["SI-3", "SI-4", "SC-7", "AU-6"]
+pci_dss: ["6.4.1", "6.4.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0001:
+    T1190: []
+  TA0002:
+    T1059: []

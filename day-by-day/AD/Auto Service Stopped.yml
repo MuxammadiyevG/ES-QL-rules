@@ -1,0 +1,77 @@
+rule_id: 4b7e2f9a-8c1d-4e5f-b273-1f8e4b7c2d96
+name: "Auto Service Stopped"
+description: |
+  Ushbu qoida Impact texnikasiga bog'liq bo'lib, `Auto Service Stopped` kontekstida Windows serverda avtomatik ishga tushadigan servisning to'xtatilganligini aniqlaydi.
+  Bu turdagi hodisa hujumchi muhim tizim servislarini o'chirish orqali xizmat ko'rsatishni buzish (DoS), monitoring tizimlarini o'chirish yoki persistence mexanizmlarini ishga tushirish maqsadida faoliyat yuritayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan maintenance, servis yangilanishi, Windows Update jarayonlari yoki administrator tomonidan bajarilgan konfiguratsiya o'zgarishlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `winlog.computer_name` (host) va `winlog.event_data.ServiceName` ni aniq identifikatsiya qiling.
+  - Servis qanday sabab bilan to'xtatilganligini tekshiring (manual, crash, dependency failure).
+  - `winlog.event_data.ServiceFileName` orqali servis fayl yo'lini tekshiring.
+  - Xostda boshqa shubhali hodisalar borligini tekshiring.
+  - Clear condition: 10 daqiqa ichida servis qayta ishga tushsa alert avtomatik tozalanadi.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: servisni qayta tiklang, root cause ni aniqlang va hostni tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE winlog.channel == "System"
+  | WHERE winlog.event_id IN ("7036", "7034", "7031")
+  | WHERE winlog.event_data.param2 == "stopped"
+     OR winlog.event_id IN ("7034", "7031")
+  | EVAL host_name    = winlog.computer_name
+  | EVAL service_name = COALESCE(winlog.event_data.ServiceName, winlog.event_data.param1)
+  | EVAL service_path = COALESCE(winlog.event_data.ImagePath, winlog.event_data.param3)
+  | EVAL event_state  = COALESCE(winlog.event_data.param2, "stopped")
+  | EVAL exit_code    = winlog.event_data.param3
+  | WHERE service_name IS NOT NULL
+  | STATS
+      event_count    = COUNT(*),
+      host_names     = VALUES(winlog.computer_name),
+      service_names  = VALUES(winlog.event_data.ServiceName),
+      service_paths  = VALUES(winlog.event_data.ImagePath),
+      event_ids      = VALUES(winlog.event_id),
+      exit_codes     = VALUES(winlog.event_data.param3),
+      last_seen      = MAX(@timestamp),
+      first_seen     = MIN(@timestamp)
+    BY winlog.computer_name, winlog.event_data.ServiceName, winlog.event_data.ImagePath
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = winlog.computer_name,
+      service_name      = winlog.event_data.ServiceName,
+      service_path      = winlog.event_data.ImagePath
+  | KEEP
+      host_name,
+      service_name,
+      service_path,
+      event_count,
+      host_names,
+      service_names,
+      service_paths,
+      event_ids,
+      exit_codes,
+      last_seen,
+      first_seen
+  | SORT last_seen DESC
+enabled: false
+tags:
+  - attack.impact
+  - attack.t1489
+  - detection.threat-hunting
+  - availability.monitoring
+severity: low
+risk_score: 35
+references:
+  - "https://attack.mitre.org/techniques/T1489/"
+  - "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-7036"
+nist: ["SI-4", "CP-10", "IR-4"]
+pci_dss: ["10.6.1", "12.10.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0040:
+    T1489: []

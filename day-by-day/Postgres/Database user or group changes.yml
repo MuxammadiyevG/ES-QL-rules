@@ -1,0 +1,116 @@
+rule_id: 7d2f9b4e-1c8a-4e6f-b351-8f7d2c9b4e16
+name: "Database user or group changes"
+description: |
+  Ushbu qoida Persistence texnikasiga bog'liq bo'lib, `Database user or group changes` kontekstida ma'lumotlar bazasidagi foydalanuvchi yoki guruh o'zgarishlarini aniqlaydi.
+  DDL changes rule dan farqli o'laroq, bu rule faqat User va Role bilan bog'liq DDL operatsiyalarini kuzatadi: CREATE USER, ALTER USER, DROP USER, CREATE ROLE, ALTER ROLE, DROP ROLE, GRANT, REVOKE.
+  Bu turdagi hodisa hujumchi database ga yangi backdoor akkaunt yaratish, mavjud akkaunt huquqlarini oshirish yoki muhim foydalanuvchini o'chirish maqsadida faoliyat yuritayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan foydalanuvchi boshqaruvi, IAM jarayonlari yoki administrator tomonidan bajarilgan huquq o'zgarishlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `user.name`, `db.name` va `postgresql.log.sql_operation` ni aniq identifikatsiya qiling.
+  - O'zgarish uchun tasdiqlangan change ticket yoki IAM yozuvi borligini tekshiring.
+  - Yangi yaratilgan yoki o'zgartirilgan foydalanuvchining huquqlari (`GRANT`, `SUPERUSER`) ni tekshiring.
+  - `DROP USER` yoki `REVOKE` operatsiyalari ayniqsa xavfli — muhim akkauntlar o'chirilishi mumkin.
+  - Hostda boshqa shubhali hodisalar borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: yangi akkauntni o'chiring, huquqlarni qaytaring va foydalanuvchi sessiyasini to'xtating.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-postgresql*
+query_language: esql
+query: |
+  FROM logs-postgresql*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.dataset == "postgresql.log"
+  | WHERE event.category == "database"
+  | WHERE event.action == "postgres-statement"
+
+  // Faqat User/Role bilan bog'liq DDL operatsiyalari
+  | WHERE postgresql.log.statement RLIKE "(?i).*(CREATE USER|ALTER USER|DROP USER|CREATE ROLE|ALTER ROLE|DROP ROLE|GRANT|REVOKE|CREATE GROUP|ALTER GROUP|DROP GROUP).*"
+
+  | EVAL host_name   = host.hostname
+  | EVAL actor       = user.name
+  | EVAL db_name     = db.name
+  | EVAL sql_op      = postgresql.log.sql_operation
+  | EVAL sql_stmt    = postgresql.log.statement
+  | EVAL pg_severity = postgresql.log.severity
+  | EVAL pid         = process.pid
+
+  | EVAL is_critical_op = CASE(
+      postgresql.log.statement RLIKE "(?i).*DROP USER.*",        "YES - DROP USER",
+      postgresql.log.statement RLIKE "(?i).*DROP ROLE.*",        "YES - DROP ROLE",
+      postgresql.log.statement RLIKE "(?i).*REVOKE.*",           "YES - REVOKE",
+      postgresql.log.statement RLIKE "(?i).*SUPERUSER.*",        "YES - SUPERUSER granted",
+      postgresql.log.statement RLIKE "(?i).*ALL PRIVILEGES.*",   "YES - ALL PRIVILEGES",
+      postgresql.log.statement RLIKE "(?i).*CREATE USER.*",      "MEDIUM - CREATE USER",
+      postgresql.log.statement RLIKE "(?i).*CREATE ROLE.*",      "MEDIUM - CREATE ROLE",
+      postgresql.log.statement RLIKE "(?i).*ALTER USER.*",       "MEDIUM - ALTER USER",
+      postgresql.log.statement RLIKE "(?i).*GRANT.*",            "LOW - GRANT",
+      "LOW"
+    )
+
+  | EVAL event_type = CASE(
+      postgresql.log.statement RLIKE "(?i).*(CREATE USER|CREATE ROLE|CREATE GROUP).*",  "User/Role Created",
+      postgresql.log.statement RLIKE "(?i).*(ALTER USER|ALTER ROLE|ALTER GROUP).*",     "User/Role Modified",
+      postgresql.log.statement RLIKE "(?i).*(DROP USER|DROP ROLE|DROP GROUP).*",        "User/Role Deleted",
+      postgresql.log.statement RLIKE "(?i).*GRANT.*",                                   "Privilege Granted",
+      postgresql.log.statement RLIKE "(?i).*REVOKE.*",                                  "Privilege Revoked",
+      "Other User Change"
+    )
+
+  | WHERE host_name IS NOT NULL
+     OR actor IS NOT NULL
+  | STATS
+      event_count    = COUNT(*),
+      host_names     = VALUES(host.hostname),
+      actors         = VALUES(user.name),
+      db_names       = VALUES(db.name),
+      sql_ops        = VALUES(postgresql.log.sql_operation),
+      sql_stmts      = VALUES(postgresql.log.statement),
+      event_types    = VALUES(event_type),
+      critical_ops   = VALUES(is_critical_op),
+      pids           = VALUES(process.pid),
+      last_seen      = MAX(@timestamp),
+      first_seen     = MIN(@timestamp)
+    BY agent_id, host.hostname, db.name, user.name, event_type
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = host.hostname,
+      db_name           = db.name,
+      user              = user.name
+  | KEEP
+      agent_id,
+      host_name,
+      db_name,
+      user,
+      event_count,
+      host_names,
+      actors,
+      db_names,
+      sql_ops,
+      sql_stmts,
+      event_types,
+      critical_ops,
+      pids,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.persistence
+  - attack.t1098.001
+  - attack.t1136
+  - detection.threat-hunting
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1098/001/"
+  - "https://attack.mitre.org/techniques/T1136/"
+  - "https://www.postgresql.org/docs/current/sql-createuser.html"
+nist: ["AC-2", "AC-6", "AU-9", "CM-3"]
+pci_dss: ["8.1.1", "8.1.2", "10.2.5"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1098: ["T1098.001"]
+    T1136: []

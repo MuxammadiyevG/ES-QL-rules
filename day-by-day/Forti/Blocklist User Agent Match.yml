@@ -1,0 +1,84 @@
+rule_id: 3c7f1a9e-5b2d-4e8f-d274-9f3c7a1e5b82
+name: "Blocklist User Agent Match"
+description: |
+  Ushbu qoida Exfiltration texnikasiga bog'liq bo'lib, `Blocklist User Agent Match` kontekstida HTTP so'rovlarida bloklangan (blacklist) user agent qiymatlarini aniqlaydi.
+  Malware, Adware, Spyware va boshqa zararli dasturlar odatda noodatiy yoki maxsus HTTP user agent lardan foydalanadi. Bu turdagi hodisa C2 (Command and Control) server bilan aloqa, ma'lumot chiqarish yoki zararli faoliyat belgilarini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida noto'g'ri klassifikatsiyalangan legitimate dasturlar, maxsus API clientlar yoki korporativ monitoring vositalari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `source.ip` va HTTP user agent qiymatini aniq identifikatsiya qiling.
+  - User agent qiymatini malware signature database bilan solishtiring.
+  - Manba IP ning tarmoq segmentini va qurilma turini tekshiring.
+  - Destination IP va URL ni tekshiring — C2 server bo'lishi mumkin.
+  - Manba hostda boshqa shubhali hodisalar borligini tekshiring.
+  - Manba IP ni `Malware Likely IP` watch list ga qo'shing.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, hostni izolyatsiya qiling va to'liq malware scan bajaring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE event.dataset == "fortinet.fortigate"
+  | WHERE event.outcome == "success"
+     AND event.action IN ("accept", "allow", "permitted")
+  | WHERE network.transport == "tcp"
+  | WHERE message RLIKE "(?i).*(curl|python-requests|go-http|libwww|zgrab|masscan|nmap|nikto|sqlmap|havij|acunetix|nessus|openvas|dirbuster|gobuster|wfuzz|hydra|medusa|metasploit|meterpreter|cobalt|empire|wget|lwp|peach|scrapy|phantomjs|headless|winhttp).*"
+     OR message RLIKE "(?i).*(botnet|c2|backdoor|trojan|rootkit|keylogger|spyware|adware|downloader|dropper|stager|beacon|implant).*"
+  | WHERE source.ip IS NOT NULL
+  | STATS
+      event_count      = COUNT(*),
+      src_ips          = VALUES(source.ip),
+      src_ports        = VALUES(source.port),
+      src_regions      = VALUES(source.geo.region_name),
+      dst_ips          = VALUES(destination.ip),
+      dst_ports        = VALUES(destination.port),
+      src_users        = VALUES(user.name),
+      src_user_groups  = VALUES(user.group.name),
+      src_macs         = VALUES(source.mac),
+      transports       = VALUES(network.transport),
+      observers        = VALUES(observer.name),
+      rule_ids         = VALUES(rule.id),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY source.ip, source.geo.region_name, network.transport
+  | WHERE event_count >= 1
+  | KEEP
+      source.ip,
+      source.geo.region_name,
+      dst_ips,
+      dst_ports,
+      event_count,
+      src_ips,
+      src_ports,
+      src_regions,
+      src_users,
+      src_user_groups,
+      src_macs,
+      transports,
+      observers,
+      rule_ids,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.exfiltration
+  - attack.t1041
+  - attack.command-and-control
+  - attack.t1071.001
+  - detection.threat-hunting
+severity: high
+risk_score: 80
+references:
+  - "https://attack.mitre.org/techniques/T1041/"
+  - "https://attack.mitre.org/techniques/T1071/001/"
+nist: ["SC-7", "SI-4", "AU-6"]
+pci_dss: ["1.3.1", "6.4.1", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0010:
+    T1041: []
+  TA0011:
+    T1071: ["T1071.001"]

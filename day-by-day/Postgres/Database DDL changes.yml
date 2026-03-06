@@ -1,0 +1,108 @@
+rule_id: 3b8e5f2a-7c1d-4e9f-b647-4f3b8e5c2a17
+name: "Database DDL changes"
+description: |
+  Ushbu qoida ma'lumotlar bazasidagi DDL (Data Definition Language) o'zgarishlarini aniqlaydi.
+  CREATE, ALTER, DROP, TRUNCATE kabi DDL operatsiyalari ma'lumotlar bazasi strukturasini o'zgartiradi.
+  Bu turdagi hodisa ruxsatsiz schema o'zgarishi, ma'lumotlarni yo'q qilish yoki backdoor yaratish maqsadida amalga oshirilayotgan bo'lishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan schema yangilanishlari, migration jarayonlari yoki administrator tomonidan bajarilgan konfiguratsiya o'zgarishlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `user.name`, `db.name` va `postgresql.log.sql_operation` ni aniq identifikatsiya qiling.
+  - O'zgarish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - DDL operatsiyasini amalga oshirgan foydalanuvchining roli va huquqlarini tekshiring.
+  - DROP yoki TRUNCATE operatsiyalari ayniqsa xavfli — ma'lumotlar yo'qolishi mumkin.
+  - Hostda boshqa shubhali hodisalar borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: foydalanuvchi sessiyasini to'xtating, backup dan tiklang va huquqlarni cheklang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-postgresql*
+query_language: esql
+query: |
+  FROM logs-postgresql*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.dataset == "postgresql.log"
+  | WHERE event.category == "database"
+  | WHERE event.action == "postgres-statement"
+  | WHERE postgresql.log.sql_operation IN (
+      "CREATE", "ALTER", "DROP",
+      "TRUNCATE", "RENAME", "COMMENT",
+      "GRANT", "REVOKE"
+    )
+
+  // User DDL operatsiyalari istisno emas (Event Type NOT CONTAINS User)
+  | WHERE NOT postgresql.log.statement RLIKE "(?i).*(CREATE USER|ALTER USER|DROP USER|CREATE ROLE|ALTER ROLE|DROP ROLE).*"
+
+  | EVAL host_name   = host.hostname
+  | EVAL actor       = user.name
+  | EVAL db_name     = db.name
+  | EVAL sql_op      = postgresql.log.sql_operation
+  | EVAL sql_stmt    = postgresql.log.statement
+  | EVAL pg_severity = postgresql.log.severity
+  | EVAL pid         = process.pid
+
+  | EVAL is_critical_op = CASE(
+      postgresql.log.sql_operation == "DROP",      "YES - DROP",
+      postgresql.log.sql_operation == "TRUNCATE",  "YES - TRUNCATE",
+      postgresql.log.sql_operation == "REVOKE",    "YES - REVOKE",
+      postgresql.log.sql_operation == "ALTER",     "MEDIUM - ALTER",
+      postgresql.log.sql_operation == "CREATE",    "LOW - CREATE",
+      postgresql.log.sql_operation == "GRANT",     "MEDIUM - GRANT",
+      "LOW"
+    )
+  | WHERE host_name IS NOT NULL
+     OR actor IS NOT NULL
+  | STATS
+      event_count      = COUNT(*),
+      host_names       = VALUES(host.hostname),
+      actors           = VALUES(user.name),
+      db_names         = VALUES(db.name),
+      sql_ops          = VALUES(postgresql.log.sql_operation),
+      sql_stmts        = VALUES(postgresql.log.statement),
+      critical_ops     = VALUES(is_critical_op),
+      pids             = VALUES(process.pid),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY agent_id, host.hostname, postgresql.log.sql_operation, db.name
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = host.hostname,
+      db_name           = db.name,
+      sql_operation     = postgresql.log.sql_operation
+  | KEEP
+      agent_id,
+      host_name,
+      db_name,
+      sql_operation,
+      event_count,
+      host_names,
+      actors,
+      db_names,
+      sql_ops,
+      sql_stmts,
+      critical_ops,
+      pids,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.impact
+  - attack.defense-evasion
+  - attack.t1485
+  - attack.t1070
+  - detection.threat-hunting
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1485/"
+  - "https://attack.mitre.org/techniques/T1070/"
+  - "https://www.postgresql.org/docs/current/runtime-config-logging.html"
+nist: ["AU-9", "CM-3", "SI-7", "AC-6"]
+pci_dss: ["10.2.1", "10.6.1", "6.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0040:
+    T1485: []
+  TA0005:
+    T1070: []
