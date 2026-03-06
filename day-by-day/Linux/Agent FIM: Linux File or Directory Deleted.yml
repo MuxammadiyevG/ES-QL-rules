@@ -52,13 +52,14 @@ query: |
         critical_files = VALUES(is_critical),
         last_seen      = MAX(@timestamp),
         first_seen     = MIN(@timestamp)
-      BY host.hostname, auditd.paths.name, auditd.data.subj_user
+      BY agent_id, host.hostname, auditd.paths.name, auditd.data.subj_user
   | WHERE event_count >= 1
   | EVAL
         host_name         = host.hostname,
         file_name         = auditd.paths.name,
         user              = auditd.data.subj_user
   | KEEP
+        agent_id,
         host_name,
         file_name,
         user,

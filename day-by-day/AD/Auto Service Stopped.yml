@@ -39,13 +39,14 @@ query: |
       exit_codes     = VALUES(winlog.event_data.param3),
       last_seen      = MAX(@timestamp),
       first_seen     = MIN(@timestamp)
-    BY winlog.computer_name, winlog.event_data.ServiceName, winlog.event_data.ImagePath
+    BY agent_id, winlog.computer_name, winlog.event_data.ServiceName, winlog.event_data.ImagePath
   | WHERE event_count >= 1
   | EVAL
       host_name         = winlog.computer_name,
       service_name      = winlog.event_data.ServiceName,
       service_path      = winlog.event_data.ImagePath
   | KEEP
+      agent_id,
       host_name,
       service_name,
       service_path,

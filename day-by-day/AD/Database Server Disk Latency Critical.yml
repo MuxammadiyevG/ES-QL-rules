@@ -53,7 +53,7 @@ query: |
       write_rates         = VALUES(winlog.event_data.param8),
       last_seen           = MAX(@timestamp),
       first_seen          = MIN(@timestamp)
-    BY winlog.computer_name, winlog.event_data.param1
+    BY agent_id, winlog.computer_name, winlog.event_data.param1
 
   // 50ms threshold va kamida 2 ta event
   | WHERE event_count >= 2
@@ -64,6 +64,7 @@ query: |
       host_name             = winlog.computer_name,
       disk_name             = winlog.event_data.param1
   | KEEP
+      agent_id,
       host_name,
       disk_name,
       avg_read_latency,
