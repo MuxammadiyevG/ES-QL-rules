@@ -1,0 +1,23 @@
+rule_id: e93a5d86-2001-4ad3-9bc4-b2c1de2d2da1
+name: "Switch STCK: Stack unit xabari"
+description: |
+  Switch stack dan xabar keldi. Stack a'zolaridan biri holat
+  o'zgarishi yoki konfiguratsiya xabari yubordi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - updive-syslog-*
+query_language: esql
+query: |
+  FROM updive-syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE log.syslog.facility.name == "STCK"
+  | KEEP @timestamp, host.name, event.original, event.category, event.type
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.stack
+severity: low
+risk_score: 5

@@ -1,0 +1,26 @@
+rule_id: 076d94d4-e89b-43cb-baee-20b639322b82
+name: "Switch NT_GREEN: Portda bir nechta LLDP qo'shni aniqlandi"
+description: |
+  Bitta switch portida bir nechta LLDP qo'shni qurilma aniqlandi.
+  Bu odatda portga hub, unmanaged switch yoki tarmoq taplovchi
+  qurilma ulanganligini ko'rsatadi.
+  SOC triage: Port ga ruxsatsiz qurilma ulanmaganligini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - updive-syslog-*
+query_language: esql
+query: |
+  FROM updive-syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE log.syslog.facility.name == "NT_GREEN"
+  | WHERE event.action == "EeeLldpMultiNeighbours"
+  | KEEP @timestamp, host.name, event.action, event.original
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.lldp
+severity: low
+risk_score: 15

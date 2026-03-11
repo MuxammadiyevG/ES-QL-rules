@@ -1,0 +1,27 @@
+rule_id: 9348a282-86b8-4735-8ebf-2520ba976430
+name: "Switch Syslog: Barcha hodisalar (umumiy)"
+description: |
+  Switchdan kelgan barcha syslog hodisalari.
+  Facility, switch nomi, vaqt bo'yicha umumiy ko'rinish.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - updive-syslog-*
+query_language: esql
+query: |
+  FROM updive-syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | STATS
+      event_count = COUNT(*),
+      last_seen   = MAX(@timestamp),
+      first_seen  = MIN(@timestamp)
+    BY host.name, log.syslog.facility.name, event.category, event.type
+  | KEEP host.name, log.syslog.facility.name, event.category, event.type, event_count, last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.overview
+severity: low
+risk_score: 0

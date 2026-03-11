@@ -1,0 +1,25 @@
+rule_id: d0313f2e-b0b0-4a96-84a5-a0db74b62783
+name: "Switch SYSLOG: Syslog server o'chirildi (NOSYSLOGSERVER)"
+description: |
+  Switch dan remote syslog server manzili o'chirildi.
+  Bu holda loglar SIEM ga yetib kelmaydi — ko'r nuqta yaratiladi.
+  SOC triage: Kim o'chirdi? GCLI logidan tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - updive-syslog-*
+query_language: esql
+query: |
+  FROM updive-syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE log.syslog.facility.name == "SYSLOG"
+  | WHERE event.action == "NOSYSLOGSERVER"
+  | KEEP @timestamp, host.name, event.action, event.original
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.config
+severity: low
+risk_score: 25

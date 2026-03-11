@@ -1,0 +1,31 @@
+rule_id: 6ba2bcc4-22a8-464c-99d2-43c03cc1efda
+name: "Switch COPY: Barcha nusxalash operatsiyalari"
+description: |
+  Switch da bajarilgan barcha fayl operatsiyalari.
+  Firmware yangilanish, config backup/restore, TFTP/SCP operatsiyalari.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - updive-syslog-*
+query_language: esql
+query: |
+  FROM updive-syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE log.syslog.facility.name == "COPY"
+  | STATS
+      event_count = COUNT(*),
+      actions     = VALUES(event.action),
+      messages    = VALUES(event.original),
+      hosts       = VALUES(host.name),
+      last_seen   = MAX(@timestamp),
+      first_seen  = MIN(@timestamp)
+    BY host.name
+  | KEEP host.name, event_count, actions, messages, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.copy
+severity: low
+risk_score: 15

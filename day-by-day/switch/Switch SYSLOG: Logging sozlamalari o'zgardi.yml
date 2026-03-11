@@ -1,0 +1,23 @@
+rule_id: e0dedbee-c422-472b-9089-4b5cfcfd7d7e
+name: "Switch SYSLOG: Logging sozlamalari o'zgardi"
+description: |
+  Switch logging konfiguratsiyasi o'zgartirildi.
+  Buffer level, remote server, severity level o'zgarishlari qayd etiladi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - updive-syslog-*
+query_language: esql
+query: |
+  FROM updive-syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE log.syslog.facility.name == "SYSLOG"
+  | KEEP @timestamp, host.name, event.original, event.category, event.type
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.config
+severity: low
+risk_score: 15
