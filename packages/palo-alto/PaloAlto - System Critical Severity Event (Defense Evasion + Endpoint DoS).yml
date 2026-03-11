@@ -15,10 +15,10 @@ type: esql
 params: '{}'
 schedule_interval: 2m
 index:
-  - filebeat-paloalto-*
+  - logs-panw*
 query_language: esql
 query: |
-  FROM filebeat-paloalto-*
+  FROM logs-panw*
   | WHERE @timestamp >= NOW() - 10 minutes
   | WHERE event.dataset == "panw.system"
   | WHERE log.level == "critical"

@@ -15,10 +15,10 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - logs-panw.panos-*
+  - logs-panw*
 query_language: esql
 query: |
-  FROM logs-panw.panos-*
+  FROM logs-panw*
   | WHERE @timestamp >= NOW() - 300 seconds
   | WHERE event.kind == "event"
   | WHERE event.category == "network"

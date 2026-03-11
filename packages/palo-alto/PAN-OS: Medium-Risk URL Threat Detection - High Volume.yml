@@ -16,10 +16,10 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-  - filebeat-paloalto-*
+  - logs-panw*
 query_language: esql
 query: |
-  FROM filebeat-paloalto-*
+  FROM logs-panw*
   | WHERE @timestamp >= NOW() - 300 seconds
   | WHERE event.kind == "alert"
   | WHERE event.category == "intrusion_detection"
