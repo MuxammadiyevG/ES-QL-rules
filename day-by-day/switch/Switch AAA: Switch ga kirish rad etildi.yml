@@ -34,5 +34,5 @@
     - event.activity
     - switch.auth
     - switch.logon-failure
-  severity: info
+  severity: low
   risk_score: 10

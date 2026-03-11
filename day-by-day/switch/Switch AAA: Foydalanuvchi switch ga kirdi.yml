@@ -36,5 +36,5 @@ tags:
   - event.activity
   - switch.auth
   - switch.logon
-severity: info
+severity: low
 risk_score: 5
