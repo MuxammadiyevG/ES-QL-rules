@@ -1,0 +1,117 @@
+rule_id: c6a48eac-6a5f-4d3c-b9db-930dea1a83d8
+name: "PAN-OS: DMZ Server Outbound Medium-Risk URL Threat - New Ruleset Detected"
+description: |
+  Ushbu qoida DMZ zonasidagi 10.25.255.6 serverdan "pass-waf-out-1" qoidasi orqali
+  194.93.25.227 tashqi IP'ga yo'naltirilgan va PAN-OS tomonidan "medium-risk,unknown"
+  kategoriyasida "alert" sifatida belgilangan SSL trafikni aniqlaydi.
+  ThreatID (9999) — noma'lum yoki aniqlanmagan tahdid identifikatori.
+  URL_Filename: 194.93.25.227/ — root path so'rovi, C2 beacon yoki reconnaissance belgisi bo'lishi mumkin.
+  App teglari: used-by-malware, able-to-transfer-file, has-known-vulnerability, tunnel-other-application.
+  DestinationLocation: UZ-Manual — manzil IP qo'lda qo'shilgan Uzbekiston IP ro'yxatida.
+  Qonuniy holatlar: korporativ proksi, antivirus update, CDN so'rovlari.
+  SOC triage bosqichlari:
+  - 194.93.25.227 IP'ni VirusTotal, Shodan, AbuseIPDB orqali tekshiring.
+  - rule.name "pass-waf-out-1" — WAF orqali o'tkazilgan, WAF logi bilan korrelyatsiya qiling.
+  - ThreatID (9999) — custom yoki noma'lum threat, tahlil talab etadi.
+  - URL root path "/" so'rovi — oddiy browser so'rovi yoki avtomatlashtirilgan beacon?
+  - source.nat.ip (185.203.236.10) — NAT IP'ni ham bloklashni baholang.
+  - Noqonuniy bo'lsa: pass-waf-out-1 qoidasini block'ga o'zgartiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-panw*
+query_language: esql
+query: |
+  FROM logs-panw*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.kind == "alert"
+  | WHERE event.category == "intrusion_detection"
+  | WHERE event.action == "alert"
+  | WHERE panw.panos.source.zone == "DMZ"
+  | WHERE panw.panos.url_category_list LIKE "*medium-risk*"
+  | WHERE panw.panos.threat.id == "(9999)"
+  | EVAL src_ip          = source.ip
+  | EVAL src_nat_ip      = source.nat.ip
+  | EVAL dst_ip          = destination.ip
+  | EVAL dst_nat_ip      = destination.nat.ip
+  | EVAL src_port        = source.port
+  | EVAL src_nat_port    = source.nat.port
+  | EVAL dst_port        = destination.port
+  | EVAL src_zone        = panw.panos.source.zone
+  | EVAL dst_zone        = panw.panos.destination.zone
+  | EVAL ruleset         = panw.panos.ruleset
+  | EVAL rule_id_fw      = rule.uuid
+  | EVAL threat_id       = panw.panos.threat.id
+  | EVAL url_filename    = panw.panos.url.filename
+  | EVAL url_category    = panw.panos.url_category_list
+  | EVAL application     = network.application
+  | EVAL direction       = network.direction
+  | EVAL flow_id         = panw.panos.flow_id
+  | EVAL dst_country     = destination.geo.country_name
+  | EVAL dst_city        = destination.geo.city_name
+  | EVAL seq_number      = panw.panos.sequence_number
+  | EVAL url_risk        = CASE(
+      panw.panos.url.filename LIKE "*passwd*",   "CRITICAL - Sensitive path",
+      panw.panos.url.filename LIKE "*admin*",    "HIGH - Admin path",
+      panw.panos.url.filename LIKE "*config*",   "HIGH - Config path",
+      panw.panos.url.filename == "194.93.25.227/", "MEDIUM - Root path beacon",
+      "LOW - Standard request"
+    )
+  | STATS
+      alert_count      = COUNT(*),
+      unique_src_ips   = COUNT_DISTINCT(source.ip),
+      unique_dst_ips   = COUNT_DISTINCT(destination.ip),
+      src_ips          = VALUES(source.ip),
+      src_nat_ips      = VALUES(source.nat.ip),
+      dst_ips          = VALUES(destination.ip),
+      dst_nat_ips      = VALUES(destination.nat.ip),
+      src_ports        = VALUES(source.port),
+      dst_ports        = VALUES(destination.port),
+      rulesets         = VALUES(panw.panos.ruleset),
+      rule_uuids       = VALUES(rule.uuid),
+      threat_ids       = VALUES(panw.panos.threat.id),
+      url_filenames    = VALUES(panw.panos.url.filename),
+      url_categories   = VALUES(panw.panos.url_category_list),
+      url_risks        = VALUES(url_risk),
+      dst_countries    = VALUES(destination.geo.country_name),
+      dst_cities       = VALUES(destination.geo.city_name),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      seq_numbers      = VALUES(panw.panos.sequence_number),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY source.ip, destination.ip, panw.panos.ruleset, panw.panos.source.zone, panw.panos.threat.id
+  | WHERE alert_count >= 3
+  | EVAL
+      source_ip    = source.ip,
+      dest_ip      = destination.ip,
+      fw_ruleset   = panw.panos.ruleset,
+      src_zone     = panw.panos.source.zone,
+      fw_threat_id = panw.panos.threat.id
+  | KEEP
+      source_ip, dest_ip, fw_ruleset, src_zone, fw_threat_id,
+      alert_count, unique_src_ips, unique_dst_ips,
+      src_ips, src_nat_ips, dst_ips, dst_nat_ips,
+      src_ports, dst_ports, rulesets, rule_uuids,
+      threat_ids, url_filenames, url_categories, url_risks,
+      dst_countries, dst_cities, flow_ids, seq_numbers,
+      last_seen, first_seen
+  | SORT alert_count DESC
+enabled: true
+tags:
+  - attack.command-and-control
+  - attack.t1071.001
+  - attack.t1102
+  - detection.threat-hunting
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1071/001/"
+  - "https://attack.mitre.org/techniques/T1102/"
+nist: ["SI-3", "SC-7", "AU-12", "IR-4"]
+pci_dss: ["1.3.2", "6.3.2", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0011:
+    T1071: ["T1071.001"]
+    T1102: []

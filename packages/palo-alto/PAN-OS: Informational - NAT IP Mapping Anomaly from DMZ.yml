@@ -1,0 +1,86 @@
+rule_id: 1ca604be-95b9-4620-ba94-3bef3da9cf2b
+name: "PAN-OS: Informational - NAT IP Mapping Anomaly from DMZ"
+description: |
+  Ushbu qoida DMZ zonasidagi serverlardan tashqariga chiqayotgan trafikda
+  source.nat.ip manzillarining o'zgarishi yoki kutilmagan NAT IP'larni kuzatadi.
+  Logda source.ip: 10.25.255.6 → source.nat.ip: 185.203.236.10 NAT mapping qayd etilgan.
+  Agar DMZ serveridan boshqa NAT IP'lar orqali trafik chiqsa — bu noqonuniy NAT konfiguratsiyasi,
+  IP spoofing yoki ruxsatsiz tunnel bo'lishi mumkin.
+  Qonuniy holatlar: load balancer IP'lari, bir nechta ISP NAT pool'lari.
+  SOC triage bosqichlari:
+  - Kutilgan NAT IP'lar ro'yxatini baseline bilan solishtiring.
+  - Yangi yoki noma'lum NAT IP aniqlansa — network jamoasiga xabarlang.
+  - source.nat.ip va destination.nat.ip kombinatsiyasini tekshiring.
+  - related.ip field'idagi barcha IP'lar ruxsat etilganligini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-panw*
+query_language: esql
+query: |
+  FROM logs-panw*
+  | WHERE @timestamp >= NOW() - 900 seconds
+  | WHERE event.category == "network"
+  | WHERE panw.panos.source.zone == "DMZ"
+  | WHERE source.nat.ip IS NOT NULL
+  | EVAL src_ip          = source.ip
+  | EVAL src_nat_ip      = source.nat.ip
+  | EVAL dst_ip          = destination.ip
+  | EVAL dst_nat_ip      = destination.nat.ip
+  | EVAL src_zone        = panw.panos.source.zone
+  | EVAL dst_zone        = panw.panos.destination.zone
+  | EVAL ruleset         = panw.panos.ruleset
+  | EVAL application     = network.application
+  | EVAL transport       = network.transport
+  | EVAL flow_id         = panw.panos.flow_id
+  | EVAL nat_pair        = CONCAT(source.ip, " → NAT: ", source.nat.ip)
+  | EVAL known_nat       = CASE(
+      source.nat.ip == "185.203.236.10", "KNOWN - Primary NAT",
+      "UNKNOWN - Investigate"
+    )
+  | STATS
+      session_count    = COUNT(*),
+      unique_nat_ips   = COUNT_DISTINCT(source.nat.ip),
+      src_ips          = VALUES(source.ip),
+      src_nat_ips      = VALUES(source.nat.ip),
+      dst_ips          = VALUES(destination.ip),
+      dst_nat_ips      = VALUES(destination.nat.ip),
+      nat_pairs        = VALUES(nat_pair),
+      known_nats       = VALUES(known_nat),
+      applications     = VALUES(network.application),
+      rulesets         = VALUES(panw.panos.ruleset),
+      dst_zones        = VALUES(panw.panos.destination.zone),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      total_bytes      = SUM(network.bytes),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY source.ip, source.nat.ip, panw.panos.source.zone
+  | WHERE session_count >= 1
+  | EVAL
+      source_ip   = source.ip,
+      nat_ip      = source.nat.ip,
+      src_zone    = panw.panos.source.zone
+  | KEEP
+      source_ip, nat_ip, src_zone,
+      session_count, unique_nat_ips,
+      src_ips, src_nat_ips, dst_ips, dst_nat_ips,
+      nat_pairs, known_nats, applications,
+      rulesets, dst_zones, flow_ids,
+      total_bytes, last_seen, first_seen
+  | SORT unique_nat_ips DESC
+enabled: true
+tags:
+  - detection.informational
+  - network.nat-monitoring
+  - policy.network-baseline
+severity: low
+risk_score: 20
+references:
+  - "https://attack.mitre.org/techniques/T1599/"
+nist: ["SC-7", "AU-12", "CM-8"]
+pci_dss: ["1.3.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1599: []

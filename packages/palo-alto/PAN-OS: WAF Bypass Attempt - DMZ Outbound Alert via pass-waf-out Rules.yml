@@ -1,0 +1,107 @@
+rule_id: ad04e0e8-3d67-4de5-8b08-b9b575130b53
+name: "PAN-OS: WAF Bypass Attempt - DMZ Outbound Alert via pass-waf-out Rules"
+description: |
+  Ushbu qoida "pass-waf-out" yoki "pass-waf-out-1" nomli firewall qoidalari orqali
+  DMZ'dan tashqariga chiqayotgan va THREAT sifatida belgilangan barcha sessiyalarni kuzatadi.
+  WAF qoidalari orqali o'tayotgan threat alertlar WAF konfiguratsiyasidagi zaiflikni,
+  yoki hujumchi tomonidan WAF'ni chetlab o'tish urinishlarini ko'rsatishi mumkin.
+  Bir nechta "pass-waf-out" variantlari (pass-waf-out, pass-waf-out-1) aniqlangan —
+  bu qoidalar orasidagi farq va qaysi biri ko'proq alert berishi muhim.
+  Qonuniy holatlar: WAF tekshiruvi o'tgan legitimatsiya trafigi, SSL inspection bypass.
+  SOC triage bosqichlari:
+  - pass-waf-out va pass-waf-out-1 orasidagi farqni tekshiring.
+  - WAF loglari bilan korrelyatsiya qiling — bir xil sessiya WAF'da ham loglanganmi?
+  - rule.uuid orqali qaysi aniq qoida ishlatilganini kuzating.
+  - Alert bergan URL'larning pattern'ini tahlil qiling.
+  - Bir xil dst IP'ga takroriy alert — IP'ni bloklashni ko'rib chiqing.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-panw*
+query_language: esql
+query: |
+  FROM logs-panw*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.kind == "alert"
+  | WHERE event.category == "intrusion_detection"
+  | WHERE panw.panos.ruleset LIKE "pass-waf-out*"
+  | WHERE panw.panos.source.zone == "DMZ"
+  | EVAL src_ip          = source.ip
+  | EVAL src_nat_ip      = source.nat.ip
+  | EVAL dst_ip          = destination.ip
+  | EVAL dst_nat_ip      = destination.nat.ip
+  | EVAL src_zone        = panw.panos.source.zone
+  | EVAL dst_zone        = panw.panos.destination.zone
+  | EVAL ruleset         = panw.panos.ruleset
+  | EVAL rule_uuid       = rule.uuid
+  | EVAL rule_cat        = rule.category
+  | EVAL threat_id       = panw.panos.threat.id
+  | EVAL url_filename    = panw.panos.url.filename
+  | EVAL url_category    = panw.panos.url_category_list
+  | EVAL application     = network.application
+  | EVAL flow_id         = panw.panos.flow_id
+  | EVAL seq_number      = panw.panos.sequence_number
+  | EVAL dst_country     = destination.geo.country_name
+  | EVAL dst_city        = destination.geo.city_name
+  | EVAL waf_rule_ver    = CASE(
+      panw.panos.ruleset == "pass-waf-out",   "WAF Rule v1",
+      panw.panos.ruleset == "pass-waf-out-1", "WAF Rule v2",
+      "WAF Rule Other"
+    )
+  | STATS
+      alert_count      = COUNT(*),
+      unique_src_ips   = COUNT_DISTINCT(source.ip),
+      unique_dst_ips   = COUNT_DISTINCT(destination.ip),
+      unique_rulesets  = COUNT_DISTINCT(panw.panos.ruleset),
+      src_ips          = VALUES(source.ip),
+      src_nat_ips      = VALUES(source.nat.ip),
+      dst_ips          = VALUES(destination.ip),
+      rulesets         = VALUES(panw.panos.ruleset),
+      rule_uuids       = VALUES(rule.uuid),
+      rule_categories  = VALUES(rule.category),
+      waf_rule_vers    = VALUES(waf_rule_ver),
+      threat_ids       = VALUES(panw.panos.threat.id),
+      url_filenames    = VALUES(panw.panos.url.filename),
+      url_categories   = VALUES(panw.panos.url_category_list),
+      applications     = VALUES(network.application),
+      dst_countries    = VALUES(destination.geo.country_name),
+      dst_cities       = VALUES(destination.geo.city_name),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY source.ip, destination.ip, panw.panos.source.zone
+  | WHERE alert_count >= 2
+  | EVAL
+      source_ip  = source.ip,
+      dest_ip    = destination.ip,
+      src_zone   = panw.panos.source.zone
+  | KEEP
+      source_ip, dest_ip, src_zone,
+      alert_count, unique_src_ips, unique_dst_ips, unique_rulesets,
+      src_ips, src_nat_ips, dst_ips,
+      rulesets, rule_uuids, rule_categories, waf_rule_vers,
+      threat_ids, url_filenames, url_categories, applications,
+      dst_countries, dst_cities, flow_ids,
+      last_seen, first_seen
+  | SORT alert_count DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.command-and-control
+  - attack.t1190
+  - attack.t1071.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://attack.mitre.org/techniques/T1071/001/"
+nist: ["SC-7", "SI-3", "AU-12", "IR-4"]
+pci_dss: ["6.4.1", "6.3.2", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1190: []
+  TA0011:
+    T1071: ["T1071.001"]

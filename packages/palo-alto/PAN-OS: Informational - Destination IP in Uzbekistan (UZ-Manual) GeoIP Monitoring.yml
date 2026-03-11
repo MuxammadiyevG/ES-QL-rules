@@ -1,0 +1,101 @@
+rule_id: 75b95203-d3c4-4aa8-a258-9a87e12d7f1e
+name: "PAN-OS: Informational - Destination IP in Uzbekistan (UZ-Manual) GeoIP Monitoring"
+description: |
+  Ushbu qoida destination.geo.country_name: Uzbekistan va DestinationLocation: UZ-Manual
+  bo'lgan barcha trafik sessiyalarini kuzatadi.
+  PAN-OS "UZ-Manual" — qo'lda qo'shilgan Uzbekiston IP manzillari ro'yxati.
+  destination.geo.city_name: Tashkent, destination.geo.location: POINT (69.2177 41.2615).
+  Bu qoida Uzbekiston IP'lariga yo'naltirilgan trafikni monitoring qilish va
+  anomal maqsad manzillarni aniqlash uchun baseline yaratadi.
+  Logda 194.93.25.227 → Tashkent (UZ) manzili qayd etilgan.
+  Qonuniy holatlar: mahalliy serverlar, hukumat resurslari, mahalliy CDN.
+  SOC triage bosqichlari:
+  - destination.ip'ni mahalliy IP registri bilan solishtiring.
+  - UZ-Manual ro'yxatiga kim qo'shganini tekshiring — aktual va to'g'rimi?
+  - Uzbekiston manzillariga g'ayrioddiy port yoki protokol borligini tekshiring.
+  - destination.geo.location koordinatasi bilan IP geolocation xizmatlari solishtiring.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-panw*
+query_language: esql
+query: |
+  FROM logs-panw*
+  | WHERE @timestamp >= NOW() - 900 seconds
+  | WHERE event.category == "network"
+  | WHERE destination.geo.country_iso_code == "UZ"
+  | EVAL src_ip          = source.ip
+  | EVAL src_nat_ip      = source.nat.ip
+  | EVAL dst_ip          = destination.ip
+  | EVAL dst_nat_ip      = destination.nat.ip
+  | EVAL dst_city        = destination.geo.city_name
+  | EVAL dst_country     = destination.geo.country_name
+  | EVAL dst_region      = destination.geo.region_name
+  | EVAL dst_timezone    = destination.geo.timezone
+  | EVAL src_zone        = panw.panos.source.zone
+  | EVAL dst_zone        = panw.panos.destination.zone
+  | EVAL application     = network.application
+  | EVAL transport       = network.transport
+  | EVAL ruleset         = panw.panos.ruleset
+  | EVAL bytes_total     = network.bytes
+  | EVAL flow_id         = panw.panos.flow_id
+  | EVAL event_type      = event.kind
+  | EVAL port_risk       = CASE(
+      destination.port == 443,  "STANDARD - HTTPS",
+      destination.port == 80,   "STANDARD - HTTP",
+      destination.port == 22,   "HIGH - SSH",
+      destination.port == 3389, "HIGH - RDP",
+      destination.port == 8080, "MEDIUM - Alt HTTP",
+      "REVIEW - Non-standard port"
+    )
+  | STATS
+      session_count    = COUNT(*),
+      unique_src_ips   = COUNT_DISTINCT(source.ip),
+      unique_dst_ips   = COUNT_DISTINCT(destination.ip),
+      src_ips          = VALUES(source.ip),
+      dst_ips          = VALUES(destination.ip),
+      dst_cities       = VALUES(destination.geo.city_name),
+      dst_regions      = VALUES(destination.geo.region_name),
+      dst_ports        = VALUES(destination.port),
+      port_risks       = VALUES(port_risk),
+      applications     = VALUES(network.application),
+      src_zones        = VALUES(panw.panos.source.zone),
+      dst_zones        = VALUES(panw.panos.destination.zone),
+      rulesets         = VALUES(panw.panos.ruleset),
+      event_types      = VALUES(event.kind),
+      total_bytes      = SUM(network.bytes),
+      avg_bytes        = AVG(network.bytes),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY destination.ip, destination.geo.city_name, destination.geo.country_iso_code
+  | WHERE session_count >= 1
+  | EVAL
+      dest_ip      = destination.ip,
+      dest_city    = destination.geo.city_name,
+      country_code = destination.geo.country_iso_code
+  | KEEP
+      dest_ip, dest_city, country_code,
+      session_count, unique_src_ips, unique_dst_ips,
+      src_ips, dst_ips, dst_cities, dst_regions,
+      dst_ports, port_risks, applications,
+      src_zones, dst_zones, rulesets, event_types,
+      total_bytes, avg_bytes, flow_ids,
+      last_seen, first_seen
+  | SORT session_count DESC
+enabled: true
+tags:
+  - detection.informational
+  - network.geo-monitoring
+  - policy.geoip-baseline
+severity: low
+risk_score: 15
+references:
+  - "https://attack.mitre.org/techniques/T1071/"
+nist: ["AU-12", "SC-7", "SI-4"]
+pci_dss: ["10.6.1", "1.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0011:
+    T1071: []
