@@ -1,0 +1,89 @@
+rule_id: a9b1c2d3-4e5f-6a7b-c012-2b3c4d5e6f7a
+name: "PAN-OS: Google Services Traffic Monitoring from Internal Hosts"
+description: |
+  Ushbu qoida ichki tarmoqdagi qurilmalardan Google infrastrukturasiga (google-base) yo'naltirilgan trafikni kuzatadi.
+  Logda 192.168.213.36 → 216.239.34.223 (Google) sessiyasi "computer-and-internet-info" kategoriyasida qayd etilgan.
+  Bu informatsion rule bo'lib, Google xizmatlari orqali ma'lumot sızıntısı, ruxsatsiz proksi yoki tunneling urinishlarini erta aniqlash uchun baseline yaratishga yordam beradi.
+  Qonuniy holatlar: Gmail, Google Drive, Google Meet, Chrome brauzeri fon trafigi.
+  SOC triage bosqichlari:
+  - Trafik hajmini kunlik baseline bilan solishtiring.
+  - google-base orqali tunnel yaratish (TCP over HTTP) urinishlari borligini tekshiring.
+  - Bir qurilmadan juda ko'p Google sessiyasi anomal bo'lishi mumkin.
+  - Korporativ Google Workspace foydalanilayotganligini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-paloalto-*
+query_language: esql
+query: |
+  FROM filebeat-paloalto-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.kind == "event"
+  | WHERE event.category == "network"
+  | WHERE network.application == "google-base"
+  | EVAL src_ip         = source.ip
+  | EVAL dst_ip         = destination.ip
+  | EVAL src_zone       = panw.panos.source.zone
+  | EVAL dst_zone       = panw.panos.destination.zone
+  | EVAL dst_country    = destination.geo.country_name
+  | EVAL bytes_sent     = source.bytes
+  | EVAL bytes_recv     = destination.bytes
+  | EVAL bytes_total    = network.bytes
+  | EVAL packets_total  = network.packets
+  | EVAL end_reason     = event.reason
+  | EVAL flow_id        = panw.panos.flow_id
+  | EVAL url_category   = panw.panos.url_category_list
+  | EVAL ruleset        = panw.panos.ruleset
+  | EVAL volume_label   = CASE(
+      network.bytes > 1000000,  "HIGH > 1MB",
+      network.bytes > 100000,   "MEDIUM > 100KB",
+      "LOW < 100KB"
+    )
+  | STATS
+      session_count    = COUNT(*),
+      src_ips          = VALUES(source.ip),
+      dst_ips          = VALUES(destination.ip),
+      dst_countries    = VALUES(destination.geo.country_name),
+      total_bytes      = SUM(network.bytes),
+      total_sent       = SUM(source.bytes),
+      total_recv       = SUM(destination.bytes),
+      max_bytes        = MAX(network.bytes),
+      total_packets    = SUM(network.packets),
+      volume_labels    = VALUES(volume_label),
+      url_categories   = VALUES(panw.panos.url_category_list),
+      end_reasons      = VALUES(event.reason),
+      rulesets         = VALUES(panw.panos.ruleset),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY source.ip, panw.panos.source.zone, network.application
+  | WHERE session_count >= 1
+  | EVAL
+      source_ip    = source.ip,
+      src_zone     = panw.panos.source.zone,
+      application  = network.application
+  | KEEP
+      source_ip, src_zone, application,
+      session_count, total_bytes, total_sent, total_recv,
+      max_bytes, total_packets,
+      src_ips, dst_ips, dst_countries,
+      volume_labels, url_categories,
+      end_reasons, rulesets, flow_ids,
+      last_seen, first_seen
+  | SORT total_bytes DESC
+enabled: true
+tags:
+  - detection.informational
+  - network.monitoring
+  - policy.saas-usage
+severity: low
+risk_score: 15
+references:
+  - "https://attack.mitre.org/techniques/T1102/"
+nist: ["AU-12", "CM-7", "SC-7"]
+pci_dss: ["10.6.1", "1.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0011:
+    T1102: []

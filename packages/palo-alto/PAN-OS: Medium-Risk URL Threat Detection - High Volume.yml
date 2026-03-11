@@ -1,0 +1,82 @@
+rule_id: a3f1e2b4-7c8d-4e5f-b621-1a2b3c4d5e6f
+name: "PAN-OS: Medium-Risk URL Threat Detection - High Volume"
+description: |
+  Ushbu qoida Palo Alto Networks firewall tomonidan aniqlangan "medium-risk" tahdidlarning yuqori hajmda sodir bo'lishini kuzatadi.
+  DMZ zonasidan tashqi IP manzillarga (194.93.25.227) yo'naltirilgan SSL trafigida "medium-risk" URL kategoriyali tahdidlar qayta-qayta qayd etilmoqda.
+  Bu holat C2 (Command & Control) aloqasi, data exfiltration yoki malware yuklab olish urinishlarini ko'rsatishi mumkin.
+  App teglari: "used-by-malware", "able-to-transfer-file", "has-known-vulnerability", "tunnel-other-application".
+  Qonuniy holatlar: ommaviy CDN xizmatlari, antivirus yangilanishlari, korporativ proksi trafigi.
+  SOC triage bosqichlari:
+  - 194.93.25.227 IP manziliga VirusTotal/Shodan orqali threat intelligence tekshiring.
+  - DMZ'dagi 10.25.255.6 manbasini aniqlang (server yoki proxy?).
+  - SSL trafigi ichida anomal portlar yoki sertifikat muammolari borligini tekshiring.
+  - Firewall "alert" action qo'llagan — block qilish kerakligini baholang.
+  - Noqonuniy bo'lsa: IP'ni bloklang, DMZ hostini izolyatsiya qiling, incident oching.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-paloalto-*
+query_language: esql
+query: |
+  FROM filebeat-paloalto-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.kind == "alert"
+  | WHERE event.category == "intrusion_detection"
+  | WHERE panw.panos.url_category_list LIKE "*medium-risk*"
+  | EVAL src_ip         = source.ip
+  | EVAL dst_ip         = destination.ip
+  | EVAL src_zone       = panw.panos.source.zone
+  | EVAL dst_zone       = panw.panos.destination.zone
+  | EVAL app            = network.application
+  | EVAL threat_id      = panw.panos.threat.id
+  | EVAL url_category   = panw.panos.url_category_list
+  | EVAL action         = event.action
+  | EVAL rule_name      = rule.name
+  | STATS
+      event_count     = COUNT(*),
+      src_ips         = VALUES(source.ip),
+      dst_ips         = VALUES(destination.ip),
+      src_zones       = VALUES(panw.panos.source.zone),
+      dst_zones       = VALUES(panw.panos.destination.zone),
+      applications    = VALUES(network.application),
+      threat_ids      = VALUES(panw.panos.threat.id),
+      url_categories  = VALUES(panw.panos.url_category_list),
+      actions         = VALUES(event.action),
+      rule_names      = VALUES(rule.name),
+      total_bytes     = SUM(network.bytes),
+      last_seen       = MAX(@timestamp),
+      first_seen      = MIN(@timestamp)
+    BY source.ip, destination.ip, panw.panos.source.zone, network.application
+  | WHERE event_count >= 5
+  | EVAL
+      source_ip       = source.ip,
+      dest_ip         = destination.ip,
+      source_zone     = panw.panos.source.zone
+  | KEEP
+      source_ip, dest_ip, source_zone, event_count,
+      src_ips, dst_ips, src_zones, dst_zones,
+      applications, threat_ids, url_categories,
+      actions, rule_names, total_bytes,
+      last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.command-and-control
+  - attack.exfiltration
+  - attack.t1071.001
+  - attack.t1048.002
+  - detection.threat-hunting
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1071/001/"
+  - "https://attack.mitre.org/techniques/T1048/002/"
+nist: ["SI-3", "SC-7", "AU-12", "IR-4"]
+pci_dss: ["1.3.2", "6.3.2", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0011:
+    T1071: ["T1071.001"]
+  TA0010:
+    T1048: ["T1048.002"]

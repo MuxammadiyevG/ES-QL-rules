@@ -1,0 +1,86 @@
+rule_id: e2c9d8f1-3b4a-4e9c-f165-5e6f7a8b9c0d
+name: "PAN-OS: Suspicious TCP Reset Storm from DMZ (Possible Scanning or DoS)"
+description: |
+  Ushbu qoida DMZ zonasidan bir xil tashqi IP'ga qisqa vaqt ichida ko'p sonli TCP RST (Reset) bilan tugaydigan sessionlarning yuqori sonini aniqlaydi.
+  TCP RST stormlar port scanning, connection flooding, yoki C2 beacon urinishlari bilan bog'liq bo'lishi mumkin.
+  Logda 10.25.255.6 → 194.93.25.227 yo'nalishida bir vaqtning o'zida onlab sessiya "tcp-rst-from-client" bilan yakunlangan.
+  Qonuniy holatlar: tarmoq muammolari tufayli TCP timeout, yuk muvozanatlagich konfiguratsiyasi.
+  SOC triage bosqichlari:
+  - RST'lar bir vaqtda sodir bo'lganmi yoki ketma-ket? (timestamp'larni solishtiring)
+  - 194.93.25.227 IP'ni threat intel bilan tekshiring.
+  - 10.25.255.6 DMZ serveri holati normal ekanligini tekshiring.
+  - Firewall session limitlarini tekshiring.
+  - Noqonuniy bo'lsa: manbani bloklang, DMZ serverini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-paloalto-*
+query_language: esql
+query: |
+  FROM filebeat-paloalto-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.kind == "event"
+  | WHERE event.category == "network"
+  | WHERE event.type == "end"
+  | WHERE event.reason == "tcp-rst-from-client"
+  | WHERE panw.panos.source.zone == "DMZ"
+  | EVAL src_ip         = source.ip
+  | EVAL dst_ip         = destination.ip
+  | EVAL src_zone       = panw.panos.source.zone
+  | EVAL dst_zone       = panw.panos.destination.zone
+  | EVAL src_port       = source.port
+  | EVAL dst_port       = destination.port
+  | EVAL bytes_total    = network.bytes
+  | EVAL packets_total  = network.packets
+  | EVAL flow_id        = panw.panos.flow_id
+  | EVAL ruleset        = panw.panos.ruleset
+  | EVAL url_category   = panw.panos.url_category_list
+  | STATS
+      rst_count        = COUNT(*),
+      src_ips          = VALUES(source.ip),
+      dst_ips          = VALUES(destination.ip),
+      src_ports        = VALUES(source.port),
+      dst_ports        = VALUES(destination.port),
+      total_bytes      = SUM(network.bytes),
+      total_packets    = SUM(network.packets),
+      avg_bytes        = AVG(network.bytes),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      rulesets         = VALUES(panw.panos.ruleset),
+      url_categories   = VALUES(panw.panos.url_category_list),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY source.ip, destination.ip, panw.panos.source.zone, event.reason
+  | WHERE rst_count >= 3
+  | EVAL
+      source_ip    = source.ip,
+      dest_ip      = destination.ip,
+      src_zone     = panw.panos.source.zone,
+      end_reason   = event.reason
+  | KEEP
+      source_ip, dest_ip, src_zone, end_reason,
+      rst_count, total_bytes, total_packets, avg_bytes,
+      src_ips, dst_ips, src_ports, dst_ports,
+      flow_ids, rulesets, url_categories,
+      last_seen, first_seen
+  | SORT rst_count DESC
+enabled: true
+tags:
+  - attack.reconnaissance
+  - attack.impact
+  - attack.t1595.001
+  - attack.t1499.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 50
+references:
+  - "https://attack.mitre.org/techniques/T1595/001/"
+  - "https://attack.mitre.org/techniques/T1499/001/"
+nist: ["SC-5", "SI-4", "AU-12", "IR-4"]
+pci_dss: ["1.3.2", "11.4", "6.4.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0043:
+    T1595: ["T1595.001"]
+  TA0040:
+    T1499: ["T1499.001"]

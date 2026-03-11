@@ -1,0 +1,99 @@
+rule_id: e5f6a7b8-8c9d-0e1f-a456-6f7a8b9c0d1e
+name: "PAN-OS: Government Category URL Traffic - Access Summary"
+description: |
+  Ushbu qoida "government" URL kategoriyasi ostida tasniflangan barcha trafik sessiyalarini kuzatadi va kunlik kirish xaritasini yaratadi.
+  Logda PassProxy-IN qoidasi orqali tashqi IP'lardan DMZ serveriga "government" kategoriyali sessiyalar qayd etilgan.
+  Bu informatsion rule bo'lib, hukumat resurslariga ruxsatsiz kirish, scraping yoki credential stuffing urinishlarini erta aniqlashga yordam beradi.
+  Qonuniy holatlar: fuqarolar tomonidan e-government portallarga murojaat, davlat xizmatlari API integratsiyasi.
+  SOC triage bosqichlari:
+  - Tashqi IP'lar geografiyasini tekshiring — kutilmagan mamlakatlardan kirish anomal.
+  - Bir IP'dan ko'p sessiya — automated scraping yoki brute-force bo'lishi mumkin.
+  - Katta hajmdagi trafik — ma'lumot yuklab olish urinishini tekshiring.
+  - Sessiyalar faqat ish vaqtida sodir bo'lganmi?
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - filebeat-paloalto-*
+query_language: esql
+query: |
+  FROM filebeat-paloalto-*
+  | WHERE @timestamp >= NOW() - 900 seconds
+  | WHERE event.kind == "event"
+  | WHERE event.category == "network"
+  | WHERE event.type == "end"
+  | WHERE event.outcome == "allow"
+  | WHERE panw.panos.url_category_list == "government"
+  | EVAL src_ip         = source.ip
+  | EVAL dst_ip         = destination.ip
+  | EVAL nat_dst_ip     = panw.panos.destination.nat.ip
+  | EVAL src_zone       = panw.panos.source.zone
+  | EVAL dst_zone       = panw.panos.destination.zone
+  | EVAL src_country    = source.geo.country_name
+  | EVAL dst_country    = destination.geo.country_name
+  | EVAL application    = network.application
+  | EVAL bytes_total    = network.bytes
+  | EVAL bytes_sent     = source.bytes
+  | EVAL bytes_recv     = destination.bytes
+  | EVAL packets_total  = network.packets
+  | EVAL end_reason     = event.reason
+  | EVAL ruleset        = panw.panos.ruleset
+  | EVAL flow_id        = panw.panos.flow_id
+  | EVAL geo_risk       = CASE(
+      source.geo.country_name == "UZ-Manual",  "LOCAL",
+      source.geo.country_name IS NULL,          "UNKNOWN - Check Required",
+      "FOREIGN - Review"
+    )
+  | STATS
+      session_count    = COUNT(*),
+      unique_src_ips   = COUNT_DISTINCT(source.ip),
+      unique_dst_ips   = COUNT_DISTINCT(destination.ip),
+      src_ips          = VALUES(source.ip),
+      dst_ips          = VALUES(destination.ip),
+      nat_dst_ips      = VALUES(panw.panos.destination.nat.ip),
+      src_countries    = VALUES(source.geo.country_name),
+      dst_countries    = VALUES(destination.geo.country_name),
+      total_bytes      = SUM(network.bytes),
+      total_sent       = SUM(source.bytes),
+      total_recv       = SUM(destination.bytes),
+      max_bytes        = MAX(network.bytes),
+      total_packets    = SUM(network.packets),
+      end_reasons      = VALUES(event.reason),
+      geo_risks        = VALUES(geo_risk),
+      rulesets         = VALUES(panw.panos.ruleset),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY panw.panos.destination.nat.ip, panw.panos.source.zone, panw.panos.url_category_list
+  | WHERE session_count >= 1
+  | EVAL
+      nat_dest_ip  = panw.panos.destination.nat.ip,
+      src_zone     = panw.panos.source.zone,
+      url_category = panw.panos.url_category_list
+  | KEEP
+      nat_dest_ip, src_zone, url_category,
+      session_count, unique_src_ips, unique_dst_ips,
+      total_bytes, total_sent, total_recv, max_bytes, total_packets,
+      src_ips, dst_ips, nat_dst_ips,
+      src_countries, dst_countries, geo_risks,
+      end_reasons, rulesets, flow_ids,
+      last_seen, first_seen
+  | SORT session_count DESC
+enabled: true
+tags:
+  - detection.informational
+  - network.monitoring
+  - policy.government-access
+severity: low
+risk_score: 20
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://attack.mitre.org/techniques/T1078/"
+nist: ["AC-17", "AU-12", "IA-2", "SC-7"]
+pci_dss: ["10.6.1", "8.2.1"]
+gdpr: ["32.1.b", "30"]
+mitre_attack:
+  TA0001:
+    T1190: ["T1190"]
+  TA0005:
+    T1078: ["T1078"]

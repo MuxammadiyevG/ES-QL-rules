@@ -1,0 +1,92 @@
+rule_id: b7d2f3a5-9e1c-4f6a-c832-2b3c4d5e6f7a
+name: "PAN-OS: Large Data Transfer to External IP via SSL (Possible Exfiltration)"
+description: |
+  Ushbu qoida DMZ yoki ichki tarmoqdan tashqi IP manzillarga SSL orqali yuqori hajmdagi ma'lumot uzatilishini aniqlaydi.
+  Logda 10 MB dan oshiq trafik qayd etilgan sessionlar mavjud (masalan, 11 MB, 1.8 MB).
+  Bu holat ma'lumot o'g'irlash (data exfiltration), noqonuniy fayl uzatish yoki tunneling orqali C2 aloqasini ko'rsatishi mumkin.
+  Qonuniy holatlar: backup operatsiyalari, software update, CDN kesh to'ldirish.
+  SOC triage bosqichlari:
+  - Tashqi IP manzilni threat intelligence bilan tekshiring.
+  - Uzatilgan ma'lumot hajmini odatiy baseline bilan solishtiring.
+  - SSL sertifikatini tekshiring — self-signed yoki noma'lum CA bo'lsa xavfli.
+  - Session davomiyligini tekshiring: qisqa vaqtda katta hajm — anomal.
+  - Noqonuniy bo'lsa: sessiyani to'xtating, manba hostni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-paloalto-*
+query_language: esql
+query: |
+  FROM filebeat-paloalto-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.kind == "event"
+  | WHERE event.category == "network"
+  | WHERE event.type == "end"
+  | WHERE network.application == "ssl"
+  | WHERE network.bytes > 1000000
+  | EVAL src_ip          = source.ip
+  | EVAL dst_ip          = destination.ip
+  | EVAL src_zone        = panw.panos.source.zone
+  | EVAL dst_zone        = panw.panos.destination.zone
+  | EVAL bytes_total     = network.bytes
+  | EVAL bytes_to_dst    = destination.bytes
+  | EVAL bytes_to_src    = source.bytes
+  | EVAL packets_total   = network.packets
+  | EVAL session_dur     = event.duration
+  | EVAL flow_id         = panw.panos.flow_id
+  | EVAL url_category    = panw.panos.url_category_list
+  | EVAL ruleset         = panw.panos.ruleset
+  | EVAL ratio           = CASE(
+      source.bytes > 0, ROUND(destination.bytes / source.bytes * 100) / 100,
+      0
+    )
+  | STATS
+      session_count    = COUNT(*),
+      src_ips          = VALUES(source.ip),
+      dst_ips          = VALUES(destination.ip),
+      src_zones        = VALUES(panw.panos.source.zone),
+      dst_zones        = VALUES(panw.panos.destination.zone),
+      max_bytes        = MAX(network.bytes),
+      total_bytes      = SUM(network.bytes),
+      total_dst_bytes  = SUM(destination.bytes),
+      total_src_bytes  = SUM(source.bytes),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      url_categories   = VALUES(panw.panos.url_category_list),
+      rulesets         = VALUES(panw.panos.ruleset),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY source.ip, destination.ip, panw.panos.source.zone, panw.panos.destination.zone
+  | WHERE total_bytes > 5000000
+  | EVAL
+      source_ip   = source.ip,
+      dest_ip     = destination.ip,
+      src_zone    = panw.panos.source.zone,
+      dst_zone    = panw.panos.destination.zone
+  | KEEP
+      source_ip, dest_ip, src_zone, dst_zone,
+      session_count, max_bytes, total_bytes,
+      total_dst_bytes, total_src_bytes,
+      src_ips, dst_ips, flow_ids,
+      url_categories, rulesets,
+      last_seen, first_seen
+  | SORT total_bytes DESC
+enabled: true
+tags:
+  - attack.exfiltration
+  - attack.command-and-control
+  - attack.t1048.002
+  - attack.t1041
+  - detection.threat-hunting
+severity: high
+risk_score: 75
+references:
+  - "https://attack.mitre.org/techniques/T1048/002/"
+  - "https://attack.mitre.org/techniques/T1041/"
+nist: ["SC-7", "SI-4", "AU-12", "IR-4"]
+pci_dss: ["1.3.2", "10.6.1", "12.10"]
+gdpr: ["32.1.b", "33"]
+mitre_attack:
+  TA0010:
+    T1048: ["T1048.002"]
+    T1041: ["T1041"]

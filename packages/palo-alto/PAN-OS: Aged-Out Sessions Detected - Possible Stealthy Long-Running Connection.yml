@@ -1,0 +1,97 @@
+rule_id: d6e4f5a6-7b8c-9d0e-f345-5e6f7a8b9c0d
+name: "PAN-OS: Aged-Out Sessions Detected - Possible Stealthy Long-Running Connection"
+description: |
+  Ushbu qoida firewall tomonidan "aged-out" (vaqt tugashi sababli yopilgan) deb belgilangan sessiyalarni kuzatadi.
+  "aged-out" sessiyalar — normal TCP FIN/RST bilan yopilmagan, balki firewall timeout tufayli tugagan ulanishlar.
+  Bu holat uzoq muddatli C2 beacon ulanishlari, yashirin tunnel yoki "keep-alive" urinishlarini ko'rsatishi mumkin.
+  Logda 185.139.138.207 → DMZ (10.25.255.6) va ichki QUIC sessiyalari "aged-out" bilan yakunlangan.
+  Qonuniy holatlar: idle ulanishlar, NAT timeout, CDN persistent ulanishlar.
+  SOC triage bosqichlari:
+  - Sessiya qancha vaqt davom etgan? (event.duration)
+  - Aged-out sessiyalardagi ma'lumot hajmi qancha?
+  - Manba va maqsad IP'lar ma'lummi?
+  - Bir xil juft IP'dan takroriy aged-out — anomal signal.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-paloalto-*
+query_language: esql
+query: |
+  FROM filebeat-paloalto-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.kind == "event"
+  | WHERE event.category == "network"
+  | WHERE event.type == "end"
+  | WHERE event.reason == "aged-out"
+  | EVAL src_ip         = source.ip
+  | EVAL dst_ip         = destination.ip
+  | EVAL src_zone       = panw.panos.source.zone
+  | EVAL dst_zone       = panw.panos.destination.zone
+  | EVAL application    = network.application
+  | EVAL bytes_total    = network.bytes
+  | EVAL bytes_sent     = source.bytes
+  | EVAL bytes_recv     = destination.bytes
+  | EVAL packets_total  = network.packets
+  | EVAL transport      = network.transport
+  | EVAL session_dur    = event.duration
+  | EVAL flow_id        = panw.panos.flow_id
+  | EVAL ruleset        = panw.panos.ruleset
+  | EVAL url_category   = panw.panos.url_category_list
+  | EVAL dst_country    = destination.geo.country_name
+  | EVAL duration_label = CASE(
+      event.duration > 3600000000000,   "LONG > 1hr",
+      event.duration > 600000000000,    "MEDIUM > 10min",
+      event.duration > 60000000000,     "SHORT > 1min",
+      "VERY SHORT < 1min"
+    )
+  | STATS
+      aged_out_count   = COUNT(*),
+      src_ips          = VALUES(source.ip),
+      dst_ips          = VALUES(destination.ip),
+      applications     = VALUES(network.application),
+      src_zones        = VALUES(panw.panos.source.zone),
+      dst_zones        = VALUES(panw.panos.destination.zone),
+      dst_countries    = VALUES(destination.geo.country_name),
+      total_bytes      = SUM(network.bytes),
+      max_bytes        = MAX(network.bytes),
+      total_packets    = SUM(network.packets),
+      duration_labels  = VALUES(duration_label),
+      rulesets         = VALUES(panw.panos.ruleset),
+      url_categories   = VALUES(panw.panos.url_category_list),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY source.ip, destination.ip, network.application, panw.panos.source.zone
+  | WHERE aged_out_count >= 1
+  | EVAL
+      source_ip    = source.ip,
+      dest_ip      = destination.ip,
+      application  = network.application,
+      src_zone     = panw.panos.source.zone
+  | KEEP
+      source_ip, dest_ip, application, src_zone,
+      aged_out_count, total_bytes, max_bytes, total_packets,
+      src_ips, dst_ips, applications,
+      src_zones, dst_zones, dst_countries,
+      duration_labels, rulesets, url_categories, flow_ids,
+      last_seen, first_seen
+  | SORT aged_out_count DESC
+enabled: true
+tags:
+  - detection.informational
+  - network.monitoring
+  - attack.t1071.001
+  - attack.t1573
+severity: low
+risk_score: 20
+references:
+  - "https://attack.mitre.org/techniques/T1071/001/"
+  - "https://attack.mitre.org/techniques/T1573/"
+nist: ["AU-12", "SI-4", "SC-7", "IR-4"]
+pci_dss: ["10.6.1", "1.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0011:
+    T1071: ["T1071.001"]
+    T1573: ["T1573"]

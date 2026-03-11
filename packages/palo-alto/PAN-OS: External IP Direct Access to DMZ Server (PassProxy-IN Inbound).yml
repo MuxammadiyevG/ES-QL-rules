@@ -1,0 +1,90 @@
+rule_id: c9e4a6b8-1f2d-4c7e-d943-3c4d5e6f7a8b
+name: "PAN-OS: External IP Direct Access to DMZ Server (PassProxy-IN Inbound)"
+description: |
+  Ushbu qoida tashqi IP manzillarning bevosita DMZ serverga (10.25.255.6) kirishi va "government" URL kategoriyasi ostida sessiya yaratishini aniqlaydi.
+  PassProxy-IN qoidasi orqali kirayotgan trafik — xorijiy IP'lardan (92.63.205.168, 185.139.138.x, 185.213.229.24, 95.214.210.198) katta hajmda ma'lumot olinmoqda.
+  Bu holat DMZ serverga DDoS, scanning, brute-force yoki noqonuniy kirish urinishlarini bildirishi mumkin.
+  Qonuniy holatlar: tashqi foydalanuvchilar tomonidan hukumat portaliga murojaat, rejalashtirilgan sinxronizatsiya.
+  SOC triage bosqichlari:
+  - Tashqi IP'larni (92.63.205.x, 185.139.138.x, 185.213.229.x, 95.214.210.x) threat intel bilan tekshiring.
+  - DMZ serverga kirish chastotasi va bajmini baseline bilan solishtiring.
+  - Sessiya davomiyligi va paketlar sonini tekshiring — 1850 paket anomal.
+  - tcp-rst-from-client — client tomonidan to'xtatilgan, sababi nima?
+  - Noqonuniy bo'lsa: IP'ni bloklang, DMZ qoidalarini qattiqlashtiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-paloalto-*
+query_language: esql
+query: |
+  FROM filebeat-paloalto-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.kind == "event"
+  | WHERE event.category == "network"
+  | WHERE event.type == "end"
+  | WHERE event.outcome == "allow"
+  | WHERE panw.panos.ruleset == "PassProxy-IN"
+  | WHERE panw.panos.destination.zone == "DMZ"
+  | EVAL src_ip         = source.ip
+  | EVAL dst_ip         = destination.ip
+  | EVAL nat_dst_ip     = panw.panos.destination.nat.ip
+  | EVAL src_country    = source.geo.country_name
+  | EVAL dst_zone       = panw.panos.destination.zone
+  | EVAL src_zone       = panw.panos.source.zone
+  | EVAL bytes_total    = network.bytes
+  | EVAL packets_total  = network.packets
+  | EVAL url_category   = panw.panos.url_category_list
+  | EVAL end_reason     = event.reason
+  | EVAL flow_id        = panw.panos.flow_id
+  | STATS
+      session_count    = COUNT(*),
+      src_ips          = VALUES(source.ip),
+      dst_ips          = VALUES(destination.ip),
+      nat_dst_ips      = VALUES(panw.panos.destination.nat.ip),
+      src_countries    = VALUES(source.geo.country_name),
+      total_bytes      = SUM(network.bytes),
+      max_bytes        = MAX(network.bytes),
+      total_packets    = SUM(network.packets),
+      max_packets      = MAX(network.packets),
+      url_categories   = VALUES(panw.panos.url_category_list),
+      end_reasons      = VALUES(event.reason),
+      flow_ids         = VALUES(panw.panos.flow_id),
+      last_seen        = MAX(@timestamp),
+      first_seen       = MIN(@timestamp)
+    BY source.ip, destination.ip, panw.panos.destination.zone, panw.panos.ruleset
+  | WHERE session_count >= 1 AND total_bytes > 500000
+  | EVAL
+      source_ip    = source.ip,
+      dest_ip      = destination.ip,
+      dst_zone     = panw.panos.destination.zone,
+      ruleset      = panw.panos.ruleset
+  | KEEP
+      source_ip, dest_ip, dst_zone, ruleset,
+      session_count, total_bytes, max_bytes,
+      total_packets, max_packets,
+      src_ips, dst_ips, nat_dst_ips,
+      src_countries, url_categories,
+      end_reasons, flow_ids,
+      last_seen, first_seen
+  | SORT total_bytes DESC
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.reconnaissance
+  - attack.t1190
+  - attack.t1595.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://attack.mitre.org/techniques/T1595/001/"
+nist: ["SC-7", "SI-4", "AU-6", "IR-5"]
+pci_dss: ["1.2.1", "6.4.1", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0001:
+    T1190: ["T1190"]
+  TA0043:
+    T1595: ["T1595.001"]
