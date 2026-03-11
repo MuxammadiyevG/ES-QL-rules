@@ -14,10 +14,10 @@ type: esql
 params: '{}'
 schedule_interval: 15m
 index:
-- filebeat-eset_protect-*
+- logs-eset.protect*
 query_language: esql
 query: |
-  FROM filebeat-eset_protect-*
+  FROM logs-eset.protect*
   | WHERE @timestamp >= NOW() - 2 hours
   | WHERE data_stream.dataset == "eset_protect.device_task"
   | WHERE eset_protect.device_task.action.name RLIKE "(?i)(shutdown|reboot|restart)"
