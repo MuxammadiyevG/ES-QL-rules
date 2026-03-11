@@ -1,4 +1,4 @@
-rule_id: 2c7e4a9f-6b3d-4f1e-c825-8d3f7e2c4a19
+rule_id: 62dd5d36-fa68-43e9-a614-b9d0a617d117
 name: "Agent FIM: Windows File Changed From Baseline"
 description: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File Changed From Baseline` kontekstida FortiSIEM Windows Agent FIM tomonidan faylning baseline dan o'zgarganligini aniqlaydi.

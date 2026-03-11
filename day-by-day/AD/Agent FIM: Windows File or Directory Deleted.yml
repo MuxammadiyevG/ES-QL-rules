@@ -1,4 +1,4 @@
-rule_id: 8b2d6f4a-1e9c-4a7d-c583-9f1e4b8d2c67
+rule_id: 315309dd-2e97-49bb-b13f-3178f3e4df5a
 name: "Agent FIM: Windows File or Directory Deleted"
 description: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File or Directory Deleted` kontekstida FortiSIEM Windows Agent FIM tomonidan fayl yoki directory o'chirilganligini aniqlaydi.

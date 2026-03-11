@@ -1,4 +1,4 @@
-rule_id: a9b1c2d3-4e5f-6a7b-c012-2b3c4d5e6f7a
+rule_id: 8bea42b6-66c4-4c3e-a095-0558961c56fc
 name: "PAN-OS: Google Services Traffic Monitoring from Internal Hosts"
 description: |
   Ushbu qoida ichki tarmoqdagi qurilmalardan Google infrastrukturasiga (google-base) yo'naltirilgan trafikni kuzatadi.

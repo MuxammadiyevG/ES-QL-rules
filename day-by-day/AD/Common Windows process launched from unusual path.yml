@@ -1,4 +1,4 @@
-rule_id: 8f1d5c3a-7e2b-4f9d-b483-2c8f1d5e3a76
+rule_id: 1a4f18a7-173c-4572-97c6-1656669f3625
 name: "Common Windows process launched from unusual path"
 description: |
   Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib, `Common Windows process launched from unusual path` kontekstida taniqli Windows jarayonlarining odatiy yo'lidan boshqa joydan ishga tushirilganligini aniqlaydi.

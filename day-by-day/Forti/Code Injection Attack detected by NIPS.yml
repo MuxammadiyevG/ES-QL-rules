@@ -1,4 +1,4 @@
-rule_id: 4f8b2e7d-9c1a-4d3f-b628-5e4f8b2d7c91
+rule_id: 22cb5a38-531f-4976-b3a8-9dd0f005c60f
 name: "Code Injection Attack detected by NIPS"
 description: |
   Ushbu qoida tarmoq IPS/IDS tizimlari tomonidan aniqlangan yuqori darajali Code Injection hujumlarini kuzatadi.

@@ -1,4 +1,4 @@
-rule_id: e5f6a7b8-8c9d-0e1f-a456-6f7a8b9c0d1e
+rule_id: d47205c0-b0c5-46de-aabf-ba2ca9f4fe37
 name: "PAN-OS: Government Category URL Traffic - Access Summary"
 description: |
   Ushbu qoida "government" URL kategoriyasi ostida tasniflangan barcha trafik sessiyalarini kuzatadi va kunlik kirish xaritasini yaratadi.

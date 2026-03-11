@@ -1,4 +1,4 @@
-rule_id: 9c3d5f1a-7e2b-4d8c-a963-1f4b8e2d7a56
+rule_id: 67bd3261-045d-40ab-8db8-f0c53bea32b3
 name: Account Locked - Network Device
 description: |
   Ushbu qoida Credential Access texnikalariga bog'liq bo'lib, `Account Locked: Network Device` kontekstida haddan tashqari noto'g'ri kirish urinishlari natijasida tarmoq qurilmasi akkauntining bloklanishini aniqlaydi.

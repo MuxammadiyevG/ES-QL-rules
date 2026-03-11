@@ -1,4 +1,4 @@
-rule_id: 3d8c1f5e-7a2b-4e9d-c651-5f3a2d8e4c17
+rule_id: ed36000e-d153-45bc-8b6b-593b1267b061
 name: "Agent FIM: Linux Directory Ownership or Permission Changed"
 description: |
   Ushbu qoida Impact va Defense Evasion texnikalariga bog'liq bo'lib, directory ownership yoki permission o'zgarishini aniqlaydi.

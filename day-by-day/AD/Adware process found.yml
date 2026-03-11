@@ -1,4 +1,4 @@
-rule_id: 6b2e4f8a-3c7d-4a1e-b594-2d9f7c3e8b15
+rule_id: 06964e19-f55e-499a-92e1-d975955a3ed5
 name: Adware process found
 description: |
   Ushbu qoida endpoint monitoring texnikalariga bog'liq bo'lib, `Adware process found` kontekstida hostda shubhali adware jarayonining aniqlanishini kuzatadi.

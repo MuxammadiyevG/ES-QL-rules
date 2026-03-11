@@ -1,4 +1,4 @@
-rule_id: 7b3e9f1d-5c2a-4d8e-b146-3f7e2c9d4b28
+rule_id: 80446e5c-3045-4c5b-8e70-6d498d81c2ca
 name: "Agent FIM: Linux File or Directory Deleted"
 description: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Linux File or Directory Deleted` kontekstida FortiSIEM Linux Agent FIM tomonidan fayl yoki directory o'chirilganligini aniqlaydi.

@@ -1,4 +1,4 @@
-rule_id: 3f7a5c2e-8d1b-4e9f-b274-5c8a3f7e2d91
+rule_id: d6f72336-2b04-44a4-bdde-f89220b6eff6
 name: "Agent FIM: Windows File or Directory Created"
 description: |
   Ushbu qoida Impact va Collection texnikalariga bog'liq bo'lib, `Agent FIM: Windows File or Directory Created` kontekstida FortiSIEM Windows Agent FIM tomonidan yangi fayl yoki directory yaratilganligini aniqlaydi.

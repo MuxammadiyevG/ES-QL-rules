@@ -1,4 +1,4 @@
-rule_id: b7d2f3a5-9e1c-4f6a-c832-2b3c4d5e6f7a
+rule_id: c4a5e28a-45a5-43f4-a809-e1d62f54c26f
 name: "PAN-OS: Large Data Transfer to External IP via SSL (Possible Exfiltration)"
 description: |
   Ushbu qoida DMZ yoki ichki tarmoqdan tashqi IP manzillarga SSL orqali yuqori hajmdagi ma'lumot uzatilishini aniqlaydi.

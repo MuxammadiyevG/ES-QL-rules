@@ -1,4 +1,4 @@
-rule_id: 9c4f2e8b-3a7d-4f1e-b592-6e9c4f2a8b35
+rule_id: 1cb6d002-3774-488f-87e5-a3eff83800f0
 name: "Database Server Disk Latency Critical"
 description: |
   Ushbu qoida database server disk I/O kechikishi kritik darajaga (50 ms dan yuqori) yetganligini aniqlaydi.

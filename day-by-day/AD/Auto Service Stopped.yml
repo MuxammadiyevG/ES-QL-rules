@@ -1,4 +1,4 @@
-rule_id: 4b7e2f9a-8c1d-4e5f-b273-1f8e4b7c2d96
+rule_id: ccd052a5-9edc-42fe-ae85-96ac6f81b0f1
 name: "Auto Service Stopped"
 description: |
   Ushbu qoida Impact texnikasiga bog'liq bo'lib, `Auto Service Stopped` kontekstida Windows serverda avtomatik ishga tushadigan servisning to'xtatilganligini aniqlaydi.

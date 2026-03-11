@@ -1,4 +1,4 @@
-rule_id: 7d2f9b4e-1c8a-4e6f-b351-8f7d2c9b4e16
+rule_id: 2a70f516-edc2-4faa-9389-6d124b6e2235
 name: "Database user or group changes"
 description: |
   Ushbu qoida Persistence texnikasiga bog'liq bo'lib, `Database user or group changes` kontekstida ma'lumotlar bazasidagi foydalanuvchi yoki guruh o'zgarishlarini aniqlaydi.

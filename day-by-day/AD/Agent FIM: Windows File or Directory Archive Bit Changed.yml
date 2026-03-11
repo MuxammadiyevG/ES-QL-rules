@@ -1,4 +1,4 @@
-rule_id: 6e1c8d4f-3a7b-4f2e-b961-7d5c3e8f1a46
+rule_id: 47e2675d-c46d-4468-9bcb-702ed8d4ce60
 name: "Agent FIM: Windows File or Directory Archive Bit Changed"
 description: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File or Directory Archive Bit Changed` kontekstida FortiSIEM Windows Agent FIM tomonidan fayl yoki directory archive bitining o'zgarganligini aniqlaydi.

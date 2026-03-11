@@ -1,4 +1,4 @@
-rule_id: 3c7f1a9e-5b2d-4e8f-d274-9f3c7a1e5b82
+rule_id: 9286b10d-9212-4850-8f85-584d3a565c08
 name: "Blocklist User Agent Match"
 description: |
   Ushbu qoida Exfiltration texnikasiga bog'liq bo'lib, `Blocklist User Agent Match` kontekstida HTTP so'rovlarida bloklangan (blacklist) user agent qiymatlarini aniqlaydi.

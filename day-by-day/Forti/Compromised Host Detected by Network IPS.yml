@@ -1,4 +1,4 @@
-rule_id: 2d7f4b9e-8c1a-4e3f-b527-6f2d7c4b9e18
+rule_id: b1102a0c-dbc0-427d-9665-121845ed4e88
 name: "Compromised Host Detected by Network IPS"
 description: |
   Ushbu qoida tarmoq IPS/IDS tizimlari tomonidan aniqlangan kompromatlangan (buzilgan) hostlarni kuzatadi.

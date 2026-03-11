@@ -1,4 +1,4 @@
-rule_id: 3b8e5f2a-7c1d-4e9f-b647-4f3b8e5c2a17
+rule_id: f6f5f83a-29b7-4dd9-80cf-653abc1b1c89
 name: "Database DDL changes"
 description: |
   Ushbu qoida ma'lumotlar bazasidagi DDL (Data Definition Language) o'zgarishlarini aniqlaydi.

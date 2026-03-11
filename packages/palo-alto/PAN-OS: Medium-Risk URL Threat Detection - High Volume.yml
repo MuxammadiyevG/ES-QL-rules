@@ -1,4 +1,4 @@
-rule_id: a3f1e2b4-7c8d-4e5f-b621-1a2b3c4d5e6f
+rule_id: 5420dc08-dfb1-4382-a10a-31422925e7f3
 name: "PAN-OS: Medium-Risk URL Threat Detection - High Volume"
 description: |
   Ushbu qoida Palo Alto Networks firewall tomonidan aniqlangan "medium-risk" tahdidlarning yuqori hajmda sodir bo'lishini kuzatadi.

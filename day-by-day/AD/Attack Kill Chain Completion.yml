@@ -1,4 +1,4 @@
-rule_id: 1d9f4b7e-2c8a-4e3f-b592-7e1d4f9b2c85
+rule_id: 0c1e5663-346f-48c6-acd1-b0d727805131
 name: "Attack Kill Chain Completion"
 description: |
   Ushbu qoida murakkab ko'p bosqichli hujumlarni aniqlash uchun mo'ljallangan bo'lib, `Attack Kill Chain Completion` kontekstida bir xost da avval Execution taktikasi, so'ngra Persistence, Credential Access yoki Lateral Movement taktikalaridan birining kuzatilishini aniqlaydi.

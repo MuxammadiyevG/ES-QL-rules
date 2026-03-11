@@ -1,4 +1,4 @@
-rule_id: e2c9d8f1-3b4a-4e9c-f165-5e6f7a8b9c0d
+rule_id: 72d8178c-5354-4b13-83cc-44a778435476
 name: "PAN-OS: Suspicious TCP Reset Storm from DMZ (Possible Scanning or DoS)"
 description: |
   Ushbu qoida DMZ zonasidan bir xil tashqi IP'ga qisqa vaqt ichida ko'p sonli TCP RST (Reset) bilan tugaydigan sessionlarning yuqori sonini aniqlaydi.

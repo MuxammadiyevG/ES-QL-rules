@@ -1,4 +1,4 @@
-rule_id: d5b8c7e9-2a3f-4d8b-e054-4d5e6f7a8b9c
+rule_id: 451e526c-5023-446f-a8e5-e0e251ebdcbb
 name: "PAN-OS: OpenAI API Usage Detected from Internal Network"
 description: |
   Ushbu qoida ichki tarmoqdagi (192.168.x.x) qurilmalardan OpenAI API ga ulanishni aniqlaydi.

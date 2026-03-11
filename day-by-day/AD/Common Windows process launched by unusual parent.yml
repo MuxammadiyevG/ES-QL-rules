@@ -1,4 +1,4 @@
-rule_id: 5c9e2f7a-1b4d-4a8e-d362-7f5c9e2a1b84
+rule_id: 9cc75f83-b636-4f6b-9a4c-fbef9ffb4466
 name: "Common Windows process launched by unusual parent"
 description: |
   Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib, `Common Windows process launched by unusual parent` kontekstida taniqli Windows jarayonlarining noodatiy ota-jarayon tomonidan ishga tushirilganligini aniqlaydi.

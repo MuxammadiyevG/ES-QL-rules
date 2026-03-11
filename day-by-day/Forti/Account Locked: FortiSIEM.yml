@@ -1,4 +1,4 @@
-rule_id: 2f8b3e7a-5c1d-4a9f-b847-3e6d2f094c81
+rule_id: 2d54faa8-6dd6-4bf5-a1fa-d6566f9c17d4
 name: Account Locked FortiSIEM
 description: |
   Ushbu qoida Credential Access texnikalariga bog'liq bo'lib, `Account Locked: FortiSIEM` kontekstida haddan tashqari noto'g'ri kirish urinishlari natijasida FortiSIEM tizim akkauntining bloklanishini aniqlaydi.

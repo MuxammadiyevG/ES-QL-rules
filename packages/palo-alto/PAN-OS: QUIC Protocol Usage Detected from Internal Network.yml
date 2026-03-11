@@ -1,4 +1,4 @@
-rule_id: f1a2b3c4-5d6e-7f8a-b901-1a2b3c4d5e6f
+rule_id: a49b822d-2576-4f2b-869e-bb002d38aff2
 name: "PAN-OS: QUIC Protocol Usage Detected from Internal Network"
 description: |
   Ushbu qoida ichki tarmoqdagi qurilmalardan QUIC protokoli orqali tashqi manzillarga ulanishni kuzatadi.

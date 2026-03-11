@@ -1,4 +1,4 @@
-rule_id: 4d8f1b3e-9c2a-4e7f-d513-6f4b9e1d3c82
+rule_id: 85d1c03a-f5a5-4f87-88c0-c39cc482935a
 name: "Agent FIM: Windows File Content Modified"
 description: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File Content Modified` kontekstida FortiSIEM Windows Agent FIM tomonidan fayl mazmunining o'zgartirilganligini aniqlaydi.

@@ -1,4 +1,4 @@
-rule_id: c7d3e4f5-6a7b-8c9d-e234-4d5e6f7a8b9c
+rule_id: b593f0fe-e059-4e41-84a8-100243b1b78f
 name: "PAN-OS: Internal Host Communicating with Multiple External IPs via SSL"
 description: |
   Ushbu qoida bitta ichki host tomonidan qisqa vaqt ichida ko'p sonli tashqi IP manzillarga SSL ulanishlarini kuzatadi.

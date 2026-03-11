@@ -1,4 +1,4 @@
-rule_id: d6e4f5a6-7b8c-9d0e-f345-5e6f7a8b9c0d
+rule_id: d720b459-f746-4c6b-a712-a88530fd984a
 name: "PAN-OS: Aged-Out Sessions Detected - Possible Stealthy Long-Running Connection"
 description: |
   Ushbu qoida firewall tomonidan "aged-out" (vaqt tugashi sababli yopilgan) deb belgilangan sessiyalarni kuzatadi.

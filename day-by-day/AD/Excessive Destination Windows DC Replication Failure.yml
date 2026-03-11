@@ -1,4 +1,4 @@
-rule_id: a3f72c1e-9b4d-4e8a-bc3f-7d2e5f891034
+rule_id: c485b565-ffba-47bf-99cc-c186a38ced00
 name: Excessive Destination Windows DC Replication Failure
 description: |
   Ushbu qoida server monitoring va availability texnikalariga bog'liq bo'lib, `Excessive Destination Windows DC Replication Failure` kontekstidagi shubhali Active Directory replikatsiya xatolarini aniqlaydi.

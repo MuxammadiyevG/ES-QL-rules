@@ -1,4 +1,4 @@
-rule_id: 7e4a1d2f-3c8b-4f9e-a521-6b0d3e7c9f45
+rule_id: 272e1d51-c8f9-48a0-aa28-48787b8ce1eb
 name: Account Locked - Domain
 description: |
   Ushbu qoida Credential Access texnikalariga bog'liq bo'lib, `Account Locked: Domain` kontekstidagi haddan tashqari noto'g'ri kirish urinishlari natijasida domain akkauntning bloklanishini aniqlaydi.

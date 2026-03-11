@@ -1,4 +1,4 @@
-rule_id: 8d1f4c7a-3e9b-4a2f-c815-4d8f1c7a3e92
+rule_id: 0e956d08-484f-469f-97b9-67e2c452acf4
 name: "Brute Force"
 description: |
   Ushbu qoida Credential Access texnikasiga bog'liq bo'lib, `Brute Force` kontekstida Windows qurilmalarida qisqa vaqt ichida ko'p marta muvaffaqiyatsiz kirish urinishlarini aniqlaydi.
