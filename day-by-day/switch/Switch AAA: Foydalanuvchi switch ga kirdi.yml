@@ -1,0 +1,40 @@
+rule_id: 029de32c-609a-4318-b4a7-2dfacc4ef211
+name: "Switch AAA: Foydalanuvchi switch ga kirdi"
+description: |
+  SSH yoki Telnet orqali switch ga muvaffaqiyatli ulanish qayd etildi.
+  Kim, qayerdan, qaysi switch ga, qachon kirganini ko'rsatadi.
+  SOC triage:
+  - Foydalanuvchi ruxsat ro'yxatida borligini tekshiring.
+  - Kirish vaqti ish soatlariga mos kelishini tekshiring.
+  - Manba IP korporativ tarmoqdan tashqari bo'lsa ustuvor ko'ring.
+  - Keyingi GCLI loglari orqali nima qilganini kuzating.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - updive-syslog-*
+query_language: esql
+query: |
+  FROM updive-syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | MV_EXPAND event.action
+  | WHERE log.syslog.facility.name == "AAA"
+  | WHERE event.outcome == "success"
+  | WHERE event.action == "logon"
+  | KEEP
+      @timestamp,
+      host.name,
+      user.name,
+      source.ip,
+      destination.ip,
+      event.action,
+      event.outcome,
+      event.original
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.auth
+  - switch.logon
+severity: info
+risk_score: 5

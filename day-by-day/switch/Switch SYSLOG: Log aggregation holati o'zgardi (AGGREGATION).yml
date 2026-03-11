@@ -11,6 +11,7 @@ index:
 query_language: esql
 query: |
   FROM updive-syslog-*
+  | MV_EXPAND log.syslog.facility.name
   | WHERE @timestamp >= NOW() - 300 seconds
   | WHERE log.syslog.facility.name == "SYSLOG"
   | WHERE event.action == "AGGREGATION"

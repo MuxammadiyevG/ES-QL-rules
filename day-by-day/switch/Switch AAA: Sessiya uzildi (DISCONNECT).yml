@@ -13,6 +13,7 @@ query_language: esql
 query: |
   FROM updive-syslog-*
   | WHERE @timestamp >= NOW() - 300 seconds
+  | MV_EXPAND log.syslog.facility.name
   | WHERE log.syslog.facility.name == "AAA"
   | WHERE event.action == "DISCONNECT"
   | KEEP @timestamp, host.name, user.name, source.ip, destination.ip, event.action, event.original

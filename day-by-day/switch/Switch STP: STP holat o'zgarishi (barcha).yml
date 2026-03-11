@@ -12,6 +12,7 @@ query_language: esql
 query: |
   FROM updive-syslog-*
   | WHERE @timestamp >= NOW() - 300 seconds
+  | MV_EXPAND log.syslog.facility.name
   | WHERE log.syslog.facility.name == "STP"
   | KEEP @timestamp, host.name, network.interface.name, network.stp.status, event.original
   | SORT @timestamp DESC
