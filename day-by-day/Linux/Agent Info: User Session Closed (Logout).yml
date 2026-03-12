@@ -1,0 +1,41 @@
+rule_id: 9eea1515-a4ea-4034-9ec7-dd5cf3d49a53
+name: "Agent Info: User Session Closed (Logout)"
+description: |
+  Foydalanuvchi tizimdan chiqqanda (user_end, user_logout) sessiya yopilishini qayd etadi.
+  Sessiya davomiyligi va faollik vaqtini kuzatish uchun ishlatiladi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type IN ("user_end", "user_logout")
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      users        = VALUES(user.audit.name),
+      session_ids  = VALUES(auditd.session),
+      terminals    = VALUES(auditd.data.terminal),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, user.audit.name
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id, host.hostname, user.audit.name, event_count,
+      host_names, users, session_ids,
+      terminals, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - detection.informational
+  - visibility.authentication
+severity: low
+risk_score: 5
+references: []
+nist: ["AU-12"]
+pci_dss: ["10.2.1"]
+gdpr: ["32.1.b"]
+mitre_attack: []

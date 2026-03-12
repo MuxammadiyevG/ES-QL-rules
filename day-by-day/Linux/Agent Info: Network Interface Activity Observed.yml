@@ -1,0 +1,42 @@
+rule_id: 204cc6c6-2cd0-458c-971e-e109533f3329
+name: "Agent Info: Network Interface Activity Observed"
+description: |
+  Tarmoq interfeysi bilan bog'liq auditd hodisalarini qayd etadi.
+  Tizim tarmoq faoliyatini kuzatish va inventory uchun ishlatiladi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type IN ("anom_promiscuous", "mac_status")
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      net_devices  = VALUES(auditd.data.dev),
+      operations   = VALUES(auditd.data.op),
+      prom_vals    = VALUES(auditd.data.prom),
+      results      = VALUES(auditd.result),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, auditd.data.dev
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id, host.hostname, auditd.data.dev, event_count,
+      host_names, net_devices, operations,
+      prom_vals, results, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - detection.informational
+  - visibility.network
+severity: low
+risk_score: 12
+references: []
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack: []

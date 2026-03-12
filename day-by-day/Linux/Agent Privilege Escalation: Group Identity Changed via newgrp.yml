@@ -1,0 +1,66 @@
+rule_id: fd9b26e9-c1d0-482d-b7ca-3089505f1efd
+name: "Agent Privilege Escalation: Group Identity Changed via newgrp"
+description: |
+  Ushbu qoida Privilege Escalation texnikasiga bog'liq bo'lib, foydalanuvchining aktiv guruh identifikatorini o'zgartirish hodisalarini aniqlaydi.
+  Hujumchi newgrp buyrug'i orqali docker, sudo yoki wheel kabi imtiyozli guruhlarga kirish huquqini qo'lga kiritmoqchi bo'lishi mumkin.
+  Qonuniy holatlar: developer workflow (docker guruhiga kirish), tizim administratori ish jarayonlari.
+  SOC triage bosqichlari:
+  - `auditd.summary.actor.primary` (asl foydalanuvchi) va `user.name` (yangi identitet) ni solishtiring.
+  - Yangi guruh (`user.new-gid.name`) imtiyozli ekanligini tekshiring (docker, sudo, wheel, root).
+  - O'zgarish sodir bo'lgan terminal (`auditd.data.terminal`) va session (`auditd.session`) ni aniqlang.
+  - Agar yangi guruh docker, sudo yoki wheel bo'lsa — yuqori prioritet bilan tekshiring.
+  - Noqonuniy bo'lsa: sessiyani tugatib, foydalanuvchi guruh membershipsni audit qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "chgrp_id"
+  | EVAL host_name    = host.hostname
+  | EVAL original_user = auditd.summary.actor.primary
+  | EVAL effective_user = user.name
+  | EVAL new_group    = auditd.summary.how
+  | EVAL terminal     = auditd.data.terminal
+  | EVAL session_id   = auditd.session
+  | EVAL operation    = auditd.data.op
+  | WHERE effective_user IS NOT NULL
+  | STATS
+      event_count     = COUNT(*),
+      host_names      = VALUES(host.hostname),
+      original_users  = VALUES(auditd.summary.actor.primary),
+      effective_users = VALUES(user.name),
+      new_groups      = VALUES(auditd.summary.how),
+      terminals       = VALUES(auditd.data.terminal),
+      session_ids     = VALUES(auditd.session),
+      last_seen       = MAX(@timestamp),
+      first_seen      = MIN(@timestamp)
+    BY agent_id, host.hostname, user.name, auditd.summary.actor.primary
+  | WHERE event_count >= 1
+  | EVAL
+      host_name     = host.hostname,
+      effective_user = user.name,
+      original_user  = auditd.summary.actor.primary
+  | KEEP
+      agent_id, host_name, effective_user, original_user, event_count,
+      host_names, original_users, effective_users, new_groups,
+      terminals, session_ids, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.privilege-escalation
+  - attack.t1078.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 62
+references:
+  - "https://attack.mitre.org/techniques/T1078/001/"
+nist: ["AC-6", "AC-2", "AU-12"]
+pci_dss: ["7.1", "8.5", "10.2.5"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0004:
+    T1078: ["T1078.001"]

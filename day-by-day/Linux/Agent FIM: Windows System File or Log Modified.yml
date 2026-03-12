@@ -1,0 +1,90 @@
+rule_id: 32aea9db-f83f-4b18-b057-d7cb3601537a
+name: "Agent FIM: Windows System File or Log Modified"
+description: |
+  Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, Windows tizim
+  kataloglaridagi (System32, SysWOW64, Windows\) fayl o'zgarishlarini aniqlaydi.
+  Hujumchi DLL hijacking, log tampering yoki system binary almashtirish orqali
+  tizimda yashirin qolishi mumkin.
+  Qonuniy holatlar: Windows Update, antivirus signature yangilanishi, tizim servislari.
+  SOC triage bosqichlari:
+  - `file.path` ni tekshiring — System32 ichida kutilmagan o'zgarish shubhali.
+  - `file.owner` va `file.uid` — SYSTEM (S-1-5-18) bo'lmagan owner shubhali.
+  - `file.mtime` vs `file.ctime` farqini tekshiring.
+  - `file.size` kutilgan o'lchamdan katta yoki kichik bo'lsa — almashtirish bo'lishi mumkin.
+  - `error.message` mavjud bo'lsa — fayl boshqa process tomonidan lock qilingan.
+  - Windows Event Log bilan korrelatsiya qiling (4663, 4670 event IDs).
+  - Noqonuniy bo'lsa: faylni karantinga oling, binary hash ni tekshiring, system restore bajaring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.module == "file_integrity"
+  | WHERE host.os.type == "windows"
+  | WHERE event.type == "change"
+  | WHERE
+      STARTS_WITH(file.path, "C:\\Windows\\System32\\")
+      OR STARTS_WITH(file.path, "C:\\Windows\\SysWOW64\\")
+      OR STARTS_WITH(file.path, "C:\\Windows\\System32\\LogFiles\\")
+      OR STARTS_WITH(file.path, "C:\\Windows\\System32\\drivers\\")
+  | EVAL host_name    = host.hostname
+  | EVAL file_path    = file.path
+  | EVAL file_name    = file.name
+  | EVAL file_ext     = file.extension
+  | EVAL file_owner   = file.owner
+  | EVAL file_uid     = file.uid
+  | EVAL file_size    = file.size
+  | EVAL file_mtime   = file.mtime
+  | EVAL action       = event.action
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(host.hostname),
+      file_paths    = VALUES(file.path),
+      file_names    = VALUES(file.name),
+      file_exts     = VALUES(file.extension),
+      file_owners   = VALUES(file.owner),
+      file_uids     = VALUES(file.uid),
+      file_sizes    = VALUES(file.size),
+      actions       = VALUES(event.action),
+      error_msgs    = VALUES(error.message),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, file.path
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      file_path = file.path
+  | KEEP
+      agent_id, host_name, file_path, event_count,
+      host_names, file_paths, file_names, file_exts,
+      file_owners, file_uids, file_sizes, actions,
+      error_msgs, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.impact
+  - attack.t1565.001
+  - attack.t1070.001
+  - attack.t1036.003
+  - detection.threat-hunting
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1565/001/"
+  - "https://attack.mitre.org/techniques/T1070/001/"
+  - "https://attack.mitre.org/techniques/T1036/003/"
+nist: ["SI-7", "AU-9", "CM-3", "SI-4"]
+pci_dss: ["10.5.1", "11.5", "6.3"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.001"]
+    T1036: ["T1036.003"]
+  TA0040:
+    T1565: ["T1565.001"]

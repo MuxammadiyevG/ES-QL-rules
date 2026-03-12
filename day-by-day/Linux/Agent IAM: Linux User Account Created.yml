@@ -1,0 +1,63 @@
+rule_id: 66e91d04-0398-4f7b-90f9-c0ae38c385f5
+name: "Agent IAM: Linux User Account Created"
+description: |
+  Ushbu qoida Persistence texnikasiga bog'liq bo'lib, tizimda yangi foydalanuvchi yaratilishini aniqlaydi.
+  Hujumchi persistence ta'minlash yoki backdoor yaratish maqsadida yangi account ochayotgan bo'lishi mumkin.
+  Qonuniy holatlar: IT onboarding jarayonlari, avtomatik provisioning skriptlari, Docker container yaratish.
+  SOC triage bosqichlari:
+  - `host.hostname` va `user.effective.name` orqali kim tomonidan yaratilganini aniqlang.
+  - Yangi account nomi (`auditd.summary.object.primary`) va GID ni tekshiring.
+  - Yaratish vaqtini (`@timestamp`) ish soatlari bilan solishtiring.
+  - Tasdiqlangan HR yoki DevOps ticketi borligini tekshiring.
+  - Noqonuniy bo'lsa: accountni o'chirib tashlang, sessiyani tugatib, incident oching.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "add_user"
+  | EVAL host_name   = host.hostname
+  | EVAL actor       = COALESCE(user.effective.name, auditd.summary.actor.secondary)
+  | EVAL new_user    = auditd.summary.object.primary
+  | EVAL how         = auditd.summary.how
+  | EVAL terminal    = auditd.data.terminal
+  | WHERE new_user IS NOT NULL
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      actors       = VALUES(user.effective.name),
+      new_users    = VALUES(auditd.summary.object.primary),
+      executables  = VALUES(auditd.summary.how),
+      terminals    = VALUES(auditd.data.terminal),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, auditd.summary.object.primary, user.effective.name
+  | WHERE event_count >= 1
+  | EVAL
+      host_name  = host.hostname,
+      new_user   = auditd.summary.object.primary,
+      actor      = user.effective.name
+  | KEEP
+      agent_id, host_name, new_user, actor, event_count,
+      host_names, actors, new_users, executables,
+      terminals, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.persistence
+  - attack.t1136.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1136/001/"
+nist: ["AC-2", "AC-6", "AU-12"]
+pci_dss: ["8.1.1", "10.2.5"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1136: ["T1136.001"]

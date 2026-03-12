@@ -1,0 +1,79 @@
+rule_id: 8cbb719b-2962-4cfc-879f-4319103d62a9
+name: "Agent FIM: Windows ProgramData Suspicious File Activity"
+description: |
+  Ushbu qoida Persistence va Execution texnikalariga bog'liq bo'lib, C:\ProgramData
+  katalogida bajariladigan fayl turlarining yaratilishi yoki o'zgartirilishini aniqlaydi.
+  ProgramData katalogi yozish uchun ochiq bo'lib, zararli dasturlar tomonidan
+  fayl yashirish va persistence uchun keng ishlatiladi.
+  Qonuniy holatlar: dastur ma'lumotlari, agent konfiguratsiyalari, log fayllar.
+  SOC triage bosqichlari:
+  - `file.name` — random yoki g'ayrioddiy nom shubhali.
+  - `file.extension` — exe, dll, ps1 bo'lsa yuqori xavf.
+  - `file.owner` — SYSTEM yoki Administrator emas bo'lsa tekshiring.
+  - ProgramData ichidagi yangi katalog yaratilishi ham shubhali.
+  - Noqonuniy bo'lsa: faylni karantinga oling, process ni aniqlang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.module == "file_integrity"
+  | WHERE host.os.type == "windows"
+  | WHERE event.type == "change"
+  | WHERE file.extension IN ("exe", "dll", "ps1", "vbs", "bat", "cmd", "hta", "js", "scr")
+  | WHERE STARTS_WITH(file.path, "C:\\ProgramData\\")
+      AND NOT STARTS_WITH(file.path, "C:\\ProgramData\\Microsoft\\")
+  | EVAL host_name  = host.hostname
+  | EVAL file_path  = file.path
+  | EVAL file_name  = file.name
+  | EVAL file_ext   = file.extension
+  | EVAL file_owner = file.owner
+  | EVAL file_size  = file.size
+  | EVAL file_mtime = file.mtime
+  | EVAL action     = event.action
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count = COUNT(*),
+      host_names  = VALUES(host.hostname),
+      file_paths  = VALUES(file.path),
+      file_names  = VALUES(file.name),
+      file_exts   = VALUES(file.extension),
+      file_owners = VALUES(file.owner),
+      file_sizes  = VALUES(file.size),
+      actions     = VALUES(event.action),
+      last_seen   = MAX(@timestamp),
+      first_seen  = MIN(@timestamp)
+    BY agent_id, host.hostname, file.path
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      file_path = file.path
+  | KEEP
+      agent_id, host_name, file_path, event_count,
+      host_names, file_paths, file_names, file_exts,
+      file_owners, file_sizes, actions, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1547
+  - attack.t1059
+  - detection.threat-hunting
+severity: high
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1547/"
+  - "https://attack.mitre.org/techniques/T1059/"
+nist: ["SI-3", "CM-7", "AU-12", "SI-7"]
+pci_dss: ["5.1", "6.3", "10.2.7", "11.5"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1547: []
+  TA0002:
+    T1059: []

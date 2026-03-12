@@ -1,0 +1,93 @@
+rule_id: 9d8da384-a688-4329-94d6-df29b205cdfa
+name: "Agent FIM: Linux Cron or Systemd Service File Modified"
+description: |
+  Ushbu qoida Persistence texnikasiga bog'liq bo'lib, cron joblari va systemd service
+  fayllarining o'zgarishini aniqlaydi. Hujumchi crontab yoki yangi systemd service yaratib,
+  tizim qayta ishga tushirilgandan keyin ham faol bo'ladigan persistence qilishi mumkin.
+  Qonuniy holatlar: tizim administrator tomonidan rejalashtirilgan job o'rnatish,
+  dastur o'rnatish jarayonida service fayl yaratish.
+  SOC triage bosqichlari:
+  - `file.path` ni tekshiring — /etc/cron.d, /etc/crontab, /var/spool/cron yoki
+    /etc/systemd/system katalogidami.
+  - `file.owner` root bo'lmagan bo'lsa — shubhali.
+  - `file.hash.sha1` ni baseline bilan solishtiring.
+  - Yangi service fayl `ExecStart` buyrug'ini tekshiring.
+  - O'sha paytda kim tizimga kirganini (`user_login`) tekshiring.
+  - Noqonuniy bo'lsa: faylni o'chiring, `systemctl daemon-reload` va `crontab -r` ishlatib tozalang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.module == "file_integrity"
+  | WHERE event.type == "change"
+  | WHERE host.os.type == "linux"
+  | WHERE
+      file.path LIKE "/etc/cron*"
+      OR file.path LIKE "/var/spool/cron/*"
+      OR file.path LIKE "/etc/systemd/system/*"
+      OR file.path LIKE "/usr/lib/systemd/system/*"
+      OR file.path LIKE "/lib/systemd/system/*"
+      OR file.path LIKE "/etc/init.d/*"
+      OR file.path LIKE "/etc/rc*.d/*"
+  | EVAL host_name   = host.hostname
+  | EVAL file_path   = file.path
+  | EVAL file_name   = file.name
+  | EVAL file_owner  = file.owner
+  | EVAL file_mode   = file.mode
+  | EVAL file_hash   = file.hash.sha1
+  | EVAL file_mtime  = file.mtime
+  | EVAL action      = event.action
+  | EVAL is_systemd  = CASE(
+      file.path LIKE "*systemd*", "YES", "NO"
+    )
+  | EVAL is_cron     = CASE(
+      file.path LIKE "*cron*", "YES", "NO"
+    )
+  | STATS
+      event_count   = COUNT(*),
+      systemd_count = COUNT(is_systemd == "YES"),
+      cron_count    = COUNT(is_cron == "YES"),
+      host_names    = VALUES(host.hostname),
+      file_paths    = VALUES(file.path),
+      file_names    = VALUES(file.name),
+      file_owners   = VALUES(file.owner),
+      file_modes    = VALUES(file.mode),
+      file_hashes   = VALUES(file.hash.sha1),
+      actions       = VALUES(event.action),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, file.path
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      file_path = file.path
+  | KEEP
+      agent_id, host_name, file_path, event_count,
+      systemd_count, cron_count,
+      host_names, file_paths, file_names,
+      file_owners, file_modes, file_hashes,
+      actions, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.persistence
+  - attack.t1053.003
+  - attack.t1543.002
+  - detection.threat-hunting
+severity: high
+risk_score: 80
+references:
+  - "https://attack.mitre.org/techniques/T1053/003/"
+  - "https://attack.mitre.org/techniques/T1543/002/"
+nist: ["CM-7", "SI-7", "AC-6", "AU-12"]
+pci_dss: ["10.5.1", "11.5", "6.3"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.003"]
+    T1543: ["T1543.002"]

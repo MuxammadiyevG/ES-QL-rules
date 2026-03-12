@@ -1,0 +1,74 @@
+rule_id: 79ad67e7-b6f4-4f84-b1a3-671729294e5a
+name: "Agent Persistence: Cron Session for Non-Root or Unexpected Account"
+description: |
+  Ushbu qoida Persistence texnikasiga bog'liq bo'lib, cron orqali boshlanadigan sessiyalarni
+  kuzatadi. Hujumchi crontab ga backdoor buyruq qo'shib, muntazam ravishda zararli kod
+  ishga tushirishi mumkin. Ayniqsa root bo'lmagan foydalanuvchi nomidan cron sessiyasi
+  shubhali hisoblanadi.
+  Qonuniy holatlar: tizim cron joblari (root, www-data, backup service accountlari).
+  SOC triage bosqichlari:
+  - `auditd.data.acct` — qaysi account cron sessiyasi ochganini aniqlang.
+  - `user.effective.name` va `auditd.summary.actor.primary` ni solishtiring.
+  - Cron sessiyasi `auditd.session` raqamini keyingi execve hodisalar bilan korrelatsiya qiling.
+  - Crontab faylini tekshiring: `crontab -l -u <user>` va `/etc/cron*` kataloglarini ko'ring.
+  - Agar noma'lum account bo'lsa — darhol crontab ni tekshiring va tozalang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type IN ("cred_acq", "cred_disp", "cred_refr")
+  | WHERE auditd.data.terminal == "cron"
+  | EVAL host_name    = host.hostname
+  | EVAL cron_acct    = auditd.data.acct
+  | EVAL actor        = COALESCE(auditd.summary.actor.primary, user.audit.name, user.effective.name)
+  | EVAL session_id   = auditd.session
+  | EVAL msg_type     = auditd.message_type
+  | EVAL grantors     = auditd.data.grantors
+  | EVAL result       = auditd.result
+  | WHERE cron_acct NOT IN ("root", "www-data", "daemon", "syslog", "messagebus")
+  | WHERE cron_acct IS NOT NULL
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(host.hostname),
+      cron_accts    = VALUES(auditd.data.acct),
+      actors        = VALUES(auditd.summary.actor.primary),
+      session_ids   = VALUES(auditd.session),
+      msg_types     = VALUES(auditd.message_type),
+      grantors_list = VALUES(auditd.data.grantors),
+      results       = VALUES(auditd.result),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, auditd.data.acct
+  | WHERE event_count >= 1
+  | EVAL
+      host_name  = host.hostname,
+      cron_acct  = auditd.data.acct
+  | KEEP
+      agent_id, host_name, cron_acct, event_count,
+      host_names, cron_accts, actors,
+      session_ids, msg_types, grantors_list, results,
+      last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1053.003
+  - detection.threat-hunting
+severity: high
+risk_score: 73
+references:
+  - "https://attack.mitre.org/techniques/T1053/003/"
+nist: ["CM-7", "AC-6", "AU-12", "SI-4"]
+pci_dss: ["6.3", "10.2.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.003"]
+  TA0002:
+    T1053: ["T1053.003"]

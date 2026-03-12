@@ -1,0 +1,44 @@
+rule_id: e06d3765-02b8-4dd6-bbd1-668cd023d0bc
+name: "Agent Info: Process Execution Activity (execve)"
+description: |
+  Tizimda ishga tushirilgan barcha jarayonlarni qayd etadi.
+  Threat hunting, baseline yaratish va anomaliya aniqlash uchun visibility beradi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "syscall"
+  | WHERE auditd.data.syscall == "execve"
+  | WHERE auditd.result == "success"
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      users        = VALUES(user.name),
+      executables  = VALUES(process.executable),
+      proc_names   = VALUES(process.name),
+      ttys         = VALUES(auditd.data.tty),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, process.executable
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id, host.hostname, process.executable, event_count,
+      host_names, users, executables,
+      proc_names, ttys, last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - detection.informational
+  - visibility.execution
+severity: low
+risk_score: 10
+references: []
+nist: ["AU-12", "SI-4"]
+pci_dss: ["10.2.2"]
+gdpr: ["32.1.b"]
+mitre_attack: []

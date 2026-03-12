@@ -1,0 +1,52 @@
+rule_id: 51dfbecd-8075-478b-b0d3-0c3afcc97d28
+name: "Agent Info: Auditd Sequence Gap Detected (Possible Log Tampering)"
+description: |
+  Auditd sequence raqamlarida uzilish yoki ortiqcha oshish aniqlanganda qayd etadi.
+  Log fayllarini o'chirish yoki audit daemonini to'xtatish sequence gap hosil qiladi.
+  Bu Defense Evasion urinishi belgisi bo'lishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.sequence IS NOT NULL
+  | STATS
+      event_count   = COUNT(*),
+      max_sequence  = MAX(auditd.sequence),
+      min_sequence  = MIN(auditd.sequence),
+      host_names    = VALUES(host.hostname),
+      msg_types     = VALUES(auditd.message_type),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname
+  | WHERE event_count >= 1
+  | EVAL sequence_range = max_sequence - min_sequence
+  | EVAL expected_count = sequence_range + 1
+  | EVAL gap_count      = expected_count - event_count
+  | WHERE gap_count > 100
+  | KEEP
+      agent_id, host.hostname, event_count,
+      max_sequence, min_sequence, sequence_range,
+      expected_count, gap_count,
+      host_names, msg_types, last_seen, first_seen
+  | SORT gap_count DESC
+enabled: true
+tags:
+  - detection.informational
+  - visibility.audit-integrity
+  - attack.defense-evasion
+  - attack.t1562.012
+severity: low
+risk_score: 20
+references:
+  - "https://attack.mitre.org/techniques/T1562/012/"
+nist: ["AU-9", "AU-12", "SI-7"]
+pci_dss: ["10.5.1", "10.5.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.012"]

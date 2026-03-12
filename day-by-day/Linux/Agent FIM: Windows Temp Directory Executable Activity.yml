@@ -1,0 +1,80 @@
+rule_id: ecb69acd-b049-4d01-84ca-82a4a6e891cd
+name: "Agent FIM: Windows Temp Directory Executable Activity"
+description: |
+  Ushbu qoida Execution va Defense Evasion texnikalariga bog'liq bo'lib, Windows
+  Temp katalogida bajariladigan fayl turlarining yaratilishi yoki o'zgartirilishini
+  aniqlaydi. Temp katalog ko'pincha zararli dasturlar tomonidan ishlatiladi — u
+  odatda yozish uchun ochiq va monitoring kamroq bo'ladi.
+  Qonuniy holatlar: installer extraction, update jarayonlari, build toollar.
+  SOC triage bosqichlari:
+  - `file.name` — random nomli fayl (masalan, abc123.exe) shubhali.
+  - `file.size` — juda kichik PE fayl packed bo'lishi mumkin.
+  - `file.owner` — kutilmagan foydalanuvchi.
+  - Faylni AV/sandbox da tekshiring.
+  - Noqonuniy bo'lsa: faylni karantinga oling, parent process ni aniqlang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.module == "file_integrity"
+  | WHERE host.os.type == "windows"
+  | WHERE event.type == "change"
+  | WHERE file.extension IN ("exe", "dll", "ps1", "vbs", "bat", "cmd", "scr", "hta")
+  | WHERE STARTS_WITH(file.path, "C:\\Windows\\Temp\\")
+      OR STARTS_WITH(file.path, "C:\\Temp\\")
+      OR STARTS_WITH(file.path, "C:\\Users\\") AND file.path LIKE "*AppData*Temp*"
+  | EVAL host_name  = host.hostname
+  | EVAL file_path  = file.path
+  | EVAL file_name  = file.name
+  | EVAL file_ext   = file.extension
+  | EVAL file_owner = file.owner
+  | EVAL file_size  = file.size
+  | EVAL file_mtime = file.mtime
+  | EVAL action     = event.action
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count = COUNT(*),
+      host_names  = VALUES(host.hostname),
+      file_paths  = VALUES(file.path),
+      file_names  = VALUES(file.name),
+      file_exts   = VALUES(file.extension),
+      file_owners = VALUES(file.owner),
+      file_sizes  = VALUES(file.size),
+      actions     = VALUES(event.action),
+      last_seen   = MAX(@timestamp),
+      first_seen  = MIN(@timestamp)
+    BY agent_id, host.hostname, file.path
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      file_path = file.path
+  | KEEP
+      agent_id, host_name, file_path, event_count,
+      host_names, file_paths, file_names, file_exts,
+      file_owners, file_sizes, actions, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.execution
+  - attack.defense-evasion
+  - attack.t1059.001
+  - attack.t1059.003
+  - attack.t1204.002
+  - detection.threat-hunting
+severity: high
+risk_score: 76
+references:
+  - "https://attack.mitre.org/techniques/T1059/001/"
+  - "https://attack.mitre.org/techniques/T1204/002/"
+nist: ["SI-3", "CM-7", "AU-12", "SI-4"]
+pci_dss: ["5.1", "6.3", "10.2.7"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.001", "T1059.003"]
+    T1204: ["T1204.002"]

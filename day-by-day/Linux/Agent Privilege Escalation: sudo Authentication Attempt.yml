@@ -1,0 +1,67 @@
+rule_id: 6f30c059-6818-41a8-aebb-53a0d960c8e3
+name: "Agent Privilege Escalation: sudo Authentication Attempt"
+description: |
+  Ushbu qoida Privilege Escalation texnikasiga bog'liq bo'lib, sudo orqali PAM autentifikatsiya
+  hodisalarini aniqlaydi. Hujumchi to'g'ri password yordamida yoki sudoers misconfiguratsiyasi
+  orqali root huquqlarini qo'lga kiritmoqchi bo'lishi mumkin.
+  Qonuniy holatlar: administrator tizim boshqaruvi, DevOps operatsiyalar.
+  SOC triage bosqichlari:
+  - `user.name` va `user.audit.name` — kimning sudo ishlatganini aniqlang.
+  - `auditd.data.terminal` — qaysi terminaldan bajarilgan (pts/X interaktiv).
+  - `auditd.session` — sessiya raqamini boshqa hodisalar bilan korrelatsiya qiling.
+  - Bir foydalanuvchi tomonidan qisqa vaqtda ko'p sudo urinishlari — brute force belgisi.
+  - `auditd.result` failure bo'lsa — muvaffaqiyatsiz urinishlar sonini kuzating.
+  - Noqonuniy bo'lsa: foydalanuvchi sudo huquqini olib tashlang, sessiyani to'xtating.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "user_auth"
+  | WHERE auditd.data.op == "PAM:authentication"
+  | WHERE process.executable == "/usr/bin/sudo"
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(user.audit.name, user.name)
+  | EVAL terminal     = auditd.data.terminal
+  | EVAL session_id   = auditd.session
+  | EVAL result       = auditd.result
+  | EVAL acct         = auditd.data.acct
+  | WHERE actor IS NOT NULL
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(host.hostname),
+      actors        = VALUES(user.audit.name),
+      terminals     = VALUES(auditd.data.terminal),
+      session_ids   = VALUES(auditd.session),
+      results       = VALUES(auditd.result),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, user.audit.name
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      actor     = user.audit.name
+  | KEEP
+      agent_id, host_name, actor, event_count,
+      host_names, actors, terminals,
+      session_ids, results, last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.privilege-escalation
+  - attack.t1548.003
+  - detection.threat-hunting
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1548/003/"
+nist: ["AC-6", "AC-2", "AU-12"]
+pci_dss: ["7.1", "8.5", "10.2.5"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0004:
+    T1548: ["T1548.003"]

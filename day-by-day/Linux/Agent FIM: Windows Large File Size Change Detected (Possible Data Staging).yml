@@ -1,0 +1,81 @@
+rule_id: d97e72d7-4beb-4454-ba72-5d44659a8b94
+name: "Agent FIM: Windows Large File Size Change Detected (Possible Data Staging)"
+description: |
+  Ushbu qoida Collection va Exfiltration texnikalariga bog'liq bo'lib, Windows
+  tizimida hajmi katta (5MB dan yuqori) fayllarning o'zgarishini aniqlaydi.
+  Hujumchi ma'lumotlarni arxivlab, exfiltration uchun tayyorlash (staging) paytida
+  katta hajmli fayllar yaratishi mumkin.
+  Qonuniy holatlar: database backup, log rotation, media fayllari.
+  SOC triage bosqichlari:
+  - `file.path` — backup katalogi emas, temp yoki user papkasida bo'lsa shubhali.
+  - `file.extension` — zip, rar, 7z, tar kabi arxiv bo'lsa exfiltration tayyorligi.
+  - `file.owner` — kutilmagan foydalanuvchi tomonidan yaratilgan bo'lsa tekshiring.
+  - Tarmoq loglarini tekshiring — katta fayl yaratilgandan keyin tashqariga transfer.
+  - Noqonuniy bo'lsa: faylni bloklang, network traffic ni tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.module == "file_integrity"
+  | WHERE host.os.type == "windows"
+  | WHERE event.type == "change"
+  | WHERE file.size >= 5242880
+  | WHERE file.extension IN ("zip", "rar", "7z", "tar", "gz", "bz2", "cab", "iso", "db", "bak", "sql")
+  | WHERE NOT STARTS_WITH(file.path, "C:\\Windows\\")
+      AND NOT STARTS_WITH(file.path, "C:\\Program Files\\")
+      AND NOT STARTS_WITH(file.path, "C:\\Program Files (x86)\\")
+  | EVAL host_name   = host.hostname
+  | EVAL file_path   = file.path
+  | EVAL file_name   = file.name
+  | EVAL file_ext    = file.extension
+  | EVAL file_owner  = file.owner
+  | EVAL file_size   = file.size
+  | EVAL file_mtime  = file.mtime
+  | EVAL action      = event.action
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      file_paths   = VALUES(file.path),
+      file_names   = VALUES(file.name),
+      file_exts    = VALUES(file.extension),
+      file_owners  = VALUES(file.owner),
+      file_sizes   = VALUES(file.size),
+      actions      = VALUES(event.action),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, file.path
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      file_path = file.path
+  | KEEP
+      agent_id, host_name, file_path, event_count,
+      host_names, file_paths, file_names, file_exts,
+      file_owners, file_sizes, actions, last_seen, first_seen
+  | SORT file_sizes DESC
+enabled: true
+tags:
+  - attack.collection
+  - attack.exfiltration
+  - attack.t1560.001
+  - attack.t1074.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 58
+references:
+  - "https://attack.mitre.org/techniques/T1560/001/"
+  - "https://attack.mitre.org/techniques/T1074/001/"
+nist: ["SI-4", "AU-12", "SC-7", "SI-7"]
+pci_dss: ["10.6.1", "11.4", "3.4"]
+gdpr: ["32.1.b", "32.1.c"]
+mitre_attack:
+  TA0009:
+    T1074: ["T1074.001"]
+  TA0010:
+    T1560: ["T1560.001"]

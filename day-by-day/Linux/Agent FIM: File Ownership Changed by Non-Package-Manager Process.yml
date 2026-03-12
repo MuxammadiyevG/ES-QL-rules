@@ -1,0 +1,93 @@
+rule_id: cb04ba73-b1c0-453d-b2df-f34ceb4831d1
+name: "Agent FIM: File Ownership Changed by Non-Package-Manager Process"
+description: |
+  Ushbu qoida Impact va Defense Evasion texnikalariga bog'liq bo'lib, dpkg/apt/rpm kabi
+  paket menejerlari tomonidan EMAS, balki boshqa processlar tomonidan amalga oshirilgan
+  fayl ownership o'zgarishlarini aniqlaydi.
+  Hujumchi fchown/chown syscall orqali muhim fayllar egasini o'zgartirishi mumkin.
+  Qonuniy holatlar: dpkg, apt, rpm, pip, npm tomonidan o'rnatish jarayoni.
+  SOC triage bosqichlari:
+  - `process.executable` ni tekshiring — paket menejeri (dpkg, apt) yoki boshqa process.
+  - O'zgartirilgan fayl inode (`auditd.paths.inode`) va mode (`auditd.paths.mode`) ni aniqlang.
+  - `auditd.data.tty` interaktiv terminalmi yoki daemon ekanligini tekshiring.
+  - Syscall argumentlarini (`auditd.data.a1`, `a2`) decode qilib yangi UID/GID ni aniqlang.
+  - Noqonuniy bo'lsa: fayl ownership ni qaytaring, process ni to'xtating.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "syscall"
+  | WHERE auditd.data.syscall IN ("fchown", "chown", "lchown", "fchownat")
+  | WHERE auditd.result == "success"
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(auditd.summary.actor.primary, user.name)
+  | EVAL proc_exec    = process.executable
+  | EVAL proc_name    = process.name
+  | EVAL syscall      = auditd.data.syscall
+  | EVAL tty          = auditd.data.tty
+  | EVAL file_inode   = auditd.paths.inode
+  | EVAL file_mode    = auditd.paths.mode
+  | EVAL arg_uid      = auditd.data.a1
+  | EVAL arg_gid      = auditd.data.a2
+  | WHERE proc_exec NOT IN (
+      "/usr/bin/dpkg",
+      "/usr/bin/apt",
+      "/usr/bin/apt-get",
+      "/usr/bin/rpm",
+      "/usr/bin/pip",
+      "/usr/bin/pip3",
+      "/usr/bin/python3",
+      "/usr/bin/python",
+      "/usr/bin/npm",
+      "/usr/sbin/dpkg"
+    )
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(host.hostname),
+      actors        = VALUES(user.name),
+      executables   = VALUES(process.executable),
+      syscalls      = VALUES(auditd.data.syscall),
+      ttys          = VALUES(auditd.data.tty),
+      file_inodes   = VALUES(auditd.paths.inode),
+      file_modes    = VALUES(auditd.paths.mode),
+      uid_args      = VALUES(auditd.data.a1),
+      gid_args      = VALUES(auditd.data.a2),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, process.executable, auditd.data.syscall
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      proc_exec = process.executable,
+      syscall   = auditd.data.syscall
+  | KEEP
+      agent_id, host_name, proc_exec, syscall, event_count,
+      host_names, actors, executables, syscalls,
+      ttys, file_inodes, file_modes, uid_args, gid_args,
+      last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.impact
+  - attack.t1222.002
+  - attack.t1565.001
+  - detection.threat-hunting
+severity: high
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1222/002/"
+  - "https://attack.mitre.org/techniques/T1565/001/"
+nist: ["AC-3", "AC-6", "SI-7", "AU-12"]
+pci_dss: ["7.1", "10.2.7", "11.5"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1222: ["T1222.002"]
+  TA0040:
+    T1565: ["T1565.001"]

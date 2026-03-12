@@ -1,0 +1,74 @@
+rule_id: d4fdd285-d7a4-436a-aeb8-244a60745068
+name: "Agent Initial Access: New Login Session Established"
+description: |
+  Ushbu qoida Initial Access va Persistence texnikalariga bog'liq bo'lib, tizimda yangi login
+  sessiyasining boshlanishini aniqlaydi. Hujumchi o'g'irlangan credentials yoki valid account
+  orqali kirish huquqini qo'lga kiritib yangi sessiya ochishi mumkin.
+  Qonuniy holatlar: cron joblar, SSH login, service daemon sessiyalari.
+  SOC triage bosqichlari:
+  - `user.effective.name` va `user.audit.name` — qaysi foydalanuvchi login qilganini aniqlang.
+  - `auditd.data.tty` qiymatini tekshiring: (none) = avtomatik, pts/X = interaktiv SSH/konsol.
+  - `auditd.session` yangi sessiya IDni oldingi loglar bilan solishtiring.
+  - `auditd.data.old-ses` = 4294967295 bo'lsa — bu yangi sessiya (hech qanday oldingi yo'q).
+  - Login vaqti ish soatlaridan tashqarida bo'lsa — shubhali.
+  - Noqonuniy bo'lsa: sessiyani darhol to'xtating, credentialsni o'zgartiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "login"
+  | WHERE event.action == "changed-login-id-to"
+  | EVAL host_name     = host.hostname
+  | EVAL actor         = COALESCE(user.audit.name, user.effective.name)
+  | EVAL effective_uid = user.effective.id
+  | EVAL session_id    = auditd.session
+  | EVAL tty           = auditd.data.tty
+  | EVAL result        = auditd.result
+  | WHERE actor IS NOT NULL
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(host.hostname),
+      actors        = VALUES(user.audit.name),
+      eff_users     = VALUES(user.effective.name),
+      session_ids   = VALUES(auditd.session),
+      ttys          = VALUES(auditd.data.tty),
+      results       = VALUES(auditd.result),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, user.audit.name, auditd.data.tty
+  | WHERE event_count >= 1
+  | EVAL
+      host_name  = host.hostname,
+      actor      = user.audit.name,
+      tty        = auditd.data.tty
+  | KEEP
+      agent_id, host_name, actor, tty, event_count,
+      host_names, actors, eff_users,
+      session_ids, results, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.persistence
+  - attack.t1078
+  - attack.t1133
+  - detection.threat-hunting
+severity: low
+risk_score: 40
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+  - "https://attack.mitre.org/techniques/T1133/"
+nist: ["AC-2", "AC-17", "AU-12", "SI-4"]
+pci_dss: ["8.1.4", "10.2.1", "10.2.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0001:
+    T1078: []
+    T1133: []
+  TA0003:
+    T1078: []

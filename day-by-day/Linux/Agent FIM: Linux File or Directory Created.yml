@@ -1,4 +1,4 @@
-rule_id: ed045773-79b7-4c53-bed9-c9e0512424a4
+rule_id: 339061a0-b9ac-4887-944b-f0e57983caf5
 name: "Agent FIM: Linux File or Directory Created"
 description: |
   Ushbu qoida Impact va Collection texnikalariga bog'liq bo'lib, yangi fayl yoki directory yaratilganligini aniqlaydi.

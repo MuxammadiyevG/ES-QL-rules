@@ -1,0 +1,76 @@
+rule_id: 277d1fc2-06da-425f-b154-1d748b956f15
+name: "Agent Lateral Movement: SSH Outbound Connection to External Host"
+description: |
+  Ushbu qoida Lateral Movement va Exfiltration texnikalariga bog'liq bo'lib, tizimdan tashqi
+  manzillarga SSH ulanishlarini aniqlaydi. Hujumchi o'g'irlangan credentials yoki SSH kalitlaridan
+  foydalanib tashqi infratuzilmaga yoki C2 serveriga ulanishi mumkin.
+  Qonuniy holatlar: developer git pull/push operatsiyalari, tizim boshqaruvi, ma'lumot ko'chirish.
+  SOC triage bosqichlari:
+  - `process.title` dagi manzil va buyruqni tekshiring (masalan, git@github.com, boshqa host).
+  - `auditd.summary.actor.primary` — qaysi foydalanuvchi tomonidan amalga oshirilgan.
+  - `process.working_directory` — qaysi loyihadan yoki katalogdan bajarilganini aniqlang.
+  - `auditd.data.tty` interaktiv (pts/X) bo'lsa — inson tomonidan bajarilgan.
+  - Manzil tashkilotga tegishli IP/domenmi yoki begona ekanligini tekshiring.
+  - Noqonuniy bo'lsa: SSH sessiyani bloklang, tarmoq loglarini tekshiring, credentials rotatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "syscall"
+  | WHERE auditd.data.syscall == "execve"
+  | WHERE process.name == "ssh"
+  | WHERE auditd.result == "success"
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(auditd.summary.actor.primary, user.audit.name, user.name)
+  | EVAL proc_title   = process.title
+  | EVAL proc_exec    = process.executable
+  | EVAL work_dir     = process.working_directory
+  | EVAL tty          = auditd.data.tty
+  | EVAL session_id   = auditd.session
+  | WHERE proc_title IS NOT NULL
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(host.hostname),
+      actors        = VALUES(auditd.summary.actor.primary),
+      proc_titles   = VALUES(process.title),
+      work_dirs     = VALUES(process.working_directory),
+      ttys          = VALUES(auditd.data.tty),
+      session_ids   = VALUES(auditd.session),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, auditd.summary.actor.primary, process.working_directory
+  | WHERE event_count >= 1
+  | EVAL
+      host_name  = host.hostname,
+      actor      = auditd.summary.actor.primary,
+      work_dir   = process.working_directory
+  | KEEP
+      agent_id, host_name, actor, work_dir, event_count,
+      host_names, actors, proc_titles,
+      work_dirs, ttys, session_ids, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.lateral-movement
+  - attack.exfiltration
+  - attack.t1021.004
+  - attack.t1048
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1021/004/"
+  - "https://attack.mitre.org/techniques/T1048/"
+nist: ["SC-7", "AU-12", "AC-17"]
+pci_dss: ["1.3", "10.2.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0008:
+    T1021: ["T1021.004"]
+  TA0010:
+    T1048: []

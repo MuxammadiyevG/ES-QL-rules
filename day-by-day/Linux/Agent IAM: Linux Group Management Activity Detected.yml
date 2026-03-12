@@ -1,0 +1,72 @@
+rule_id: f571b8ef-8245-41aa-b34f-a21407d59c7a
+name: "Agent IAM: Linux Group Management Activity Detected"
+description: |
+  Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib, guruh yaratish yoki o'zgartirish hodisalarini aniqlaydi.
+  Hujumchi o'zini maxsus guruhga (masalan, docker, sudo, wheel) qo'shib, huquqlarini oshirishi mumkin.
+  Qonuniy holatlar: tizim administratori tomonidan rejalashtirilgan IAM o'zgarishlari, deployment avtomatsiyasi.
+  SOC triage bosqichlari:
+  - `auditd.data.op` qiymatini tekshiring: add-group, add-shadow-group, delete-group.
+  - O'zgartirilgan guruh ID (`auditd.data.id`) va nomini aniqlang.
+  - O'zgarishni amalga oshirgan process (`auditd.summary.how`) ni tekshiring.
+  - Terminal (`auditd.data.terminal`) interaktiv yoki avtomatik ekanligini aniqlang.
+  - Noqonuniy bo'lsa: guruh o'zgarishlarini qaytaring, akkauntni tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type IN ("add_group", "grp_mgmt", "del_group")
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(user.effective.name, auditd.summary.actor.secondary)
+  | EVAL group_id     = auditd.data.id
+  | EVAL operation    = auditd.data.op
+  | EVAL how          = auditd.summary.how
+  | EVAL terminal     = auditd.data.terminal
+  | EVAL msg_type     = auditd.message_type
+  | WHERE group_id IS NOT NULL
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      actors       = VALUES(user.effective.name),
+      group_ids    = VALUES(auditd.data.id),
+      operations   = VALUES(auditd.data.op),
+      executables  = VALUES(auditd.summary.how),
+      msg_types    = VALUES(auditd.message_type),
+      terminals    = VALUES(auditd.data.terminal),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, auditd.data.op, user.effective.name
+  | WHERE event_count >= 1
+  | EVAL
+      host_name  = host.hostname,
+      operation  = auditd.data.op,
+      actor      = user.effective.name
+  | KEEP
+      agent_id, host_name, operation, actor, event_count,
+      host_names, actors, group_ids, operations,
+      executables, msg_types, terminals, last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1136.001
+  - attack.t1078
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1136/001/"
+  - "https://attack.mitre.org/techniques/T1078/"
+nist: ["AC-2", "AC-6", "AU-12"]
+pci_dss: ["8.1.1", "8.5", "10.2.5"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1136: ["T1136.001"]
+  TA0004:
+    T1078: []

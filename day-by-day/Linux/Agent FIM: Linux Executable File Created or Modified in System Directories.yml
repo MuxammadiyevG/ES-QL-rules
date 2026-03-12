@@ -1,0 +1,89 @@
+rule_id: 0c3087cb-ef40-4a6b-bdb8-a3b8870b8a79
+name: "Agent FIM: Linux Executable File Created or Modified in System Directories"
+description: |
+  Ushbu qoida Persistence va Defense Evasion texnikalariga bog'liq bo'lib, Linux tizim
+  kataloglarida bajariladigan fayl (.sh, .py, .pl, .rb, .elf va extension-siz binary)
+  yaratilishi yoki o'zgartirilishini aniqlaydi.
+  Hujumchi /usr/bin, /usr/sbin, /bin, /sbin kataloglarida trojanize qilingan binary
+  yoki backdoor skript joylashtirishi mumkin.
+  Qonuniy holatlar: apt/dpkg paket o'rnatish, tizim yangilanishi, deployment skriptlari.
+  SOC triage bosqichlari:
+  - `file.path` ni tekshiring — tizim binary katalogidami yoki foydalanuvchi homemi.
+  - `file.owner` root bo'lmasa yoki `file.mode` SUID/SGID bitlari bo'lsa yuqori xavf.
+  - `file.hash.sha1` ni oldingi baseline bilan solishtiring.
+  - O'sha paytda qaysi process ishlayotganini auditd SYSCALL loglar bilan korrelatsiya qiling.
+  - `file.mtime` vs `file.ctime` farqini tekshiring.
+  - Noqonuniy bo'lsa: faylni karantinga oling, `sha256sum` bilan verify qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.module == "file_integrity"
+  | WHERE event.type == "change"
+  | WHERE host.os.type == "linux"
+  | WHERE
+      file.path LIKE "/usr/bin/*"
+      OR file.path LIKE "/usr/sbin/*"
+      OR file.path LIKE "/bin/*"
+      OR file.path LIKE "/sbin/*"
+      OR file.path LIKE "/usr/local/bin/*"
+      OR file.path LIKE "/usr/local/sbin/*"
+  | EVAL host_name   = host.hostname
+  | EVAL file_path   = file.path
+  | EVAL file_name   = file.name
+  | EVAL file_ext    = file.extension
+  | EVAL file_owner  = file.owner
+  | EVAL file_mode   = file.mode
+  | EVAL file_size   = file.size
+  | EVAL file_hash   = file.hash.sha1
+  | EVAL file_mtime  = file.mtime
+  | EVAL action      = event.action
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      file_paths   = VALUES(file.path),
+      file_names   = VALUES(file.name),
+      file_exts    = VALUES(file.extension),
+      file_owners  = VALUES(file.owner),
+      file_modes   = VALUES(file.mode),
+      file_hashes  = VALUES(file.hash.sha1),
+      file_sizes   = VALUES(file.size),
+      actions      = VALUES(event.action),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, file.path
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      file_path = file.path
+  | KEEP
+      agent_id, host_name, file_path, event_count,
+      host_names, file_paths, file_names, file_exts,
+      file_owners, file_modes, file_hashes, file_sizes,
+      actions, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.persistence
+  - attack.defense-evasion
+  - attack.t1574.006
+  - attack.t1565.001
+  - detection.threat-hunting
+severity: high
+risk_score: 75
+references:
+  - "https://attack.mitre.org/techniques/T1574/006/"
+  - "https://attack.mitre.org/techniques/T1565/001/"
+nist: ["SI-7", "CM-7", "AU-9", "SI-4"]
+pci_dss: ["10.5.1", "11.5", "6.3"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1574: ["T1574.006"]
+  TA0040:
+    T1565: ["T1565.001"]

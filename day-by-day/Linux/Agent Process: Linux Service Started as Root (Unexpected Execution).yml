@@ -1,0 +1,73 @@
+rule_id: a41d1065-e467-4155-87d5-c92860fe8c9a
+name: "Agent Process: Linux Service Started as Root (Unexpected Execution)"
+description: |
+  Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib,
+  root (uid=0) tomonidan Linux servisning ishga tushirilishini aniqlaydi.
+  Hujumchi backdoor yoki reverse shell ni servis sifatida ro'yxatdan o'tkazib,
+  root huquqida persistence ta'minlashi mumkin.
+  Qonuniy holatlar: tizim servislari (sshd, cron, rsyslog), tizim boshlang'ich yuklash.
+  SOC triage bosqichlari:
+  - `auditd.summary.how` yoki `process.executable` — kutilmagan binary yo'limi.
+  - `user.selinux.user: unconfined` — SELinux cheklovi yo'q.
+  - `systemctl list-units --type=service` orqali yangi servislarni tekshiring.
+  - `/etc/systemd/system/` da yangi unit fayl bormi.
+  - Noqonuniy bo'lsa: servisni to'xtating, unit faylini o'chiring, tizimni tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.module == "auditd"
+  | WHERE event.category == "process"
+  | WHERE event.type == "start"
+  | WHERE event.outcome == "success"
+  | WHERE user.id == "0"
+  | EVAL host_name    = host.hostname
+  | EVAL user_name    = user.name
+  | EVAL user_id      = user.id
+  | EVAL group_name   = user.group.name
+  | EVAL selinux_user = user.selinux.user
+  | EVAL action       = event.action
+  | STATS
+      event_count    = COUNT(*),
+      host_names     = VALUES(host.hostname),
+      user_names     = VALUES(user.name),
+      group_names    = VALUES(user.group.name),
+      selinux_users  = VALUES(user.selinux.user),
+      actions        = VALUES(event.action),
+      last_seen      = MAX(@timestamp),
+      first_seen     = MIN(@timestamp)
+    BY agent_id, host.hostname, event.action
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      action    = event.action
+  | KEEP
+      agent_id, host_name, action, event_count,
+      host_names, user_names, group_names, selinux_users,
+      actions, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1543.002
+  - attack.t1078.003
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1543/002/"
+  - "https://attack.mitre.org/techniques/T1078/003/"
+nist: ["AC-6", "SI-4", "AU-12", "CM-7"]
+pci_dss: ["7.1", "10.2.7", "6.3"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1543: ["T1543.002"]
+  TA0004:
+    T1078: ["T1078.003"]

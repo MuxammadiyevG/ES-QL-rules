@@ -1,0 +1,75 @@
+rule_id: 59e0fb02-3eee-418a-b313-75884704faad
+name: "Agent Initial Access: Successful SSH Login from Remote Host"
+description: |
+  Ushbu qoida Initial Access texnikasiga bog'liq bo'lib, tashqi IP manzildan SSH orqali
+  muvaffaqiyatli login hodisalarini aniqlaydi. Hujumchi o'g'irlangan credentials, brute force
+  yoki valid SSH kaliti yordamida tizimga kirishi mumkin.
+  Qonuniy holatlar: administrator remote boshqaruv, DevOps deploy operatsiyalari.
+  SOC triage bosqichlari:
+  - `source.ip` manzilini tekshiring — korporativ tarmoqdan tashqarida bo'lsa shubhali.
+  - `user.name` va `user.audit.name` — qaysi account login qilganini aniqlang.
+  - `auditd.data.terminal` — `/dev/pts/X` interaktiv SSH sessiyasi.
+  - `auditd.session` raqamini keyingi execve va sudo hodisalar bilan korrelatsiya qiling.
+  - Login vaqti (`@timestamp`) ish soatlaridan tashqarida bo'lsa — yuqori xavf.
+  - Bir IP dan bir necha foydalanuvchi login qilsa — credential stuffing urinishi bo'lishi mumkin.
+  - Noqonuniy bo'lsa: SSH sessiyani to'xtating, IP ni bloklang, credentials rotatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "user_login"
+  | WHERE auditd.result == "success"
+  | WHERE event.outcome == "success"
+  | WHERE network.direction == "ingress"
+  | WHERE source.ip IS NOT NULL
+  | EVAL host_name     = host.hostname
+  | EVAL actor         = COALESCE(user.audit.name, user.name, auditd.summary.actor.secondary)
+  | EVAL src_ip        = source.ip
+  | EVAL terminal      = auditd.data.terminal
+  | EVAL session_id    = auditd.session
+  | EVAL login_op      = auditd.data.op
+  | EVAL src_hostname  = auditd.data.hostname
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(host.hostname),
+      actors        = VALUES(user.audit.name),
+      src_ips       = VALUES(source.ip),
+      src_hostnames = VALUES(auditd.data.hostname),
+      terminals     = VALUES(auditd.data.terminal),
+      session_ids   = VALUES(auditd.session),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, source.ip, user.audit.name
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      src_ip    = source.ip,
+      actor     = user.audit.name
+  | KEEP
+      agent_id, host_name, src_ip, actor, event_count,
+      host_names, actors, src_ips, src_hostnames,
+      terminals, session_ids, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1078
+  - attack.t1133
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+  - "https://attack.mitre.org/techniques/T1133/"
+nist: ["AC-17", "AC-2", "AU-12", "SI-4"]
+pci_dss: ["8.1.4", "10.2.1", "10.2.4", "1.3"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0001:
+    T1078: []
+    T1133: []

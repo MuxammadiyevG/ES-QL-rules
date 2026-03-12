@@ -1,0 +1,79 @@
+rule_id: c8037c6b-000b-4404-82e3-09d3e4438bb2
+name: "Agent Defense Evasion: SSHD Process Respawned or Restarted"
+description: |
+  Ushbu qoida Defense Evasion va Persistence texnikalariga bog'liq bo'lib, sshd daemon
+  jarayonining qayta ishga tushirilishini aniqlaydi. Hujumchi sshd binary ni trojanize
+  qilib yoki sshd konfiguratsiyasini o'zgartirib persistent backdoor yaratishi mumkin.
+  Qonuniy holatlar: tizim restart, systemd service reload, OpenSSH yangilanishi.
+  SOC triage bosqichlari:
+  - `process.parent.pid` ni tekshiring — systemd (PID 1) yoki boshqa process tomonidan.
+  - `process.args` dagi flaglarni tekshiring: `-D -R` normal, g'ayrioddiy flaglar shubhali.
+  - `auditd.paths.mode` va `file.mode` — sshd binary huquqlarini tekshiring (0755 normal).
+  - `auditd.paths.inode` ni saqlang va keyingi o'zgarishlar bilan solishtiring.
+  - sshd binary hash ni tekshiring: `sha256sum /usr/sbin/sshd`.
+  - Noqonuniy bo'lsa: sshd binary ni verify qiling, konfiguratsiyani tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "syscall"
+  | WHERE auditd.data.syscall == "execve"
+  | WHERE process.name == "sshd"
+  | WHERE auditd.result == "success"
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(auditd.summary.actor.primary, user.name)
+  | EVAL proc_title   = process.title
+  | EVAL proc_args    = process.args
+  | EVAL tty          = auditd.data.tty
+  | EVAL parent_pid   = process.parent.pid
+  | EVAL file_mode    = auditd.paths.mode
+  | EVAL file_inode   = auditd.paths.inode
+  | EVAL file_path    = auditd.summary.object.primary
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(host.hostname),
+      actors        = VALUES(user.name),
+      proc_titles   = VALUES(process.title),
+      ttys          = VALUES(auditd.data.tty),
+      parent_pids   = VALUES(process.parent.pid),
+      file_modes    = VALUES(auditd.paths.mode),
+      file_inodes   = VALUES(auditd.paths.inode),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, process.parent.pid
+  | WHERE event_count >= 1
+  | EVAL
+      host_name  = host.hostname,
+      parent_pid = process.parent.pid
+  | KEEP
+      agent_id, host_name, parent_pid, event_count,
+      host_names, actors, proc_titles, ttys,
+      parent_pids, file_modes, file_inodes,
+      last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.persistence
+  - attack.t1554
+  - attack.t1543.002
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1554/"
+  - "https://attack.mitre.org/techniques/T1543/002/"
+nist: ["SI-7", "CM-7", "AU-12", "SI-4"]
+pci_dss: ["6.3", "10.2.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1554: []
+  TA0003:
+    T1543: ["T1543.002"]

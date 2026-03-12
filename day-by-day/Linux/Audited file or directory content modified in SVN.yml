@@ -1,4 +1,4 @@
-rule_id: d619955e-324a-4fac-b0a9-0b48fb2ba0f4
+rule_id: e21b4c9d-5a41-4b65-8a59-41820845454d
 name: "Audited file or directory content modified in SVN"
 description: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Audited file or directory content modified in SVN` kontekstida FortiSIEM agentless fayl monitoringi orqali SSH ulanishi yordamida SVN repozitoriyasidagi fayl yoki directory mazmunining o'zgartirilganligini aniqlaydi.

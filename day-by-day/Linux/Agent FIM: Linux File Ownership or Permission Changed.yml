@@ -1,4 +1,4 @@
-rule_id: 6799d936-2304-4b0d-91ff-6be08a3e1a3a
+rule_id: 6dc68def-6d9c-4571-b931-640959045955
 name: "Agent FIM: Linux File Ownership or Permission Changed"
 description: |
   Ushbu qoida Impact va Defense Evasion texnikalariga bog'liq bo'lib, `Agent FIM: Linux File Ownership or Permission Changed` kontekstida FortiSIEM Linux Agent FIM tomonidan fayl ownership yoki permission o'zgarishini aniqlaydi.

@@ -1,4 +1,4 @@
-rule_id: 8a1bdc8e-224a-46fa-83f9-39ade24360b3
+rule_id: 8af7ec11-b009-4c31-b51b-65203a963ab1
 name: "Agent FIM: Linux File Content Modified"
 description: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, fayl yoki directory mazmuni yoki atributlarining o'zgartirilganligini aniqlaydi.

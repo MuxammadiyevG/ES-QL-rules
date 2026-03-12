@@ -1,0 +1,44 @@
+rule_id: 558f45bf-2f3a-43a4-ad8d-09cac495fd46
+name: "Agent Info: User Session Opened (SSH Login Success)"
+description: |
+  Tizimga SSH orqali muvaffaqiyatli kirgan foydalanuvchilar haqida ma'lumot beradi.
+  Bu qoida threat hunting va sessiya monitoring uchun ishlatiladi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "user_login"
+  | WHERE auditd.result == "success"
+  | WHERE network.direction == "ingress"
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      users        = VALUES(user.audit.name),
+      src_ips      = VALUES(source.ip),
+      terminals    = VALUES(auditd.data.terminal),
+      session_ids  = VALUES(auditd.session),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, user.audit.name, source.ip
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id, host.hostname, user.audit.name, source.ip,
+      event_count, host_names, users, src_ips,
+      terminals, session_ids, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - detection.informational
+  - visibility.authentication
+severity: low
+risk_score: 10
+references: []
+nist: ["AU-12", "AC-17"]
+pci_dss: ["10.2.1"]
+gdpr: ["32.1.b"]
+mitre_attack: []

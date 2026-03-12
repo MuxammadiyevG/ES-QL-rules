@@ -1,0 +1,68 @@
+rule_id: d9700de9-e817-4491-bc81-9ca6ad3bd27c
+name: "Agent Persistence: Audit Configuration Changed"
+description: |
+  Ushbu qoida Defense Evasion va Persistence texnikalariga bog'liq bo'lib, Linux audit tizimi konfiguratsiyasining o'zgarishini aniqlaydi.
+  Hujumchi o'z faoliyatini yashirish maqsadida audit qoidalarini o'chirishi, o'zgartirishi yoki audit daemonini qayta konfiguratsiya qilishi mumkin.
+  Qonuniy holatlar: auditbeat/auditd versiya yangilanishi, tizim administratori tomonidan qoida sozlamalari.
+  SOC triage bosqichlari:
+  - O'zgarishni amalga oshirgan process (`auditd.summary.how`) ni aniqlang.
+  - O'zgarish operatsiyasi (`auditd.data.op`: set, add, remove) va chegaralari (`auditd.data.old`, exit) ni tekshiring.
+  - O'zgarish auditbeat/auditd tomonidan emas, boshqa process tomonidan amalga oshirilganligini solishtiring.
+  - Agar root bo'lmagan foydalanuvchi tomonidan yoki g'ayrioddiy vaqtda amalga oshirilgan bo'lsa — yuqori prioritet.
+  - Noqonuniy bo'lsa: konfiguratsiyani qaytaring va audit log izlarini ko'rib chiqing.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "config_change"
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(user.name, auditd.summary.actor.secondary)
+  | EVAL operation    = auditd.data.op
+  | EVAL how          = auditd.summary.how
+  | EVAL old_val      = auditd.data.old
+  | EVAL exit_code    = auditd.data.exit
+  | WHERE operation IS NOT NULL
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      actors       = VALUES(user.name),
+      operations   = VALUES(auditd.data.op),
+      executables  = VALUES(auditd.summary.how),
+      old_values   = VALUES(auditd.data.old),
+      exit_codes   = VALUES(auditd.data.exit),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, auditd.summary.how, auditd.data.op
+  | WHERE event_count >= 1
+  | EVAL
+      host_name  = host.hostname,
+      executable = auditd.summary.how,
+      operation  = auditd.data.op
+  | KEEP
+      agent_id, host_name, executable, operation, event_count,
+      host_names, actors, operations, executables,
+      old_values, exit_codes, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.persistence
+  - attack.t1562.012
+  - detection.threat-hunting
+severity: high
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1562/012/"
+nist: ["AU-2", "AU-9", "SI-7", "CM-3"]
+pci_dss: ["10.5.1", "10.5.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.012"]
+  TA0003:
+    T1562: ["T1562.012"]

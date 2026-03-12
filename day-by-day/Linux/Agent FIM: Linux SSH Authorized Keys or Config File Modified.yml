@@ -1,0 +1,86 @@
+rule_id: 0b598591-84d1-46a8-b7f8-5fedf5a79775
+name: "Agent FIM: Linux SSH Authorized Keys or Config File Modified"
+description: |
+  Ushbu qoida Persistence texnikasiga bog'liq bo'lib, SSH authorized_keys fayllari
+  yoki SSH konfiguratsiya fayllarining o'zgarishini aniqlaydi.
+  Hujumchi o'z SSH public kalitini qo'shib, tizimga parolsiz kirish imkoniyatini
+  ta'minlashi mumkin — bu eng keng tarqalgan persistence texnikalaridan biri.
+  Qonuniy holatlar: tizim administratori yangi SSH kalit qo'shishi, initial server setup.
+  SOC triage bosqichlari:
+  - `file.path` dagi foydalanuvchi home katalogini aniqlang — kimning kaliti o'zgargan.
+  - O'zgarish vaqti (`file.mtime`) va kim login qilganini (`user_login` loglar) korrelatsiya qiling.
+  - `file.hash.sha1` ni baseline bilan solishtiring.
+  - Yangi qo'shilgan SSH kalitni tekshiring: `cat ~/.ssh/authorized_keys`.
+  - `/etc/ssh/sshd_config` da `PermitRootLogin`, `PasswordAuthentication` o'zgarganmi.
+  - Noqonuniy bo'lsa: ruxsatsiz kalitni o'chiring, SSH serverni restart qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.module == "file_integrity"
+  | WHERE event.type == "change"
+  | WHERE host.os.type == "linux"
+  | WHERE
+      file.path LIKE "*/.ssh/authorized_keys"
+      OR file.path LIKE "*/.ssh/authorized_keys2"
+      OR file.path LIKE "/etc/ssh/sshd_config"
+      OR file.path LIKE "/etc/ssh/ssh_config"
+      OR file.path LIKE "*/.ssh/config"
+      OR file.path LIKE "/root/.ssh/*"
+  | EVAL host_name   = host.hostname
+  | EVAL file_path   = file.path
+  | EVAL file_name   = file.name
+  | EVAL file_owner  = file.owner
+  | EVAL file_mode   = file.mode
+  | EVAL file_hash   = file.hash.sha1
+  | EVAL file_size   = file.size
+  | EVAL file_mtime  = file.mtime
+  | EVAL action      = event.action
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      file_paths   = VALUES(file.path),
+      file_names   = VALUES(file.name),
+      file_owners  = VALUES(file.owner),
+      file_modes   = VALUES(file.mode),
+      file_hashes  = VALUES(file.hash.sha1),
+      file_sizes   = VALUES(file.size),
+      actions      = VALUES(event.action),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, file.path
+  | WHERE event_count >= 1
+  | EVAL
+      host_name = host.hostname,
+      file_path = file.path
+  | KEEP
+      agent_id, host_name, file_path, event_count,
+      host_names, file_paths, file_names, file_owners,
+      file_modes, file_hashes, file_sizes,
+      actions, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.persistence
+  - attack.lateral-movement
+  - attack.t1098.004
+  - attack.t1021.004
+  - detection.threat-hunting
+severity: critical
+risk_score: 88
+references:
+  - "https://attack.mitre.org/techniques/T1098/004/"
+  - "https://attack.mitre.org/techniques/T1021/004/"
+nist: ["AC-17", "SI-7", "AC-6", "AU-12"]
+pci_dss: ["10.5.1", "11.5", "8.2.1", "1.3"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1098: ["T1098.004"]
+  TA0008:
+    T1021: ["T1021.004"]

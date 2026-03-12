@@ -1,0 +1,69 @@
+rule_id: 439dfa4b-532d-4be2-b597-82fdb97bce2c
+name: "Agent Defense Evasion: AppArmor Policy Violation (AVC Denied)"
+description: |
+  Ushbu qoida Defense Evasion texnikasiga bog'liq bo'lib, AppArmor/SELinux tomonidan bloklangan operatsiyalarni aniqlaydi.
+  Hujumchi xavfsizlik siyosatini chetlab o'tishga yoki cheklangan resurslarga kirishga urinayotgan bo'lishi mumkin.
+  Qonuniy holatlar: noto'g'ri AppArmor profillari, yangi o'rnatilgan dastur ruxsatnomalari, container isolation muammolari.
+  SOC triage bosqichlari:
+  - Bloklangan operatsiya (`auditd.data.operation`) va fayl yo'lini (`auditd.data.name`) aniqlang.
+  - Qaysi AppArmor profili (`auditd.data.profile`) ishga tushganini tekshiring.
+  - Bloklangan process (`process.executable`, `process.name`) legitimligini baholang.
+  - Takroriy DENIED hodisalar pattern ni tekshiring — bu bypass urinishi bo'lishi mumkin.
+  - Noqonuniy bo'lsa: profil o'zgarishlarini audit qiling, process ni o'ldiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "avc"
+  | WHERE auditd.data.apparmor == "DENIED"
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(user.name, auditd.summary.actor.secondary)
+  | EVAL denied_op    = auditd.data.operation
+  | EVAL denied_mask  = auditd.data.denied_mask
+  | EVAL profile      = auditd.data.profile
+  | EVAL file_path    = auditd.data.name
+  | EVAL proc_name    = process.name
+  | EVAL proc_exec    = process.executable
+  | WHERE denied_op IS NOT NULL
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(host.hostname),
+      actors        = VALUES(user.name),
+      denied_ops    = VALUES(auditd.data.operation),
+      denied_masks  = VALUES(auditd.data.denied_mask),
+      profiles      = VALUES(auditd.data.profile),
+      file_paths    = VALUES(auditd.data.name),
+      proc_names    = VALUES(process.name),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, host.hostname, auditd.data.profile, process.executable
+  | WHERE event_count >= 3
+  | EVAL
+      host_name  = host.hostname,
+      profile    = auditd.data.profile,
+      proc_exec  = process.executable
+  | KEEP
+      agent_id, host_name, profile, proc_exec, event_count,
+      host_names, actors, denied_ops, denied_masks,
+      file_paths, proc_names, last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1562.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 50
+references:
+  - "https://attack.mitre.org/techniques/T1562/001/"
+nist: ["SI-3", "AU-12", "CM-7"]
+pci_dss: ["6.3", "10.2.7"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.001"]

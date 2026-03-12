@@ -1,4 +1,4 @@
-rule_id: ed320550-6bbd-48f2-8856-e9d5321a2dfa
+rule_id: 49ed6f4b-3d83-4e1b-a0a9-a63922e27574
 name: "Agent FIM: Linux File Changed From Baseline"
 description: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, faylning baseline dan o'zgarganligini aniqlaydi.

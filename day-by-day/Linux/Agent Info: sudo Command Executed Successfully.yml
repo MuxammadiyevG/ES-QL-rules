@@ -1,0 +1,43 @@
+rule_id: 1fedc191-632b-472d-bdd6-999914990fbd
+name: "Agent Info: sudo Command Executed Successfully"
+description: |
+  sudo orqali muvaffaqiyatli bajarilgan buyruqlarni qayd etadi.
+  Kim, qachon, qaysi hostda sudo ishlatganini kuzatish uchun ishlatiladi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "user_cmd"
+  | WHERE auditd.result == "success"
+  | STATS
+      event_count  = COUNT(*),
+      host_names   = VALUES(host.hostname),
+      users        = VALUES(user.audit.name),
+      commands     = VALUES(auditd.data.cmd),
+      terminals    = VALUES(auditd.data.terminal),
+      session_ids  = VALUES(auditd.session),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY agent_id, host.hostname, user.audit.name
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id, host.hostname, user.audit.name, event_count,
+      host_names, users, commands,
+      terminals, session_ids, last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - detection.informational
+  - visibility.privilege-use
+severity: low
+risk_score: 15
+references: []
+nist: ["AU-12", "AC-6"]
+pci_dss: ["10.2.2"]
+gdpr: ["32.1.b"]
+mitre_attack: []
