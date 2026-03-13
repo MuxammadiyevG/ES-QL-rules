@@ -2,7 +2,6 @@ rule_id: 8bea42b6-66c4-4c3e-a095-0558961c56fc
 name: "PAN-OS: Google Services Traffic Monitoring from Internal Hosts"
 description: |
   Ushbu qoida ichki tarmoqdagi qurilmalardan Google infrastrukturasiga (google-base) yo'naltirilgan trafikni kuzatadi.
-  Logda 192.168.213.36 → 216.239.34.223 (Google) sessiyasi "computer-and-internet-info" kategoriyasida qayd etilgan.
   Bu informatsion rule bo'lib, Google xizmatlari orqali ma'lumot sızıntısı, ruxsatsiz proksi yoki tunneling urinishlarini erta aniqlash uchun baseline yaratishga yordam beradi.
   Qonuniy holatlar: Gmail, Google Drive, Google Meet, Chrome brauzeri fon trafigi.
   SOC triage bosqichlari:
