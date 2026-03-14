@@ -1,4 +1,4 @@
-rule_id: b3c4d5e6-f7a8-9012-bcde-777777777777
+rule_id: 92ae011b-1cc2-4996-9e68-414346a70a0e
 name: Fortinet FortiGate - VPN Activity Monitoring
 description: |
   Ushbu qoida FortiGate VPN hodisalarini kuzatadi.
@@ -27,8 +27,7 @@ query: |
   | EVAL foydalanuvchi = user.name
   | EVAL ulanish_ip = fortinet.fortigate.remip
   | EVAL xabar = fortinet.fortigate.logdesc
-  | EVAL agentid = agent_id
-  | KEEP @timestamp,agentid, foydalanuvchi, ulanish_ip, xabar
+  | KEEP @timestamp,foydalanuvchi, ulanish_ip, xabar
   | SORT @timestamp DESC
   | LIMIT 200
 enabled: true
@@ -51,5 +50,3 @@ references:
 mitre_attack:
   TA0001:
     T1133: []  # External Remote Services - VPN
-  TA0006:
-    T1078: []  # Valid Accounts - credential misuse

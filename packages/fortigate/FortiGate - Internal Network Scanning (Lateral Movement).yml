@@ -5,6 +5,7 @@ description: |
   Bu hujumchining tarmoq ichida boshqa qurbonlarni qidirayotganini (Internal Reconnaissance) anglatishi mumkin.
 type: esql
 params: '{}'
+query_language: esql
 schedule_interval: 10m
 index:
 - logs-fortinet.fortigate-*
@@ -20,7 +21,7 @@ query: |
       unique_targets = COUNT_DISTINCT(d_ip_str),
       total_attempts = COUNT(*),
       last_seen = MAX(@timestamp)
-    BY agent_id, source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+    BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE unique_targets > 20
   | SORT unique_targets DESC
   | LIMIT 100

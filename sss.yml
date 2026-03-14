@@ -1,0 +1,83 @@
+rule_id: 2ae64c0c-e739-4f16-bd85-3c6c9ce0b384
+name: "Agent Credential Access: Multiple sudo Failures Followed by Success (Brute Force)"
+description: |
+  Ushbu qoida Credential Access texnikasiga bog'liq bo'lib, bir foydalanuvchi tomonidan
+  qisqa vaqt ichida bir necha marta muvaffaqiyatsiz sudo urinishi, so'ngra muvaffaqiyatli
+  autentifikatsiya hodisasini aniqlaydi — bu sudo password brute force belgisi.
+  Qonuniy holatlar: foydalanuvchi parolini unutib, bir necha marta xato kiritib keyin
+  to'g'ri kiritishi. 
+  (LOOKUP JOIN yordamida ruxsat etilgan IT xodimlar yoki avtomatlashtirilgan skriptlar whitelist orqali istisno qilinadi).
+  SOC triage bosqichlari:
+  - `fail_count` va `success_count` nisbatini baholang.
+  - `auditd.data.terminal` — qaysi terminaldan urinishlar bo'lgan.
+  - Urinishlar bir sessiya (`auditd.session`) ichida bo'lganmi yoki turli sessiyalardan.
+  - `user.audit.name` — haqiqiy foydalanuvchi identitetini tasdiqlang.
+  - Muvaffaqiyatli logindan keyin qaysi buyruqlar bajarilganini tekshiring.
+  - Noqonuniy bo'lsa: foydalanuvchi sessiyasini to'xtating, sudo huquqini vaqtincha olib tashlang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds 
+  | WHERE auditd.message_type == "user_auth"
+  | WHERE auditd.data.op == "PAM:authentication"
+  | WHERE process.executable == "/usr/bin/sudo"
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(user.audit.name, user.name)
+  | EVAL terminal     = auditd.data.terminal
+  | EVAL session_id   = auditd.session
+  | EVAL result       = auditd.result
+  | WHERE actor IS NOT NULL
+  | STATS
+        event_count   = COUNT(*),
+        success_count = COUNT(auditd.result == "success"),
+        fail_count    = COUNT(auditd.result == "fail"),
+        host_names    = VALUES(host.hostname),
+        actors        = VALUES(user.audit.name),
+        terminals     = VALUES(auditd.data.terminal),
+        session_ids   = VALUES(auditd.session),
+        last_seen     = MAX(@timestamp),
+        first_seen    = MIN(@timestamp)
+      BY agent_id, host.hostname, user.audit.name
+  
+  | WHERE fail_count >= 2 AND success_count >= 1
+  | EVAL
+        host_name = host.hostname,
+        actor     = user.audit.name
+        
+    // --- FALSE POSITIVE FILTER (ANTI-JOIN) ---
+    // 1. Elasticsearch'dagi 'sudo-whitelist' nomli indeksga host va actor bo'yicha ulanamiz
+  
+  | LOOKUP JOIN sudo-whitelist ON host_name, actor
+    
+    // 2. Faqat ro'yxatda YO'Q bo'lganlarni (suppression_reason topilmaganlarni) qoldiramiz
+  
+  | WHERE IS_NULL(suppression_reason)
+    // -----------------------------------------
+  
+  | KEEP
+        agent_id, host_name, actor, event_count,
+        success_count, fail_count,
+        host_names, actors, terminals,
+        session_ids, last_seen, first_seen
+  
+  | SORT fail_count DESC
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.t1110.001
+  - detection.threat-hunting
+severity: high
+risk_score: 78
+references:
+  - "https://attack.mitre.org/techniques/T1110/001/"
+nist:
+pci_dss: ["8.1.6", "8.3", "10.2.4", "10.2.5"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0006:
+    T1110:
