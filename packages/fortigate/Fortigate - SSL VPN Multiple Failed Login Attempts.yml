@@ -48,7 +48,7 @@ references:
 - "https://attack.mitre.org/techniques/T1133/"
 nist: ["AC-7", "AC-17"]
 pci_dss: ["10.2.4", "10.2.5", "8.2.6"]
-gdpr: ["32.2", "35.7.d"]
+gdpr: ["32.2", "35.7"]
 mitre_attack:
   TA0001:
     T1133: []

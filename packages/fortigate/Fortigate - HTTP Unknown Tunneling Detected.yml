@@ -46,7 +46,7 @@ references:
 - "https://attack.mitre.org/techniques/T1071/"
 nist: ["SC-7", "SI-4"]
 pci_dss: ["10.6.1"]
-gdpr: ["35.7.d"]
+gdpr: ["35.7"]
 mitre_attack:
   TA0011:
     T1071: []

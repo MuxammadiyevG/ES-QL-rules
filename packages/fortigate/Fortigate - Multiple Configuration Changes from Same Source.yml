@@ -44,7 +44,7 @@ references:
 - "https://attack.mitre.org/techniques/T1089/"
 nist: ["CM-3", "CM-5", "AU-6"]
 pci_dss: ["10.2.7"]
-gdpr: ["35.7.d"]
+gdpr: ["35.7"]
 mitre_attack:
   TA0005:
     T1089: []
