@@ -48,6 +48,6 @@ references:
 - "https://www.fortinet.com/support"
 nist: ["SI-4"]
 pci_dss: ["11.4"]
-gdpr: ["35.7"]
+gdpr: ["35.7.d"]
 mitre_attack:
   TA0040: []
