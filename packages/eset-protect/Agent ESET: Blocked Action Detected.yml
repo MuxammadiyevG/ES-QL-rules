@@ -1,0 +1,89 @@
+rule_id: a128687b-3c5b-40d1-abbc-4514ae7e1714
+name: "Agent ESET: Blocked Action Detected"
+description: |
+  Ushbu qoida ESET Protect tomonidan bloklangan barcha hodisalarni aniqlaydi.
+  event.action == "Blocked" bo'lgan har qanday hodisa potensial xavf sifatida
+  qayd etiladi — ARP spoofing, firewall block, malware block va boshqalar.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-eset.protect-*
+query_language: esql
+query: |
+  FROM logs-eset.protect-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.action == "Blocked"
+  | EVAL host_name        = host.name
+  | EVAL host_ip          = host.ip
+  | EVAL src_ip           = source.ip
+  | EVAL src_address      = eset_protect.source_address
+  | EVAL src_address_type = eset_protect.source_address_type
+  | EVAL target_address   = eset_protect.target_address
+  | EVAL target_addr_type = eset_protect.target_address_type
+  | EVAL protocol         = eset_protect.protocol
+  | EVAL threat_name      = rule.name
+  | EVAL eset_event       = eset_protect.event
+  | EVAL severity         = eset_protect.severity
+  | EVAL handled          = eset_protect.handled
+  | EVAL inbound          = eset_protect.inbound
+  | EVAL aggregate_count  = eset_protect.aggregate_count
+  | EVAL event_type       = event.category
+  | EVAL os_name          = eset_protect.os_name
+  | EVAL group_name       = eset_protect.group_name
+  | EVAL source_uuid      = eset_protect.source_uuid
+  | WHERE host_name IS NOT NULL
+  | STATS
+      event_count       = COUNT(*),
+      total_aggregates  = SUM(eset_protect.aggregate_count),
+      host_names        = VALUES(host.name),
+      host_ips          = VALUES(host.ip),
+      src_ips           = VALUES(source.ip),
+      src_addresses     = VALUES(eset_protect.source_address),
+      target_addresses  = VALUES(eset_protect.target_address),
+      protocols         = VALUES(eset_protect.protocol),
+      threat_names      = VALUES(rule.name),
+      eset_events       = VALUES(eset_protect.event),
+      severities        = VALUES(eset_protect.severity),
+      handled_values    = VALUES(eset_protect.handled),
+      inbound_values    = VALUES(eset_protect.inbound),
+      event_types       = VALUES(event.category),
+      os_names          = VALUES(eset_protect.os_name),
+      group_names       = VALUES(eset_protect.group_name),
+      source_uuids      = VALUES(eset_protect.source_uuid),
+      last_seen         = MAX(@timestamp),
+      first_seen        = MIN(@timestamp)
+    BY agent_id, host.name, rule.name, eset_protect.source_address
+  | WHERE event_count >= 1
+  | EVAL
+      host_name    = host.name,
+      threat_name  = rule.name,
+      src_address  = eset_protect.source_address
+  | KEEP
+      agent_id, host_name, threat_name, src_address, event_count, total_aggregates,
+      host_names, host_ips, src_ips, src_addresses, target_addresses,
+      protocols, threat_names, eset_events, severities,
+      handled_values, inbound_values, event_types,
+      os_names, group_names, source_uuids,
+      last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.network
+  - attack.defense-evasion
+  - attack.t1040
+  - attack.t1562
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1040/"
+  - "https://attack.mitre.org/techniques/T1562/"
+nist: ["SI-4", "SC-7", "AU-12", "IR-4"]
+pci_dss: ["1.3", "10.6.1", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1562: []
+  TA0007:
+    T1040: []

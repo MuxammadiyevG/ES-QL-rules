@@ -1,0 +1,50 @@
+rule_id: c0b049f2-4604-4d4e-9d57-c99f1559c3a7
+name: "Agent ESET: Alert Detected"
+description: |
+  ESET Protect dan kelgan barcha alertlarni SIEM ga uzatadi.
+  Severity, threat name, event tavsifi va barcha ma'lumotlar
+  to'liq ESET logi ichidan olinadi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-eset.protect-*
+query_language: esql
+query: |
+  FROM logs-eset.protect-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | KEEP
+      @timestamp,
+      agent_id,
+      host.name,
+      host.ip,
+      source.ip,
+      event.action,
+      event.category,
+      event.module,
+      rule.name,
+      eset_protect.event,
+      eset_protect.severity,
+      eset_protect.source_address,
+      eset_protect.source_address_type,
+      eset_protect.target_address,
+      eset_protect.target_address_type,
+      eset_protect.protocol,
+      eset_protect.handled,
+      eset_protect.inbound,
+      eset_protect.aggregate_count,
+      eset_protect.os_name,
+      eset_protect.group_name,
+      eset_protect.source_uuid
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - detection.eset
+  - detection.threat-hunting
+severity: high
+risk_score: 70
+references: []
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.6.1", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack: []
