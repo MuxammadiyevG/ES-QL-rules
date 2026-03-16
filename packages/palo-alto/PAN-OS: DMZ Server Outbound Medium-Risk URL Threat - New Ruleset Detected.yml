@@ -1,21 +1,12 @@
 rule_id: c6a48eac-6a5f-4d3c-b9db-930dea1a83d8
 name: "PAN-OS: DMZ Server Outbound Medium-Risk URL Threat - New Ruleset Detected"
 description: |
-  Ushbu qoida DMZ zonasidagi 10.25.255.6 serverdan "pass-waf-out-1" qoidasi orqali
-  194.93.25.227 tashqi IP'ga yo'naltirilgan va PAN-OS tomonidan "medium-risk,unknown"
+  Ushbu qoida DMZ zonasidagi  serverdan "pass-waf-out-1" qoidasi orqali
   kategoriyasida "alert" sifatida belgilangan SSL trafikni aniqlaydi.
   ThreatID (9999) — noma'lum yoki aniqlanmagan tahdid identifikatori.
-  URL_Filename: 194.93.25.227/ — root path so'rovi, C2 beacon yoki reconnaissance belgisi bo'lishi mumkin.
   App teglari: used-by-malware, able-to-transfer-file, has-known-vulnerability, tunnel-other-application.
   DestinationLocation: UZ-Manual — manzil IP qo'lda qo'shilgan Uzbekiston IP ro'yxatida.
   Qonuniy holatlar: korporativ proksi, antivirus update, CDN so'rovlari.
-  SOC triage bosqichlari:
-  - 194.93.25.227 IP'ni VirusTotal, Shodan, AbuseIPDB orqali tekshiring.
-  - rule.name "pass-waf-out-1" — WAF orqali o'tkazilgan, WAF logi bilan korrelyatsiya qiling.
-  - ThreatID (9999) — custom yoki noma'lum threat, tahlil talab etadi.
-  - URL root path "/" so'rovi — oddiy browser so'rovi yoki avtomatlashtirilgan beacon?
-  - source.nat.ip (185.203.236.10) — NAT IP'ni ham bloklashni baholang.
-  - Noqonuniy bo'lsa: pass-waf-out-1 qoidasini block'ga o'zgartiring.
 type: esql
 params: '{}'
 schedule_interval: 5m

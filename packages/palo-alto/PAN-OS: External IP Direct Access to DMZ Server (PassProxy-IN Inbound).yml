@@ -1,8 +1,7 @@
 rule_id: 794c41d6-cc2d-4ccd-8af8-53bc06d7f54a
 name: "PAN-OS: External IP Direct Access to DMZ Server (PassProxy-IN Inbound)"
 description: |
-  Ushbu qoida tashqi IP manzillarning bevosita DMZ serverga (10.25.255.6) kirishi va "government" URL kategoriyasi ostida sessiya yaratishini aniqlaydi.
-  PassProxy-IN qoidasi orqali kirayotgan trafik — xorijiy IP'lardan (92.63.205.168, 185.139.138.x, 185.213.229.24, 95.214.210.198) katta hajmda ma'lumot olinmoqda.
+  Ushbu qoida tashqi IP manzillarning bevosita DMZ serverga  kirishi va "government" URL kategoriyasi ostida sessiya yaratishini aniqlaydi.
   Bu holat DMZ serverga DDoS, scanning, brute-force yoki noqonuniy kirish urinishlarini bildirishi mumkin.
   Qonuniy holatlar: tashqi foydalanuvchilar tomonidan hukumat portaliga murojaat, rejalashtirilgan sinxronizatsiya.
   SOC triage bosqichlari:

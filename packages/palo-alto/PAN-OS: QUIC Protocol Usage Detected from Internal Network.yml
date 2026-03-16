@@ -3,7 +3,6 @@ name: "PAN-OS: QUIC Protocol Usage Detected from Internal Network"
 description: |
   Ushbu qoida ichki tarmoqdagi qurilmalardan QUIC protokoli orqali tashqi manzillarga ulanishni kuzatadi.
   QUIC (UDP/443) Google va Cloudflare xizmatlari tomonidan ishlatiladigan zamonaviy transport protokoli.
-  Logda 192.168.213.29 → 216.58.209.174 (Google) va 192.168.213.37 → 188.114.96.1 (Cloudflare) QUIC sessiyalari qayd etilgan.
   QUIC trafigi an'anaviy SSL inspeksiyasini chetlab o'tishi mumkin, shu sababli monitoring qilish muhim.
   Qonuniy holatlar: Chrome/Edge brauzerlari, YouTube, Google Workspace, Cloudflare xizmatlari.
   SOC triage bosqichlari:

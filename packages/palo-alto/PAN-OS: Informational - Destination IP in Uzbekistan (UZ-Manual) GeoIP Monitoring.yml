@@ -7,7 +7,6 @@ description: |
   destination.geo.city_name: Tashkent, destination.geo.location: POINT (69.2177 41.2615).
   Bu qoida Uzbekiston IP'lariga yo'naltirilgan trafikni monitoring qilish va
   anomal maqsad manzillarni aniqlash uchun baseline yaratadi.
-  Logda 194.93.25.227 → Tashkent (UZ) manzili qayd etilgan.
   Qonuniy holatlar: mahalliy serverlar, hukumat resurslari, mahalliy CDN.
   SOC triage bosqichlari:
   - destination.ip'ni mahalliy IP registri bilan solishtiring.

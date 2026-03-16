@@ -4,7 +4,6 @@ description: |
   Ushbu qoida firewall tomonidan "aged-out" (vaqt tugashi sababli yopilgan) deb belgilangan sessiyalarni kuzatadi.
   "aged-out" sessiyalar — normal TCP FIN/RST bilan yopilmagan, balki firewall timeout tufayli tugagan ulanishlar.
   Bu holat uzoq muddatli C2 beacon ulanishlari, yashirin tunnel yoki "keep-alive" urinishlarini ko'rsatishi mumkin.
-  Logda 185.139.138.207 → DMZ (10.25.255.6) va ichki QUIC sessiyalari "aged-out" bilan yakunlangan.
   Qonuniy holatlar: idle ulanishlar, NAT timeout, CDN persistent ulanishlar.
   SOC triage bosqichlari:
   - Sessiya qancha vaqt davom etgan? (event.duration)

@@ -2,7 +2,6 @@ rule_id: 5420dc08-dfb1-4382-a10a-31422925e7f3
 name: "PAN-OS: Medium-Risk URL Threat Detection - High Volume"
 description: |
   Ushbu qoida Palo Alto Networks firewall tomonidan aniqlangan "medium-risk" tahdidlarning yuqori hajmda sodir bo'lishini kuzatadi.
-  DMZ zonasidan tashqi IP manzillarga (194.93.25.227) yo'naltirilgan SSL trafigida "medium-risk" URL kategoriyali tahdidlar qayta-qayta qayd etilmoqda.
   Bu holat C2 (Command & Control) aloqasi, data exfiltration yoki malware yuklab olish urinishlarini ko'rsatishi mumkin.
   App teglari: "used-by-malware", "able-to-transfer-file", "has-known-vulnerability", "tunnel-other-application".
   Qonuniy holatlar: ommaviy CDN xizmatlari, antivirus yangilanishlari, korporativ proksi trafigi.

@@ -3,7 +3,6 @@ name: "PAN-OS: Suspicious TCP Reset Storm from DMZ (Possible Scanning or DoS)"
 description: |
   Ushbu qoida DMZ zonasidan bir xil tashqi IP'ga qisqa vaqt ichida ko'p sonli TCP RST (Reset) bilan tugaydigan sessionlarning yuqori sonini aniqlaydi.
   TCP RST stormlar port scanning, connection flooding, yoki C2 beacon urinishlari bilan bog'liq bo'lishi mumkin.
-  Logda 10.25.255.6 → 194.93.25.227 yo'nalishida bir vaqtning o'zida onlab sessiya "tcp-rst-from-client" bilan yakunlangan.
   Qonuniy holatlar: tarmoq muammolari tufayli TCP timeout, yuk muvozanatlagich konfiguratsiyasi.
   SOC triage bosqichlari:
   - RST'lar bir vaqtda sodir bo'lganmi yoki ketma-ket? (timestamp'larni solishtiring)

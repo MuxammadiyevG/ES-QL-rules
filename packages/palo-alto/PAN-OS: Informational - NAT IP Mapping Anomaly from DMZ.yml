@@ -3,7 +3,6 @@ name: "PAN-OS: Informational - NAT IP Mapping Anomaly from DMZ"
 description: |
   Ushbu qoida DMZ zonasidagi serverlardan tashqariga chiqayotgan trafikda
   source.nat.ip manzillarining o'zgarishi yoki kutilmagan NAT IP'larni kuzatadi.
-  Logda source.ip: 10.25.255.6 → source.nat.ip: 185.203.236.10 NAT mapping qayd etilgan.
   Agar DMZ serveridan boshqa NAT IP'lar orqali trafik chiqsa — bu noqonuniy NAT konfiguratsiyasi,
   IP spoofing yoki ruxsatsiz tunnel bo'lishi mumkin.
   Qonuniy holatlar: load balancer IP'lari, bir nechta ISP NAT pool'lari.
