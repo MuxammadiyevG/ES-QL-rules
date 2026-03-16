@@ -40,7 +40,7 @@ query: |
   | WHERE event_count >= 1
   | EVAL
       host_name         = winlog.computer_name,
-      process_name      = winlog.event_data.NewProcessName,
+      process_name      = winlog.event_data.NewProcessName
   | KEEP
       agent_id,
       host_name,

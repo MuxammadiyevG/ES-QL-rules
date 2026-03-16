@@ -43,7 +43,7 @@ query: |
   | EVAL
       destination_host  = winlog.computer_name,
       destination_ip    = winlog.event_data.IpAddress,
-      user              = winlog.event_data.TargetUserName,
+      user              = winlog.event_data.TargetUserName
   | KEEP
       agent_id,
       destination_host,
