@@ -33,7 +33,7 @@ query: |
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY 
       agent_id, host.name, 
-      bucket = DATE_TRUNC(20m, @timestamp)
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   // Risk Score: Baseline 25 (Rarely used in standard office setups); bonus for after-hours
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20

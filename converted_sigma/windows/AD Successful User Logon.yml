@@ -21,7 +21,6 @@ query: |
   | EVAL logon_type = winlog.event_data.LogonType
   | KEEP agent_id, @timestamp, hostn, user, src_ip, logon_type
   | SORT @timestamp DESC
-  | LIMIT 200
 enabled: false
 tags:
   - detection.logon

@@ -33,7 +33,7 @@ query: |
       after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
     BY 
       agent_id, host.name, 
-      bucket = DATE_TRUNC(20m, @timestamp)
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   // Risk: 10 points per event + 10 points for after-hours activity
   | EVAL risk_score = event_count * 10 + after_hours_hits * 10
@@ -57,5 +57,3 @@ pci_dss: ["10.2"]
 mitre_attack:
   TA0010:
     T1560: []
-  TA0009:
-    T1560_2: []

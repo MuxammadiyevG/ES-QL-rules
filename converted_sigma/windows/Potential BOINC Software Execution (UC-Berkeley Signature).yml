@@ -41,7 +41,7 @@ query: |
       suspicious_path_hits = SUM(CASE(suspicious_path == true, 1, 0))
     BY 
       agent_id, host.name, 
-      bucket = DATE_TRUNC(20m, @timestamp)
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   // Risk Score: Base of 1 per hit; significant multipliers for night-time or suspicious locations
   | EVAL risk_score = event_count * 1 + after_hours_hits * 5 + suspicious_path_hits * 5
@@ -54,9 +54,8 @@ enabled: false
 tags:
   - attack.execution
   - attack.defense-evasion
-  - attack.t1553
   - detection.threat-hunting
-severity: informational
+severity: low
 risk_score: 5
 references:
   - "https://boinc.berkeley.edu/"
@@ -65,5 +64,5 @@ nist: ["AU-6", "SI-4"]
 pci_dss: ["10.2"]
 gdpr: ["32.1.a"]
 mitre_attack:
-  TA0002:
+  TA0005:
     T1553: []

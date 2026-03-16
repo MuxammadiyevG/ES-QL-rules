@@ -33,7 +33,7 @@ query: |
       pids = VALUES(winlog.event_data.ProcessPid)
     BY 
       agent_id, host.name, 
-      bucket = DATE_TRUNC(20m, @timestamp)
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP 
       agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids

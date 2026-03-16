@@ -20,7 +20,6 @@ query: |
   | EVAL privilege_list = winlog.event_data.PrivilegeList
   | KEEP agent_id, @timestamp, hostn, user, privilege_list
   | SORT @timestamp DESC
-  | LIMIT 100
 enabled: false
 tags:
   - detection.privilege_escalation

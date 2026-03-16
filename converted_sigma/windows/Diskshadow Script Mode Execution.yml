@@ -36,7 +36,7 @@ query: |
       pids = VALUES(winlog.event_data.ProcessPid)
     BY 
       agent_id, host.name, 
-      bucket = DATE_TRUNC(20m, @timestamp)
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP 
       agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids
@@ -58,5 +58,5 @@ nist: ["SI-4", "AU-12"]
 pci_dss: ["10.2"]
 gdpr: ["32.1.b"]
 mitre_attack:
-  TA0002:
+  TA0005:
     T1218: []

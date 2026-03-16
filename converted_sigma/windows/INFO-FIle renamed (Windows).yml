@@ -33,7 +33,7 @@ query: |
       raw_samples = VALUES(event.original)
     BY 
       agent_id, host.name, 
-      bucket = DATE_TRUNC(20m, @timestamp)
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP 
       agent_id, bucket, host.name, event_count, users, processes, executables, parents, parent_executables, paths, raw_samples
@@ -42,7 +42,7 @@ enabled: false
 tags:
   - informational
   - file-monitoring
-severity: informational
+severity: low
 risk_score: 1
 references:
   - "https://www.elastic.co/guide/en/ecs/current/ecs-event.html"

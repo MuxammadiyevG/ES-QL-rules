@@ -16,60 +16,41 @@ index:
 query_language: esql
 query: |
   FROM logs-winlog*
-  // File rename telemetry (best-effort; depends on pipeline)
-  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE "(?i).*file.*"
-  // Evaluate Target path
+  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE """(?i).*file.*"""
   | EVAL tgt = COALESCE(winlog.event_data.OriginalFileName, "")
-  | WHERE tgt RLIKE "(?i).*\\\\.dll$"
-  
-  // Best-effort source checks via raw log content
+  | WHERE tgt RLIKE """(?i).*\.dll$"""
   | EVAL raw = COALESCE(event.original, "")
-  
-  // filter_main_empty_source: Ignore events with no source path
-  | WHERE NOT (raw RLIKE "(?i).*SourceFilename\\\\s*[:=]\\\\s*(''|\"\"|null).*")
-  
-  // filter_main_dll: SourceFilename was NOT already a .dll (exclude true dll->dll renames)
-  | WHERE NOT (raw RLIKE "(?i).*SourceFilename\\\\s*[:=].*\\\\.dll\\\\b.*")
-  
-  // filter_main_installers: SourceFilename was NOT a .tmp file
-  | WHERE NOT (raw RLIKE "(?i).*SourceFilename\\\\s*[:=].*\\\\.tmp\\\\b.*")
-  
-  // filter_main_tiworker: Handle TiWorker exclusions via path or raw log grep
+  | WHERE NOT (raw RLIKE """(?i).*SourceFilename\s*[:=]\s*(null|"").*""")
+  | WHERE NOT (raw RLIKE """(?i).*SourceFilename\s*[:=].*\.dll\b.*""")
+  | WHERE NOT (raw RLIKE """(?i).*SourceFilename\s*[:=].*\.tmp\b.*""")
   | WHERE NOT (
-      (winlog.event_data.ProcessName LIKE "*:\\\\Windows\\\\WinSxS\\\\*" AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\\\\\TiWorker\\\\.exe$")
-      OR raw RLIKE "(?i).*Image\\\\s*[:=].*\\\\\\\\TiWorker\\\\.exe\\\\b.*"
+      (winlog.event_data.ProcessName LIKE "*:\\Windows\\WinSxS\\*"
+        AND winlog.event_data.ProcessName RLIKE """(?i).*\\TiWorker\.exe$""")
+      OR raw RLIKE """(?i).*Image\s*[:=].*\\TiWorker\.exe\b.*"""
     )
-  
-  // filter_main_upgrade: Ignore Windows Update staging
   | WHERE NOT (
-      winlog.event_data.ProcessName RLIKE "(?i).*:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\wuauclt\\\\.exe$"
-      AND tgt LIKE "*:\\\\$WINDOWS.~BT\\\\Sources\\\\*"
+      winlog.event_data.ProcessName RLIKE """(?i).*:\\Windows\\System32\\wuauclt\.exe$"""
+      AND tgt LIKE "*:\\$WINDOWS.~BT\\Sources\\*"
     )
-  
-  // filter_main_generic: Program Files paths
   | WHERE NOT (
-      winlog.event_data.ProcessName LIKE "*:\\\\Program Files (x86)\\\\*"
-      OR winlog.event_data.ProcessName LIKE "*:\\\\Program Files\\\\*"
+      winlog.event_data.ProcessName LIKE "*:\\Program Files (x86)\\*"
+      OR winlog.event_data.ProcessName LIKE "*:\\Program Files\\*"
     )
-  
-  // filter_optional_squirrel: Ignore Squirrel installer temp files
-  | WHERE NOT (raw RLIKE "(?i).*SourceFilename\\\\s*[:=].*\\\\\\\\SquirrelTemp\\\\\\\\temp.*")
-  
+  | WHERE NOT (raw RLIKE """(?i).*SourceFilename\s*[:=].*\\SquirrelTemp\\temp.*""")
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
-      parents = VALUES(winlog.event_data.CallerProcessName),
-      parent_executables = VALUES(winlog.event_data.CallerProcessName),
-      target_paths = VALUES(tgt),
-      raw_samples = VALUES(raw)
-    BY 
-      agent_id, host.name, 
-      bucket = DATE_TRUNC(20m, @timestamp)
+      event_count        = COUNT(*),
+      users              = VALUES(winlog.event_data.TargetUserName),
+      processes          = VALUES(winlog.event_data.ProcessName),
+      parents            = VALUES(winlog.event_data.CallerProcessName),
+      target_paths       = VALUES(tgt),
+      raw_samples        = VALUES(raw)
+    BY
+      agent_id, host.name,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, processes, executables, parents, parent_executables, target_paths, raw_samples
+  | KEEP
+      agent_id, bucket, host.name, event_count,
+      users, processes, parents, target_paths, raw_samples
   | SORT event_count DESC
 enabled: false
 tags:
