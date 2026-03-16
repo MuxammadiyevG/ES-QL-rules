@@ -33,9 +33,9 @@ query: |
   | EVAL application     = network.application
   | EVAL transport       = network.transport
   | EVAL flow_id         = panw.panos.flow_id
-  | EVAL nat_pair        = CONCAT(source.ip, " → NAT: ", source.nat.ip)
+  | EVAL nat_pair        = CONCAT(TO_STRING(source.ip), " -> NAT: ", TO_STRING(source.nat.ip))
   | EVAL known_nat       = CASE(
-      source.nat.ip == "185.203.236.10", "KNOWN - Primary NAT",
+      source.nat.ip == TO_IP("185.203.236.10"), "KNOWN - Primary NAT",
       "UNKNOWN - Investigate"
     )
   | STATS
