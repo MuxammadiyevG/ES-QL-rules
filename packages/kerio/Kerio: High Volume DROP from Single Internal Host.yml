@@ -1,0 +1,62 @@
+rule_id: f6e40dea-4cf5-4bd8-ab1a-3b0c92993759
+name: "Kerio: High Volume DROP from Single Internal Host"
+description: |
+  Ushbu qoida bitta ichki hostdan qisqa vaqt ichida ko'p sonli DROP hodisalarini
+  aniqlaydi. Bu host infected bo'lib, C2 ulanish yoki scanning urinishi qilayotgan
+  bo'lishi mumkin.
+  SOC triage bosqichlari:
+  - source.ip hostni tekshiring va zarur bo'lsa izolyatsiya qiling.
+  - rule.name VALUES ni ko'ring — qaysi rule bloklayapti.
+  - Destination IP larni tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-kerio.control-*
+query_language: esql
+query: |
+  FROM logs-kerio.control-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.action == "drop"
+  | EVAL _src = TO_STRING(source.ip)
+  | EVAL src_ip = CASE(_src IS NULL, "Unknown", _src)
+  | WHERE src_ip != "Unknown"
+  | WHERE src_ip != "0.0.0.0"
+  | WHERE NOT destination.port == 67
+  | WHERE NOT destination.port == 68
+  | WHERE NOT destination.port == 137
+  | WHERE NOT destination.port == 138
+  | WHERE NOT destination.port == 5050
+  | STATS
+      drop_count     = COUNT(*),
+      unique_dst_ips = COUNT_DISTINCT(destination.ip),
+      unique_ports   = COUNT_DISTINCT(destination.port),
+      dst_ips        = VALUES(destination.ip),
+      dst_ports      = VALUES(destination.port),
+      protos         = VALUES(network.transport),
+      tcp_flags      = VALUES(kerio.control.tcp_flags),
+      rule_names     = VALUES(rule.name),
+      last_seen      = MAX(@timestamp),
+      first_seen     = MIN(@timestamp)
+    BY src_ip
+  | WHERE drop_count >= 10
+  | KEEP
+      src_ip, drop_count, unique_dst_ips, unique_ports,
+      dst_ips, dst_ports, protos, tcp_flags, rule_names,
+      last_seen, first_seen
+  | SORT drop_count DESC
+enabled: true
+tags:
+  - attack.command-and-control
+  - attack.t1071
+  - detection.threat-hunting
+severity: high
+risk_score: 73
+references:
+  - "https://attack.mitre.org/techniques/T1071/"
+nist: ["SC-7", "SI-4", "AU-12"]
+pci_dss: ["1.3", "10.6.1", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0011:
+    T1071: []

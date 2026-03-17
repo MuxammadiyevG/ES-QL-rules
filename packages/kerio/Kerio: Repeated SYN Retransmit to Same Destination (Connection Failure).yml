@@ -1,0 +1,58 @@
+rule_id: b2659e66-63cb-4c30-85cc-868c61970a76
+name: "Kerio: Repeated SYN Retransmit to Same Destination (Connection Failure)"
+description: |
+  Ushbu qoida bitta source IP dan bitta destination IP:port ga bir xil TCP sequence
+  number bilan takroriy SYN paketlarini aniqlaydi. Bu TCP retransmit — destination
+  javob bermayotgan yoki bloklangan. Logda ko'ringan pattern: bir xil seq number
+  bilan 3-5 marta qayta yuborilgan SYN paketlar.
+  Qonuniy holatlar: host yetib bo'lmaydigan server bilan ulanmoqchi.
+  SOC triage bosqichlari:
+  - source.ip — qaysi host ulanmoqchi.
+  - destination.ip — server mavjud va ishlayaptimi.
+  - Juda ko'p xil destination bo'lsa — C2 ulanish urinishi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-kerio.control-*
+query_language: esql
+query: |
+  FROM logs-kerio.control-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE network.transport == "tcp"
+  | WHERE kerio.control.tcp_flags LIKE "*SYN*"
+  | WHERE NOT kerio.control.tcp_flags LIKE "*ACK*"
+  | EVAL _src = TO_STRING(source.ip)
+  | EVAL src_ip = CASE(_src IS NULL, "Unknown", _src)
+  | EVAL _dst = TO_STRING(destination.ip)
+  | EVAL dst_ip = CASE(_dst IS NULL, "Unknown", _dst)
+  | WHERE src_ip != "Unknown"
+  | WHERE src_ip != "0.0.0.0"
+  | STATS
+      syn_count    = COUNT(*),
+      dst_ips      = VALUES(destination.ip),
+      dst_ports    = VALUES(destination.port),
+      actions      = VALUES(event.action),
+      rule_names   = VALUES(rule.name),
+      pkt_lengths  = VALUES(kerio.control.packet_length),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY src_ip, dst_ip, destination.port
+  | WHERE syn_count >= 3
+  | EVAL dst_port = destination.port
+  | KEEP
+      src_ip, dst_ip, dst_port, syn_count,
+      dst_ips, dst_ports, actions, rule_names,
+      pkt_lengths, last_seen, first_seen
+  | SORT syn_count DESC
+enabled: true
+tags:
+  - detection.informational
+  - network.tcp-retransmit
+severity: low
+risk_score: 25
+references: []
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack: []

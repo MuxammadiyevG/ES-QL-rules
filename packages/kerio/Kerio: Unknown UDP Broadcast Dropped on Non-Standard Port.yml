@@ -1,0 +1,60 @@
+rule_id: ec4d6e31-1902-492a-b86b-238cfb122172
+name: "Kerio: Unknown UDP Broadcast Dropped on Non-Standard Port"
+description: |
+  Ushbu qoida Kerio tomonidan bloklangan noma'lum UDP broadcast paketlarini
+  aniqlaydi. Logda ko'ringan: 10.80.240.x:5050 → 255.255.255.255:5050 va
+  10.1.27.97:5678 → 255.255.255.255:5678 kabi patternlar.
+  Port 5050 — Telegram desktop yoki boshqa messenger; 5678 — Mikrotik discovery.
+  SOC triage bosqichlari:
+  - destination.port — bu port qaysi dasturga tegishli ekanini aniqlang.
+  - source.ip — qaysi host yuborayapti, ruxsatli qurilmami.
+  - Ko'p hostdan kelsa — broadcast storm yoki discovery protocol.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-kerio.control-*
+query_language: esql
+query: |
+  FROM logs-kerio.control-*
+  | WHERE @timestamp >= NOW() - 900 seconds
+  | WHERE event.action == "drop"
+  | WHERE network.transport == "udp"
+  | WHERE destination.port NOT IN (
+      53, 67, 68, 123, 137, 138, 161, 162,
+      443, 500, 514, 4500
+    )
+  | EVAL _dst = TO_STRING(destination.ip)
+  | EVAL dst_ip = CASE(_dst IS NULL, "Unknown", _dst)
+  | WHERE dst_ip == "255.255.255.255"
+  | EVAL _src = TO_STRING(source.ip)
+  | EVAL src_ip = CASE(_src IS NULL, "Unknown", _src)
+  | WHERE src_ip != "Unknown"
+  | WHERE src_ip != "0.0.0.0"
+  | STATS
+      drop_count   = COUNT(*),
+      src_ips      = VALUES(source.ip),
+      dst_ports    = VALUES(destination.port),
+      pkt_lengths  = VALUES(kerio.control.packet_length),
+      rule_names   = VALUES(rule.name),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY src_ip, destination.port
+  | WHERE drop_count >= 5
+  | EVAL dst_port = destination.port
+  | KEEP
+      src_ip, dst_port, drop_count,
+      src_ips, dst_ports, pkt_lengths, rule_names,
+      last_seen, first_seen
+  | SORT drop_count DESC
+enabled: true
+tags:
+  - detection.informational
+  - network.broadcast
+severity: low
+risk_score: 20
+references: []
+nist: ["CM-7", "SI-4", "AU-12"]
+pci_dss: ["1.3", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack: []

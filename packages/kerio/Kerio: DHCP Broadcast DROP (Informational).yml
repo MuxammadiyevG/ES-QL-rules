@@ -1,0 +1,50 @@
+rule_id: 7dead04c-a37d-4a8a-912f-ff372abbcd67
+name: "Kerio: DHCP Broadcast DROP (Informational)"
+description: |
+  Ushbu qoida Kerio tomonidan bloklangan DHCP broadcast paketlarini qayd etadi.
+  0.0.0.0:68 → 255.255.255.255:67 pattern — DHCP discovery/request.
+  Kerio bu paketlarni "Block other traffic" rule bilan bloklaydi.
+  Qonuniy holatlar: yangi qurilma IP olmoqchi, DHCP lease yangilanishi.
+  SOC triage bosqichlari:
+  - Juda ko'p bo'lsa — DHCP server bilan muammo yoki yangi ruxsatsiz qurilma.
+  - VLAN nomini tekshiring — kutilmagan VLAN dan kelayotgan bo'lsa shubhali.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+  - logs-kerio.control-*
+query_language: esql
+query: |
+  FROM logs-kerio.control-*
+  | WHERE @timestamp >= NOW() - 900 seconds
+  | WHERE event.action == "drop"
+  | WHERE network.transport == "udp"
+  | WHERE destination.port == 67
+  | WHERE source.port == 68
+  | EVAL _src = TO_STRING(source.ip)
+  | EVAL src_ip = CASE(_src IS NULL, "Unknown", _src)
+  | STATS
+      drop_count   = COUNT(*),
+      src_ips      = VALUES(source.ip),
+      rule_names   = VALUES(rule.name),
+      pkt_lengths  = VALUES(kerio.control.packet_length),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY src_ip
+  | WHERE drop_count >= 10
+  | KEEP
+      src_ip, drop_count,
+      src_ips, rule_names, pkt_lengths,
+      last_seen, first_seen
+  | SORT drop_count DESC
+enabled: true
+tags:
+  - detection.informational
+  - network.dhcp
+severity: low
+risk_score: 15
+references: []
+nist: ["CM-8", "SI-4"]
+pci_dss: ["2.4", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack: []

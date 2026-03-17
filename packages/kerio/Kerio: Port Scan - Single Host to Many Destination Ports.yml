@@ -1,0 +1,58 @@
+rule_id: 69bd9644-0d9a-442b-94c8-53fafad38ece
+name: "Kerio: Port Scan - Single Host to Many Destination Ports"
+description: |
+  Ushbu qoida bitta hostdan ko'p xil portlarga ulanish urinishlarini aniqlaydi.
+  Bu port scanning faoliyatining belgisi.
+  SOC triage bosqichlari:
+  - source.ip — scan manbai ichkimi yoki tashqimi.
+  - unique_ports 20 dan oshsa — aniq port scan.
+  - IT security jamoasi bilan solishtiring — ruxsatli scan bormi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-kerio.control-*
+query_language: esql
+query: |
+  FROM logs-kerio.control-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | EVAL _src = TO_STRING(source.ip)
+  | EVAL src_ip = CASE(_src IS NULL, "Unknown", _src)
+  | EVAL _dst = TO_STRING(destination.ip)
+  | EVAL dst_ip = CASE(_dst IS NULL, "Unknown", _dst)
+  | WHERE src_ip != "Unknown"
+  | WHERE src_ip != "0.0.0.0"
+  | STATS
+      unique_ports   = COUNT_DISTINCT(destination.port),
+      total_packets  = COUNT(*),
+      allow_count    = COUNT_IF(event.action == "allow"),
+      drop_count     = COUNT_IF(event.action == "drop"),
+      dst_ports      = VALUES(destination.port),
+      dst_ips        = VALUES(destination.ip),
+      protos         = VALUES(network.transport),
+      rule_names     = VALUES(rule.name),
+      last_seen      = MAX(@timestamp),
+      first_seen     = MIN(@timestamp)
+    BY src_ip, dst_ip
+  | WHERE unique_ports >= 15
+  | KEEP
+      src_ip, dst_ip, unique_ports, total_packets,
+      allow_count, drop_count,
+      dst_ports, dst_ips, protos, rule_names,
+      last_seen, first_seen
+  | SORT unique_ports DESC
+enabled: true
+tags:
+  - attack.discovery
+  - attack.t1046
+  - detection.threat-hunting
+severity: high
+risk_score: 72
+references:
+  - "https://attack.mitre.org/techniques/T1046/"
+nist: ["SC-7", "SI-4", "AU-12"]
+pci_dss: ["11.4", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0007:
+    T1046: []

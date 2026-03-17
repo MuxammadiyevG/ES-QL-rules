@@ -1,0 +1,47 @@
+rule_id: d4048fae-549b-4c2c-a927-610fe88e1802
+name: "Kerio: New Rule Name Seen (Firewall Policy Change Detection)"
+description: |
+  Ushbu qoida Kerio logida yangi, avval ko'rilmagan rule.name qiymatlarini
+  aniqlaydi. Firewall policy o'zgarganda yoki yangi rule qo'shilganda bu
+  hodisa qayd etiladi. Vizibiliti va change tracking uchun foydali.
+  Qonuniy holatlar: IT admin tomonidan yangi firewall rule qo'shilishi.
+  SOC triage bosqichlari:
+  - rule.name — kutilmagan yoki tushunarsiz nom shubhali.
+  - Change management tizimi bilan solishtiring.
+  - Kerio admin panel logini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 60m
+index:
+  - logs-kerio.control-*
+query_language: esql
+query: |
+  FROM logs-kerio.control-*
+  | WHERE @timestamp >= NOW() - 3600 seconds
+  | WHERE rule.name IS NOT NULL
+  | STATS
+      event_count  = COUNT(*),
+      actions      = VALUES(event.action),
+      src_ips      = VALUES(source.ip),
+      dst_ports    = VALUES(destination.port),
+      protos       = VALUES(network.transport),
+      last_seen    = MAX(@timestamp),
+      first_seen   = MIN(@timestamp)
+    BY rule.name
+  | EVAL rule_name = rule.name
+  | KEEP
+      rule_name, event_count,
+      actions, src_ips, dst_ports, protos,
+      last_seen, first_seen
+  | SORT first_seen DESC
+enabled: true
+tags:
+  - detection.informational
+  - network.policy-monitoring
+severity: low
+risk_score: 10
+references: []
+nist: ["CM-3", "AU-12", "SI-4"]
+pci_dss: ["1.1", "10.2.7", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack: []
