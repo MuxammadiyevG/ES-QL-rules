@@ -23,11 +23,9 @@ query: |
   | WHERE event.category == "authentication" OR event.category == "session"
   | EVAL actor    = COALESCE(user.name, "Unknown")
   | EVAL hostn    = COALESCE(host.hostname, "Unknown")
-  | EVAL src_ip   = COALESCE(source.ip, "Unknown")
+  | EVAL src_ip   = COALESCE(TO_STRING(source.ip), "Unknown")
   | EVAL src_port = COALESCE(source.port, 0)
-  | EVAL geo_city    = COALESCE(source.geo.city_name, "Unknown")
-  | EVAL geo_country = COALESCE(source.geo.country_name, "Unknown")
-  | EVAL related_ips = COALESCE(related.ip, "Unknown")
+  | EVAL related_ips = COALESCE(TO_STRING(related.ip), "Unknown")
   /* Monitoring agentlarini chiqarib tashlash */
   | WHERE NOT actor RLIKE "(?i)(wazuh|zabbix|nagios|elastic)"
   /* Bir xil IP dan ko'p ulanish */
@@ -44,7 +42,7 @@ query: |
   /* Event 3 frequency rule: bir xil dst IP ga >= 2 ulanish (timeframe 60s analog) */
   | WHERE conn_count >= 2
   | KEEP agent_id, bucket, src_ip, conn_count, actors,
-         src_ports, geo_cities, geo_countries, hosts, first_seen, last_seen
+         src_ports, related_ips, hosts, first_seen, last_seen
   | SORT conn_count DESC
   | LIMIT 200
 enabled: false

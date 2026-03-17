@@ -32,13 +32,11 @@ query: |
     )
   | EVAL actor       = COALESCE(user.name, "Unknown")
   | EVAL hostn       = COALESCE(host.hostname, "Unknown")
-  | EVAL src_ip      = COALESCE(source.ip, "Unknown")
+  | EVAL src_ip      = COALESCE(TO_STRING(source.ip), "Unknown")
   | EVAL src_port    = COALESCE(source.port, 0)
   | EVAL outcome     = COALESCE(event.outcome, "Unknown")
   | EVAL action      = COALESCE(event.action, "Unknown")
-  | EVAL geo_city    = COALESCE(source.geo.city_name, "Unknown")
-  | EVAL geo_country = COALESCE(source.geo.country_name, "Unknown")
-  | EVAL related_ip  = COALESCE(related.ip, "Unknown")
+  | EVAL related_ip  = COALESCE(TO_STRING(MV_FIRST(related.ip)), "Unknown")
   | STATS
       event_count    = COUNT(*),
       success_count  = COUNT_IF(outcome == "success"),
@@ -55,8 +53,7 @@ query: |
     BY agent_id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE event_count >= 1
   | KEEP agent_id, bucket, actor, event_count, success_count,
-         failure_count, actions, src_ips, src_ports,
-         geo_cities, geo_countries, hosts, related_ips,
+         failure_count, actions, src_ips, src_ports,hosts, related_ips,
          first_seen, last_seen
   | SORT event_count DESC
   | LIMIT 200

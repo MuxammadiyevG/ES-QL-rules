@@ -23,7 +23,7 @@ query: |
   | WHERE event.action == "sudo-command"
   | EVAL actor       = COALESCE(user.name, "Unknown")
   | EVAL hostn       = COALESCE(host.hostname, "Unknown")
-  | EVAL src_ip      = COALESCE(source.ip, "Unknown")
+  | EVAL src_ip      = COALESCE(TO_STRING(source.ip), "Unknown")
   | EVAL cmd         = COALESCE(process.command_line, "Unknown")
   | EVAL eff_user    = COALESCE(user.effective.name, "Unknown")
   /* Sysmon / auditd konfiguratsiya o'zgartirish komandalari */
