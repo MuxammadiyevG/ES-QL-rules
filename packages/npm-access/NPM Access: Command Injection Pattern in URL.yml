@@ -1,0 +1,56 @@
+rule_id: 834cff1e-dbac-4310-8c70-d9135c0d44b2
+name: "NPM Access: Command Injection Pattern in URL"
+description: |
+  Ushbu qoida HTTP request URL da OS command injection pattern larini aniqlaydi.
+  ;ls, |whoami, `id`, $(cmd) kabi shell injection payloadlari.
+  Qonuniy holatlar: yo'q.
+  SOC triage bosqichlari:
+  - Response status 200 bo'lsa — command execution bo'lgan bo'lishi mumkin.
+  - Backend server loglarini tekshiring — g'ayriodatiy process ishga tushganmi.
+  - Darhol: incident oching, backend serverni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-npm.access-*
+query_language: esql
+query: |
+  FROM logs-npm.access-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.original RLIKE """(?i).*(;ls\b|;id\b|;whoami|;cat\s|;wget\s|;curl\s|\|ls\b|\|id\b|\|whoami|\|cat\s|\|wget\s|\|curl\s|`id`|`whoami`|`ls`|\$\(id\)|\$\(whoami\)|\$\(ls\)|%3bls|%3bid|%7cls|%7cid|\/bin\/sh|\/bin\/bash|cmd\.exe|powershell|%60id%60).*"""
+  | EVAL host_name = host.hostname
+  | EVAL log_path  = log.file.path
+  | STATS
+      event_count = COUNT(*),
+      log_paths   = VALUES(log.file.path),
+      samples     = VALUES(event.original),
+      last_seen   = MAX(@timestamp),
+      first_seen  = MIN(@timestamp)
+    BY host_name, log_path
+  | WHERE event_count >= 1
+  | KEEP
+      host_name, log_path, event_count,
+      log_paths, samples, last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.execution
+  - attack.t1190
+  - attack.t1059
+  - detection.threat-hunting
+  - owasp.a03-injection
+severity: critical
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://attack.mitre.org/techniques/T1059/"
+  - "https://owasp.org/www-community/attacks/Command_Injection"
+nist: ["SI-3", "SI-4", "SA-11", "IR-4", "AC-3"]
+pci_dss: ["6.3.1", "6.6", "10.6.1", "11.3", "12.10.1"]
+gdpr: ["32.1.b", "25.1"]
+mitre_attack:
+  TA0001:
+    T1190: []
+  TA0002:
+    T1059: []

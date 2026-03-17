@@ -1,0 +1,57 @@
+rule_id: d523f444-9adb-4b27-9427-a86b776243ff
+name: "NPM Access: Sensitive File or Endpoint Access Attempt"
+description: |
+  Ushbu qoida NPM orqali himoyalangan yoki maxfiy fayl va endpoint larga
+  kirish urinishlarini aniqlaydi. .env, .git, wp-admin, phpmyadmin,
+  backup fayllar, konfiguratsiya fayllar kabi patternlar.
+  Qonuniy holatlar: yo'q, bu patternlar har doim shubhali.
+  SOC triage bosqichlari:
+  - Response status — 200 bo'lsa kritik.
+  - event.original — to'liq URL ni saqlang.
+  - Backend serverda shu fayllar ochiq emasligini tekshiring.
+  - WAF va nginx deny rule qo'shing.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-npm.access-*
+query_language: esql
+query: |
+  FROM logs-npm.access-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.original RLIKE """(?i).*(\/\.env|\/\.git\/|\/\.svn\/|\/\.htaccess|\/\.htpasswd|\/wp-admin|\/wp-login|\/phpmyadmin|\/pma\/|\/adminer|\/admin\/|\/administrator\/|\/manager\/|\/backup|\/db_backup|\/dump\.sql|\/config\.php|\/configuration\.php|\/settings\.php|\/web\.config|\/appsettings\.json|\/database\.yml|\/credentials|\/passwd|\/shadow|\/id_rsa|\/authorized_keys|\/proc\/self\/environ|\/actuator\/|\/metrics|\/health\/|\/swagger|\/api-docs|\/v1\/admin|\/console\b).*"""
+  | EVAL host_name = host.hostname
+  | EVAL log_path  = log.file.path
+  | STATS
+      event_count = COUNT(*),
+      log_paths   = VALUES(log.file.path),
+      samples     = VALUES(event.original),
+      last_seen   = MAX(@timestamp),
+      first_seen  = MIN(@timestamp)
+    BY host_name, log_path
+  | WHERE event_count >= 1
+  | KEEP
+      host_name, log_path, event_count,
+      log_paths, samples, last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.discovery
+  - attack.t1190
+  - attack.t1083
+  - detection.threat-hunting
+  - owasp.a01-broken-access-control
+severity: high
+risk_score: 76
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://attack.mitre.org/techniques/T1083/"
+nist: ["AC-3", "SI-4", "SA-11", "RA-5", "AU-12"]
+pci_dss: ["6.3.1", "6.6", "7.1", "10.6.1", "11.3"]
+gdpr: ["32.1.b", "25.1"]
+mitre_attack:
+  TA0001:
+    T1190: []
+  TA0007:
+    T1083: []

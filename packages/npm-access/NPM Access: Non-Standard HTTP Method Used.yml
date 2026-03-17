@@ -1,0 +1,53 @@
+rule_id: 0f65f19b-74aa-4379-9665-faad3e9d9775
+name: "NPM Access: Non-Standard HTTP Method Used"
+description: |
+  Ushbu qoida GET, POST, PUT, DELETE dan tashqari HTTP metodlarini aniqlaydi.
+  TRACE, CONNECT, OPTIONS ko'p, PATCH g'ayrioddiy kontekstda ishlatilishi
+  server konfiguratsiyasini aniqlash yoki bypass urinishi bo'lishi mumkin.
+  CONNECT metodi proxy tunneling uchun ishlatiladi.
+  SOC triage bosqichlari:
+  - TRACE — Cross-Site Tracing (XST) hujumi uchun ishlatiladi.
+  - CONNECT — proxy tunnel ochishga urinish.
+  - Response status — 200 bo'lsa server metodni qabul qilgan.
+  - Server konfiguratsiyasida kerak bo'lmagan metodlarni o'chiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-npm.access-*
+query_language: esql
+query: |
+  FROM logs-npm.access-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.original RLIKE """(?i)\[.*\] - \d{3} \d{3} - (TRACE|CONNECT|PROPFIND|PROPPATCH|MKCOL|COPY|MOVE|LOCK|UNLOCK|SEARCH|PURGE|DEBUG) .*"""
+  | EVAL host_name = host.hostname
+  | EVAL log_path  = log.file.path
+  | STATS
+      event_count = COUNT(*),
+      log_paths   = VALUES(log.file.path),
+      samples     = VALUES(event.original),
+      last_seen   = MAX(@timestamp),
+      first_seen  = MIN(@timestamp)
+    BY host_name, log_path
+  | WHERE event_count >= 1
+  | KEEP
+      host_name, log_path, event_count,
+      log_paths, samples, last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.defense-evasion
+  - attack.t1190
+  - detection.threat-hunting
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://owasp.org/www-community/attacks/Cross_Site_Tracing"
+nist: ["SI-3", "SI-4", "CM-7", "SA-11"]
+pci_dss: ["6.3.1", "6.6", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0001:
+    T1190: []
