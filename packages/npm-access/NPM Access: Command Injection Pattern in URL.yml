@@ -17,7 +17,7 @@ query_language: esql
 query: |
   FROM logs-npm.access-*
   | WHERE @timestamp >= NOW() - 300 seconds
-  | WHERE event.original RLIKE """(?i).*(;ls\b|;id\b|;whoami|;cat\s|;wget\s|;curl\s|\|ls\b|\|id\b|\|whoami|\|cat\s|\|wget\s|\|curl\s|`id`|`whoami`|`ls`|\$\(id\)|\$\(whoami\)|\$\(ls\)|%3bls|%3bid|%7cls|%7cid|\/bin\/sh|\/bin\/bash|cmd\.exe|powershell|%60id%60).*"""
+  | WHERE event.original RLIKE """(?i).*(;ls |;id |;whoami|;cat |;wget |;curl |\|ls |\|id |\|whoami|\|cat |\|wget |\|curl |%3bls|%3bid|%7cls|%7cid|/bin/sh|/bin/bash|cmd\.exe|powershell|%60id%60).*"""
   | EVAL host_name = host.hostname
   | EVAL log_path  = log.file.path
   | STATS

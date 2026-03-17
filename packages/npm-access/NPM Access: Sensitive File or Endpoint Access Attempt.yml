@@ -19,7 +19,7 @@ query_language: esql
 query: |
   FROM logs-npm.access-*
   | WHERE @timestamp >= NOW() - 300 seconds
-  | WHERE event.original RLIKE """(?i).*(\/\.env|\/\.git\/|\/\.svn\/|\/\.htaccess|\/\.htpasswd|\/wp-admin|\/wp-login|\/phpmyadmin|\/pma\/|\/adminer|\/admin\/|\/administrator\/|\/manager\/|\/backup|\/db_backup|\/dump\.sql|\/config\.php|\/configuration\.php|\/settings\.php|\/web\.config|\/appsettings\.json|\/database\.yml|\/credentials|\/passwd|\/shadow|\/id_rsa|\/authorized_keys|\/proc\/self\/environ|\/actuator\/|\/metrics|\/health\/|\/swagger|\/api-docs|\/v1\/admin|\/console\b).*"""
+  | WHERE event.original RLIKE """(?i).*(/\.env|/\.git/|/\.svn/|/\.htaccess|/\.htpasswd|/wp-admin|/wp-login|/phpmyadmin|/pma/|/adminer|/admin/|/administrator/|/manager/|/backup|/db_backup|/dump\.sql|/config\.php|/configuration\.php|/settings\.php|/web\.config|/appsettings\.json|/database\.yml|/credentials|/passwd|/shadow|/id_rsa|/authorized_keys|/proc/self/environ|/actuator/|/metrics|/health/|/swagger|/api-docs|/v1/admin|/console).*"""
   | EVAL host_name = host.hostname
   | EVAL log_path  = log.file.path
   | STATS
