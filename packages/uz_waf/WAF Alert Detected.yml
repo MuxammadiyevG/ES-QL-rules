@@ -26,14 +26,17 @@ query_language: esql
 query: |
   FROM logs-nginx.waf-*
   | WHERE @timestamp >= NOW() - 300 seconds
+  | MV_EXPAND event.dataset
   | WHERE event.dataset == "nginx.waf" OR event.dataset == "nginx.modsecurity"
+  | MV_EXPAND event.category
   | WHERE event.category == "intrusion_detection"
     OR event.category == "web"
   | WHERE event.outcome == "failure"
+  | MV_EXPAND event.kind
   | WHERE event.kind == "alert"
   | WHERE source.ip IS NOT NULL
   | STATS
-      event_count   = COUNT(*),
+      event_count   = COUNT_DISTINCT(event.id),
       src_ips       = VALUES(source.ip),
       hosts         = VALUES(url.domain),
       reasons       = VALUES(event.reason),
