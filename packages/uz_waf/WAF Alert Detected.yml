@@ -1,0 +1,90 @@
+rule_id: 19aee67b-5615-48e6-9c81-7f9d07bd128f
+name: "WAF Alert Detected"
+description: |
+  Ushbu qoida  WAF  tomonidan aniqlangan 
+  barcha web hujumlarni kuzatadi.
+  
+  
+  WAF tomonidan `event.outcome: failure` bilan qaytarilgan hodisalar
+  source.ip bo'yicha guruhlanadi.
+  
+  SOC triage bosqichlari:
+  - `source.ip` ni threat intelligence bilan tekshiring.
+  - `event.reason` orqali hujum turini aniqlang (LFI, SQLi, RFI va h.k.).
+  - `url.domain` (host) — qaysi resurs nishonga olinganligi.
+  - `rule.id` (ruleId) — qaysi WAF qoidasi ishga tushganini aniqlang.
+  - Bir xil `event.id` bilan kelgan eventlar bir hujum sessiyasiga tegishli.
+  - Takroriy urinishlar bo'lsa `source.ip` ni blocklist ga qo'shing.
+  - WAF logidan to'liq request tafsilotini `event.original` dan o'qing.
+
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-nginx.waf-*
+query_language: esql
+query: |
+  FROM logs-nginx.waf-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.dataset == "nginx.waf" OR event.dataset == "nginx.modsecurity"
+  | WHERE event.category == "intrusion_detection"
+    OR event.category == "web"
+  | WHERE event.outcome == "failure"
+  | WHERE event.kind == "alert"
+  | WHERE source.ip IS NOT NULL
+  | STATS
+      event_count   = COUNT(*),
+      src_ips       = VALUES(source.ip),
+      hosts         = VALUES(url.domain),
+      reasons       = VALUES(event.reason),
+      rule_ids      = VALUES(rule.id),
+      severities    = VALUES(event.severity),
+      event_ids     = VALUES(event.id),
+      modules       = VALUES(event.module),
+      outcomes      = VALUES(event.outcome),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, source.ip, event.reason
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      source.ip,
+      event.reason,
+      event_count,
+      src_ips,
+      hosts,
+      reasons,
+      rule_ids,
+      severities,
+      event_ids,
+      modules,
+      outcomes,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1190
+  - attack.t1059.007
+  - attack.t1055
+  - detection.waf
+  - source.nginx
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://owasp.org/www-project-modsecurity-core-rule-set/"
+  - "https://coreruleset.org/docs/"
+nist: ["SI-3", "SI-4", "SC-7", "AC-17"]
+pci_dss: ["6.4.1", "6.4.2", "10.4.1", "11.5.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0001:
+    T1190: []
+  TA0007:
+    T1083: []
+    T1005: []
+  TA0006:
+    T1110: ["T1110.003"]
