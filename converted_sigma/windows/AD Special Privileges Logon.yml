@@ -7,20 +7,45 @@ description: |
   - Kirgan user haqiqatdan ham administrator ekanligini tasdiqlang.
   - `privilege_list` ichida kutilmagan huquqlar borligini tekshiring.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
   | WHERE event.code == "4672"
-  | EVAL hostn = winlog.computer_name
-  | EVAL user = winlog.event_data.SubjectUserName
-  | EVAL privilege_list = winlog.event_data.PrivilegeList
-  | KEEP agent_id, @timestamp, hostn, user, privilege_list
-  | SORT @timestamp DESC
-enabled: false
+  | EVAL user        = COALESCE(winlog.event_data.SubjectUserName, "")
+  | EVAL user_domain = COALESCE(winlog.event_data.SubjectDomainName, "")
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      user LIKE "*$"
+      OR user == "-"
+      OR user == ""
+      OR user RLIKE "(?i)(system|network service|local service)"
+  )
+  | STATS
+      event_count      = COUNT(*),
+      users            = VALUES(winlog.event_data.SubjectUserName),
+      user_domains     = VALUES(winlog.event_data.SubjectDomainName),
+      privilege_lists  = VALUES(winlog.event_data.PrivilegeList),
+      logon_ids        = VALUES(winlog.event_data.SubjectLogonId)
+  BY
+      agent_id,
+      winlog.computer_name,
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.computer_name,
+      event_count,
+      users,
+      user_domains,
+      privilege_lists,
+      logon_ids
+  | SORT event_count DESC
+enabled: true
 tags:
   - detection.privilege_escalation
   - monitoring.admin_activity

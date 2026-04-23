@@ -4,22 +4,54 @@ description: |
   Domain Controllerga oddiy (imtiyozsiz) foydalanuvchi kirganini aniqlaydi (Event ID 4624).
   Odatda DC'larga faqat Domain Admins guruh a'zolari kirishi kerak.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
   | WHERE event.code == "4624"
-  | EVAL hostn = winlog.computer_name
+  // Faqat Interactive va RemoteInteractive loginlar (LogonType 2 va 10)
+  | WHERE winlog.event_data.LogonType IN ("2", "10")
+  // DC hostnameni aniqlash
+  | EVAL hostn = COALESCE(winlog.computer_name, "")
   | WHERE hostn RLIKE "(?i)(.*DC.*|ADDC.*|DOMAINCONTROLLER)"
-  | EVAL user = winlog.event_data.TargetUserName
-  /* Oddiy userlarni tekshirish - admin bo'lmaganlarni filtrlash uchun RLIKE ishlating */
-  | WHERE NOT user RLIKE "(?i)(admin.*|svc.*|system|network service|local service)"
-  | KEEP agent_id, @timestamp, user, hostn, winlog.event_data.IpAddress
-  | SORT @timestamp DESC
-enabled: false
+  // Foydalanuvchi va domenini olish
+  | EVAL user        = COALESCE(winlog.event_data.TargetUserName, "")
+  | EVAL user_domain = COALESCE(winlog.event_data.TargetDomainName, "")
+  | EVAL src_ip      = COALESCE(winlog.event_data.IpAddress, "")
+  // Tizim akkauntlari va adminlarni chiqarib tashlash
+  | WHERE NOT (
+      user RLIKE "(?i)(admin.*|svc.*|system|network service|local service)"
+      OR user LIKE "*$"
+      OR user == "-"
+      OR user == ""
+  )
+  | STATS
+      event_count    = COUNT(*),
+      users          = VALUES(winlog.event_data.TargetUserName),
+      user_domains   = VALUES(winlog.event_data.TargetDomainName),
+      src_ips        = VALUES(winlog.event_data.IpAddress),
+      logon_types    = VALUES(winlog.event_data.LogonType),
+      logon_ids      = VALUES(winlog.event_data.TargetLogonId)
+  BY
+      agent_id,
+      hostn,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      bucket,
+      hostn,
+      event_count,
+      users,
+      user_domains,
+      src_ips,
+      logon_types,
+      logon_ids
+  | SORT event_count DESC
+enabled: true
 tags:
   - detection.privilege_escalation
   - monitoring.dc_security

@@ -6,36 +6,42 @@ description: |
   certain flag combinations.
   False positives: Unknown. Use as a hunting baseline and tune with allowlists if Extexport is legitimately used.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  // Filter for process creation events
-  | WHERE event.category == "process" 
-     OR event.code IN ("1", "4688") 
-     OR event.dataset RLIKE "(?i).*process.*"
-  // Selection: Target Extexport.exe by agent_id, name, path, or original filename
+  // Process creation events
+  | WHERE event.code IN ("1", "4688")
+  // Extexport.exe aniqlash
   | WHERE winlog.event_data.ProcessName == "Extexport.exe"
-     OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\Extexport\\\\.exe$"
-     OR COALESCE(event.original, "") RLIKE "(?i).*OriginalFileName\\\\s*[:=]\\\\s*extexport\\\\.exe.*"
+      OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\Extexport\\.exe$"
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      parents = VALUES(winlog.event_data.CallerProcessName),
-      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
-      executables = VALUES(winlog.event_data.ProcessName),
-      cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")),
-      pids = VALUES(winlog.event_data.ProcessPid)
-    BY 
-      agent_id, host.name, 
+      event_count  = COUNT(*),
+      users        = VALUES(winlog.event_data.TargetUserName),
+      parents      = VALUES(winlog.event_data.CallerProcessName),
+      executables  = VALUES(winlog.event_data.ProcessName),
+      messages     = VALUES(message),
+      pids         = VALUES(winlog.event_data.ProcessPid)
+  BY
+      agent_id,
+      host.name,
       bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      parents,
+      executables,
+      messages,
+      pids
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1218

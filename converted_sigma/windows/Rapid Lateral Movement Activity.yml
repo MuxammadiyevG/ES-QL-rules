@@ -14,10 +14,10 @@ description: |
   Network logons (Type 3) to 5+ unique hosts in 15 minutes indicates lateral movement or reconnaissance.
   Combined with explicit credential use (Event 4648) strengthens detection confidence.
   False positives: Legitimate administrative tasks, automated deployment scripts, monitoring systems.
-  Triage: Verify if source is known admin workstation or jump server, 
+  Triage: Verify if source is known admin workstation or jump server,
   check for concurrent privilege escalation, review accessed systems for data value.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
@@ -25,28 +25,51 @@ query_language: esql
 query: |
   FROM logs-winlog*
   | WHERE event.code IN ("4624", "4648")
-    AND winlog.event_data.LogonType == "3"
-    AND event.outcome == "success"
-  | STATS 
-      total_logons = COUNT(*),
-      unique_targets = COUNT_DISTINCT(host.name),
-      target_hosts = VALUES(host.name),
-      source_ips = VALUES(winlog.event_data.IpAddress),
-      explicit_creds = SUM(CASE(event.code == "4648", 1, 0))
-    BY agent_id, winlog.event_data.TargetUserName
-    , bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE winlog.event_data.LogonType == "3"
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      COALESCE(winlog.event_data.TargetUserName, "") LIKE "*$"
+      OR COALESCE(winlog.event_data.TargetUserName, "") == "-"
+      OR COALESCE(winlog.event_data.TargetUserName, "") == ""
+      OR COALESCE(winlog.event_data.TargetUserName, "") RLIKE "(?i)(system|network service|local service|anonymous logon)"
+  )
+  | STATS
+      total_logons    = COUNT(*),
+      unique_targets  = COUNT_DISTINCT(host.name),
+      target_hosts    = VALUES(host.name),
+      source_ips      = VALUES(winlog.event_data.IpAddress),
+      target_domains  = VALUES(winlog.event_data.TargetDomainName),
+      logon_ids       = VALUES(winlog.event_data.TargetLogonId),
+      explicit_creds  = SUM(CASE(event.code == "4648", 1, 0))
+  BY
+      agent_id,
+      winlog.event_data.TargetUserName,
+      bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE unique_targets >= 5
   | EVAL movement_velocity = unique_targets * 2
   | EVAL attack_confidence = CASE(
       explicit_creds >= 3 AND unique_targets >= 10, "critical",
-      unique_targets >= 7, "high",
+      unique_targets >= 7,                          "high",
       "medium"
-    )
+  )
   | EVAL risk_score = unique_targets * 15 + explicit_creds * 10
   | WHERE risk_score >= 75
-  | KEEP agent_id, bucket, winlog.event_data.TargetUserName, total_logons, unique_targets, target_hosts, source_ips, explicit_creds, attack_confidence, risk_score
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.event_data.TargetUserName,
+      total_logons,
+      unique_targets,
+      target_hosts,
+      source_ips,
+      target_domains,
+      logon_ids,
+      explicit_creds,
+      movement_velocity,
+      attack_confidence,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - nist_800_53
   - control_IR-4

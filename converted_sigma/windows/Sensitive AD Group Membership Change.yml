@@ -1,26 +1,70 @@
 rule_id: 4d53c6df-9b2f-4de8-88b6-4b28c7d6ae5f
 name: Sensitive AD Group Membership Change
 description: |
-  Kritik AD guruhlariga (Admin, Backup, Remote Desktop) foydalanuvchi qo'shilishi yoki o'chirilishini aniqlaydi. 
+  Kritik AD guruhlariga (Admin, Backup, Remote Desktop) foydalanuvchi qo'shilishi yoki o'chirilishini aniqlaydi.
   Hujumchilar o'z huquqlarini doimiy qilish uchun ushbu guruhlardan foydalanadi.
   SOC triage:
   - `target_group` nomini va uning muhimlilik darajasini tekshiring.
   - `actor` ushbu guruhni boshqarish vakolatiga egami?
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
+  // 4728/4729 - Global group, 4732/4733 - Local group, 4756/4757 - Universal group
   | WHERE event.code IN ("4728", "4729", "4732", "4733", "4756", "4757")
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = winlog.event_data.SubjectUserName
-  | EVAL target_group = winlog.event_data.TargetUserName
-  | KEEP agent_id, @timestamp, hostn, actor, target_group, event.code
-  | SORT @timestamp DESC
-enabled: false
+  | EVAL actor        = COALESCE(winlog.event_data.SubjectUserName, "")
+  | EVAL actor_domain = COALESCE(winlog.event_data.SubjectDomainName, "")
+  | EVAL member       = COALESCE(winlog.event_data.MemberName, "")
+  | EVAL member_sid   = COALESCE(winlog.event_data.MemberSid, "")
+  // Faqat kritik guruhlar
+  | WHERE winlog.event_data.TargetUserName RLIKE "(?i).*(Admin|Backup|Remote Desktop|Domain Admins|Enterprise Admins|Schema Admins|Account Operators|Server Operators|Print Operators|Group Policy).*"
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      actor LIKE "*$"
+      OR actor == "-"
+      OR actor == ""
+      OR actor RLIKE "(?i)(system|network service|local service)"
+  )
+  // Qo'shish yoki o'chirish turini aniqlash
+  | EVAL operation = CASE(
+      event.code IN ("4728", "4732", "4756"), "Member-Added",
+      event.code IN ("4729", "4733", "4757"), "Member-Removed",
+      "Unknown"
+  )
+  | STATS
+      event_count    = COUNT(*),
+      event_codes    = VALUES(event.code),
+      actors         = VALUES(winlog.event_data.SubjectUserName),
+      actor_domains  = VALUES(winlog.event_data.SubjectDomainName),
+      target_groups  = VALUES(winlog.event_data.TargetUserName),
+      members        = VALUES(winlog.event_data.MemberName),
+      member_sids    = VALUES(winlog.event_data.MemberSid),
+      logon_ids      = VALUES(winlog.event_data.SubjectLogonId),
+      operations     = VALUES(operation)
+  BY
+      agent_id,
+      winlog.computer_name,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.computer_name,
+      event_count,
+      event_codes,
+      actors,
+      actor_domains,
+      target_groups,
+      members,
+      member_sids,
+      logon_ids,
+      operations
+  | SORT event_count DESC
+enabled: true
 tags:
   - detection.privilege_escalation
   - monitoring.critical_groups

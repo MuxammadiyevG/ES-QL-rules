@@ -18,44 +18,53 @@ description: |
   Triage: Review source and target processes legitimacy, check for malware signatures,
   analyze injected memory regions, hunt for follow-on malicious activity.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - winlogbeat-*
 query_language: esql
 query: |
   FROM logs-winlog*
+  // Sysmon Event ID 10 - ProcessAccess
   | WHERE event.code == "10"
-    /* Standard Sysmon field for GrantedAccess */
-    AND winlog.event_data.AccessGranted IS NOT NULL
-  | EVAL suspicious_access = CASE(
-      winlog.event_data.AccessGranted RLIKE ".*(0x1F0FFF|0x1FFFFF|0x1410|0x1438).*", true,
-      false
-    )
-  | WHERE suspicious_access == true
-  | EVAL target_process = winlog.event_data.ProcessName
-  | EVAL target_process_category = CASE(
-      target_process RLIKE "(?i).*(lsass|csrss|winlogon|services|svchost|explorer).*", "Critical-Process",
-      target_process RLIKE "(?i).*(powershell|cmd|rundll32|regsvr32).*", "High-Risk-Target",
+  // Shubhali access rights ni message orqali aniqlash
+  | WHERE message RLIKE ".*(0x1F0FFF|0x1FFFFF|0x1410|0x1438).*"
+  // Target process kategoriyasini message orqali aniqlash
+  | EVAL target_category = CASE(
+      message RLIKE "(?i).*(lsass|csrss|winlogon|services\\.exe|svchost|explorer).*", "Critical-Process",
+      message RLIKE "(?i).*(powershell|cmd\\.exe|rundll32|regsvr32).*", "High-Risk-Target",
       "Standard-Process"
-    )
-  | WHERE target_process_category IN ("Critical-Process", "High-Risk-Target")
-  | STATS 
-      injection_count = COUNT(*),
-      unique_sources = COUNT_DISTINCT(winlog.event_data.ProcessName),
-      unique_targets = COUNT_DISTINCT(target_process),
+  )
+  | WHERE target_category IN ("Critical-Process", "High-Risk-Target")
+  // EDR/AV shovqinini chiqarib tashlash
+  | WHERE NOT message RLIKE "(?i).*(MsMpEng|SenseIR)\\.exe.*"
+  | STATS
+      injection_count  = COUNT(*),
       source_processes = VALUES(winlog.event_data.ProcessName),
-      target_processes = VALUES(target_process),
-      access_rights = VALUES(winlog.event_data.AccessGranted)
-    BY agent_id, host.name, winlog.event_data.TargetUserName, target_process_category, bucket = DATE_TRUNC(15 minutes, @timestamp)
+      users            = VALUES(winlog.event_data.SubjectUserName),
+      messages         = VALUES(message)
+  BY
+      agent_id,
+      host.name,
+      target_category,
+      bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE injection_count >= 1
   | EVAL risk_score = CASE(
-      target_process_category == "Critical-Process", injection_count * 50,
+      target_category == "Critical-Process", injection_count * 50,
       injection_count * 35
-    )
-  | KEEP agent_id, bucket, host.name, winlog.event_data.TargetUserName, target_process_category, injection_count, source_processes, target_processes, access_rights, risk_score
+  )
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      target_category,
+      injection_count,
+      source_processes,
+      users,
+      messages,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - nist_800_53
   - control_SI-4

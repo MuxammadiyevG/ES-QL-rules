@@ -8,46 +8,59 @@ description: |
    (2) iexpress.exe executed with the /n flag (non-interactive build).
   False positives: Administrators legitimately building packages using IExpress.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  // Filter for process creation events
-  | WHERE event.category == "process" 
-     OR event.code IN ("1", "4688") 
-     OR event.dataset RLIKE "(?i).*process.*"
-  | EVAL cmd = COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
-  // Branch 1: makecab.exe being used as a child of iexpress.exe
-  | EVAL b1 = (
-      (winlog.event_data.ProcessName == "makecab.exe" OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\makecab\\\\.exe$")
-      AND (winlog.event_data.CallerProcessName == "iexpress.exe" OR winlog.event_data.CallerProcessName RLIKE "(?i).*\\\\iexpress\\\\.exe$")
-    )
-  // Branch 2: iexpress.exe running with the silent (/n) flag
-  | EVAL b2 = (
-      (winlog.event_data.ProcessName == "iexpress.exe" OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\iexpress\\\\.exe$")
-      AND cmd RLIKE "(?i).*\\\\s/[nN](\\\\s|$).*"
-    )
-  | WHERE b1 == true OR b2 == true
+  // Process creation events
+  | WHERE event.code IN ("1", "4688")
+  // Branch 1: makecab.exe — iexpress.exe child processi
+  | EVAL b1 = CASE(
+      (
+          winlog.event_data.ProcessName == "makecab.exe"
+          OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\makecab\\.exe$"
+      )
+      AND (
+          winlog.event_data.CallerProcessName == "iexpress.exe"
+          OR winlog.event_data.CallerProcessName RLIKE "(?i).*\\\\iexpress\\.exe$"
+      ), 1, 0
+  )
+  // Branch 2: iexpress.exe /n flag bilan
+  | EVAL b2 = CASE(
+      (
+          winlog.event_data.ProcessName == "iexpress.exe"
+          OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\iexpress\\.exe$"
+      )
+      AND message RLIKE "(?i).+/[nN](\\s|$).+", 1, 0
+  )
+  | WHERE b1 == 1 OR b2 == 1
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      parents = VALUES(winlog.event_data.CallerProcessName),
-      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
-      cmdlines = VALUES(cmd),
-      pids = VALUES(winlog.event_data.ProcessPid)
-    BY 
-      agent_id, host.name, 
+      event_count  = COUNT(*),
+      users        = VALUES(winlog.event_data.TargetUserName),
+      parents      = VALUES(winlog.event_data.CallerProcessName),
+      processes    = VALUES(winlog.event_data.ProcessName),
+      messages     = VALUES(message),
+      pids         = VALUES(winlog.event_data.ProcessPid)
+  BY
+      agent_id,
+      host.name,
       bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, processes, executables, cmdlines, pids
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      parents,
+      processes,
+      messages,
+      pids
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1218

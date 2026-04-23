@@ -6,39 +6,44 @@ description: |
   evade detections and remove the need to drop precompiled binaries.
   False positives: Many legitimate applications use dynamic compilation. Use this rule to hunt for anomalies.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  // Filter for process creation events
-  | WHERE event.category == "process" 
-     OR event.code IN ("1", "4688") 
-     OR event.dataset RLIKE "(?i).*process.*"
-  // Selection: Identify the C# compiler (csc.exe)
-  | WHERE winlog.event_data.ProcessName == "csc.exe" 
-     OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\csc\\\\.exe$"
-  // Selection: Target automated compilation via response files (@)
-  | EVAL cmd = COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
-  | WHERE cmd RLIKE "(?i).*\\\\/[nN]o[cC]onfig.*\\\\/[fF]ullpaths.*@.*"
+  // Process creation events
+  | WHERE event.code IN ("1", "4688")
+  // csc.exe aniqlash
+  | WHERE winlog.event_data.ProcessName == "csc.exe"
+      OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\csc\\.exe$"
+  // /noconfig /fullpaths @ argumentlarini message orqali aniqlash
+  | WHERE message RLIKE "(?i).*/[nN]o[cC]onfig.*/[fF]ullpaths.*@.*"
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      parents = VALUES(winlog.event_data.CallerProcessName),
-      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
-      executables = VALUES(winlog.event_data.ProcessName),
-      cmdlines = VALUES(cmd),
-      pids = VALUES(winlog.event_data.ProcessPid)
-    BY 
-      agent_id, host.name, 
+      event_count  = COUNT(*),
+      users        = VALUES(winlog.event_data.TargetUserName),
+      parents      = VALUES(winlog.event_data.CallerProcessName),
+      executables  = VALUES(winlog.event_data.ProcessName),
+      messages     = VALUES(message),
+      pids         = VALUES(winlog.event_data.ProcessPid)
+  BY
+      agent_id,
+      host.name,
       bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      parents,
+      executables,
+      messages,
+      pids
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1027.004

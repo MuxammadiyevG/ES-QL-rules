@@ -7,48 +7,46 @@ description: |
   False positives: Normal Windows/admin behavior. Use as hunting baseline and correlate with task content,
   creator process, and unusual timing/user context.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  // File event telemetry
-  | WHERE event.category == "file" OR event.dataset RLIKE "(?i).*file.*"
-  // Evaluate path to simplify logic
-  | EVAL p = COALESCE(winlog.event_data.OriginalFileName, "")
-  // Selection: TargetFilename contains task folders
-  | WHERE
-      p LIKE "*:\\\\Windows\\\\System32\\\\Tasks\\\\*"
+  // Task folder ichida fayl yaratilishini aniqlash
+  | EVAL p = COALESCE(winlog.event_data.FileNameBuffer, "")
+  | WHERE p LIKE "*:\\\\Windows\\\\System32\\\\Tasks\\\\*"
       OR p LIKE "*:\\\\Windows\\\\SysWOW64\\\\Tasks\\\\*"
       OR p LIKE "*:\\\\Windows\\\\Tasks\\\\*"
+  // Tizim processlarini chiqarib tashlash
+  | WHERE NOT (
+      COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Windows\\\\System32\\\\(svchost|taskeng|taskhostw)\\.exe$"
+  )
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
-      parents = VALUES(winlog.event_data.CallerProcessName),
-      parent_executables = VALUES(winlog.event_data.CallerProcessName),
-      file_paths = VALUES(winlog.event_data.OriginalFileName),
-      cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, ""))
-    BY 
-      agent_id, host.name, 
-      bucket = DATE_TRUNC(20 minutes, @timestamp)
+      event_count  = COUNT(*),
+      users        = VALUES(winlog.event_data.TargetUserName),
+      processes    = VALUES(winlog.event_data.ProcessName),
+      parents      = VALUES(winlog.event_data.CallerProcessName),
+      file_paths   = VALUES(winlog.event_data.FileNameBuffer),
+      messages     = VALUES(message)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-      agent_id, bucket, 
-      host.name, 
-      event_count, 
-      users, 
-      processes, 
-      executables, 
-      parents, 
-      parent_executables, 
-      cmdlines, 
-      file_paths
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      parents,
+      file_paths,
+      messages
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.execution
   - attack.persistence

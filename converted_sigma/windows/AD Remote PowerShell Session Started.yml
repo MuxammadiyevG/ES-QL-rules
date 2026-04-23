@@ -4,19 +4,35 @@ description: |
   Domain Controller yoki serverlarda masofaviy PowerShell sessiyasi boshlanganini aniqlaydi (Event ID 400).
   Hujumchilar "Living off the Land" texnikasi orqali tarmoqda harakatlanadi.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | WHERE winlog.channel == "Windows PowerShell" AND event.code == "400"
-  | EVAL hostn = winlog.computer_name
-  | EVAL details = host.hostname 
-  | KEEP agent_id, @timestamp, hostn, details, event.code
-  | SORT @timestamp DESC
-enabled: false
+  | WHERE winlog.channel == "Windows PowerShell"
+  | WHERE event.code == "400"
+  | STATS
+      event_count  = COUNT(*),
+      hostnames    = VALUES(host.hostname),
+      pipe_ids     = VALUES(winlog.event_data.PipelineId),
+      messages     = VALUES(message)
+  BY
+      agent_id,
+      winlog.computer_name,
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.computer_name,
+      event_count,
+      hostnames,
+      pipe_ids,
+      messages
+  | SORT event_count DESC
+enabled: true
 tags:
   - detection.execution
   - attack.t1059.001

@@ -8,67 +8,59 @@ description: |
   False positives: AV/EDR, backup tools, search/indexing tools (e.g., Everything), legit software installed
   outside C:\, and some forensic/IR tooling.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
- FROM logs-winlog*
-  // File access telemetry view
-  | WHERE event.category == "file"
-   OR event.type == "access"
-   OR event.dataset RLIKE "(?i).*file.*"
+  FROM logs-winlog*
   // Evaluate path to simplify logic
-  | EVAL p = COALESCE(winlog.event_data.OriginalFileName, "")
+  | EVAL p = COALESCE(winlog.event_data.FileNameBuffer, "")
   // Selection: Unistore data path OR UnistoreDB store.vol (Windows Mail/Contacts)
   | WHERE (
     p LIKE "*\\\\AppData\\\\Local\\\\Comms\\\\Unistore\\\\data*"
-    OR p RLIKE "(?i).*\\\\AppData\\\\Local\\\\Comms\\\\UnistoreDB\\\\store\\\\.vol$"
+    OR p RLIKE "(?i).*\\\\AppData\\\\Local\\\\Comms\\\\UnistoreDB\\\\store\\.vol$"
   )
   // Filter out legitimate System process
-  | WHERE COALESCE(winlog.event_data.ProcessName, winlog.event_data.ProcessName, "") != "System"
+  | WHERE COALESCE(winlog.event_data.ProcessName, "") != "System"
   // Exclude common benign install paths
   | WHERE NOT (
-    winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Program Files \\\\(x86\\\\)\\\\.*"
+    winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Program Files \\(x86\\)\\\\.*"
     OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Program Files\\\\.*"
-    OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Windows\\\\SystemSystem32\\\\.*"
+    OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Windows\\\\System32\\\\.*"
     OR winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\Windows\\\\SysWOW64\\\\.*"
   )
-  // Optional: Filter out Windows Defender
+  // Filter out Windows Defender
   | WHERE NOT (
     winlog.event_data.ProcessName RLIKE "(?i)^C:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\.*"
-    AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\(MpCopyAccelerator|MsMpEng)\\\\.exe$"
+    AND winlog.event_data.ProcessName RLIKE "(?i).*(MpCopyAccelerator|MsMpEng)\\.exe$"
   )
-  // Optional: Filter out Thor Scanner
+  // Filter out Thor Scanner
   | WHERE NOT (
-    winlog.event_data.ProcessName RLIKE "(?i).*\\\\thor(64)?\\\\.exe$"
+    winlog.event_data.ProcessName RLIKE "(?i).*\\\\thor(64)?\\.exe$"
     OR winlog.event_data.ProcessName IN ("thor.exe", "thor64.exe")
   )
   | STATS
     event_count = COUNT(*),
     users = VALUES(winlog.event_data.TargetUserName),
     processes = VALUES(winlog.event_data.ProcessName),
-    executables = VALUES(winlog.event_data.ProcessName),
     parents = VALUES(winlog.event_data.CallerProcessName),
-    parent_executables = VALUES(winlog.event_data.CallerProcessName),
-    file_paths = VALUES(winlog.event_data.OriginalFileName)
-  BY 
-    agent_id, host.name, 
+    file_paths = VALUES(winlog.event_data.FileNameBuffer)
+  BY
+    agent_id, host.name,
     bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-    agent_id, bucket, 
-    host.name, 
-    event_count, 
-    users, 
-    processes, 
-    executables, 
-    parents, 
-    parent_executables, 
+  | KEEP
+    agent_id, bucket,
+    host.name,
+    event_count,
+    users,
+    processes,
+    parents,
     file_paths
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1070.008

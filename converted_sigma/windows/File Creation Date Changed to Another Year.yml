@@ -7,79 +7,70 @@ description: |
   This implementation relies on event.original containing the timestamp fields (e.g. CreationUtcTime / PreviousCreationUtcTime),
   which is common with ETW/Sysmon-style file-change telemetry pipelines.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
- FROM logs-winlog*
-  // File change telemetry
-  | WHERE event.category == "file" 
-   OR event.type == "change" 
-   OR event.dataset RLIKE "(?i).*file.*"
-  // Selection: PreviousCreationUtcTime starts with 202 (recent)
-  | WHERE COALESCE(event.original, "") RLIKE "(?i).*PreviousCreationUtcTime\\\\s*[:=]\\\\s*202.*"
-  // Filter: CreationUtcTime also starts with 202 => ignore
+  FROM logs-winlog*
+  // Timestomping: PreviousCreationUtcTime 202x dan eskiga o'zgargan
+  | WHERE message RLIKE "(?i).*PreviousCreationUtcTime\\s*[:=]\\s*202.*"
+  | WHERE NOT message RLIKE "(?i).*CreationUtcTime\\s*[:=]\\s*202.*"
+  // Program Files filtri
   | WHERE NOT (
-    COALESCE(event.original, "") RLIKE "(?i).*CreationUtcTime\\\\s*[:=]\\\\s*202.*"
+      COALESCE(winlog.event_data.FileNameBuffer, "") RLIKE "(?i)^C:\\\\Program Files( \\(x86\\))?\\\\.*"
+      AND COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Program Files( \\(x86\\))?\\\\.*"
   )
-  // Filter: TargetFilename and Image in Program Files
+  // Windows update processlarini chiqarib tashlash
   | WHERE NOT (
-    COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i)^C:\\\\Program Files( \\\\(x86\\\\))?\\\\.*"
-    AND COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Program Files( \\\\(x86\\\\))?\\\\.*"
+      winlog.event_data.ProcessName IN (
+          "C:\\Windows\\system32\\ProvTool.exe",
+          "C:\\Windows\\System32\\usocoreworker.exe",
+          "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe",
+          "C:\\Windows\\system32\\msiexec.exe"
+      )
   )
-  // Filter: Optional Updates
+  // USOPrivate temp fayllarini chiqarib tashlash
   | WHERE NOT (
-    winlog.event_data.ProcessName IN (
-      "C:\\Windows\\system32\\ProvTool.exe",
-      "C:\\Windows\\System32\\usocoreworker.exe",
-      "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe"
-    )
-    OR (
-      COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i)^C:\\\\ProgramData\\\\USOPrivate\\\\UpdateStore\\\\.*"
-      AND COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i).*\\\\.(tmp|temp)$"
-    )
+      COALESCE(winlog.event_data.FileNameBuffer, "") RLIKE "(?i)^C:\\\\ProgramData\\\\USOPrivate\\\\UpdateStore\\\\.*"
+      AND COALESCE(winlog.event_data.FileNameBuffer, "") RLIKE "(?i).*\\.(tmp|temp)$"
   )
-  // Filter: Optional CAB files
+  // TiWorker/svchost/sihclient .cab fayllarini chiqarib tashlash
   | WHERE NOT (
-    COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\WINDOWS\\\\System32\\\\.*"
-    AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\(TiWorker|svchost|sihclient)\\\\.exe$"
-    AND COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i).*\\\\.cab$"
+      COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\WINDOWS\\\\System32\\\\.*"
+      AND winlog.event_data.ProcessName RLIKE "(?i).*(TiWorker|svchost|sihclient)\\.exe$"
+      AND COALESCE(winlog.event_data.FileNameBuffer, "") RLIKE "(?i).*\\.cab$"
   )
-  // Filter: Optional MSIExec
-  | WHERE NOT (winlog.event_data.ProcessName == "C:\\Windows\\system32\\msiexec.exe")
-  // Filter: Optional VCRedist
+  // VCRedist filtri
   | WHERE NOT (
-    COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Windows\\\\Temp\\\\.*"
-    AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\VCREDI~1\\\\.EXE$"
+      COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Windows\\\\Temp\\\\.*"
+      AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\VCREDI~1\\.EXE$"
   )
   | STATS
-    event_count = COUNT(*),
-    users = VALUES(winlog.event_data.TargetUserName),
-    processes = VALUES(winlog.event_data.ProcessName),
-    executables = VALUES(winlog.event_data.ProcessName),
-    parent_processes = VALUES(winlog.event_data.CallerProcessName),
-    parent_executables = VALUES(winlog.event_data.CallerProcessName),
-    file_paths = VALUES(winlog.event_data.OriginalFileName),
-    raw_samples = VALUES(event.original)
-  BY 
-    agent_id, host.name, 
-    bucket = DATE_TRUNC(20 minutes, @timestamp)
+      event_count      = COUNT(*),
+      users            = VALUES(winlog.event_data.TargetUserName),
+      processes        = VALUES(winlog.event_data.ProcessName),
+      parent_processes = VALUES(winlog.event_data.CallerProcessName),
+      file_paths       = VALUES(winlog.event_data.FileNameBuffer),
+      messages         = VALUES(message)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-    agent_id, bucket, 
-    host.name, 
-    event_count, 
-    users, 
-    processes, 
-    executables, 
-    parent_processes, 
-    parent_executables, 
-    file_paths, 
-    raw_samples
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      parent_processes,
+      file_paths,
+      messages
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1070.006

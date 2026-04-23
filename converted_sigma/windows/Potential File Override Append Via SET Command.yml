@@ -11,54 +11,63 @@ description: |
   Triage: Review the full command line to identify target file(s), look for >> or > operators, assess the
   parent process chain, and correlate with file modifications, persistence, or ransomware-like activity.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  // Filter for process creation events
-  | WHERE event.category == "process" 
-     OR event.code IN ("1", "4688") 
-     OR event.dataset RLIKE "(?i).*process.*"
-  // Selection: Identify cmd.exe via name, path, or original filename
+  // Process creation events
+  | WHERE event.code IN ("1", "4688")
+  // cmd.exe aniqlash
   | WHERE winlog.event_data.ProcessName == "cmd.exe"
-     OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\cmd\\\\.exe$"
-     OR COALESCE(event.original, "") RLIKE "(?i).*OriginalFileName\\\\s*[:=]\\\\s*Cmd\\\\.Exe.*"
-  // Selection: Target set /p= usage which is a common staging/obfuscation primitive
-  | EVAL cmd = COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
-  | WHERE cmd RLIKE "(?i).*([/\\\\]c\\\\s+set\\\\s+[/\\\\]p=|\\\"\\\\s*set\\\\s+[/\\\\]p=|>>\\\\s*.*\\\\s*set\\\\s+[/\\\\]p=).*"
-  // Strengthen signal: identify redirection to files
-  | EVAL has_redirect = CASE(cmd LIKE "*>>*", true, CASE(cmd LIKE "* > *", true, false))
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
-  // Identify high-risk parent processes (Macros, Scripts, LoLBins)
+      OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\cmd\\.exe$"
+  // set /p= patternini message orqali aniqlash
+  | WHERE message RLIKE "(?i).*([/\\\\]c[ \t]+set[ \t]+[/\\\\]p=|>>[ \t]*.*[ \t]*set[ \t]+[/\\\\]p=).*"
+  // Redirection belgisini aniqlash
+  | EVAL has_redirect = CASE(
+      message LIKE "*>>*", 1,
+      message LIKE "* > *", 1,
+      0
+  )
+  // Vaqt konteksti
+  | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
+  // Shubhali parent aniqlash
   | EVAL suspicious_parent = CASE(
-      winlog.event_data.CallerProcessName RLIKE "(?i)^(winword|excel|powerpnt|outlook|mshta|wscript|cscript|rundll32|powershell)\\\\.exe$", true,
-      false
-    )
+      winlog.event_data.CallerProcessName RLIKE "(?i).*(winword|excel|powerpnt|outlook|mshta|wscript|cscript|rundll32|powershell)\\.exe$", 1,
+      0
+  )
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      parents = VALUES(winlog.event_data.CallerProcessName),
-      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
-      cmdlines = VALUES(cmd),
-      redirect_hits = SUM(CASE(has_redirect == true, 1, 0)),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
-      suspicious_parent_hits = SUM(CASE(suspicious_parent == true, 1, 0))
-    BY 
-      agent_id, host.name, 
+      event_count            = COUNT(*),
+      users                  = VALUES(winlog.event_data.TargetUserName),
+      parents                = VALUES(winlog.event_data.CallerProcessName),
+      messages               = VALUES(message),
+      redirect_hits          = SUM(has_redirect),
+      after_hours_hits       = SUM(is_after_hours),
+      suspicious_parent_hits = SUM(suspicious_parent)
+  BY
+      agent_id,
+      host.name,
       bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  // Risk Scoring: 5 base + redirection bonus + after-hours bonus + high-risk parent bonus
   | EVAL risk_score = event_count * 5 + redirect_hits * 10 + after_hours_hits * 10 + suspicious_parent_hits * 15
   | WHERE risk_score >= 5
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, parents, cmdlines, 
-      redirect_hits, after_hours_hits, suspicious_parent_hits, risk_score
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      parents,
+      messages,
+      redirect_hits,
+      after_hours_hits,
+      suspicious_parent_hits,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - attack.execution
   - attack.defense-evasion

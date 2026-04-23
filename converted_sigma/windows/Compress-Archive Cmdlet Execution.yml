@@ -10,39 +10,51 @@ description: |
   Documents, browser/profile folders), unusual archive destinations (Temp, Public, ProgramData),
   and correlate with subsequent network activity (uploads, new outbound connections) or file writes.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | EVAL raw = COALESCE(event.original, winlog.event_data.CommandLine, "")
-  // Filter for Compress-Archive with proper ES|QL regex escaping
-  | WHERE raw RLIKE "(?i).*\\\\bCompress-Archive\\\\b.*"
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  // PowerShell Script Block Logging
+  | WHERE winlog.channel == "Microsoft-Windows-PowerShell/Operational"
+  | WHERE event.code == "4104"
+  // Compress-Archive cmdlet aniqlash
+  | WHERE winlog.event_data.ScriptBlockText RLIKE "(?i).*Compress-Archive.*"
+  // Vaqt konteksti
+  | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      target_users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
-      cmdlines = VALUES(winlog.event_data.CommandLine),
-      originals = VALUES(COALESCE(event.original, "")),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY 
-      agent_id, host.name, 
+      event_count      = COUNT(*),
+      users            = VALUES(winlog.event_data.SubjectUserName),
+      processes        = VALUES(winlog.event_data.ProcessName),
+      script_blocks    = VALUES(winlog.event_data.ScriptBlockText),
+      script_paths     = VALUES(winlog.event_data.ScriptPath),
+      pipe_ids         = VALUES(winlog.event_data.PipelineId),
+      after_hours_hits = SUM(is_after_hours)
+  BY
+      agent_id,
+      host.name,
       bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  // Risk: 10 points per event + 10 points for after-hours activity
+  // Risk hisoblash
   | EVAL risk_score = event_count * 10 + after_hours_hits * 10
   | WHERE risk_score >= 10
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, processes, executables, 
-      cmdlines, after_hours_hits, risk_score, originals
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      script_blocks,
+      script_paths,
+      pipe_ids,
+      after_hours_hits,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - attack.exfiltration
   - attack.collection
@@ -55,5 +67,5 @@ references:
 nist: ["AU-6", "SI-4"]
 pci_dss: ["10.2"]
 mitre_attack:
-  TA0010:
+  TA0009: # Collection — was incorrectly TA0010 (Exfiltration)
     T1560: []

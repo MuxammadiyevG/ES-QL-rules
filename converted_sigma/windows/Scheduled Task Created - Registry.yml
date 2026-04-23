@@ -10,41 +10,58 @@ description: |
   review the creating user and parent process chain, and correlate with new service creation,
   script drops, or unusual binaries referenced by the task.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | EVAL raw = COALESCE(event.original, "")
-  /* Registry task cache keys often appear in event.original; match both TaskCache\Tasks and TaskCache\Tree */
-  | WHERE raw LIKE "*\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Schedule\\\\TaskCache\\\\Tasks\\\\*"
-     OR raw LIKE "*\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Schedule\\\\TaskCache\\\\Tree\\\\*"
+  // TaskCache registry keylarini message orqali aniqlash
+  | WHERE message RLIKE "(?i).*\\\\Schedule\\\\TaskCache\\\\(Tasks|Tree)\\\\.*"
   | EVAL taskcache_area = CASE(
-      raw LIKE "*\\\\Schedule\\\\TaskCache\\\\Tasks\\\\*", "TaskCache\\Tasks",
-      raw LIKE "*\\\\Schedule\\\\TaskCache\\\\Tree\\\\*", "TaskCache\\Tree",
+      message RLIKE "(?i).*\\\\TaskCache\\\\Tasks\\\\.*", "TaskCache\\Tasks",
+      message RLIKE "(?i).*\\\\TaskCache\\\\Tree\\\\.*",  "TaskCache\\Tree",
       "TaskCache"
-    )
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  )
+  // Vaqt konteksti
+  | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      COALESCE(winlog.event_data.SubjectUserName, "") LIKE "*$"
+      OR COALESCE(winlog.event_data.SubjectUserName, "") == "-"
+      OR COALESCE(winlog.event_data.SubjectUserName, "") == ""
+  )
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      target_users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
+      event_count      = COUNT(*),
+      users            = VALUES(winlog.event_data.SubjectUserName),
+      processes        = VALUES(winlog.event_data.ProcessName),
       parent_processes = VALUES(winlog.event_data.CallerProcessName),
-      cmdlines = VALUES(winlog.event_data.CommandLine),
-      originals = VALUES(raw),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY agent_id, host.name, taskcache_area, bucket = DATE_TRUNC(20 minutes, @timestamp)
+      messages         = VALUES(message),
+      after_hours_hits = SUM(is_after_hours)
+  BY
+      agent_id,
+      host.name,
+      taskcache_area,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  /* Low severity baseline; bump risk a bit if after-hours spikes */
   | EVAL risk_score = event_count * 5 + after_hours_hits * 10
   | WHERE risk_score >= 5
-  | KEEP agent_id, bucket, host.name, taskcache_area, event_count, users, target_users, processes, parent_processes, cmdlines, after_hours_hits, risk_score, originals
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      taskcache_area,
+      event_count,
+      users,
+      processes,
+      parent_processes,
+      messages,
+      after_hours_hits,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - attack.execution
   - attack.persistence

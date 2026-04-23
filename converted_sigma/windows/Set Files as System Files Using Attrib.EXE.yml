@@ -9,45 +9,55 @@ description: |
   parent process and user context, and correlate with file creation/modification events and subsequent execution
   from the affected directory.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  /* Process creation view */
-  | WHERE event.category == "process" OR event.code IN ("1", "4688") OR event.dataset RLIKE "(?i)process"
-  /* selection_img: attrib.exe */
+  // Process creation events
+  | WHERE event.code IN ("1", "4688")
+  // attrib.exe aniqlash
   | WHERE winlog.event_data.ProcessName == "attrib.exe"
-     OR winlog.event_data.ProcessName RLIKE "(?i)\\\\attrib\\.exe$"
-     OR COALESCE(event.original, "") RLIKE "(?i)OriginalFileName\\s*[:=]\\s*ATTRIB\\.EXE"
-  /* selection_cli: contains ' +s ' */
-  | EVAL cmd = COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
-  | WHERE cmd LIKE "* +s *"
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+      OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\attrib\\.exe$"
+  // +s flag ni message orqali aniqlash
+  | WHERE message LIKE "* +s *"
+  // Vaqt konteksti
+  | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
+  // Shubhali path aniqlash
   | EVAL suspicious_path = CASE(
-      cmd RLIKE "(?i)\\\\(Users\\\\[^\\\\]+\\\\(AppData\\\\Local\\\\Temp|AppData\\\\Roaming|Downloads)|Windows\\\\Temp|ProgramData|Users\\\\Public)\\\\", true,
-      false
-    )
+      message RLIKE "(?i).*(AppData\\\\Local\\\\Temp|AppData\\\\Roaming|Downloads|Windows\\\\Temp|ProgramData|Users\\\\Public).*", 1,
+      0
+  )
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      parents = VALUES(winlog.event_data.CallerProcessName),
-      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
-      cmdlines = VALUES(cmd),
-      targets = VALUES(winlog.event_data.OriginalFileName),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
-      suspicious_path_hits = SUM(CASE(suspicious_path == true, 1, 0))
-    BY agent_id, host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+      event_count          = COUNT(*),
+      users                = VALUES(winlog.event_data.TargetUserName),
+      parents              = VALUES(winlog.event_data.CallerProcessName),
+      messages             = VALUES(message),
+      after_hours_hits     = SUM(is_after_hours),
+      suspicious_path_hits = SUM(suspicious_path)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  /* Low baseline; bump if suspicious path / after-hours */
   | EVAL risk_score = event_count * 5 + after_hours_hits * 10 + suspicious_path_hits * 10
   | WHERE risk_score >= 5
-  | KEEP agent_id, bucket, host.name, event_count, users, parents, cmdlines, after_hours_hits, suspicious_path_hits, risk_score
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      parents,
+      messages,
+      after_hours_hits,
+      suspicious_path_hits,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1564.001

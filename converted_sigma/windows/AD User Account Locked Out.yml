@@ -6,20 +6,50 @@ description: |
   - `target_user` ning bloklanishiga sabab bo'lgan manba IP ni (agar mavjud bo'lsa) toping.
   - Bu brute-force hujumi yoki eskirgan parolli servis natijasi bo'lishi mumkin.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
   | WHERE event.code == "4740"
-  | EVAL hostn = winlog.computer_name
-  | EVAL target_user = winlog.event_data.TargetUserName
-  | EVAL caller_process = winlog.event_data.CallerProcessName
-  | KEEP agent_id, @timestamp, hostn, target_user, caller_process
-  | SORT @timestamp DESC
-enabled: false
+  | EVAL target_user   = COALESCE(winlog.event_data.TargetUserName, "")
+  | EVAL target_domain = COALESCE(winlog.event_data.TargetDomainName, "")
+  | EVAL actor         = COALESCE(winlog.event_data.SubjectUserName, "")
+  | EVAL actor_domain  = COALESCE(winlog.event_data.SubjectDomainName, "")
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      target_user LIKE "*$"
+      OR target_user == "-"
+      OR target_user == ""
+  )
+  | STATS
+      event_count      = COUNT(*),
+      target_users     = VALUES(winlog.event_data.TargetUserName),
+      target_domains   = VALUES(winlog.event_data.TargetDomainName),
+      actors           = VALUES(winlog.event_data.SubjectUserName),
+      actor_domains    = VALUES(winlog.event_data.SubjectDomainName),
+      caller_processes = VALUES(winlog.event_data.CallerProcessName),
+      logon_ids        = VALUES(winlog.event_data.SubjectLogonId)
+  BY
+      agent_id,
+      winlog.computer_name,
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.computer_name,
+      event_count,
+      target_users,
+      target_domains,
+      actors,
+      actor_domains,
+      caller_processes,
+      logon_ids
+  | SORT event_count DESC
+enabled: true
 tags:
   - detection.credential_access
   - monitoring.account_lockout

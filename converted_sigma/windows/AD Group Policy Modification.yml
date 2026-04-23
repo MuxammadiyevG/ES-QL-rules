@@ -7,18 +7,47 @@ description: |
   - `ObjectDN` orqali qaysi GPO o'zgarganini aniqlang.
   - O'zgarish tarkibini (masalan, yangi skript qo'shilganmi) tekshiring.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 15m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
   | WHERE event.code IN ("5136", "5137", "5141")
-  | EVAL actor = winlog.event_data.SubjectUserName
-  | KEEP agent_id, @timestamp, actor, event.code, winlog.computer_name, event.action
-  | SORT @timestamp DESC
-enabled: false
+  | EVAL actor        = COALESCE(winlog.event_data.SubjectUserName, "")
+  | EVAL actor_domain = COALESCE(winlog.event_data.SubjectDomainName, "")
+  | EVAL op_type      = COALESCE(winlog.event_data.OperationType, "")
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      actor LIKE "*$"
+      OR actor == "-"
+      OR actor == ""
+  )
+  | STATS
+      event_count    = COUNT(*),
+      actors         = VALUES(winlog.event_data.SubjectUserName),
+      actor_domains  = VALUES(winlog.event_data.SubjectDomainName),
+      event_codes    = VALUES(event.code),
+      op_types       = VALUES(winlog.event_data.OperationType),
+      logon_ids      = VALUES(winlog.event_data.SubjectLogonId)
+  BY
+      agent_id,
+      winlog.computer_name,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.computer_name,
+      event_count,
+      actors,
+      actor_domains,
+      event_codes,
+      op_types,
+      logon_ids
+  | SORT event_count DESC
+enabled: true
 tags:
   - detection.defense_evasion
   - monitoring.gpo

@@ -10,55 +10,65 @@ description: |
   Triage: Review the full script block for download/execute patterns (IEX, DownloadString, FromBase64String),
   suspicious network/URL usage, and correlate with parent process, user context, and follow-on persistence actions.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | EVAL raw = COALESCE(event.original, winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
-  // Selection: Identify token obfuscation patterns
+  // PowerShell Script Block Logging
+  | WHERE winlog.channel == "Microsoft-Windows-PowerShell/Operational"
+  | WHERE event.code == "4104"
+  // Token obfuscation patternlarini alohida tekshirish
+  // Pattern 1: Backtick-in-token (i`n`v`o`k`e style)
   | WHERE (
-      /* Backtick-in-token: matches i`n`v`o`k`e style patterns */
-      raw RLIKE "(?i).*\\\\w+`(\\\\w+|\\\\-|\\\\.)`[\\\\w\\\\s\\\\+\\\\|].*" OR
-      /* String-format reconstruction: "{0}{1}" -f ... */
-      raw RLIKE ".*\\\"(\\\\{\\\\d\\\\\\}){2,}\\\"\\\\s*\\\\-f.*" OR
-      /* Obfuscated environment path: ${e`n`v:p`a`t`h} */
-      raw RLIKE "(?i).*\\\\$\\\\{`?e`?n`?v`?:`?p`?a`?t`?h`?\\\\}.*"
-    )
-  // Filters: Exclude known benign activity
+      winlog.event_data.ScriptBlockText RLIKE "(?i).*[a-zA-Z]+`[a-zA-Z]`[a-zA-Z].*"
+      // Pattern 2: String-format reconstruction ("{0}{1}" -f ...)
+      OR winlog.event_data.ScriptBlockText RLIKE "(?i).*[{][0-9][}][{][0-9][}].*-f.*"
+      // Pattern 3: Obfuscated environment path
+      OR winlog.event_data.ScriptBlockText RLIKE "(?i).*[$][{].*`.*v.*:.*`.*[}].*"
+  )
+  // Benign holatlarni chiqarib tashlash
+  | WHERE NOT winlog.event_data.ScriptBlockText LIKE "*${env:path}*"
+  | WHERE NOT winlog.event_data.ScriptBlockText LIKE "*it will return true or false instead*"
+  | WHERE NOT winlog.event_data.ScriptBlockText LIKE "*The function also prevents*"
   | WHERE NOT (
-      /* Plain environment path usage */
-      raw LIKE "*${env:path}*" OR
-      /* Chocolatey installer noise */
-      raw LIKE "*it will return true or false instead*" OR
-      raw LIKE "*The function also prevents `Get-ItemProperty` from failing*" OR
-      /* Specific Microsoft Exchange service control script noise */
-      (winlog.event_data.OriginalFileName RLIKE "(?i)^C:\\\\\\\\Program Files\\\\\\\\Microsoft\\\\\\\\Exchange Server\\\\\\\\.*\\\\\\\\bin\\\\\\\\servicecontrol\\\\.ps1$" AND raw LIKE "*`r`n*")
-    )
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+      winlog.event_data.ScriptPath RLIKE "(?i).*\\\\Exchange Server\\\\.*\\\\servicecontrol\\.ps1$"
+      AND winlog.event_data.ScriptBlockText LIKE "*`r`n*"
+  )
+  // Vaqt konteksti
+  | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
-      cmdlines = VALUES(winlog.event_data.CommandLine),
-      script_paths = VALUES(winlog.event_data.OriginalFileName),
-      originals = VALUES(COALESCE(event.original, "")),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY 
-      agent_id, host.name, 
+      event_count      = COUNT(*),
+      users            = VALUES(winlog.event_data.SubjectUserName),
+      processes        = VALUES(winlog.event_data.ProcessName),
+      script_blocks    = VALUES(winlog.event_data.ScriptBlockText),
+      script_paths     = VALUES(winlog.event_data.ScriptPath),
+      pipe_ids         = VALUES(winlog.event_data.PipelineId),
+      after_hours_hits = SUM(is_after_hours)
+  BY
+      agent_id,
+      host.name,
       bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, processes, executables, 
-      cmdlines, script_paths, after_hours_hits, risk_score, originals
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      script_blocks,
+      script_paths,
+      pipe_ids,
+      after_hours_hits,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1027.009

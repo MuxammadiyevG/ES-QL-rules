@@ -6,20 +6,51 @@ description: |
   - `target_user` haqiqatdan ham ishga qaytgan xodim ekanligini HR ma'lumotlari orqali tekshiring.
   - `actor` (admin) ushbu amalni bajarish uchun asosga (ticket) ega ekanligini tasdiqlang.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
   | WHERE event.code == "4722"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = winlog.event_data.SubjectUserName
-  | EVAL target_user = winlog.event_data.TargetUserName
-  | KEEP agent_id, @timestamp, hostn, actor, target_user
-  | SORT @timestamp DESC
-enabled: false
+  | EVAL actor         = COALESCE(winlog.event_data.SubjectUserName, "")
+  | EVAL actor_domain  = COALESCE(winlog.event_data.SubjectDomainName, "")
+  | EVAL target_user   = COALESCE(winlog.event_data.TargetUserName, "")
+  | EVAL target_domain = COALESCE(winlog.event_data.TargetDomainName, "")
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      actor LIKE "*$"
+      OR actor == "-"
+      OR actor == ""
+      OR actor RLIKE "(?i)(system|network service|local service)"
+  )
+  | STATS
+      event_count     = COUNT(*),
+      actors          = VALUES(winlog.event_data.SubjectUserName),
+      actor_domains   = VALUES(winlog.event_data.SubjectDomainName),
+      target_users    = VALUES(winlog.event_data.TargetUserName),
+      target_domains  = VALUES(winlog.event_data.TargetDomainName),
+      sam_names       = VALUES(winlog.event_data.SamAccountName),
+      logon_ids       = VALUES(winlog.event_data.SubjectLogonId)
+  BY
+      agent_id,
+      winlog.computer_name,
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.computer_name,
+      event_count,
+      actors,
+      actor_domains,
+      target_users,
+      target_domains,
+      sam_names,
+      logon_ids
+  | SORT event_count DESC
+enabled: true
 tags:
   - detection.persistence
   - monitoring.account_status

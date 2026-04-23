@@ -17,41 +17,62 @@ description: |
   Triage: Review registry value data (what executable?), check file signature,
   verify if modification by agent_id, legitimate installer, scan referenced executable.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | WHERE event.action IN ("RegistryEvent", "SetValue")
-    AND event.original RLIKE "(?i).*(\\\\Run$|\\\\RunOnce|\\\\RunServices|\\\\Startup|\\\\Winlogon|\\\\Shell|\\\\Load|\\\\UserInit).*"
+  // Registry persistence keylarini message orqali aniqlash
+  | WHERE message RLIKE "(?i).*(\\\\Run$|\\\\RunOnce|\\\\RunServices|\\\\Startup|\\\\Winlogon|\\\\Shell|\\\\Load|\\\\UserInit).*"
+  // Persistence key turini aniqlash
   | EVAL persistence_key_type = CASE(
-      event.original RLIKE "(?i).*\\\\Run$", "Run-Key",
-      event.original RLIKE "(?i).*\\\\RunOnce", "RunOnce-Key",
-      event.original RLIKE "(?i).*\\\\Winlogon", "Winlogon-Key",
-      event.original RLIKE "(?i).*\\\\Startup", "Startup-Folder",
+      message RLIKE "(?i).*\\\\Run$",       "Run-Key",
+      message RLIKE "(?i).*\\\\RunOnce.*",  "RunOnce-Key",
+      message RLIKE "(?i).*\\\\Winlogon.*", "Winlogon-Key",
+      message RLIKE "(?i).*\\\\Startup.*",  "Startup-Folder",
       "Other-Persistence"
-    )
+  )
+  // Shubhali qiymatlarni aniqlash
   | EVAL suspicious_value = CASE(
-      event.original RLIKE "(?i).*(\\\\Temp\\\\|\\\\AppData\\\\Roaming\\\\|\\\\Users\\\\Public\\\\|powershell|cmd\\.exe|wscript|regsvr32|rundll32).*", true,
-      event.original RLIKE "(?i).*(http|ftp|download|encoded|bypass|hidden).*", true,
-      false
-    )
-  | WHERE suspicious_value == true
-  | STATS 
+      message RLIKE "(?i).*(\\\\Temp\\\\|\\\\AppData\\\\Roaming\\\\|\\\\Users\\\\Public\\\\|powershell|cmd\\.exe|wscript|regsvr32|rundll32).*", 1,
+      message RLIKE "(?i).*(http|ftp|download|encoded|bypass|hidden).*", 1,
+      0
+  )
+  | WHERE suspicious_value == 1
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      COALESCE(winlog.event_data.SubjectUserName, "") LIKE "*$"
+      OR COALESCE(winlog.event_data.SubjectUserName, "") == "-"
+      OR COALESCE(winlog.event_data.SubjectUserName, "") == ""
+  )
+  | STATS
       modification_count = COUNT(*),
-      unique_keys = COUNT_DISTINCT(event.original),
-      registry_keys = VALUES(event.original),
-      registry_values = VALUES(event.original),
-      modifiers = VALUES(winlog.event_data.TargetUserName)
-    BY agent_id, host.name, persistence_key_type
-    , bucket = DATE_TRUNC(15 minutes, @timestamp)
+      unique_keys        = COUNT_DISTINCT(message),
+      modifiers          = VALUES(winlog.event_data.SubjectUserName),
+      processes          = VALUES(winlog.event_data.ProcessName),
+      messages           = VALUES(message)
+  BY
+      agent_id,
+      host.name,
+      persistence_key_type,
+      bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE modification_count >= 1
   | EVAL risk_score = modification_count * 35
-  | KEEP agent_id, bucket, host.name, persistence_key_type, modification_count, unique_keys, registry_keys, registry_values, modifiers, risk_score
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      persistence_key_type,
+      modification_count,
+      unique_keys,
+      modifiers,
+      processes,
+      messages,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - nist_800_53
   - control_CM-6

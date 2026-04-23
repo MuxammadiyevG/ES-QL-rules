@@ -17,46 +17,67 @@ description: |
   Triage: IMMEDIATE isolation of affected host, check for ransom note files (README.txt, HOW_TO_DECRYPT),
   review for known ransomware IOCs, initiate incident response procedures.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 5m
 index:
   - winlogbeat-*
   - auditbeat-*
 query_language: esql
 query: |
-  FROM logs-winlog*, logs-updive.audit*
-  | WHERE event.action IN ("created-file", "modified-file", "renamed-file")
+  FROM logs-winlog*
+  // Fayl operatsiyalarini message orqali aniqlash
+  | WHERE message RLIKE "(?i).*(encrypted|locked|crypt|enc|cry|crypted|l0cked|dharma|cerber|locky|wannacry|ryuk|maze|conti).*"
+      OR message RLIKE "(?i).*(README|HOW_TO_DECRYPT|RESTORE_FILES|DECRYPT_INSTRUCTIONS).*"
+      OR winlog.event_data.FileNameBuffer RLIKE "(?i).*\\.(encrypted|locked|crypt|enc|cry|crypted|l0cked)$"
+  // Ransomware indikatorini aniqlash
   | EVAL suspicious_extension = CASE(
-      winlog.event_data.Path RLIKE "(?i)^(encrypted|locked|crypt|enc|cry|crypted|enc0ded|l0cked|dharma|cerber|locky|wannacry|ryuk|maze|conti)$", true,
-      winlog.event_data.Path RLIKE "(?i).*(README|HOW_TO_DECRYPT|RESTORE_FILES|DECRYPT_INSTRUCTIONS).*", true,
-      false
-    )
-  | EVAL file_category = CASE(
-      suspicious_extension == true, "Ransomware-Indicator",
-      winlog.event_data.Path IN ("doc", "docx", "xls", "xlsx", "pdf", "jpg", "png"), "User-Data",
-      "Other"
-    )
-  | STATS 
-      total_file_ops = COUNT(*),
-      ransomware_indicators = SUM(CASE(suspicious_extension == true, 1, 0)),
-      user_data_ops = SUM(CASE(file_category == "User-Data", 1, 0)),
-      unique_extensions = COUNT_DISTINCT(winlog.event_data.Path),
-      file_paths = VALUES(winlog.event_data.Path),
-      processes = VALUES(winlog.event_data.ProcessName)
-    BY agent_id, host.name, winlog.event_data.TargetUserName
-    , bucket = DATE_TRUNC(5 minutes, @timestamp)
-  | WHERE ransomware_indicators >= 1 OR (total_file_ops >= 50 AND unique_extensions >= 10)
+      winlog.event_data.FileNameBuffer RLIKE "(?i).*\\.(encrypted|locked|crypt|enc|cry|crypted|l0cked)$", 1,
+      message RLIKE "(?i).*(README|HOW_TO_DECRYPT|RESTORE_FILES|DECRYPT_INSTRUCTIONS).*", 1,
+      message RLIKE "(?i).*(dharma|cerber|locky|wannacry|ryuk|maze|conti).*", 1,
+      0
+  )
+  // Foydalanuvchi ma'lumotlari operatsiyasini aniqlash
+  | EVAL user_data = CASE(
+      winlog.event_data.FileNameBuffer RLIKE "(?i).*\\.(doc|docx|xls|xlsx|pdf|jpg|png)$", 1,
+      0
+  )
+  | STATS
+      total_file_ops        = COUNT(*),
+      ransomware_indicators = SUM(suspicious_extension),
+      user_data_ops         = SUM(user_data),
+      unique_extensions     = COUNT_DISTINCT(winlog.event_data.FileNameBuffer),
+      file_paths            = VALUES(winlog.event_data.FileNameBuffer),
+      processes             = VALUES(winlog.event_data.ProcessName),
+      users                 = VALUES(winlog.event_data.SubjectUserName)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE ransomware_indicators >= 1
+      OR (total_file_ops >= 50 AND unique_extensions >= 10)
   | EVAL confidence_level = CASE(
-      ransomware_indicators >= 5, "critical",
-      ransomware_indicators >= 1 AND total_file_ops >= 100, "high",
-      total_file_ops >= 200, "medium",
+      ransomware_indicators >= 5,                              "critical",
+      ransomware_indicators >= 1 AND total_file_ops >= 100,   "high",
+      total_file_ops >= 200,                                   "medium",
       "low"
-    )
+  )
   | EVAL risk_score = ransomware_indicators * 50 + total_file_ops / 2
   | WHERE risk_score >= 50
-  | KEEP agent_id, bucket, host.name, winlog.event_data.TargetUserName, total_file_ops, ransomware_indicators, unique_extensions, processes, confidence_level, risk_score
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      total_file_ops,
+      ransomware_indicators,
+      user_data_ops,
+      unique_extensions,
+      processes,
+      users,
+      file_paths,
+      confidence_level,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - nist_800_53
   - control_IR-4

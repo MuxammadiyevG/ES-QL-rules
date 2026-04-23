@@ -9,50 +9,62 @@ description: |
    - winlog.event_data.OriginalFileName as the target filename, and
    - event.original parsing as best-effort for source filename (if present in raw event).
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | WHERE event.category == "file" OR event.type == "change" OR event.dataset RLIKE """(?i).*file.*"""
-  | EVAL tgt = COALESCE(winlog.event_data.OriginalFileName, "")
-  | WHERE tgt RLIKE """(?i).*\.dll$"""
-  | EVAL raw = COALESCE(event.original, "")
-  | WHERE NOT (raw RLIKE """(?i).*SourceFilename\s*[:=]\s*(null|"").*""")
-  | WHERE NOT (raw RLIKE """(?i).*SourceFilename\s*[:=].*\.dll\b.*""")
-  | WHERE NOT (raw RLIKE """(?i).*SourceFilename\s*[:=].*\.tmp\b.*""")
+  // .dll extension bilan tugagan fayllarni aniqlash
+  | EVAL tgt = COALESCE(winlog.event_data.FileNameBuffer, "")
+  | WHERE tgt RLIKE "(?i).*\\.dll$"
+  // Manba .dll bo'lmagan holatlarni message orqali aniqlash
+  | WHERE NOT message RLIKE "(?i).*SourceFilename[ \t]*[:=][ \t]*.*\\.dll.*"
+  | WHERE NOT message RLIKE "(?i).*SourceFilename[ \t]*[:=][ \t]*.*\\.tmp.*"
+  | WHERE NOT message RLIKE "(?i).*SourceFilename[ \t]*[:=][ \t]*(null|\"\").*"
+  // TiWorker filtri
   | WHERE NOT (
-      (winlog.event_data.ProcessName LIKE "*:\\Windows\\WinSxS\\*"
-        AND winlog.event_data.ProcessName RLIKE """(?i).*\\TiWorker\.exe$""")
-      OR raw RLIKE """(?i).*Image\s*[:=].*\\TiWorker\.exe\b.*"""
-    )
+      COALESCE(winlog.event_data.ProcessName, "") LIKE "*:\\\\Windows\\\\WinSxS\\\\*"
+      AND winlog.event_data.ProcessName RLIKE "(?i).*\\\\TiWorker\\.exe$"
+  )
+  | WHERE NOT message RLIKE "(?i).*Image[ \t]*[:=].*\\\\TiWorker\\.exe.*"
+  // wuauclt filtri
   | WHERE NOT (
-      winlog.event_data.ProcessName RLIKE """(?i).*:\\Windows\\System32\\wuauclt\.exe$"""
-      AND tgt LIKE "*:\\$WINDOWS.~BT\\Sources\\*"
-    )
+      winlog.event_data.ProcessName RLIKE "(?i).*:\\\\Windows\\\\System32\\\\wuauclt\\.exe$"
+      AND tgt LIKE "*:\\\\$WINDOWS.~BT\\\\Sources\\\\*"
+  )
+  // Program Files filtri
   | WHERE NOT (
-      winlog.event_data.ProcessName LIKE "*:\\Program Files (x86)\\*"
-      OR winlog.event_data.ProcessName LIKE "*:\\Program Files\\*"
-    )
-  | WHERE NOT (raw RLIKE """(?i).*SourceFilename\s*[:=].*\\SquirrelTemp\\temp.*""")
+      COALESCE(winlog.event_data.ProcessName, "") LIKE "*:\\\\Program Files (x86)\\\\*"
+      OR COALESCE(winlog.event_data.ProcessName, "") LIKE "*:\\\\Program Files\\\\*"
+  )
+  // SquirrelTemp filtri
+  | WHERE NOT message RLIKE "(?i).*SourceFilename[ \t]*[:=].*\\\\SquirrelTemp\\\\temp.*"
   | STATS
-      event_count        = COUNT(*),
-      users              = VALUES(winlog.event_data.TargetUserName),
-      processes          = VALUES(winlog.event_data.ProcessName),
-      parents            = VALUES(winlog.event_data.CallerProcessName),
-      target_paths       = VALUES(tgt),
-      raw_samples        = VALUES(raw)
-    BY
-      agent_id, host.name,
-      bucket = DATE_TRUNC(20 minutes, @timestamp)
+      event_count   = COUNT(*),
+      users         = VALUES(winlog.event_data.TargetUserName),
+      processes     = VALUES(winlog.event_data.ProcessName),
+      parents       = VALUES(winlog.event_data.CallerProcessName),
+      target_paths  = VALUES(winlog.event_data.FileNameBuffer),
+      messages      = VALUES(message)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 1
   | KEEP
-      agent_id, bucket, host.name, event_count,
-      users, processes, parents, target_paths, raw_samples
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      parents,
+      target_paths,
+      messages
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1036.008

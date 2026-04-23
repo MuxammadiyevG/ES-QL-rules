@@ -6,42 +6,46 @@ description: |
   This behavior has been used by threat actors (e.g., observed in Dharma ransomware activity).
   False positives: Unknown. Treat as hunting baseline and validate context.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  // Filter for process creation events
-  | WHERE event.category == "process" 
-     OR event.code IN ("1", "4688") 
-     OR event.dataset RLIKE "(?i).*process.*"
-  // Selection: Identify mode.com via name, path, or original filename metadata
+  // Process creation events
+  | WHERE event.code IN ("1", "4688")
+  // mode.com aniqlash
   | WHERE winlog.event_data.ProcessName == "mode.com"
-     OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\mode\\\\.com$"
-     OR COALESCE(event.original, "") RLIKE "(?i).*OriginalFileName\\\\s*[:=]\\\\s*MODE\\\\.COM.*"
-  // Selection: Target specific code page selection arguments
-  | EVAL cmd = COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
-  | WHERE cmd LIKE "* con *"
-    AND cmd LIKE "* cp *"
-    AND cmd LIKE "*select=*"
+      OR winlog.event_data.ProcessName RLIKE "(?i).*\\\\mode\\.com$"
+  // Code page selection argumentlarini message orqali aniqlash
+  | WHERE message LIKE "* con *"
+      AND message LIKE "* cp *"
+      AND message LIKE "*select=*"
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      parents = VALUES(winlog.event_data.CallerProcessName),
-      parent_cmdlines = VALUES(winlog.event_data.CommandLine),
-      executables = VALUES(winlog.event_data.ProcessName),
-      cmdlines = VALUES(cmd),
-      pids = VALUES(winlog.event_data.ProcessPid)
-    BY 
-      agent_id, host.name, 
+      event_count  = COUNT(*),
+      users        = VALUES(winlog.event_data.TargetUserName),
+      parents      = VALUES(winlog.event_data.CallerProcessName),
+      executables  = VALUES(winlog.event_data.ProcessName),
+      messages     = VALUES(message),
+      pids         = VALUES(winlog.event_data.ProcessPid)
+  BY
+      agent_id,
+      host.name,
       bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, parents, parent_cmdlines, executables, cmdlines, pids
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      parents,
+      executables,
+      messages,
+      pids
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1036

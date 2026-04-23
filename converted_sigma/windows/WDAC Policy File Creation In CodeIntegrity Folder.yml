@@ -8,43 +8,44 @@ description: |
   Note: This rule expects IntegrityLevel telemetry; if you don't ingest it, treat this as
   a hunting rule based on the folder/file extension and then correlate with elevation/admin activity.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
- FROM logs-winlog*
-  // File event telemetry
-  | WHERE event.category == "file" OR event.dataset RLIKE "(?i).*file.*"
-  // Evaluate path to simplify logic
-  | EVAL p = COALESCE(winlog.event_data.OriginalFileName, "")
-  // Selection: path contains CodeIntegrity AND ends with .cip or .p7b
+  FROM logs-winlog*
+  // CodeIntegrity papkasida .cip va .p7b fayllarini aniqlash
+  | EVAL p = COALESCE(winlog.event_data.FileNameBuffer, "")
   | WHERE p LIKE "*:\\\\Windows\\\\System32\\\\CodeIntegrity\\\\*"
-    AND p RLIKE "(?i).*\\\\.(cip|p7b)$"
-  // Selection: IntegrityLevel == High (evaluating raw logs or ECS field)
-  | WHERE (
-      COALESCE(event.original, "") RLIKE "(?i).*IntegrityLevel\\\\s*[:=]\\\\s*High.*"
-      OR winlog.level == "high"
-    )
+    AND p RLIKE "(?i).*\\.(cip|p7b)$"
+  // IntegrityLevel High ni message orqali aniqlash
+  | WHERE message RLIKE "(?i).*IntegrityLevel[ \t]*[:=][ \t]*High.*"
+      OR log.level == "high"
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
-      parents = VALUES(winlog.event_data.CallerProcessName),
-      parent_executables = VALUES(winlog.event_data.CallerProcessName),
-      file_paths = VALUES(winlog.event_data.OriginalFileName),
-      cmdlines = VALUES(COALESCE(winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")),
-      raw_samples = VALUES(event.original)
-    BY 
-      agent_id, host.name, 
-      bucket = DATE_TRUNC(20 minutes, @timestamp)
+      event_count  = COUNT(*),
+      users        = VALUES(winlog.event_data.TargetUserName),
+      processes    = VALUES(winlog.event_data.ProcessName),
+      parents      = VALUES(winlog.event_data.CallerProcessName),
+      file_paths   = VALUES(winlog.event_data.FileNameBuffer),
+      messages     = VALUES(message)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, processes, executables, parents, parent_executables, cmdlines, file_paths, raw_samples
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      parents,
+      file_paths,
+      messages
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1562.001

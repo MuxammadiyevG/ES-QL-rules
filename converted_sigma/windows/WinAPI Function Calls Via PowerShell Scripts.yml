@@ -12,45 +12,63 @@ description: |
   wscript/cscript, mshta), unsigned script locations (Temp/Downloads/Public), and correlate with injection indicators,
   LSASS access, new services/tasks, and outbound C2.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | EVAL raw = COALESCE(event.original, winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
-  // Hunt for WinAPI function names using robust regex word boundaries
-  | WHERE raw RLIKE "(?i).*\\\\b(AddSecurityPackage|AdjustTokenPrivileges|CloseHandle|CreateProcessWithToken|CreateRemoteThread|CreateThread|CreateUserThread|DangerousGetHandle|DuplicateTokenEx|EnumerateSecurityPackages|FreeLibrary|GetDelegateForFunctionPointer|GetLogonSessionData|GetModuleHandle|GetProcAddress|GetProcessHandle|GetTokenInformation|ImpersonateLoggedOnUser|LoadLibrary|memcpy|MiniDumpWriteDump|OpenDesktop|OpenProcess|OpenProcessToken|OpenThreadToken|OpenWindowStation|QueueUserApc|ReadProcessMemory|RevertToSelf|RtlCreateUserThread|SetThreadToken|VirtualAlloc|VirtualFree|VirtualProtect|WaitForSingleObject|WriteInt32|WriteProcessMemory|ZeroFreeGlobalAllocUnicode)\\\\b.*"
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
-  // Context signal: Check if the script is running from a common staging directory
-  | EVAL suspicious_script_path = CASE(
-      winlog.event_data.OriginalFileName RLIKE "(?i).*\\\\\\\\(Users\\\\\\\\.*\\\\\\\\(Downloads|AppData\\\\\\\\Local\\\\\\\\Temp)|Windows\\\\\\\\Temp|ProgramData|Users\\\\\\\\Public)\\\\\\\\.*", true,
-      false
-    )
+  // PowerShell Script Block Logging
+  | WHERE winlog.channel == "Microsoft-Windows-PowerShell/Operational"
+  | WHERE event.code == "4104"
+  // WinAPI function names - 1-qism (injection/memory)
+  | WHERE (
+      winlog.event_data.ScriptBlockText RLIKE "(?i).*(CreateRemoteThread|CreateThread|VirtualAlloc|VirtualProtect|VirtualFree|WriteProcessMemory|ReadProcessMemory|OpenProcess|QueueUserApc|RtlCreateUserThread|CreateUserThread).*"
+      // WinAPI function names - 2-qism (token/credential/handle)
+      OR winlog.event_data.ScriptBlockText RLIKE "(?i).*(AdjustTokenPrivileges|DuplicateTokenEx|ImpersonateLoggedOnUser|OpenProcessToken|OpenThreadToken|GetTokenInformation|SetThreadToken|RevertToSelf|GetLogonSessionData|MiniDumpWriteDump).*"
+      // WinAPI function names - 3-qism (library/process/misc)
+      OR winlog.event_data.ScriptBlockText RLIKE "(?i).*(GetProcAddress|GetModuleHandle|LoadLibrary|FreeLibrary|OpenDesktop|OpenWindowStation|GetProcessHandle|DangerousGetHandle|GetDelegateForFunctionPointer|WaitForSingleObject|memcpy|ZeroFreeGlobalAllocUnicode).*"
+  )
+  // Vaqt konteksti
+  | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
+  // Shubhali script path aniqlash
+  | EVAL suspicious_path = CASE(
+      winlog.event_data.ScriptPath RLIKE "(?i).*(Downloads|AppData\\\\Local\\\\Temp|Windows\\\\Temp|ProgramData|Users\\\\Public).*", 1,
+      0
+  )
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
-      cmdlines = VALUES(winlog.event_data.CommandLine),
-      script_paths = VALUES(winlog.event_data.OriginalFileName),
-      originals = VALUES(COALESCE(event.original, "")),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0)),
-      suspicious_path_hits = SUM(CASE(suspicious_script_path == true, 1, 0))
-    BY 
-      agent_id, host.name, 
+      event_count          = COUNT(*),
+      users                = VALUES(winlog.event_data.SubjectUserName),
+      processes            = VALUES(winlog.event_data.ProcessName),
+      script_blocks        = VALUES(winlog.event_data.ScriptBlockText),
+      script_paths         = VALUES(winlog.event_data.ScriptPath),
+      pipe_ids             = VALUES(winlog.event_data.PipelineId),
+      after_hours_hits     = SUM(is_after_hours),
+      suspicious_path_hits = SUM(suspicious_path)
+  BY
+      agent_id,
+      host.name,
       bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  // Risk Scoring: 20 per event + 15 for night activity + 10 for suspicious paths
   | EVAL risk_score = event_count * 20 + after_hours_hits * 15 + suspicious_path_hits * 10
   | WHERE risk_score >= 25
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, processes, executables, 
-      cmdlines, script_paths, after_hours_hits, suspicious_path_hits, risk_score, originals
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      script_blocks,
+      script_paths,
+      pipe_ids,
+      after_hours_hits,
+      suspicious_path_hits,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - attack.execution
   - attack.t1059.001
@@ -65,5 +83,4 @@ pci_dss: ["10.2"]
 mitre_attack:
   TA0002:
     T1059: ["T1059.001"]
-  TA0002_2:
     T1106: []

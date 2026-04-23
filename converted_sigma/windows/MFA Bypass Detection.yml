@@ -14,36 +14,64 @@ description: |
   LogonType 10 (RemoteInteractive) and Type 3 (Network) should require MFA per policy.
   MFA bypass often achieved via legacy protocols (NTLM, basic auth) or token theft.
   False positives: Service accounts, legacy applications unable to support MFA, emergency access accounts.
-  Triage: Verify if account is on MFA exclusion list, check authentication protocol used, 
+  Triage: Verify if account is on MFA exclusion list, check authentication protocol used,
   review for concurrent credential theft indicators.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - winlogbeat-*
 query_language: esql
 query: |
+
   FROM logs-winlog*
   | WHERE event.code == "4624"
-    AND winlog.event_data.LogonType IN  ("3", "10")
-    AND event.outcome == "success"
-  | WHERE event.original != "Negotiate"
-    OR event.original IS NULL
-  | EVAL mfa_indicator = COALESCE(event.original, "NotPresent")
-  | WHERE mfa_indicator == "NotPresent"
-  | STATS 
-      non_mfa_logins = COUNT(*),
-      unique_sources = COUNT_DISTINCT(host.ip),
-      source_ips = VALUES(host.ip),
-      logon_types = VALUES(winlog.event_data.LogonType)
-    BY agent_id, host.name, host.name
-    , bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE winlog.event_data.LogonType IN ("3", "10")
+  // NTLM autentifikatsiyasini aniqlash (MFA qo'llab-quvvatlamaydi)
+  | WHERE winlog.event_data.AuthenticationPackageName == "NTLM"
+      OR winlog.event_data.LmPackageName RLIKE "(?i).*(NTLM|LM).*"
+  // Tizim akkauntlarini chiqarib tashlash
+  | EVAL user        = COALESCE(winlog.event_data.TargetUserName, "")
+  | EVAL user_domain = COALESCE(winlog.event_data.TargetDomainName, "")
+  | WHERE NOT (
+      user LIKE "*$"
+      OR user == "-"
+      OR user == ""
+      OR user RLIKE "(?i)(system|network service|local service|anonymous logon)"
+  )
+  | STATS
+      non_mfa_logins  = COUNT(*),
+      unique_sources  = COUNT_DISTINCT(winlog.event_data.IpAddress),
+      users           = VALUES(winlog.event_data.TargetUserName),
+      user_domains    = VALUES(winlog.event_data.TargetDomainName),
+      source_ips      = VALUES(winlog.event_data.IpAddress),
+      logon_types     = VALUES(winlog.event_data.LogonType),
+      auth_packages   = VALUES(winlog.event_data.AuthenticationPackageName),
+      lm_packages     = VALUES(winlog.event_data.LmPackageName),
+      logon_ids       = VALUES(winlog.event_data.TargetLogonId)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE non_mfa_logins >= 1
   | EVAL risk_score = non_mfa_logins * 20 + unique_sources * 10
   | WHERE risk_score >= 20
-  | KEEP agent_id, bucket, host.name, host.name, non_mfa_logins, unique_sources, source_ips, logon_types, risk_score
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      non_mfa_logins,
+      unique_sources,
+      users,
+      user_domains,
+      source_ips,
+      logon_types,
+      auth_packages,
+      lm_packages,
+      logon_ids,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - nist_800_53
   - control_IA-2

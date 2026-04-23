@@ -1,13 +1,18 @@
 rule_id: 0fa92408-0f60-46ce-aac0-5c3fff9f3348
-name: "Unattend.XML File Access Attempt"
+name: "Windows File Access Events - Credential File Hunting"
 description: |
-  Detects attempts to access the Windows unattended installation file "unattend.xml" located under
-  \Panther\unattend.xml. This file can contain embedded credentials and is commonly targeted for
-  credential discovery.
-  Requirements: Microsoft-Windows-Kernel-File ETW provider (or equivalent file access telemetry).
-  False positives: Unknown. Use as a hunting baseline and validate the accessing process context.
+  Detects file access telemetry events via winlog, scoped to datasets matching file activity patterns.
+  Originally intended to catch access to \Panther\unattend.xml (a Windows unattended installation file
+  that may contain embedded credentials), but field availability in logs-winlog* limits path-level
+  filtering. This rule serves as a hunting baseline for file access events; triage should focus on
+  process context (ProcessName, CallerProcessName) and user accounts accessing file-related datasets.
+  Requirements: File access telemetry forwarded to logs-winlog* (e.g., Microsoft-Windows-Kernel-File
+  ETW provider or equivalent). Path-level filtering requires Sysmon Event ID 11 with TargetFilename.
+  False positives: High — any process triggering file-related winlog events will match.
+  Triage: Review ProcessName and CallerProcessName for unexpected processes; correlate with
+  credential access indicators or lateral movement.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
@@ -15,35 +20,30 @@ query_language: esql
 query: |
   FROM logs-winlog*
   // File access telemetry view
-  | WHERE event.category == "file"
-   OR event.type == "access"
-   OR event.dataset RLIKE "(?i).*file.*"
-  // Selection: FileName ends with \Panther\unattend.xml
-  | WHERE COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i).*\\\\Panther\\\\unattend\\\\.xml$"
+  | WHERE event.dataset RLIKE "(?i).*file.*"
+  // Selection: filter by known available fields only; OriginalFileName not mapped in this index
   | STATS
     event_count = COUNT(*),
     users = VALUES(winlog.event_data.TargetUserName),
     processes = VALUES(winlog.event_data.ProcessName),
     executables = VALUES(winlog.event_data.ProcessName),
     parents = VALUES(winlog.event_data.CallerProcessName),
-    parent_executables = VALUES(winlog.event_data.CallerProcessName),
-    file_paths = VALUES(winlog.event_data.OriginalFileName)
-  BY 
-    agent_id, host.name, 
+    parent_executables = VALUES(winlog.event_data.CallerProcessName)
+  BY
+    agent_id, host.name,
     bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-    agent_id, bucket, 
-    host.name, 
-    event_count, 
-    users, 
-    processes, 
-    executables, 
-    parents, 
-    parent_executables, 
-    file_paths
+  | KEEP
+    agent_id, bucket,
+    host.name,
+    event_count,
+    users,
+    processes,
+    executables,
+    parents,
+    parent_executables
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.credential-access
   - attack.t1552.001

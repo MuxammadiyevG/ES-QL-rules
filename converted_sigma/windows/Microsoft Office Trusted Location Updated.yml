@@ -10,40 +10,52 @@ description: |
   verify the modifying process and user, and correlate with subsequent Office document
   execution, macro activity, or suspicious child processes.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
- FROM logs-winlog*
-  | EVAL raw = COALESCE(event.original, "")
-  /* Selection: Trusted Location registry path ending with \Path */
-  | WHERE raw LIKE "*Security\\\\Trusted Locations\\\\Location*"
-    AND raw LIKE "*\\\\Path*"
-  /* Filters: exclude common Office installers and Office apps */
+  FROM logs-winlog*
+  // Trusted Location registry path aniqlash
+  | WHERE message RLIKE "(?i).*Security\\\\Trusted Locations\\\\Location.*"
+    AND message RLIKE "(?i).*\\\\Path.*"
+  // Office installer va Office app larini chiqarib tashlash
   | WHERE NOT (
-      winlog.event_data.ProcessName LIKE "*\\\\Program Files\\\\Common Files\\\\Microsoft Shared\\\\ClickToRun\\\\OfficeClickToRun.exe" OR
-      winlog.event_data.ProcessName LIKE "*\\\\Program Files\\\\Microsoft Office\\\\*" OR
-      winlog.event_data.ProcessName LIKE "*\\\\Program Files (x86)\\\\Microsoft Office\\\\*"
-    )
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+      COALESCE(winlog.event_data.ProcessName, "") LIKE "*\\\\Program Files\\\\Common Files\\\\Microsoft Shared\\\\ClickToRun\\\\OfficeClickToRun.exe"
+      OR COALESCE(winlog.event_data.ProcessName, "") LIKE "*\\\\Program Files\\\\Microsoft Office\\\\*"
+      OR COALESCE(winlog.event_data.ProcessName, "") LIKE "*\\\\Program Files (x86)\\\\Microsoft Office\\\\*"
+  )
+  // Vaqt konteksti
+  | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
+      event_count      = COUNT(*),
+      users            = VALUES(winlog.event_data.SubjectUserName),
+      processes        = VALUES(winlog.event_data.ProcessName),
       parent_processes = VALUES(winlog.event_data.CallerProcessName),
-      originals = VALUES(raw),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY agent_id, host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+      messages         = VALUES(message),
+      after_hours_hits = SUM(is_after_hours)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25
-  | KEEP agent_id, bucket, host.name, event_count, users, processes, executables, parent_processes, after_hours_hits, risk_score, originals
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      parent_processes,
+      messages,
+      after_hours_hits,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.persistence

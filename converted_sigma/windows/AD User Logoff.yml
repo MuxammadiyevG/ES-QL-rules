@@ -7,21 +7,47 @@ description: |
   - Chiqish vaqti va kirish vaqti o'rtasidagi farqni tekshiring.
   - Bir vaqtning o'zida ko'plab logoff hodisalari bo'lishi tizim qayta yuklanganini anglatishi mumkin.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
   | WHERE event.code == "4634"
-  | EVAL hostn = winlog.computer_name
-  | EVAL user = winlog.event_data.TargetUserName
-  | EVAL logon_type = winlog.event_data.LogonType
-  | KEEP agent_id, @timestamp, hostn, user, logon_type
-  | SORT @timestamp DESC
-  | LIMIT 200
-enabled: false
+  // Faqat muhim logon turlari: 2-Lokal, 3-Tarmoq, 10-RDP
+  | WHERE winlog.event_data.LogonType IN ("2", "3", "10")
+  | EVAL user         = COALESCE(winlog.event_data.TargetUserName, "")
+  | EVAL user_domain  = COALESCE(winlog.event_data.TargetDomainName, "")
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      user LIKE "*$"
+      OR user == "-"
+      OR user == ""
+      OR user RLIKE "(?i)(system|network service|local service|anonymous logon)"
+  )
+  | STATS
+      event_count   = COUNT(*),
+      users         = VALUES(winlog.event_data.TargetUserName),
+      user_domains  = VALUES(winlog.event_data.TargetDomainName),
+      logon_types   = VALUES(winlog.event_data.LogonType),
+      logon_ids     = VALUES(winlog.event_data.TargetLogonId)
+  BY
+      agent_id,
+      winlog.computer_name,
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.computer_name,
+      event_count,
+      users,
+      user_domains,
+      logon_types,
+      logon_ids
+  | SORT event_count DESC
+enabled: true
 tags:
   - detection.logoff
   - monitoring.auth_lifecycle

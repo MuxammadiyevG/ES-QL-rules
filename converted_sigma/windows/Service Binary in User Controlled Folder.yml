@@ -12,57 +12,67 @@ description: |
   performing the registry write, and correlate with service creation/start events, new binaries in the referenced
   directory, and suspicious network connections.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | EVAL raw = COALESCE(event.original, "")
-  /* selection: ControlSet + \Services\ + endswith \ImagePath + Details contains user-controlled folders */
-  | WHERE raw LIKE "*ControlSet*\\\\Services\\\\*"
-    AND raw LIKE "*\\\\ImagePath*"
-    AND (
-      raw RLIKE "(?i):\\\\ProgramData\\\\" OR
-      raw RLIKE "(?i)\\\\AppData\\\\Local\\\\" OR
-      raw RLIKE "(?i)\\\\AppData\\\\Roaming\\\\"
-    )
-  /* filter_main_windefend: exclude Windows Defender service paths */
+  // ControlSet\Services ImagePath o'zgarishlarini aniqlash
+  | WHERE message RLIKE "(?i).*ControlSet.*\\\\Services\\\\.*"
+  | WHERE message RLIKE "(?i).*\\\\ImagePath.*"
+  // Foydalanuvchi tomonidan boshqariladigan papkalar
+  | WHERE (
+      message RLIKE "(?i).*:\\\\ProgramData\\\\.*"
+      OR message RLIKE "(?i).*\\\\AppData\\\\Local\\\\.*"
+      OR message RLIKE "(?i).*\\\\AppData\\\\Roaming\\\\.*"
+  )
+  // Windows Defender filtri
   | WHERE NOT (
-      (raw LIKE "*\\\\Services\\\\WinDefend\\\\*" OR raw LIKE "*\\\\Services\\\\MpKs*")
-      AND raw LIKE "*C:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\*"
-    )
-  /* filter_optional_zoom */
+      message RLIKE "(?i).*\\\\Services\\\\(WinDefend|MpKs).*"
+      AND message RLIKE "(?i).*\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\.*"
+  )
+  // Zoom filtri
   | WHERE NOT (
-      raw LIKE "*\\\\Services\\\\ZoomCptService*"
-      AND raw LIKE "*C:\\\\Program Files\\\\Common Files\\\\Zoom\\\\Support\\\\CptService.exe*"
-    )
-  /* filter_optional_mbami */
+      message RLIKE "(?i).*\\\\Services\\\\ZoomCptService.*"
+      AND message LIKE "*Common Files\\\\Zoom\\\\Support\\\\CptService.exe*"
+  )
+  // MBAM filtri
   | WHERE NOT (
-      raw LIKE "*\\\\Services\\\\MBAMInstallerService*"
-      AND raw LIKE "*C:\\\\Users\\\\*"
-      AND raw LIKE "*AppData\\\\Local\\\\Temp\\\\MBAMInstallerService.exe*"
-    )
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+      message RLIKE "(?i).*\\\\Services\\\\MBAMInstallerService.*"
+      AND message RLIKE "(?i).*\\\\AppData\\\\Local\\\\Temp\\\\MBAMInstallerService\\.exe.*"
+  )
+  // Vaqt konteksti
+  | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      target_users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
+      event_count      = COUNT(*),
+      users            = VALUES(winlog.event_data.SubjectUserName),
+      processes        = VALUES(winlog.event_data.ProcessName),
       parent_processes = VALUES(winlog.event_data.CallerProcessName),
-      cmdlines = VALUES(winlog.event_data.CommandLine),
-      originals = VALUES(raw),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY agent_id, host.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
+      messages         = VALUES(message),
+      after_hours_hits = SUM(is_after_hours)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25
-  | KEEP agent_id, bucket, host.name, event_count, users, target_users, processes, executables, parent_processes, cmdlines, after_hours_hits, risk_score, originals
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      parent_processes,
+      messages,
+      after_hours_hits,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.persistence

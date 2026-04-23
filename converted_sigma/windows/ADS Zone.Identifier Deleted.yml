@@ -6,47 +6,44 @@ description: |
   (MOTW) based security restrictions used by Windows and Microsoft Office.
   False positives: Likely (some tools/cleanup actions remove ADS). Use as hunting baseline and tune.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
- FROM logs-winlog*
-  // Filter strictly for file category events
-  | WHERE event.category == "file" 
-   OR event.dataset RLIKE "(?i).*file.*"
-  // Explicitly require the action or type to be a deletion event
-  | WHERE (
-    event.type IN ("deletion", "delete") 
-    OR event.action RLIKE "(?i).*(delete|deleted).*"
+  FROM logs-winlog*
+  // Selection: FileNameBuffer ends with :Zone.Identifier
+  | WHERE winlog.event_data.FileNameBuffer RLIKE "(?i).*:Zone\\.Identifier$"
+  // Filter out common benign install paths
+  | WHERE NOT (
+      COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Program Files \\(x86\\)\\\\.*"
+      OR COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Program Files\\\\.*"
+      OR COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Windows\\\\System32\\\\.*"
+      OR COALESCE(winlog.event_data.ProcessName, "") RLIKE "(?i)^C:\\\\Windows\\\\SysWOW64\\\\.*"
   )
-  // Selection: TargetFilename ends with :Zone.Identifier
-  | WHERE COALESCE(winlog.event_data.OriginalFileName, "") RLIKE "(?i).*:Zone\\\\.Identifier$"
   | STATS
-    event_count = COUNT(*),
-    users = VALUES(winlog.event_data.TargetUserName),
-    processes = VALUES(winlog.event_data.ProcessName),
-    executables = VALUES(winlog.event_data.ProcessName),
-    parents = VALUES(winlog.event_data.CallerProcessName),
-    parent_executables = VALUES(winlog.event_data.CallerProcessName),
-    file_paths = VALUES(winlog.event_data.OriginalFileName)
-  BY 
-    agent_id, host.name, 
-    bucket = DATE_TRUNC(20 minutes, @timestamp)
+      event_count  = COUNT(*),
+      users        = VALUES(winlog.event_data.TargetUserName),
+      processes    = VALUES(winlog.event_data.ProcessName),
+      parents      = VALUES(winlog.event_data.CallerProcessName),
+      file_paths   = VALUES(winlog.event_data.FileNameBuffer)
+  BY
+      agent_id,
+      host.name,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  | KEEP 
-    agent_id, bucket, 
-    host.name, 
-    event_count, 
-    users, 
-    processes, 
-    executables, 
-    parents, 
-    parent_executables, 
-    file_paths
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      event_count,
+      users,
+      processes,
+      parents,
+      file_paths
   | SORT event_count DESC
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1070.004

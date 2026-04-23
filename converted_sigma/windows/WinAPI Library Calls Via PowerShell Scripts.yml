@@ -11,53 +11,64 @@ description: |
   WriteProcessMemory, CreateRemoteThread, OpenProcess, MiniDumpWriteDump), and correlate with process injection,
   credential dumping, or unusual child processes/network activity.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | EVAL raw = COALESCE(event.original, winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
-  // Selection: Identify references to critical Windows Native Libraries
-  | WHERE raw RLIKE "(?i).*\\\\b(Advapi32\\\\.dll|kernel32\\\\.dll|KernelBase\\\\.dll|ntdll\\\\.dll|secur32\\\\.dll|user32\\\\.dll)\\\\b.*"
-  /* Filters: exclude known benign frameworks/installers */
-  | WHERE NOT (
-      raw RLIKE "(?i).*\\\\b(Carbon|chocolatey|choco)\\\\b.*"
-    )
+  // PowerShell Script Block Logging
+  | WHERE winlog.channel == "Microsoft-Windows-PowerShell/Operational"
+  | WHERE event.code == "4104"
+  // WinAPI library referencelarini aniqlash
+  | WHERE winlog.event_data.ScriptBlockText RLIKE "(?i).*(Advapi32\\.dll|kernel32\\.dll|KernelBase\\.dll|ntdll\\.dll|secur32\\.dll|user32\\.dll).*"
+  // Benign frameworklarni chiqarib tashlash
+  | WHERE NOT winlog.event_data.ScriptBlockText RLIKE "(?i).*(Carbon|chocolatey|choco).*"
+  // Library turini aniqlash
   | EVAL library_hit = CASE(
-      raw RLIKE "(?i).*\\\\bAdvapi32\\\\.dll\\\\b.*", "Advapi32.dll",
-      raw RLIKE "(?i).*\\\\bkernel32\\\\.dll\\\\b.*", "kernel32.dll",
-      raw RLIKE "(?i).*\\\\bKernelBase\\\\.dll\\\\b.*", "KernelBase.dll",
-      raw RLIKE "(?i).*\\\\bntdll\\\\.dll\\\\b.*", "ntdll.dll",
-      raw RLIKE "(?i).*\\\\bsecur32\\\\.dll\\\\b.*", "secur32.dll",
-      raw RLIKE "(?i).*\\\\buser32\\\\.dll\\\\b.*", "user32.dll",
+      winlog.event_data.ScriptBlockText RLIKE "(?i).*Advapi32\\.dll.*",   "Advapi32.dll",
+      winlog.event_data.ScriptBlockText RLIKE "(?i).*kernel32\\.dll.*",   "kernel32.dll",
+      winlog.event_data.ScriptBlockText RLIKE "(?i).*KernelBase\\.dll.*", "KernelBase.dll",
+      winlog.event_data.ScriptBlockText RLIKE "(?i).*ntdll\\.dll.*",      "ntdll.dll",
+      winlog.event_data.ScriptBlockText RLIKE "(?i).*secur32\\.dll.*",    "secur32.dll",
+      winlog.event_data.ScriptBlockText RLIKE "(?i).*user32\\.dll.*",     "user32.dll",
       "WinAPI"
-    )
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  )
+  // Vaqt konteksti
+  | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
-      cmdlines = VALUES(winlog.event_data.CommandLine),
-      script_paths = VALUES(winlog.event_data.OriginalFileName),
-      libs = VALUES(library_hit),
-      originals = VALUES(COALESCE(event.original, "")),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY 
-      agent_id, host.name, 
+      event_count      = COUNT(*),
+      users            = VALUES(winlog.event_data.SubjectUserName),
+      processes        = VALUES(winlog.event_data.ProcessName),
+      script_blocks    = VALUES(winlog.event_data.ScriptBlockText),
+      script_paths     = VALUES(winlog.event_data.ScriptPath),
+      pipe_ids         = VALUES(winlog.event_data.PipelineId),
+      libs             = VALUES(library_hit),
+      after_hours_hits = SUM(is_after_hours)
+  BY
+      agent_id,
+      host.name,
       bucket = DATE_TRUNC(20 minutes, @timestamp)
   | WHERE event_count >= 1
-  // Risk: High base (25) for direct DLL referencing; significant bonus for after-hours activity
   | EVAL risk_score = event_count * 25 + after_hours_hits * 20
   | WHERE risk_score >= 25
-  | KEEP 
-      agent_id, bucket, host.name, libs, event_count, users, processes, executables, 
-      cmdlines, script_paths, after_hours_hits, risk_score, originals
+  | KEEP
+      agent_id,
+      bucket,
+      host.name,
+      libs,
+      event_count,
+      users,
+      processes,
+      script_blocks,
+      script_paths,
+      pipe_ids,
+      after_hours_hits,
+      risk_score
   | SORT risk_score DESC
-enabled: false
+enabled: true
 tags:
   - attack.execution
   - attack.t1059.001

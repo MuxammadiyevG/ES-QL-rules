@@ -10,40 +10,51 @@ description: |
   identify the initiating user and parent process, and correlate with other firewall changes (Set/Remove-NetFirewallRule),
   new listening services, suspicious network connections, or post-exploitation activity.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
   - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
-  | EVAL raw = COALESCE(event.original, winlog.event_data.CommandLine, winlog.event_data.CommandLine, "")
-  // Match New-NetFirewallRule and ensure 'Allow' action is present
-  | WHERE raw RLIKE "(?i).*\\\\bNew-NetFirewallRule\\\\b.*" 
-    AND raw RLIKE "(?i).*\\\\-Action\\\\s*Allow\\\\b.*"
-  | EVAL hour_of_day = DATE_EXTRACT("hour", @timestamp)
-  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
-  | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.TargetUserName),
-      target_users = VALUES(winlog.event_data.TargetUserName),
-      processes = VALUES(winlog.event_data.ProcessName),
-      executables = VALUES(winlog.event_data.ProcessName),
-      cmdlines = VALUES(winlog.event_data.CommandLine),
-      originals = VALUES(COALESCE(event.original, "")),
-      after_hours_hits = SUM(CASE(is_after_hours == true, 1, 0))
-    BY 
-      agent_id, host.name, 
-      bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
-  // Risk: High base score (20) because rule creation is rare for standard users
-  | EVAL risk_score = event_count * 20 + after_hours_hits * 15
-  | WHERE risk_score >= 20
-  | KEEP 
-      agent_id, bucket, host.name, event_count, users, processes, executables, 
-      cmdlines, after_hours_hits, risk_score, originals
-  | SORT risk_score DESC
-enabled: false
+    // PowerShell Script Block Logging
+    | WHERE winlog.channel == "Microsoft-Windows-PowerShell/Operational"
+    | WHERE event.code == "4104"
+    // New-NetFirewallRule va Allow action aniqlash
+    | WHERE winlog.event_data.ScriptBlockText RLIKE "(?i).*New-NetFirewallRule.*"
+      AND winlog.event_data.ScriptBlockText RLIKE "(?i).*-Action[ \t]+Allow.*"
+    // Vaqt konteksti
+    | EVAL hour_of_day    = DATE_EXTRACT("HOUR_OF_DAY", @timestamp)
+    | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, 1, 0)
+    | STATS
+        event_count      = COUNT(*),
+        users            = VALUES(winlog.event_data.SubjectUserName),
+        processes        = VALUES(winlog.event_data.ProcessName),
+        script_blocks    = VALUES(winlog.event_data.ScriptBlockText),
+        script_paths     = VALUES(winlog.event_data.ScriptPath),
+        pipe_ids         = VALUES(winlog.event_data.PipelineId),
+        after_hours_hits = SUM(is_after_hours)
+    BY
+        agent_id,
+        host.name,
+        bucket = DATE_TRUNC(20 minutes, @timestamp)
+    | WHERE event_count >= 1
+    | EVAL risk_score = event_count * 20 + after_hours_hits * 15
+    | WHERE risk_score >= 20
+    | KEEP
+        agent_id,
+        bucket,
+        host.name,
+        event_count,
+        users,
+        processes,
+        script_blocks,
+        script_paths,
+        pipe_ids,
+        after_hours_hits,
+        risk_score
+    | SORT risk_score DESC
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.t1562.004

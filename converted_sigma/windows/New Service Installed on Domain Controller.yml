@@ -1,24 +1,51 @@
 rule_id: 53e8e45b-d3e8-4ef4-bea0-914cacadedbe
 name: New Service Installed on Domain Controller
 description: |
-  DC'larda yangi servis o'rnatilishini aniqlaydi (Event ID 7045). 
+  DC'larda yangi servis o'rnatilishini aniqlaydi (Event ID 7045).
   Hujumchilar PSEXEC kabi vositalar yordamida servis yaratib, command execution amalga oshirishi mumkin.
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 15m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
   | WHERE event.code == "7045"
-  | EVAL hostn = winlog.computer_name
-  | WHERE hostn RLIKE "(?i)(.*DC.*|ADDC.*|DOMAINCONTROLLER)"
-  | EVAL service_name = winlog.event_data.ServiceName
-  | EVAL extra_info = COALESCE(winlog.event_data.DisplayName, winlog.event_data.AccountName, "Check logs for details")
-  | KEEP agent_id, @timestamp, hostn, service_name, extra_info, event.code
-  | SORT @timestamp DESC
-enabled: false
+  // Faqat DC hostlarni aniqlash
+  | WHERE winlog.computer_name RLIKE "(?i)(.*DC.*|ADDC.*|DOMAINCONTROLLER)"
+  | EVAL service_name    = COALESCE(winlog.event_data.ServiceName, "")
+  | EVAL service_type    = COALESCE(winlog.event_data.ServiceType, "")
+  | EVAL start_type      = COALESCE(winlog.event_data.StartType, "")
+  | EVAL account_name    = COALESCE(winlog.event_data.AccountName, "")
+  // Tizim servislarini chiqarib tashlash
+  | WHERE NOT (
+      service_name RLIKE "(?i)(WinDefend|MsMpSvc|SenseSvc|MpsSvc|wuauserv|TrustedInstaller)"
+  )
+  | STATS
+      event_count    = COUNT(*),
+      service_names  = VALUES(winlog.event_data.ServiceName),
+      service_types  = VALUES(winlog.event_data.ServiceType),
+      start_types    = VALUES(winlog.event_data.StartType),
+      account_names  = VALUES(winlog.event_data.AccountName),
+      image_paths    = VALUES(winlog.event_data.ImagePath)
+  BY
+      agent_id,
+      winlog.computer_name,
+      bucket = DATE_TRUNC(20 minutes, @timestamp)
+  | WHERE event_count >= 1
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.computer_name,
+      event_count,
+      service_names,
+      service_types,
+      start_types,
+      account_names,
+      image_paths
+  | SORT event_count DESC
+enabled: true
 tags:
   - detection.persistence
   - attack.t1543.003
