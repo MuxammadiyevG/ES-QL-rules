@@ -1,0 +1,129 @@
+rule_id: c7f1e704-08fa-4506-8fba-61c8b8463301
+name: "Integrity: Critical Linux Account Files Modified"
+description: |
+  Ushbu qoida Linux tizimida muhim account management fayllari o‘zgarganini
+  aniqlaydi: `/etc/passwd`, `/etc/shadow`, `/etc/group`.
+
+  Bu foydalanuvchi yaratish/o‘chirish, parol o‘zgarishi, account lock/unlock
+  yoki guruh a’zoliklari o‘zgarishi natijasi bo‘lishi mumkin.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND (
+       auditd.data.syscall IN ("rename", "renameat", "renameat2", "open", "openat", "creat")
+     )
+     AND (
+       file.path IN (
+         "/etc/passwd", "/etc/passwd+",
+         "/etc/shadow", "/etc/shadow+",
+         "/etc/group", "/etc/group+"
+       )
+       OR auditd.summary.object.primary IN (
+         "/etc/passwd", "/etc/passwd+",
+         "/etc/shadow", "/etc/shadow+",
+         "/etc/group", "/etc/group+"
+       )
+       OR MV_CONTAINS(auditd.paths.name, "/etc/passwd")
+       OR MV_CONTAINS(auditd.paths.name, "/etc/passwd+")
+       OR MV_CONTAINS(auditd.paths.name, "/etc/shadow")
+       OR MV_CONTAINS(auditd.paths.name, "/etc/shadow+")
+       OR MV_CONTAINS(auditd.paths.name, "/etc/group")
+       OR MV_CONTAINS(auditd.paths.name, "/etc/group+")
+     )
+     AND (
+       auditd.data.syscall IN ("rename", "renameat", "renameat2")
+       OR MV_CONTAINS(event.action, "renamed")
+       OR MV_CONTAINS(event.action, "modified")
+       OR MV_CONTAINS(event.action, "changed")
+     )
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       raw_target_file = CASE(
+         file.path IS NOT NULL, file.path,
+         auditd.summary.object.primary IS NOT NULL, auditd.summary.object.primary,
+         MV_CONTAINS(auditd.paths.name, "/etc/passwd+"), "/etc/passwd+",
+         MV_CONTAINS(auditd.paths.name, "/etc/shadow+"), "/etc/shadow+",
+         MV_CONTAINS(auditd.paths.name, "/etc/group+"), "/etc/group+",
+         MV_CONTAINS(auditd.paths.name, "/etc/passwd"), "/etc/passwd",
+         MV_CONTAINS(auditd.paths.name, "/etc/shadow"), "/etc/shadow",
+         MV_CONTAINS(auditd.paths.name, "/etc/group"), "/etc/group",
+         "unknown"
+       ),
+       target_file = CASE(
+         raw_target_file == "/etc/passwd+", "/etc/passwd",
+         raw_target_file == "/etc/shadow+", "/etc/shadow",
+         raw_target_file == "/etc/group+", "/etc/group",
+         raw_target_file
+       ),
+       process_name = process.name,
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       detection_reason = CASE(
+         target_file == "/etc/passwd", "Critical account file /etc/passwd modified",
+         target_file == "/etc/shadow", "Critical password hash file /etc/shadow modified",
+         target_file == "/etc/group", "Critical group membership file /etc/group modified",
+         "Critical Linux account file modified"
+       )
+   | STATS
+       first_seen = MIN(@timestamp),
+       last_seen = MAX(@timestamp),
+       event_count = COUNT(*)
+     BY
+       actor_user,
+       agent_id,
+       actor_effective_user,
+       target_file,
+       process_name,
+       process_path,
+       process.title,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action,
+       service.type
+   | SORT last_seen DESC
+
+enabled: true
+
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1098
+  - attack.t1136.001
+  - linux
+  - account-management
+  - file-integrity
+  - auditd
+
+severity: high
+risk_score: 85
+
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+  - "https://attack.mitre.org/techniques/T1136/001/"
+
+nist: ["AU-2", "AU-6", "AU-12", "CM-3", "CM-5", "CM-6", "SI-4", "SI-7"]
+
+pci_dss: ["10.2.1", "10.2.1.2", "10.2.1.5", "10.4.1", "11.5.2"]
+
+gdpr: ["32.1.b", "32.1.d"]
+mitre_attack:
+  TA0003:
+    T1098: [] # Account Manipulation
+    T1136: ["T1136.001"] # Create Account (local)
+  TA0005:
+    T1565: ["T1565.001"] # Data Manipulation (stored data)

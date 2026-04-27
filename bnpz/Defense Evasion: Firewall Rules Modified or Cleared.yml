@@ -1,0 +1,115 @@
+rule_id: 5cae4211-f301-4a51-8762-5814b57daee3
+name: "Defense Evasion: Firewall Rules Modified or Cleared"
+description: |
+  Ushbu qoida Linux tizimida firewall qoidalarini o‘zgartirish,
+  tozalash yoki o‘chirish holatlarini aniqlaydi (iptables, nftables, ufw).
+
+  Bu attacker tomonidan network protection bypass qilish uchun ishlatiladi.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND process.name IN ("iptables", "iptables-save", "iptables-restore", "nft", "ufw")
+     AND (
+       (
+         process.name == "iptables"
+         AND (
+           MV_CONTAINS(process.args, "-F")
+           OR MV_CONTAINS(process.args, "--flush")
+           OR MV_CONTAINS(process.args, "-X")
+           OR MV_CONTAINS(process.args, "--delete-chain")
+           OR MV_CONTAINS(process.args, "-P")
+         )
+       )
+       OR
+       (
+         process.name == "nft"
+         AND (
+           process.title RLIKE ".*flush ruleset.*"
+           OR process.title RLIKE ".*delete.*"
+         )
+       )
+       OR
+       (
+         process.name == "ufw"
+         AND (
+           MV_CONTAINS(process.args, "disable")
+           OR MV_CONTAINS(process.args, "reset")
+         )
+       )
+     )
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       firewall_tool = process.name,
+       command_line = process.title,
+       action_type = CASE(
+         process.name == "iptables" AND MV_CONTAINS(process.args, "-F"), "iptables_flush",
+         process.name == "iptables" AND MV_CONTAINS(process.args, "-X"), "iptables_delete_chain",
+         process.name == "iptables" AND MV_CONTAINS(process.args, "-P"), "iptables_policy_change",
+         process.name == "nft" AND process.title RLIKE ".*flush ruleset.*", "nft_flush_ruleset",
+         process.name == "nft" AND process.title RLIKE ".*delete.*", "nft_delete_rule",
+         process.name == "ufw" AND MV_CONTAINS(process.args, "disable"), "ufw_disabled",
+         process.name == "ufw" AND MV_CONTAINS(process.args, "reset"), "ufw_reset",
+         "firewall_modified"
+       ),
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       detection_reason = "Firewall rules modified or cleared"
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       actor_effective_user,
+       firewall_tool,
+       action_type,
+       command_line,
+       process_path,
+       process.args,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action
+   | SORT @timestamp DESC
+
+enabled: true
+
+tags:
+  - attack.defense-evasion
+  - attack.t1562
+  - attack.t1562.004
+  - firewall
+  - iptables
+  - nftables
+  - ufw
+  - linux
+  - auditd
+
+severity: high
+risk_score: 85
+
+references:
+  - "https://attack.mitre.org/techniques/T1562/004/"
+
+nist: ["AC-4", "AC-6", "AU-2", "AU-6", "AU-12", "CM-5", "SI-4"]
+
+pci_dss: ["1.2.1", "1.2.3", "10.2.1", "10.2.1.2", "10.4.1"]
+
+gdpr: ["32.1.b", "32.1.d"]
+
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.004"]

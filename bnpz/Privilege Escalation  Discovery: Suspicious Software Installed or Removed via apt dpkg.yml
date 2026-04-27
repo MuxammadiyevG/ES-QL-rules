@@ -1,0 +1,179 @@
+rule_id: 70d5591b-df0d-4831-9e05-6dd990b0c509
+name: "Privilege Escalation / Discovery: Suspicious Software Installed or Removed via apt/dpkg"
+description: |
+  Ushbu qoida Linux tizimida apt, apt-get yoki dpkg orqali shubhali yoki
+  xavfsizlik nuqtai nazaridan sezgir dasturiy ta’minot o‘rnatilishi yoki
+  o‘chirilishini aniqlaydi.
+
+  Kuzatiladigan paketlar:
+  - nmap, masscan, zmap
+  - tcpdump, tshark, wireshark
+  - gcc, g++, make, cmake, build-essential
+  - netcat, ncat, socat
+  - hydra, john, hashcat
+  - python3-pip, pipx
+  - docker, docker.io
+
+  Bu discovery, credential access, lateral movement yoki privilege escalation
+  tayyorgarligi belgisi bo‘lishi mumkin.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND process.name IN ("apt", "apt-get", "aptitude", "dpkg")
+     AND (
+       MV_CONTAINS(process.args, "install")
+       OR MV_CONTAINS(process.args, "remove")
+       OR MV_CONTAINS(process.args, "purge")
+       OR MV_CONTAINS(process.args, "-i")
+       OR MV_CONTAINS(process.args, "-r")
+       OR MV_CONTAINS(process.args, "--install")
+       OR MV_CONTAINS(process.args, "--remove")
+       OR process.title RLIKE ".*(install|remove|purge).*"
+     )
+     AND (
+       process.title RLIKE ".*(nmap|masscan|zmap|tcpdump|tshark|wireshark|gcc|g\\+\\+|make|cmake|build-essential|netcat|ncat|socat|hydra|john|hashcat|python3-pip|pipx|docker|docker\\.io).*"
+       OR MV_CONTAINS(process.args, "nmap")
+       OR MV_CONTAINS(process.args, "masscan")
+       OR MV_CONTAINS(process.args, "zmap")
+       OR MV_CONTAINS(process.args, "tcpdump")
+       OR MV_CONTAINS(process.args, "tshark")
+       OR MV_CONTAINS(process.args, "wireshark")
+       OR MV_CONTAINS(process.args, "gcc")
+       OR MV_CONTAINS(process.args, "g++")
+       OR MV_CONTAINS(process.args, "make")
+       OR MV_CONTAINS(process.args, "cmake")
+       OR MV_CONTAINS(process.args, "build-essential")
+       OR MV_CONTAINS(process.args, "netcat")
+       OR MV_CONTAINS(process.args, "ncat")
+       OR MV_CONTAINS(process.args, "socat")
+       OR MV_CONTAINS(process.args, "hydra")
+       OR MV_CONTAINS(process.args, "john")
+       OR MV_CONTAINS(process.args, "hashcat")
+       OR MV_CONTAINS(process.args, "python3-pip")
+       OR MV_CONTAINS(process.args, "pipx")
+       OR MV_CONTAINS(process.args, "docker")
+       OR MV_CONTAINS(process.args, "docker.io")
+     )
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       package_manager = process.name,
+       command_line = process.title,
+       target_package = CASE(
+         MV_CONTAINS(process.args, "nmap"), "nmap",
+         MV_CONTAINS(process.args, "masscan"), "masscan",
+         MV_CONTAINS(process.args, "zmap"), "zmap",
+         MV_CONTAINS(process.args, "tcpdump"), "tcpdump",
+         MV_CONTAINS(process.args, "tshark"), "tshark",
+         MV_CONTAINS(process.args, "wireshark"), "wireshark",
+         MV_CONTAINS(process.args, "gcc"), "gcc",
+         MV_CONTAINS(process.args, "g++"), "g++",
+         MV_CONTAINS(process.args, "make"), "make",
+         MV_CONTAINS(process.args, "cmake"), "cmake",
+         MV_CONTAINS(process.args, "build-essential"), "build-essential",
+         MV_CONTAINS(process.args, "netcat"), "netcat",
+         MV_CONTAINS(process.args, "ncat"), "ncat",
+         MV_CONTAINS(process.args, "socat"), "socat",
+         MV_CONTAINS(process.args, "hydra"), "hydra",
+         MV_CONTAINS(process.args, "john"), "john",
+         MV_CONTAINS(process.args, "hashcat"), "hashcat",
+         MV_CONTAINS(process.args, "python3-pip"), "python3-pip",
+         MV_CONTAINS(process.args, "pipx"), "pipx",
+         MV_CONTAINS(process.args, "docker.io"), "docker.io",
+         MV_CONTAINS(process.args, "docker"), "docker",
+         "suspicious_package"
+       ),
+       package_action = CASE(
+         MV_CONTAINS(process.args, "install") OR MV_CONTAINS(process.args, "-i") OR MV_CONTAINS(process.args, "--install"), "package_installed",
+         MV_CONTAINS(process.args, "remove") OR MV_CONTAINS(process.args, "-r") OR MV_CONTAINS(process.args, "--remove"), "package_removed",
+         MV_CONTAINS(process.args, "purge"), "package_purged",
+         "package_management_activity"
+       ),
+       risk_category = CASE(
+         target_package IN ("nmap", "masscan", "zmap"), "network_discovery_tool",
+         target_package IN ("tcpdump", "tshark", "wireshark"), "packet_capture_tool",
+         target_package IN ("gcc", "g++", "make", "cmake", "build-essential"), "compiler_or_build_tool",
+         target_package IN ("netcat", "ncat", "socat"), "network_utility_or_reverse_shell_tool",
+         target_package IN ("hydra", "john", "hashcat"), "credential_attack_tool",
+         target_package IN ("python3-pip", "pipx"), "package_loader_or_script_dependency_tool",
+         target_package IN ("docker", "docker.io"), "container_runtime_installed",
+         "suspicious_software"
+       ),
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       detection_reason = CASE(
+         package_action == "package_installed", "Suspicious software package installed via package manager",
+         package_action == "package_removed", "Suspicious software package removed via package manager",
+         package_action == "package_purged", "Suspicious software package purged via package manager",
+         "Suspicious package management activity"
+       )
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       actor_effective_user,
+       package_manager,
+       package_action,
+       target_package,
+       risk_category,
+       process_path,
+       command_line,
+       process.args,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action
+   | SORT @timestamp DESC
+
+enabled: true
+
+tags:
+  - attack.discovery
+  - attack.credential-access
+  - attack.privilege-escalation
+  - attack.execution
+  - attack.t1046
+  - attack.t1040
+  - attack.t1059
+  - suspicious-software
+  - package-manager
+  - apt
+  - dpkg
+  - linux
+  - auditd
+
+severity: high
+risk_score: 80
+
+references:
+  - "https://attack.mitre.org/techniques/T1046/"
+  - "https://attack.mitre.org/techniques/T1040/"
+  - "https://attack.mitre.org/techniques/T1059/"
+
+nist: ["AC-6", "AU-2", "AU-6", "AU-12", "CM-3", "CM-5", "CM-7", "SI-4"]
+
+pci_dss: ["6.3.1", "6.4.3", "7.2.1", "10.2.1", "10.2.1.2", "10.4.1", "11.4.1"]
+
+gdpr: ["32.1.b", "32.1.d"]
+
+mitre_attack:
+  TA0007:
+    T1046: []
+  TA0006:
+    T1040: []
+  TA0002:
+    T1059: []

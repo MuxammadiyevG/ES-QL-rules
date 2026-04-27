@@ -1,0 +1,64 @@
+rule_id: 41bc9061-62f0-4108-8d49-e22db5e7d953
+name: "Privilege Escalation: Root Session Open via sudo/su"
+description: |
+  Ushbu qoida auditd loglarida sudo yoki su orqali root session
+  ochilganini aniqlaydi.
+  Bu foydalanuvchi tomonidan privilege escalation amalga oshirilganini
+  bildiradi.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minute
+  | WHERE auditd.message_type == "user_start"
+    AND auditd.data.op == "PAM:session_open"
+    AND auditd.result == "success"
+    AND auditd.data.acct == "root"
+    AND process.executable IN ("/usr/bin/sudo", "/usr/bin/su")
+  | EVAL
+      actor_user = user.audit.name,
+      target_acct = auditd.data.acct,
+      effective_user = user.effective.name,
+      host_name = host.hostname,
+      session_id = auditd.session,
+      process_path = process.executable,
+      terminal = auditd.data.terminal
+  | KEEP
+      @timestamp,
+      agent_id,
+      actor_user,
+      target_acct,
+      effective_user,
+      host_name,
+      session_id,
+      process_path,
+      terminal,
+      auditd.message_type,
+      auditd.data.op,
+      auditd.result,
+      event.action
+  | SORT @timestamp DESC
+
+enabled: true
+tags:
+  - attack.privilege-escalation
+  - attack.t1548.003
+  - sudo
+  - su
+  - root-session
+  - auditd
+severity: medium
+risk_score: 55
+references:
+  - "https://attack.mitre.org/techniques/T1548/003/"
+nist: ["AC-2", "AC-6", "AU-2", "AU-6", "AU-12", "SI-4"]
+pci_dss: ["7.2", "10.2.5", "10.2.6"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0004:
+    T1548: ["T1548.003"]

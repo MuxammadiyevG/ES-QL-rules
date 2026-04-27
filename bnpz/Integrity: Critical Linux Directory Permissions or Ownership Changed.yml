@@ -1,0 +1,130 @@
+rule_id: d93e663a-e4ca-4eca-9086-b0bee6a53357
+name: "Integrity: Critical Linux Directory Permissions or Ownership Changed"
+description: |
+  Ushbu qoida Linux tizimida muhim kataloglar yoki ularning ichidagi fayllar
+  uchun chmod/chown orqali permission yoki ownership o‘zgartirilishini aniqlaydi.
+
+  Kuzatiladigan pathlar:
+  - /etc
+  - /bin
+  - /usr
+
+  Bu privilege escalation, persistence yoki defense evasion belgisi bo‘lishi mumkin.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND process.name IN (
+       "chmod", "chown", "chgrp",
+       "setfacl"
+     )
+     AND (
+       MV_CONTAINS(process.args, "/etc")
+       OR MV_CONTAINS(process.args, "/bin")
+       OR MV_CONTAINS(process.args, "/usr")
+       OR process.title RLIKE ".*/etc(/.*)?"
+       OR process.title RLIKE ".*/bin(/.*)?"
+       OR process.title RLIKE ".*/usr(/.*)?"
+     )
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       target_path = MV_LAST(process.args),
+       process_name = process.name,
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       permission_action = CASE(
+         process.name == "chmod", "permission_changed",
+         process.name == "chown", "ownership_changed",
+         process.name == "chgrp", "group_ownership_changed",
+         process.name == "setfacl", "acl_changed",
+         "critical_path_permission_or_owner_changed"
+       ),
+       critical_area = CASE(
+         MV_CONTAINS(process.args, "/etc") OR process.title RLIKE ".*/etc(/.*)?", "/etc",
+         MV_CONTAINS(process.args, "/bin") OR process.title RLIKE ".*/bin(/.*)?", "/bin",
+         MV_CONTAINS(process.args, "/usr") OR process.title RLIKE ".*/usr(/.*)?", "/usr",
+         "unknown"
+       ),
+       detection_reason = CASE(
+         process.name == "chmod", "Permissions changed on critical Linux path",
+         process.name == "chown", "Ownership changed on critical Linux path",
+         process.name == "chgrp", "Group ownership changed on critical Linux path",
+         process.name == "setfacl", "ACL changed on critical Linux path",
+         "Critical Linux path permission or ownership changed"
+       )
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       actor_effective_user,
+       target_path,
+       critical_area,
+       permission_action,
+       process_name,
+       process_path,
+       process.args,
+       process.title,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action
+   | SORT @timestamp DESC
+
+enabled: true
+
+tags:
+  - attack.defense-evasion
+  - attack.privilege-escalation
+  - attack.persistence
+  - attack.t1222.002
+  - linux
+  - chmod
+  - chown
+  - permissions
+  - ownership
+  - auditd
+
+severity: high
+risk_score: 80
+
+references:
+  - "https://attack.mitre.org/techniques/T1222/002/"
+
+nist:
+  [
+    "AC-3",
+    "AC-6",
+    "AU-2",
+    "AU-6",
+    "AU-12",
+    "CM-3",
+    "CM-5",
+    "CM-6",
+    "SI-4",
+    "SI-7",
+  ]
+
+pci_dss:
+  ["7.2.1", "7.2.2", "10.2.1", "10.2.1.2", "10.2.1.7", "10.4.1", "11.5.2"]
+
+gdpr: ["32.1.b", "32.1.d"]
+
+mitre_attack:
+  TA0005:
+    T1222: ["T1222.002"]
+  TA0004:
+    T1222: ["T1222.002"]

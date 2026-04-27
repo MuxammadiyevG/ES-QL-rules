@@ -1,0 +1,196 @@
+rule_id: 069d9960-94ad-42d3-a08d-082c4c35e039
+name: "Execution: Possible Reverse Shell Process Execution"
+description: |
+  Ushbu qoida Linux tizimida reverse shell yoki interaktiv shell ochish uchun
+  ishlatiladigan noodatiy process execution holatlarini aniqlaydi.
+
+  Kuzatiladigan patternlar:
+  - nc/netcat/ncat bilan shell ulash
+  - bash -i
+  - sh -i
+  - python/perl/php/ruby -c yoki socket bilan command execution
+  - socat orqali exec
+  - /dev/tcp orqali reverse shell
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+    | WHERE @timestamp >= NOW() - 10 minute
+     | WHERE service.type == "auditd"
+       AND auditd.message_type == "syscall"
+       AND auditd.data.syscall == "execve"
+       AND NOT (
+         process.title RLIKE ".*php artisan.*"
+         OR process.title RLIKE ".*artisan (serve|websocket:serve|queue:work|queue:listen|schedule:run).*"
+         OR process.title RLIKE ".*composer .*"
+         OR process.title RLIKE ".*npm .*"
+         OR process.title RLIKE ".*yarn .*"
+         OR process.title RLIKE ".*node .*server.*"
+         OR process.title RLIKE ".*supervisord.*"
+         OR process.title RLIKE ".*systemd.*"
+         OR process.title RLIKE ".*cron.*"
+       )
+       AND (
+         (
+           process.name IN ("nc", "netcat", "ncat")
+           AND (
+             MV_CONTAINS(process.args, "-e")
+             OR MV_CONTAINS(process.args, "-c")
+             OR process.title RLIKE ".*(/bin/sh|/bin/bash|bash -i|sh -i).*"
+           )
+         )
+         OR
+         (
+           process.name IN ("bash", "sh", "dash")
+           AND (
+             MV_CONTAINS(process.args, "-i")
+             OR process.title RLIKE ".*bash -i.*"
+             OR process.title RLIKE ".*sh -i.*"
+             OR process.title RLIKE ".*/dev/tcp/.*"
+             OR process.title RLIKE ".*0>&1.*"
+             OR process.title RLIKE ".*>&.*"
+           )
+         )
+         OR
+         (
+           process.name IN ("python", "python3")
+           AND (
+             MV_CONTAINS(process.args, "-c")
+             AND (
+               process.title RLIKE ".*socket.*"
+               OR process.title RLIKE ".*subprocess.*"
+               OR process.title RLIKE ".*pty\\.spawn.*"
+               OR process.title RLIKE ".*os\\.system.*"
+               OR process.title RLIKE ".*/bin/(sh|bash).*"
+             )
+           )
+         )
+         OR
+         (
+           process.name == "perl"
+           AND (
+             MV_CONTAINS(process.args, "-e")
+             OR MV_CONTAINS(process.args, "-c")
+           )
+           AND (
+             process.title RLIKE ".*socket.*"
+             OR process.title RLIKE ".*exec.*"
+             OR process.title RLIKE ".*/bin/(sh|bash).*"
+           )
+         )
+         OR
+         (
+           process.name == "php"
+           AND (
+             MV_CONTAINS(process.args, "-r")
+             OR MV_CONTAINS(process.args, "-c")
+           )
+           AND (
+             process.title RLIKE ".*fsockopen.*"
+             OR process.title RLIKE ".*socket_create.*"
+             OR process.title RLIKE ".*shell_exec.*"
+             OR process.title RLIKE ".*system\\(.*"
+             OR process.title RLIKE ".*exec\\(.*"
+             OR process.title RLIKE ".*/bin/(sh|bash).*"
+           )
+         )
+         OR
+         (
+           process.name == "ruby"
+           AND (
+             MV_CONTAINS(process.args, "-e")
+             OR MV_CONTAINS(process.args, "-c")
+           )
+           AND (
+             process.title RLIKE ".*TCPSocket.*"
+             OR process.title RLIKE ".*Socket.*"
+             OR process.title RLIKE ".*exec.*"
+             OR process.title RLIKE ".*/bin/(sh|bash).*"
+           )
+         )
+         OR
+         (
+           process.name == "socat"
+           AND (
+             process.title RLIKE ".*EXEC:.*"
+             OR process.title RLIKE ".*SYSTEM:.*"
+             OR process.title RLIKE ".*/bin/(sh|bash).*"
+           )
+         )
+       )
+     | EVAL
+         actor_user = auditd.summary.actor.primary,
+         actor_effective_user = auditd.summary.actor.secondary,
+         reverse_shell_type = CASE(
+           process.name IN ("nc", "netcat", "ncat"), "netcat_reverse_shell",
+           process.name IN ("bash", "sh", "dash") AND process.title RLIKE ".*/dev/tcp/.*", "dev_tcp_reverse_shell",
+           process.name IN ("bash", "sh", "dash"), "interactive_shell",
+           process.name IN ("python", "python3"), "python_reverse_shell",
+           process.name == "perl", "perl_reverse_shell",
+           process.name == "php", "php_reverse_shell",
+           process.name == "ruby", "ruby_reverse_shell",
+           process.name == "socat", "socat_reverse_shell",
+           "possible_reverse_shell"
+         ),
+         process_name = process.name,
+         process_path = process.executable,
+         command_line = process.title,
+         host_name = host.hostname,
+         session_id = auditd.session,
+         detection_reason = "Possible reverse shell or suspicious interactive shell execution"
+     | KEEP
+         @timestamp,
+         agent_id,
+         actor_user,
+         actor_effective_user,
+         reverse_shell_type,
+         process_name,
+         process_path,
+         command_line,
+         process.args,
+         host_name,
+         session_id,
+         detection_reason,
+         event.action
+     | SORT @timestamp DESC
+
+enabled: true
+
+tags:
+  - attack.execution
+  - attack.command-and-control
+  - attack.t1059
+  - attack.t1105
+  - reverse-shell
+  - netcat
+  - bash
+  - python
+  - linux
+  - auditd
+
+severity: high
+risk_score: 85
+
+references:
+  - "https://attack.mitre.org/techniques/T1059/"
+  - "https://attack.mitre.org/techniques/T1105/"
+
+nist: ["AU-2", "AU-6", "AU-12", "SI-4", "CM-7"]
+
+pci_dss: ["10.2.1", "10.2.1.2", "10.4.1", "11.4.1"]
+
+gdpr: ["32.1.b", "32.1.d"]
+
+mitre_attack:
+  TA0002:
+    T1059: []
+  TA0011:
+    T1105: []

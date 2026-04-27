@@ -1,0 +1,93 @@
+rule_id: 617f1342-3f18-4747-9d59-f8a8f62137c9
+name: "Persistence / Defense Evasion: APT Sources List Modified"
+description: |
+  Ushbu qoida Linux tizimida APT repository konfiguratsiyasi
+  (`/etc/apt/sources.list` yoki `/etc/apt/sources.list.d/`) o‘zgartirilishini aniqlaydi.
+
+  Bu uchinchi tomon yoki zararli repository qo‘shilishi orqali
+  supply chain attack yoki persistence o‘rnatish belgisi bo‘lishi mumkin.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND (
+       process.title RLIKE ".*/etc/apt/sources\\.list.*"
+       OR MV_CONTAINS(process.args, "/etc/apt/sources.list")
+       OR MV_CONTAINS(process.args, "/etc/apt/sources.list.d/test.list")
+     )
+     AND process.name IN ("sudo", "tee", "nano", "vim", "vi", "nvim", "sed", "echo", "bash", "sh")
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       target_file = CASE(
+         MV_CONTAINS(process.args, "/etc/apt/sources.list"), "/etc/apt/sources.list",
+         process.title RLIKE ".*/etc/apt/sources\\.list\\.d/.*", "APT sources.list.d file",
+         "/etc/apt/sources.list"
+       ),
+       action_type = "repository_change_command_executed",
+       process_name = process.name,
+       process_path = process.executable,
+       command_line = process.title,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       detection_reason = "APT repository configuration change command executed"
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       actor_effective_user,
+       action_type,
+       target_file,
+       process_name,
+       process_path,
+       command_line,
+       process.args,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action
+   | SORT @timestamp DESC
+
+enabled: true
+
+tags:
+  - attack.persistence
+  - attack.defense-evasion
+  - attack.t1195
+  - attack.t1553
+  - apt
+  - repository
+  - supply-chain
+  - linux
+  - auditd
+
+severity: high
+risk_score: 85
+
+references:
+  - "https://attack.mitre.org/techniques/T1195/"
+  - "https://attack.mitre.org/techniques/T1553/"
+
+nist: ["CM-3", "CM-5", "CM-7", "AU-2", "AU-6", "AU-12", "SI-4"]
+
+pci_dss: ["6.4.3", "10.2.1", "10.2.1.2", "10.4.1"]
+
+gdpr: ["32.1.b", "32.1.d"]
+
+mitre_attack:
+  TA0005:
+    T1553: []
+  TA0001:
+    T1195: []

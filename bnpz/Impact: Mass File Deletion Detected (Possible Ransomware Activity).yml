@@ -1,0 +1,88 @@
+rule_id: c3c00f1e-b829-46b8-b9dc-33cb19ca1f9f
+name: "Impact: Mass File Deletion Detected (Possible Ransomware Activity)"
+description: |
+  Ushbu qoida Linux tizimida qisqa vaqt ichida ko‘p fayllarni o‘chirish
+  holatini aniqlaydi. Bu ransomware yoki destructive attack belgisi
+  bo‘lishi mumkin.
+
+  Auditd orqali unlink/unlinkat syscall’lar hisoblanadi.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND process.name IN ("rm", "unlink", "shred")
+     AND (
+       MV_CONTAINS(process.args, "-f")
+       OR MV_CONTAINS(process.args, "-rf")
+       OR MV_CONTAINS(process.args, "-fr")
+       OR MV_CONTAINS(process.args, "--recursive")
+       OR MV_CONTAINS(process.args, "--force")
+     )
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       command_line = process.title,
+       process_name = process.name,
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       deleted_items_approx = MV_COUNT(process.args),
+       detection_reason = "Mass deletion command executed, possible ransomware or destructive activity"
+   | WHERE deleted_items_approx >= 30
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       actor_effective_user,
+       deleted_items_approx,
+       process_name,
+       process_path,
+       command_line,
+       process.args,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action
+   | SORT deleted_items_approx DESC
+
+enabled: true
+
+tags:
+  - attack.impact
+  - attack.t1485
+  - attack.t1486
+  - ransomware
+  - destructive
+  - linux
+  - file-deletion
+  - auditd
+
+severity: critical
+risk_score: 90
+
+references:
+  - "https://attack.mitre.org/techniques/T1485/"
+  - "https://attack.mitre.org/techniques/T1486/"
+
+nist: ["AU-2", "AU-6", "AU-12", "SI-4", "SI-7", "CP-9"]
+
+pci_dss: ["10.2.1", "10.2.1.2", "10.4.1", "11.4.1", "11.5.2"]
+
+gdpr: ["32.1.b", "32.1.c", "32.1.d"]
+
+mitre_attack:
+  TA0040:
+    T1485: [] # Data Destruction
+    T1486: [] # Data Encrypted for Impact

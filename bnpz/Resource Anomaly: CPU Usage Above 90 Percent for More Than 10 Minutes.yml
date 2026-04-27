@@ -1,0 +1,74 @@
+rule_id: 7af02f66-75eb-4b3b-aaae-5bdfff266990
+name: "Resource Anomaly: CPU Usage Above 90 Percent for More Than 10 Minutes"
+description: |
+  Ushbu qoida tizimda CPU yuklanishi 10 daqiqadan ortiq vaqt davomida
+  90% dan yuqori bo‘lishini aniqlaydi.
+type: esql
+params: "{}"
+schedule_interval: 5m
+
+index:
+  - metrics-updive.metric-*
+
+query_language: esql
+
+query: |
+  FROM metrics-updive.metric-*
+   | WHERE @timestamp >= NOW() - 5 minute
+   | WHERE event.module == "system"
+     AND metricset.name == "cpu"
+     AND system.cpu.total.norm.pct IS NOT NULL
+   | STATS
+       avg_cpu = AVG(system.cpu.total.norm.pct),
+       max_cpu = MAX(system.cpu.total.norm.pct),
+       samples = COUNT(*),
+       first_seen = MIN(@timestamp),
+       last_seen = MAX(@timestamp)
+     BY agent_id, host.name, host.hostname
+   | WHERE avg_cpu >= 0.90 AND samples >= 60
+   | EVAL
+       cpu_percent = ROUND(avg_cpu * 100, 2),
+       max_cpu_percent = ROUND(max_cpu * 100, 2),
+       detection_reason = "CPU usage above 90 percent for more than 10 minutes"
+   | KEEP
+       host.name,
+       agent_id,
+       host.hostname,
+       cpu_percent,
+       max_cpu_percent,
+       samples,
+       first_seen,
+       last_seen,
+       detection_reason
+   | SORT cpu_percent DESC
+
+enabled: true
+
+tags:
+  - resource-anomaly
+  - high-cpu
+  - performance
+  - linux
+  - windows
+  - metrics
+  - attack.impact
+  - attack.t1496
+  - attack.t1498
+
+severity: medium
+risk_score: 60
+
+references:
+  - "https://attack.mitre.org/techniques/T1496/"
+  - "https://attack.mitre.org/techniques/T1498/"
+
+nist: ["SI-4", "SI-7", "AU-6"]
+
+pci_dss: ["10.4.1", "11.4.1"]
+
+gdpr: ["32.1.b", "32.1.d"]
+
+mitre_attack:
+  TA0040:
+    T1496: [] # Resource Hijacking (cryptomining)
+    T1498: [] # Network DoS

@@ -1,0 +1,50 @@
+rule_id: f9b18240-53f6-4dfc-ae26-abf5aa4e7d18
+name: "Access: SSH Session Login — user_start Event"
+description: |
+  Ushbu qoida auditd loglarida SSH sessiya boshlanishini aniqlaydi.
+  `user_start` va `PAM:session_open` hodisasi foydalanuvchi SSH orqali
+  sessiyaga kirganini bildiradi.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+    | WHERE @timestamp >= NOW() - 5 minute
+    | WHERE auditd.message_type == "user_start"
+      AND auditd.data.op == "PAM:session_open"
+      AND process.executable  RLIKE ".*sshd"
+    | EVAL
+        target_acct = auditd.data.acct,
+        src_ip = source.ip,
+        host_name = host.hostname,
+        session_id = auditd.session
+    | KEEP
+        @timestamp,
+        agent_id,
+        target_acct,
+        src_ip,
+        host_name,
+        session_id,
+        auditd.message_type,
+        auditd.data.op,
+        process.executable
+
+enabled: true
+tags:
+  - ssh
+  - login
+  - session
+  - auditd
+severity: low
+risk_score: 30
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+nist: ["AC-2", "AC-17", "AU-2", "AU-6", "AU-12"]
+pci_dss: ["10.2.5", "10.2.6"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0001:
+    T1078: []

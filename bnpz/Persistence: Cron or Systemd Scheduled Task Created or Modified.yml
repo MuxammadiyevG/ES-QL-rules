@@ -1,0 +1,109 @@
+rule_id: bf092d17-f73e-4f3e-944d-77d3d5fe5c44
+name: "Persistence: Cron  Scheduled Task Created or Modified"
+description: |
+  Ushbu qoida Linux tizimida cron  timer orqali
+  yangi scheduled task yaratish yoki o‘zgartirish holatini aniqlaydi.
+
+  Bu persistence o‘rnatish uchun keng ishlatiladi.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+     | WHERE @timestamp >= NOW() - 10 minute
+
+     | WHERE service.type == "auditd"
+       AND auditd.message_type == "syscall"
+       AND (
+         (
+           auditd.data.syscall == "execve"
+           AND process.name == "crontab"
+         )
+         OR
+         (
+           auditd.data.syscall IN ("creat", "rename", "renameat", "renameat2")
+           AND (
+             file.path RLIKE "^/etc/cron.*"
+             OR file.path RLIKE "^/var/spool/cron.*"
+             OR auditd.summary.object.primary RLIKE "^/etc/cron.*"
+             OR auditd.summary.object.primary RLIKE "^/var/spool/cron.*"
+           )
+         )
+       )
+       AND (
+         auditd.summary.actor.primary == "root"
+         OR auditd.summary.actor.secondary == "root"
+       )
+     | EVAL
+         actor_user = auditd.summary.actor.primary,
+         actor_effective_user = auditd.summary.actor.secondary,
+         target_path = CASE(
+           file.path IS NOT NULL, file.path,
+           auditd.summary.object.primary IS NOT NULL, auditd.summary.object.primary,
+           process.title
+         ),
+         action_type = CASE(
+           process.name == "crontab", "cron_command_used",
+           auditd.data.syscall == "creat", "cron_file_created",
+           auditd.data.syscall IN ("rename", "renameat", "renameat2"), "cron_file_modified",
+           "cron_activity"
+         ),
+         process_name = process.name,
+         process_path = process.executable,
+         command_line = process.title,
+         host_name = host.hostname,
+         session_id = auditd.session,
+         detection_reason = "Root cron job created or modified"
+     | KEEP
+         @timestamp,
+         agent_id,
+         actor_user,
+         actor_effective_user,
+         action_type,
+         target_path,
+         process_name,
+         process_path,
+         command_line,
+         process.args,
+         host_name,
+         session_id,
+         detection_reason,
+         event.action
+     | SORT @timestamp DESC
+
+enabled: true
+
+tags:
+  - attack.persistence
+  - attack.t1053
+  - attack.t1053.003
+  - attack.t1053.006
+  - cron
+  - systemd
+  - scheduled-task
+  - linux
+  - auditd
+
+severity: high
+risk_score: 85
+
+references:
+  - "https://attack.mitre.org/techniques/T1053/003/"
+  - "https://attack.mitre.org/techniques/T1053/006/"
+
+nist: ["AC-2", "AC-6", "AU-2", "AU-6", "AU-12", "CM-5", "SI-4"]
+
+pci_dss: ["7.2.1", "8.2.2", "10.2.1", "10.2.1.2", "10.4.1"]
+
+gdpr: ["32.1.b", "32.1.d"]
+
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.003", "T1053.006"]

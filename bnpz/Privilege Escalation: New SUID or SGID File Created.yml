@@ -1,0 +1,122 @@
+rule_id: bb1a0647-b475-4905-891d-c5b881a7c165
+name: "Privilege Escalation: New SUID or SGID File Created"
+description: |
+  Ushbu qoida Linux tizimida yangi SUID yoki SGID permission o‘rnatilgan
+  fayllar paydo bo‘lishini aniqlaydi.
+
+  SUID/SGID bitlari attacker tomonidan privilege escalation uchun ishlatilishi
+  mumkin. Masalan, oddiy foydalanuvchi root huquqida ishlaydigan binary yaratishi
+  yoki mavjud faylga SUID/SGID bit qo‘yishi mumkin.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND process.name IN ("chmod", "install", "cp", "mv")
+     AND (
+       MV_CONTAINS(process.args, "u+s")
+       OR MV_CONTAINS(process.args, "g+s")
+       OR MV_CONTAINS(process.args, "+s")
+       OR MV_CONTAINS(process.args, "4755")
+       OR MV_CONTAINS(process.args, "2755")
+       OR MV_CONTAINS(process.args, "6755")
+       OR MV_CONTAINS(process.args, "4777")
+       OR MV_CONTAINS(process.args, "2777")
+       OR MV_CONTAINS(process.args, "6777")
+       OR process.title RLIKE ".*chmod.*(u\\+s|g\\+s|\\+s|4755|2755|6755|4777|2777|6777).*"
+     )
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       target_file = MV_LAST(process.args),
+       process_name = process.name,
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       suid_sgid_type = CASE(
+         MV_CONTAINS(process.args, "u+s") OR process.title RLIKE ".*u\\+s.*", "suid_set",
+         MV_CONTAINS(process.args, "g+s") OR process.title RLIKE ".*g\\+s.*", "sgid_set",
+         MV_CONTAINS(process.args, "+s") OR process.title RLIKE ".*\\+s.*", "suid_or_sgid_set",
+         MV_CONTAINS(process.args, "4755") OR MV_CONTAINS(process.args, "4777") OR process.title RLIKE ".*(4755|4777).*", "suid_set_numeric",
+         MV_CONTAINS(process.args, "2755") OR MV_CONTAINS(process.args, "2777") OR process.title RLIKE ".*(2755|2777).*", "sgid_set_numeric",
+         MV_CONTAINS(process.args, "6755") OR MV_CONTAINS(process.args, "6777") OR process.title RLIKE ".*(6755|6777).*", "suid_and_sgid_set_numeric",
+         "suid_or_sgid_permission_set"
+       ),
+       detection_reason = CASE(
+         suid_sgid_type == "suid_set", "SUID bit set on file",
+         suid_sgid_type == "sgid_set", "SGID bit set on file",
+         suid_sgid_type == "suid_set_numeric", "SUID bit set using numeric chmod mode",
+         suid_sgid_type == "sgid_set_numeric", "SGID bit set using numeric chmod mode",
+         suid_sgid_type == "suid_and_sgid_set_numeric", "SUID and SGID bits set using numeric chmod mode",
+         "SUID or SGID bit set on file"
+       )
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       actor_effective_user,
+       target_file,
+       suid_sgid_type,
+       process_name,
+       process_path,
+       process.args,
+       process.title,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action
+   | SORT @timestamp DESC
+
+enabled: true
+
+tags:
+  - attack.privilege-escalation
+  - attack.persistence
+  - attack.t1548.001
+  - suid
+  - sgid
+  - linux
+  - permissions
+  - auditd
+
+severity: high
+risk_score: 85
+
+references:
+  - "https://attack.mitre.org/techniques/T1548/001/"
+
+nist:
+  [
+    "AC-3",
+    "AC-6",
+    "AU-2",
+    "AU-6",
+    "AU-12",
+    "CM-3",
+    "CM-5",
+    "CM-6",
+    "SI-4",
+    "SI-7",
+  ]
+
+pci_dss:
+  ["7.2.1", "7.2.2", "10.2.1", "10.2.1.2", "10.2.1.7", "10.4.1", "11.5.2"]
+
+gdpr: ["32.1.b", "32.1.d"]
+
+mitre_attack:
+  TA0003:
+    T1548: ["T1548.001"]
+  TA0004:
+    T1548: ["T1548.001"]

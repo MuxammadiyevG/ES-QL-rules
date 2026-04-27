@@ -1,0 +1,119 @@
+rule_id: d43eb4c0-479d-444b-957f-12f70302150c
+name: "Privilege Escalation: Sudoers Modification via visudo or Direct Edit"
+description: |
+  Ushbu qoida `/etc/sudoers` fayli yoki `/etc/sudoers.d/` direktoriyasidagi
+  fayllarga visudo, editor yoki boshqa process orqali o‘zgartirish kiritish
+  holatlarini aniqlaydi. Bu foydalanuvchiga sudo huquqlarini berish yoki
+  privilege escalation uchun ishlatilishi mumkin.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND process.name IN (
+       "visudo",
+       "vi", "vim", "nano", "emacs",
+       "sed", "tee", "perl",
+       "python", "python3",
+       "bash", "sh", "dash"
+     )
+     AND auditd.data.syscall IN (
+       "execve",
+       "open",
+       "openat",
+       "creat",
+       "rename",
+       "renameat",
+       "renameat2",
+       "unlink",
+       "unlinkat"
+     )
+     AND (
+       file.path == "/etc/sudoers"
+       OR file.path == "/etc/sudoers.tmp"
+       OR file.path RLIKE "/etc/sudoers\\.d/.*"
+       OR auditd.summary.object.primary == "/etc/sudoers"
+       OR auditd.summary.object.primary == "/etc/sudoers.tmp"
+       OR auditd.summary.object.primary RLIKE "/etc/sudoers\\.d/.*"
+       OR MV_CONTAINS(auditd.paths.name, "/etc/sudoers")
+       OR MV_CONTAINS(auditd.paths.name, "/etc/sudoers.tmp")
+     )
+     AND NOT (
+       process.title RLIKE ".*dpkg-maintscript-helper.*rm_conffile.*/etc/sudoers\\.d/.*"
+       OR MV_CONTAINS(process.args, "/usr/bin/dpkg-maintscript-helper")
+       OR process.name IN (
+         "dpkg",
+         "dpkg-maintscript-helper",
+         "dpkg-maintscrip",
+         "apt",
+         "apt-get",
+         "aptitude",
+         "unattended-upgrade"
+       )
+     )
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       target_file = CASE(
+         MV_CONTAINS(auditd.paths.name, "/etc/sudoers"), "/etc/sudoers",
+         MV_CONTAINS(auditd.paths.name, "/etc/sudoers.tmp"), "/etc/sudoers.tmp",
+         auditd.summary.object.primary IS NOT NULL, auditd.summary.object.primary,
+         file.path IS NOT NULL, file.path,
+         "unknown"
+       ),
+       process_name = process.name,
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       detection_reason = CASE(
+         process.name == "visudo" AND auditd.data.syscall == "rename", "sudoers modified via visudo rename operation",
+         process.name == "visudo", "visudo access to sudoers",
+         process.name IN ("vi", "vim", "nano", "emacs"), "direct sudoers edit via editor",
+         process.name IN ("sed", "tee"), "sudoers modification via command-line utility",
+         process.name IN ("perl", "python", "python3"), "possible scripted sudoers modification",
+         process.name IN ("bash", "sh", "dash"), "possible shell-based sudoers modification",
+         "sudoers file access or modification"
+       )
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       actor_effective_user,
+       target_file,
+       process_name,
+       process_path,
+       process.args,
+       process.title,
+       auditd.data.syscall,
+       auditd.paths.name,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action
+   | SORT @timestamp DESC
+
+enabled: true
+tags:
+  - attack.privilege-escalation
+  - attack.persistence
+  - attack.t1548.003
+  - sudoers
+  - visudo
+  - auditd
+severity: high
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1548/003/"
+nist: ["AC-2", "AC-6", "AU-2", "AU-6", "AU-12", "SI-4"]
+pci_dss: ["10.2.5", "10.2.6", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0004:
+    T1548: ["T1548.003"]

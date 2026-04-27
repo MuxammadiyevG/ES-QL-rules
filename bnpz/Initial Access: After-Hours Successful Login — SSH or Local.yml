@@ -1,0 +1,86 @@
+rule_id: 9ae94f88-2e5a-4f4c-bdd4-b615d8325fef
+name: "Initial Access: After-Hours Successful Login — SSH or Local"
+description: |
+  Ushbu qoida ish vaqtidan tashqari muvaffaqiyatli loginlarni aniqlaydi.
+
+  Ish vaqti:
+  - Dushanba–Juma
+  - 08:00–17:00
+
+  Aniqlanadigan holatlar:
+  - SSH orqali muvaffaqiyatli login
+  - Lokal/sudo/su session open
+  - Dam olish kunlari login
+  - Ish vaqtidan tashqari login
+
+type: esql
+params: "{}"
+schedule_interval: 5m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 5 minute
+  | WHERE auditd.message_type == "user_start"
+    AND auditd.data.op == "PAM:session_open"
+    AND auditd.result == "success"
+    AND process.executable IN ("/usr/sbin/sshd", "/usr/bin/sudo", "/usr/bin/su", "/usr/bin/login", "/bin/login")
+  | EVAL
+      local_time = @timestamp + 5 hours,
+      hour = DATE_EXTRACT("hour_of_day", local_time),
+      day_of_week = DATE_EXTRACT("day_of_week", local_time),
+      actor_user = COALESCE(user.audit.name, user.name),
+      target_acct = auditd.data.acct,
+      host_name = host.hostname,
+      session_id = auditd.session,
+      process_path = process.executable,
+      terminal = auditd.data.terminal,
+      login_type = CASE(
+        process.executable == "/usr/sbin/sshd", "ssh",
+        process.executable IN ("/usr/bin/sudo", "/usr/bin/su"), "privileged_local",
+        "local"
+      )
+  | WHERE day_of_week >= 6
+    OR hour < 8
+    OR hour >= 17
+  | KEEP
+      @timestamp,
+      agent_id,
+      local_time,
+      day_of_week,
+      hour,
+      actor_user,
+      target_acct,
+      host_name,
+      session_id,
+      login_type,
+      process_path,
+      terminal,
+      auditd.message_type,
+      auditd.data.op,
+      auditd.result,
+      event.action
+  | SORT @timestamp DESC
+
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1078
+  - after-hours
+  - anomalous-login
+  - ssh
+  - local-login
+  - auditd
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+nist: ["AC-2", "AC-17", "AU-2", "AU-6", "AU-12", "SI-4"]
+pci_dss: ["10.2.5", "10.2.6", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0001:
+    T1078: []

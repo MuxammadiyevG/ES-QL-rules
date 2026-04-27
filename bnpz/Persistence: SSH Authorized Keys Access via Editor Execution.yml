@@ -1,0 +1,62 @@
+rule_id: d4192931-586c-4edf-ba45-11d384708e49
+name: "Persistence: SSH Authorized Keys Edit via Process Execution"
+description: |
+  Ushbu qoida `.ssh/authorized_keys` faylini editor yoki boshqa process orqali
+  ochish/tahrirlash holatini aniqlaydi. Bu yangi SSH kalit qo‘shish orqali
+  persistence o‘rnatish belgisi bo‘lishi mumkin.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND process.working_directory RLIKE ".*/\\.ssh"
+     AND (
+       MV_CONTAINS(process.args, "authorized_keys")
+       OR process.title RLIKE ".*authorized_keys.*"
+     )
+     AND process.name NOT IN ("cat", "auditctl", "sudo")
+   | EVAL
+       actor_user = user.audit.name,
+       target_file = CONCAT(process.working_directory, "/authorized_keys"),
+       process_name = process.name,
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       target_file,
+       process_name,
+       process_path,
+       process.args,
+       process.title,
+       host_name,
+       session_id,
+       event.action
+   | SORT @timestamp DESC
+
+enabled: true
+tags:
+  - attack.persistence
+  - attack.t1098.004
+  - ssh
+  - authorized_keys
+  - auditd
+severity: high
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1098/004/"
+nist: ["AC-2", "AC-6", "AU-2", "AU-6", "AU-12", "SI-4"]
+pci_dss: ["10.2.5", "10.2.6", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1098: ["T1098.004"]

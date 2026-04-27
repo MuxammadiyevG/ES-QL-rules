@@ -1,0 +1,106 @@
+rule_id: 16156b1a-32d3-4cc0-9f98-1cf10521be51
+name: "Defense Evasion: Log Files Cleared or Truncated"
+description: |
+  Ushbu qoida Linux tizimida log fayllarini tozalash, truncate qilish
+  yoki o‘chirish holatlarini aniqlaydi (/var/log/*).
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND (
+       process.title RLIKE ".*/var/log/.*"
+       OR MV_CONTAINS(process.args, "/var/log/auth.log")
+       OR MV_CONTAINS(process.args, "/var/log/syslog")
+       OR MV_CONTAINS(process.args, "/var/log/messages")
+     )
+     AND process.name IN (
+       "rm", "truncate", "shred", "logrotate",
+       "bash", "sh", "dash",
+       "tee", "sed", "cp", "mv"
+     )
+     AND (
+       process.name IN ("rm", "shred", "tee")
+       OR process.title RLIKE ".*>\\s*/var/log/.*"
+       OR process.title RLIKE ".*truncate.*"
+       OR process.title RLIKE ".*logrotate.*-f.*"
+       OR MV_CONTAINS(process.args, "-s")
+       OR MV_CONTAINS(process.args, "0")
+     )
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       target_log = CASE(
+         MV_CONTAINS(process.args, "/var/log/auth.log"), "/var/log/auth.log",
+         MV_CONTAINS(process.args, "/var/log/syslog"), "/var/log/syslog",
+         MV_CONTAINS(process.args, "/var/log/messages"), "/var/log/messages",
+         "/var/log/*"
+       ),
+       action_type = CASE(
+         process.name == "rm", "log_deleted",
+         process.name == "shred", "log_secure_deleted",
+         process.name == "truncate", "log_truncated",
+         process.name == "tee", "log_overwritten",
+         process.name == "logrotate", "log_rotated_forcefully",
+         process.title RLIKE ".*>\\s*/var/log/.*", "log_overwritten",
+         "log_tampering_activity"
+       ),
+       process_name = process.name,
+       process_path = process.executable,
+       command_line = process.title,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       detection_reason = "Log file cleared, truncated or overwritten (possible defense evasion)"
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       actor_effective_user,
+       action_type,
+       target_log,
+       process_name,
+       process_path,
+       command_line,
+       process.args,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action
+   | SORT @timestamp DESC
+
+enabled: true
+
+tags:
+  - attack.defense-evasion
+  - attack.t1070
+  - attack.t1070.002
+  - log-tampering
+  - linux
+  - auditd
+
+severity: high
+risk_score: 90
+
+references:
+  - "https://attack.mitre.org/techniques/T1070/002/"
+
+nist: ["AU-2", "AU-6", "AU-12", "SI-4", "CM-5"]
+
+pci_dss: ["10.2.1", "10.2.1.2", "10.4.1"]
+
+gdpr: ["32.1.b", "32.1.d"]
+
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.002"]

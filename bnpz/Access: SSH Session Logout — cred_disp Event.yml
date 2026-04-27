@@ -1,0 +1,58 @@
+rule_id: 213823fb-9bda-445e-a210-f62b0ae9a89b
+name: "Access: SSH Session Logout — cred_disp Event"
+description: |
+  Ushbu qoida auditd loglarida SSH sessiya tugashini (logout)
+  aniqlaydi. cred_disp hodisasi PAM orqali credential’lar
+  tozalanganini bildiradi va bu sessiya yopilganini anglatadi.
+
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 5 minute
+  | WHERE auditd.message_type == "cred_disp"
+    AND process.executable RLIKE ".*sshd"
+  | EVAL
+      target_acct = auditd.data.acct,
+      src_ip = auditd.data.addr,
+      host_name = host.hostname,
+      session_id = auditd.session
+  | KEEP
+      @timestamp,
+      agent_id,
+      target_acct,
+      src_ip,
+      host_name,
+      session_id,
+      auditd.message_type,
+      auditd.result,
+      auditd.data.op,
+      auditd.data.terminal,
+      process.executable,
+      event.action
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - ssh
+  - logout
+  - session
+  - auditd
+  - detection.use-case.access
+
+severity: low
+risk_score: 25
+
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+
+nist: ["AC-2", "AU-2", "AU-6"]
+pci_dss: ["10.2.5"]
+gdpr: ["32.1.b"]
+
+mitre_attack:
+  TA0001:
+    T1078: []

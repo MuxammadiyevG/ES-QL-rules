@@ -1,0 +1,113 @@
+rule_id: fe57eb01-09e3-48a2-a893-1cec5c526cdf
+name: "Account Management: Linux Account Locked or Unlocked"
+description: |
+  Ushbu qoida Linux tizimida foydalanuvchi uchotkasini bloklash yoki blokdan
+  chiqarish holatlarini aniqlaydi.
+
+  Quyidagi commandlar kuzatiladi:
+  - usermod -L / usermod -U
+  - passwd -l / passwd -u
+  - chage orqali account expiration o‘zgarishlari
+
+  Bu account management nazorati, insider activity yoki ruxsatsiz access
+  o‘zgarishlarini aniqlash uchun muhim hisoblanadi.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND process.name IN ("usermod", "passwd", "chage")
+     AND (
+       MV_CONTAINS(process.args, "-L")
+       OR MV_CONTAINS(process.args, "--lock")
+       OR MV_CONTAINS(process.args, "-l")
+       OR MV_CONTAINS(process.args, "-U")
+       OR MV_CONTAINS(process.args, "--unlock")
+       OR MV_CONTAINS(process.args, "-u")
+       OR MV_CONTAINS(process.args, "-e")
+       OR MV_CONTAINS(process.args, "-E")
+       OR MV_CONTAINS(process.args, "--expiredate")
+     )
+   | EVAL
+       actor_user = auditd.summary.actor.primary,
+       actor_effective_user = auditd.summary.actor.secondary,
+       target_user = MV_LAST(process.args),
+       process_name = process.name,
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       account_action = CASE(
+         MV_CONTAINS(process.args, "-L") OR MV_CONTAINS(process.args, "--lock") OR MV_CONTAINS(process.args, "-l"), "account_locked",
+         MV_CONTAINS(process.args, "-U") OR MV_CONTAINS(process.args, "--unlock") OR MV_CONTAINS(process.args, "-u"), "account_unlocked",
+         MV_CONTAINS(process.args, "-e") OR MV_CONTAINS(process.args, "-E") OR MV_CONTAINS(process.args, "--expiredate"), "account_expiration_changed",
+         "account_lock_state_changed"
+       ),
+       detection_reason = CASE(
+         account_action == "account_locked", "Linux account locked via passwd/usermod",
+         account_action == "account_unlocked", "Linux account unlocked via passwd/usermod",
+         account_action == "account_expiration_changed", "Linux account expiration modified",
+         "Linux account lock or unlock activity"
+       )
+   | KEEP
+       @timestamp,
+       agent_id,
+       actor_user,
+       actor_effective_user,
+       target_user,
+       account_action,
+       process_name,
+       process_path,
+       process.args,
+       process.title,
+       host_name,
+       session_id,
+       detection_reason,
+       event.action
+   | SORT @timestamp DESC
+
+enabled: true
+
+tags:
+  - attack.persistence
+  - attack.defense-evasion
+  - attack.t1098
+  - account-management
+  - account-lock
+  - linux
+  - auditd
+
+severity: medium
+risk_score: 60
+
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+
+nist: ["AC-2", "AC-3", "AC-6", "AU-2", "AU-6", "AU-12", "CM-5", "SI-4"]
+
+pci_dss:
+  [
+    "7.2.1",
+    "7.2.2",
+    "8.2.2",
+    "8.2.6",
+    "10.2.1",
+    "10.2.1.2",
+    "10.2.1.5",
+    "10.4.1",
+  ]
+
+gdpr: ["32.1.b", "32.1.d"]
+mitre_attack:
+  TA0003:
+    T1098: []

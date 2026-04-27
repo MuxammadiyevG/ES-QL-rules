@@ -1,0 +1,69 @@
+rule_id: 842cd6d3-5559-4415-ae83-63deb572ac88
+name: "Execution: Sudo Command Activity Logging"
+description: |
+  Ushbu qoida sudo orqali bajarilgan barcha commandlarni aniqlaydi.
+
+  Bu foydalanuvchilarning privilege escalation orqali qanday buyruqlarni
+  bajarayotganini monitoring qilish uchun ishlatiladi.
+
+  SOC triage:
+  - `actor_user` kimligini tekshiring
+  - `sudo_command` (process.title) ni analiz qiling
+  - Xavfli buyruqlarni aniqlang (useradd, chmod, curl, wget, bash va h.k.)
+  - Session kontekstini (`session_id`) tekshiring
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minute
+  | WHERE auditd.message_type == "syscall"
+    AND auditd.data.syscall == "execve"
+    AND process.executable == "/usr/bin/sudo"
+  | EVAL
+      actor_user = user.audit.name,
+      sudo_command = process.title,
+      process_path = process.executable,
+      host_name = host.hostname,
+      session_id = auditd.session,
+      terminal = auditd.data.tty
+  | KEEP
+      @timestamp,
+      agent_id,
+      actor_user,
+      sudo_command,
+      process_path,
+      host_name,
+      session_id,
+      terminal,
+      process.args,
+      event.action
+  | SORT @timestamp DESC
+
+enabled: true
+tags:
+  - attack.execution
+  - attack.privilege-escalation
+  - attack.t1059
+  - attack.t1548.003
+  - sudo
+  - auditd
+severity: low
+risk_score: 40
+references:
+  - "https://attack.mitre.org/techniques/T1548/003/"
+  - "https://attack.mitre.org/techniques/T1059/"
+nist: ["AC-2", "AC-6", "AU-2", "AU-6", "AU-12", "SI-4"]
+pci_dss: ["10.2.5", "10.2.6"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0004:
+    T1548: ["T1548.003"]
+  TA0002:
+    T1059: []
