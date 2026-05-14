@@ -1,0 +1,73 @@
+rule_id: c56b5f58-cd47-47c9-bb4f-16723335d960
+name: "Windows File Server: File Owner Changed"
+description: |
+  Ushbu qoida Windows File Server share ostidagi fayl yoki papka egasi
+  o‘zgartirilganini aniqlaydi. `WRITE_OWNER`, `TakeOwnership` yoki `0x80000`
+  accesslari owner change urinishini bildiradi. 4670 hodisasi permission/security
+  descriptor o‘zgarishini ham ko‘rsatishi mumkin.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+    | WHERE @timestamp >= NOW() - 5 minute
+    | WHERE winlog.channel == "Security"
+      AND event.code IN ("4663", "4670")
+      AND (
+        winlog.event_data.ObjectType == "File"
+        OR event.code == "4670"
+      )
+      AND (
+        winlog.event_data.AccessList LIKE "*WRITE_OWNER*"
+        OR winlog.event_data.AccessList LIKE "*TakeOwnership*"
+        OR winlog.event_data.AccessList LIKE "*Take Ownership*"
+        OR winlog.event_data.AccessMask == "0x80000"
+      )
+    | EVAL
+        file_path = winlog.event_data.ObjectName,
+        user_account = CONCAT(winlog.event_data.SubjectDomainName, "\\", winlog.event_data.SubjectUserName),
+        process_name = winlog.event_data.ProcessName,
+        access_mask = winlog.event_data.AccessMask,
+        access_list = winlog.event_data.AccessList,
+        old_sd = winlog.event_data.OldSd,
+        new_sd = winlog.event_data.NewSd,
+        host_name = host.name
+    | WHERE file_path IS NOT NULL
+    | WHERE NOT file_path LIKE "C:\\\\Windows\\\\*"
+    | WHERE NOT file_path LIKE "C:\\\\Program Files\\\\*"
+    | WHERE NOT file_path LIKE "C:\\\\Program Files (x86)\\\\*"
+    | KEEP
+        @timestamp,
+        agent_id,
+        host_name,
+        user_account,
+        file_path,
+        process_name,
+        access_mask,
+        access_list,
+        old_sd,
+        new_sd,
+        event.code,
+        event.action
+
+enabled: true
+tags:
+  - windows
+  - file-server
+  - owner-change
+  - take-ownership
+  - ntfs
+severity: high
+risk_score: 75
+references:
+  - "https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4663"
+  - "https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4670"
+nist: ["AC-2", "AC-3", "AU-2", "AU-6", "AU-12"]
+pci_dss: ["7.1", "7.2", "10.2.1", "10.2.2", "10.2.6"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1222: ["T1222.001"]

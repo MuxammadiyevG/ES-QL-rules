@@ -1,0 +1,73 @@
+rule_id: 593d0b65-1082-4126-b7ea-53a58616e808
+name: "Windows File Server: File Attribute Change"
+description: |
+  Ushbu qoida Windows File Server share ichida fayl atributlari o‘zgartirilganini
+  aniqlaydi. Hidden, readonly, archive yoki system kabi atributlar o‘zgarganda
+  `WriteAttributes` yoki `WriteEA` accesslari kuzatilishi mumkin.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+    | WHERE @timestamp >= NOW() - 5 minute
+    | WHERE winlog.channel == "Security"
+      AND event.code IN ("5145", "4663")
+      AND (
+        winlog.event_data.ObjectType == "File"
+        OR winlog.event_data.ObjectType IS NULL
+      )
+      AND (
+        winlog.event_data.AccessList LIKE "*WriteAttributes*"
+        OR winlog.event_data.AccessList LIKE "*WriteEA*"
+        OR winlog.event_data.AccessList LIKE "*WriteExtendedAttributes*"
+        OR winlog.event_data.AccessMask IN ("0x100", "0x10")
+      )
+    | EVAL
+        file_path = COALESCE(
+          CONCAT(winlog.event_data.ShareLocalPath, "\\", winlog.event_data.RelativeTargetName),
+          winlog.event_data.ObjectName
+        ),
+        user_account = CONCAT(winlog.event_data.SubjectDomainName, "\\", winlog.event_data.SubjectUserName),
+        share_name = winlog.event_data.ShareName,
+        src_ip = winlog.event_data.IpAddress,
+        process_name = winlog.event_data.ProcessName,
+        access_mask = winlog.event_data.AccessMask,
+        access_list = winlog.event_data.AccessList,
+        access_reason = winlog.event_data.AccessReason,
+        host_name = host.name
+    | WHERE file_path IS NOT NULL
+    | KEEP
+        @timestamp,
+        agent_id,
+        host_name,
+        user_account,
+        src_ip,
+        share_name,
+        file_path,
+        process_name,
+        access_mask,
+        access_list,
+        access_reason,
+        event.code,
+        event.action
+
+enabled: true
+tags:
+  - windows
+  - file-server
+  - file-attributes
+  - metadata-change
+severity: medium
+risk_score: 40
+references:
+  - "https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-5145"
+  - "https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4663"
+nist: ["AC-2", "AU-2", "AU-6", "AU-12", "SI-4"]
+pci_dss: ["10.2.1", "10.2.2", "10.2.6"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1564: ["T1564.001"]

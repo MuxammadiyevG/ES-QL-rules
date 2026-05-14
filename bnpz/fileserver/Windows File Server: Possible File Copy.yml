@@ -1,0 +1,68 @@
+rule_id: 526229fc-0b0f-4ad5-acf8-0e72581a7bca
+name: "Windows File Server: Possible File Copy"
+description: |
+  Ushbu qoida Windows File Server share ichida fayl nusxalangan bo‘lishi
+  mumkin bo‘lgan holatlarni aniqlaydi. Copy odatda source read va destination
+  write/create accesslari bir user va bir source IP tomonidan qisqa vaqt ichida
+  bajarilganda ko‘rinadi.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+    | WHERE @timestamp >= NOW() - 5 minute
+    | WHERE winlog.channel == "Security"
+      AND event.code == "5145"
+      AND winlog.event_data.ObjectType == "File"
+    | EVAL
+        raw_path = winlog.event_data.RelativeTargetName,
+        user_account = CONCAT(winlog.event_data.SubjectDomainName, "\\", winlog.event_data.SubjectUserName),
+        copy_action = CASE(
+          winlog.event_data.AccessList LIKE "*ReadData*", "source_read",
+          winlog.event_data.AccessList LIKE "*WriteData*", "destination_written",
+          winlog.event_data.AccessList LIKE "*AddFile*", "destination_written",
+          winlog.event_data.AccessList LIKE "*AppendData*", "destination_written",
+          "other"
+        )
+    | WHERE copy_action != "other"
+    | WHERE raw_path IS NOT NULL
+    | WHERE NOT winlog.event_data.ShareName RLIKE ".*SYSVOL$"
+    | WHERE NOT winlog.event_data.ShareName RLIKE ".*NETLOGON$"
+    | WHERE NOT winlog.event_data.ShareName RLIKE ".*IPC\\$$"
+    | WHERE NOT winlog.event_data.SubjectUserName LIKE "*$"
+    | STATS
+        event_count = COUNT(),
+        actions = VALUES(copy_action),
+        paths = VALUES(raw_path),
+        share_names = VALUES(winlog.event_data.ShareName)
+      BY host.name, user_account, winlog.event_data.IpAddress, BUCKET(@timestamp, 3 minutes)
+    | WHERE event_count >= 2
+    | KEEP
+        host.name,
+        user_account,
+        winlog.event_data.IpAddress,
+        event_count,
+        actions,
+        paths,
+        share_names
+
+enabled: true
+tags:
+  - windows
+  - file-server
+  - smb
+  - file-copy
+  - correlation
+severity: medium
+risk_score: 40
+references:
+  - "https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-5145"
+nist: ["AC-2", "AU-2", "AU-6", "AU-12"]
+pci_dss: ["10.2.1", "10.2.2", "10.2.6"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0009:
+    T1039: []

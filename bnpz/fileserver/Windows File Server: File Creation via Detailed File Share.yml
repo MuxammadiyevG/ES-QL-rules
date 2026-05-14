@@ -1,0 +1,73 @@
+rule_id: 1a32c3f6-a66b-4eda-960f-65378017af0d
+name: "Windows File Server: File Creation via Detailed File Share"
+description: |
+  Ushbu qoida Windows File Server SMB share ichida fayl yaratish yoki yozish
+  urinishlarini aniqlaydi. 5145 Detailed File Share hodisasida `WriteData`,
+  `AddFile` yoki `AppendData` accesslari fayl yaratish/yangi faylga yozish
+  holatlarida kuzatiladi.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+    | WHERE @timestamp >= NOW() - 5 minute
+    | WHERE winlog.channel == "Security"
+      AND event.code == "5145"
+      AND winlog.event_data.ObjectType == "File"
+      AND (
+        winlog.event_data.AccessList LIKE "*WriteData*"
+        OR winlog.event_data.AccessList LIKE "*AddFile*"
+        OR winlog.event_data.AccessList LIKE "*AppendData*"
+        OR winlog.event_data.AccessMask IN ("0x2", "0x4", "0x6")
+      )
+    | WHERE NOT winlog.event_data.ShareName RLIKE ".*SYSVOL$"
+    | WHERE NOT winlog.event_data.ShareName RLIKE ".*NETLOGON$"
+    | WHERE NOT winlog.event_data.ShareName RLIKE ".*IPC\\$$"
+    | WHERE NOT winlog.event_data.SubjectUserName LIKE "*$"
+    | EVAL
+        user_account = CONCAT(winlog.event_data.SubjectDomainName, "\\", winlog.event_data.SubjectUserName),
+        share_name = winlog.event_data.ShareName,
+        share_path = winlog.event_data.ShareLocalPath,
+        relative_path = winlog.event_data.RelativeTargetName,
+        file_path = CONCAT(winlog.event_data.ShareLocalPath, "\\", winlog.event_data.RelativeTargetName),
+        src_ip = winlog.event_data.IpAddress,
+        access_mask = winlog.event_data.AccessMask,
+        access_list = winlog.event_data.AccessList,
+        access_reason = winlog.event_data.AccessReason,
+        host_name = host.name
+    | KEEP
+        @timestamp,
+        agent_id,
+        host_name,
+        user_account,
+        src_ip,
+        share_name,
+        share_path,
+        relative_path,
+        file_path,
+        access_mask,
+        access_list,
+        access_reason,
+        event.code,
+        event.action
+
+enabled: true
+tags:
+  - windows
+  - file-server
+  - smb
+  - file-create
+  - detailed-file-share
+severity: low
+risk_score: 25
+references:
+  - "https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-5145"
+nist: ["AC-2", "AU-2", "AU-6", "AU-12"]
+pci_dss: ["10.2.1", "10.2.2", "10.2.6"]
+gdpr: ["32.1.b", "32.1.d"]
+mitre_attack:
+  TA0040:
+    T1565: []
