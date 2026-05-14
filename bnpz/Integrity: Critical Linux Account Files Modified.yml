@@ -118,12 +118,12 @@ references:
 
 nist: ["AU-2", "AU-6", "AU-12", "CM-3", "CM-5", "CM-6", "SI-4", "SI-7"]
 
-pci_dss: ["10.2.1", "10.2.1.2", "10.2.1.5", "10.4.1", "11.5.2"]
+pci_dss: ["10.2.1", "10.4.1"]
 
 gdpr: ["32.1.b", "32.1.d"]
 mitre_attack:
   TA0003:
     T1098: [] # Account Manipulation
     T1136: ["T1136.001"] # Create Account (local)
-  TA0005:
+  TA0040:
     T1565: ["T1565.001"] # Data Manipulation (stored data)

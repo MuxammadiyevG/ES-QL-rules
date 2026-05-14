@@ -1,0 +1,104 @@
+rule_id: 4b6f7d9a-7a4e-4c4a-9a77-0d5f5e4c0003
+name: "Execution: Suspicious Command After SSH Brute Force Success"
+description: |
+  SSH brute-force successful login'dan keyin suspicious command execution
+  bo'lsa aniqlaydi.
+type: esql
+params: "{}"
+schedule_interval: 1m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.category == "process"
+    AND event.action == "executed"
+    AND process.name IS NOT NULL
+    AND host.hostname IS NOT NULL
+    AND (
+      process.name IN (
+        "whoami",
+        "id",
+        "uname",
+        "curl",
+        "wget",
+        "nc",
+        "netcat",
+        "python",
+        "python3",
+        "bash",
+        "sh"
+      )
+      OR process.executable LIKE "*/tmp/*"
+    )
+  | KEEP
+      @timestamp,
+      agent_id,
+      source.ip,
+      user.name,
+      host.hostname,
+      process.name,
+      process.executable,
+      process.args,
+      process.pid,
+      process.parent.pid,
+      event.action,
+      event.category
+
+enabled: true
+
+tags:
+  - attack.execution
+  - attack.discovery
+  - attack.t1059
+  - ssh
+  - post-exploitation
+  - auditd
+  - correlation
+  - chain
+
+severity: high
+risk_score: 85
+max_signals: 100
+
+correlation:
+  enabled: true
+  same_fields:
+    - host.hostname
+
+  dedup_fields:
+    - host.hostname
+    - user.name
+    - process.name
+    - process.executable
+
+  timeframe_sec: 300
+  ignore_sec: 120
+  check_diff: true
+  escalate_severity: critical
+
+chain:
+  enabled: true
+  stage: 3
+
+  depends_on_rule_ids:
+    - c1a80323-8fb4-46c9-9615-f87c7cb24d3f
+
+  timeframe_sec: 3600
+
+references:
+  - "https://attack.mitre.org/techniques/T1059/"
+  - "https://attack.mitre.org/techniques/T1059/004/"
+
+mitre_attack:
+  TA0002:
+    T1059:
+      - "T1059.004"
+
+  TA0007:
+    T1082: []
+    T1087: []
