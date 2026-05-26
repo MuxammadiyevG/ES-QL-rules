@@ -1,0 +1,72 @@
+rule_id: 4c2e11d9-5d5d-4ed4-9f44-0d2f2e1b7f80
+name: "Resource: High CPU Utilization Detected"
+description: |
+  Ushbu qoida Linux yoki Windows hostda CPU utilization yuqori bo‘lishini
+  aniqlaydi. Agar hostda 5 daqiqa davomida o‘rtacha CPU ishlatilishi
+  80% dan yuqori bo‘lsa alert hosil qiladi.
+
+  Metricbeat orqali system.cpu.total.norm.pct fieldi tahlil qilinadi.
+
+type: esql
+params: "{}"
+schedule_interval: 1m
+
+index:
+  - metricbeat-*
+
+query_language: esql
+
+query: |
+  FROM metrics-updive*
+      | WHERE @timestamp >= NOW() - 5 minute
+      | WHERE system.cpu.total.norm.pct IS NOT NULL
+      | EVAL host_name = COALESCE(host.name, host.hostname)
+      | STATS
+          avg_cpu_pct = AVG(system.cpu.total.norm.pct),
+          max_cpu_pct = MAX(system.cpu.total.norm.pct),
+          event_count = COUNT(),
+          first_seen = MIN(@timestamp),
+          last_seen = MAX(@timestamp)
+        BY host_name
+      | WHERE avg_cpu_pct >= 0.80
+      | EVAL
+          avg_cpu_percent = ROUND(avg_cpu_pct * 100, 2),
+          max_cpu_percent = ROUND(max_cpu_pct * 100, 2),
+          detection_reason = "CPU utilization is above 80 percent threshold"
+      | KEEP
+          host_name,
+          avg_cpu_percent,
+          max_cpu_percent,
+          event_count,
+          first_seen,
+          last_seen,
+          detection_reason
+      | SORT avg_cpu_percent DESC
+
+enabled: true
+
+tags:
+  - resource
+  - performance
+  - cpu
+  - high-utilization
+  - linux
+  - windows
+  - metricbeat
+  - availability
+
+severity: medium
+risk_score: 50
+
+references:
+  - "https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-system.html"
+
+nist: ["AU-6", "SI-4", "CP-10", "SC-5"]
+
+pci_dss: ["10.2.1", "10.4.1", "12.10.5"]
+
+gdpr: ["32.1.b", "32.1.c", "32.1.d"]
+
+mitre_attack:
+  TA0040:
+    T1499: [] # Endpoint Denial of Service

@@ -1,0 +1,82 @@
+rule_id: 2d00c25f-5379-40a2-a694-d6e40c0e8d89
+name: "Resource: High CPU and Memory Utilization Detected"
+description: |
+  Ushbu qoida Linux yoki Windows hostda CPU va memory utilization bir vaqtda
+  yuqori bo‘lishini aniqlaydi. Agar 5 daqiqa davomida o‘rtacha CPU 80% dan
+  va o‘rtacha memory 80% dan yuqori bo‘lsa alert hosil qiladi.
+
+  Metricbeat orqali system.cpu.total.norm.pct va
+  system.memory.actual.used.pct fieldlari tahlil qilinadi.
+
+type: esql
+params: "{}"
+schedule_interval: 1m
+
+index:
+  - metricbeat-*
+
+query_language: esql
+
+query: |
+  FROM metrics-updive*
+     | WHERE @timestamp >= NOW() - 5 minute
+     | WHERE system.cpu.total.norm.pct IS NOT NULL
+         OR system.memory.actual.used.pct IS NOT NULL
+     | EVAL host_name = COALESCE(host.name, host.hostname)
+     | STATS
+         avg_cpu_pct = AVG(system.cpu.total.norm.pct),
+         max_cpu_pct = MAX(system.cpu.total.norm.pct),
+         avg_memory_pct = AVG(system.memory.actual.used.pct),
+         max_memory_pct = MAX(system.memory.actual.used.pct),
+         event_count = COUNT(),
+         first_seen = MIN(@timestamp),
+         last_seen = MAX(@timestamp)
+       BY host_name
+     | WHERE avg_cpu_pct >= 0.80
+       AND avg_memory_pct >= 0.80
+     | EVAL
+         avg_cpu_percent = ROUND(avg_cpu_pct * 100, 2),
+         max_cpu_percent = ROUND(max_cpu_pct * 100, 2),
+         avg_memory_percent = ROUND(avg_memory_pct * 100, 2),
+         max_memory_percent = ROUND(max_memory_pct * 100, 2),
+         detection_reason = "CPU and memory utilization are both above 80 percent threshold"
+     | KEEP
+         host_name,
+         avg_cpu_percent,
+         max_cpu_percent,
+         avg_memory_percent,
+         max_memory_percent,
+         event_count,
+         first_seen,
+         last_seen,
+         detection_reason
+     | SORT avg_cpu_percent DESC
+
+enabled: true
+
+tags:
+  - resource
+  - performance
+  - cpu
+  - memory
+  - high-utilization
+  - linux
+  - windows
+  - metricbeat
+  - availability
+
+severity: high
+risk_score: 75
+
+references:
+  - "https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-system.html"
+
+nist: ["AU-6", "SI-4", "CP-10", "SC-5"]
+
+pci_dss: ["10.2.1", "10.4.1", "12.10.5"]
+
+gdpr: ["32.1.b", "32.1.c", "32.1.d"]
+
+mitre_attack:
+  TA0040:
+    T1499: [] # Endpoint Denial of Service
