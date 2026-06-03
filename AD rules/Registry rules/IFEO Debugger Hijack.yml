@@ -1,0 +1,52 @@
+rule_id: reg00002-0000-4000-a000-000000000002
+name: Image File Execution Options (IFEO) Debugger Hijack
+description: |
+  Ushbu qoida IFEO "Debugger" yoki "GlobalFlag" kalitiga yozishni aniqlaydi (Sysmon 13).
+  Hujumchi ma'lum dastur (yoki sethc/utilman) ishga tushganda o'z kodini ishga tushirish uchun
+  ishlatadi (T1546.012 / accessibility-feature persistence).
+  SOC triage:
+  - `target_objects` qaysi dastur uchun, `details` qaysi debugger? Qonuniy emasligini tasdiqlang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational"
+  | WHERE event.code == "13"
+  | EVAL tobj = TO_LOWER(COALESCE(winlog.event_data.TargetObject, "-"))
+  | EVAL details = COALESCE(winlog.event_data.Details, "-")
+  | EVAL img = COALESCE(winlog.event_data.Image, "-")
+  | EVAL actor = COALESCE(winlog.event_data.User, "-")
+  | WHERE tobj RLIKE ".*image file execution options.*" AND tobj RLIKE ".*(debugger|globalflag|reportingmode|monitorprocess).*"
+  | STATS
+      hits = COUNT(*),
+      target_objects = VALUES(tobj),
+      details = VALUES(details),
+      images = VALUES(img),
+      users = VALUES(actor),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE hits >= 1
+  | EVAL dyn_risk = 90
+  | KEEP agent_id, bucket, winlog.computer_name, hits, target_objects, details, images, users, dyn_risk, first_seen, last_seen
+  | SORT hits DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1546.012
+  - Registry
+severity: high
+risk_score: 90
+mitre_attack:
+  TA0003:
+    T1546: ["T1546.012"]
+nist: ["SI-4", "AU-12", "CM-7"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

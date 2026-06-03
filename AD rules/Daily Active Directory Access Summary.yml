@@ -24,15 +24,15 @@ query: |
   | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
   | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
   | WHERE event.code IN ("4662", "4661")
   | EVAL 
       accessing_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
       object_type = COALESCE(winlog.event_data.ObjectType, "Unknown"),
       operation = COALESCE(event.action, "Unknown")
   /* Exclude system accounts */
-  | WHERE NOT (accessing_user RLIKE "(?i)(SYSTEM|\\$$)")
+  | WHERE NOT (TO_LOWER(accessing_user) RLIKE "(system|\\$$)")
   | STATS 
       total_accesses = COUNT(*),
       unique_users = COUNT_DISTINCT(accessing_user),

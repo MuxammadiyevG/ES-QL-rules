@@ -1,0 +1,51 @@
+rule_id: ep000007-0000-4000-a000-000000000007
+name: AD Recon Command Burst
+description: |
+  Ushbu qoida AD/host discovery buyruqlari to'plamini aniqlaydi: `net group/user/localgroup`,
+  `nltest`, `dsquery`, `whoami /priv|/groups`, `setspn -q`, `net accounts`, `quser`,
+  `systeminfo` — qisqa vaqtda ko'p turli recon buyrug'i hujumchi enumeratsiyasi belgisidir
+  (T1087/T1018/T1033). Sysmon 1.
+  SOC triage:
+  - `command_lines` qaysi recon? `user`/`host` — qonuniy admin ishimi?
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational"
+  | WHERE event.code == "1"
+  | EVAL cmd = TO_LOWER(COALESCE(winlog.event_data.CommandLine, "-"))
+  | EVAL actor = COALESCE(winlog.event_data.User, "-")
+  | WHERE cmd RLIKE ".*(net +group|net +localgroup|net +user|net +accounts|net +view|nltest|dsquery|dsget|whoami +/priv|whoami +/groups|whoami +/all|setspn +-q|net +group .*domain admins|adfind|quser|qwinsta).*"
+  | STATS
+      recon_count = COUNT(*),
+      distinct_cmds = COUNT_DISTINCT(cmd),
+      command_lines = VALUES(cmd),
+      users = VALUES(actor),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE recon_count >= 5 OR distinct_cmds >= 4
+  | EVAL dyn_risk = CASE(distinct_cmds >= 6, 85, 75)
+  | KEEP agent_id, bucket, winlog.computer_name, recon_count, distinct_cmds, command_lines, users, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, recon_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.discovery
+  - attack.t1087
+  - attack.t1018
+  - Sysmon
+severity: medium
+risk_score: 75
+mitre_attack:
+  TA0007:
+    T1087: []
+    T1018: []
+nist: ["SI-4", "AU-12", "AC-6"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

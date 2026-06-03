@@ -24,8 +24,8 @@ query: |
   | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
   | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
   | WHERE event.code IN ("4673", "4674")
   | EVAL 
       user_account = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
@@ -34,10 +34,10 @@ query: |
       object_server = COALESCE(winlog.event_data.ObjectServer, "Unknown"),
       object_type = COALESCE(winlog.event_data.ObjectType, "Unknown")
   /* Filter for high-risk privileges */
-  | WHERE privilege RLIKE "(?i)(SeDebugPrivilege|SeTcbPrivilege|SeBackupPrivilege|SeRestorePrivilege|SeLoadDriverPrivilege|SeTakeOwnershipPrivilege|SeAssignPrimaryTokenPrivilege|SeImpersonatePrivilege)"
+  | WHERE TO_LOWER(privilege) RLIKE "(sedebugprivilege|setcbprivilege|sebackupprivilege|serestoreprivilege|seloaddriverprivilege|setakeownershipprivilege|seassignprimarytokenprivilege|seimpersonateprivilege)"
   /* Exclude system processes */
-  | WHERE NOT (user_account RLIKE "(?i)(SYSTEM|LOCAL SERVICE|NETWORK SERVICE)")
-    AND NOT (process RLIKE "(?i)(svchost\\.exe|services\\.exe|lsass\\.exe)")
+  | WHERE NOT (TO_LOWER(user_account) RLIKE "(system|local service|network service)")
+    AND NOT (TO_LOWER(process) RLIKE "(svchost\\.exe|services\\.exe|lsass\\.exe)")
   | STATS 
       privilege_uses = COUNT(*),
       unique_privileges = COUNT_DISTINCT(privilege),

@@ -25,14 +25,14 @@ query: |
   | EVAL target_user = COALESCE(winlog.event_data.MemberName, winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL group_name = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
   | WHERE event.code IN ("4728", "4732", "4756")
   | WHERE actor IS NOT NULL
-  | WHERE NOT actor RLIKE ".*\\$$"
-  | WHERE group_name RLIKE "(?i)(Domain Admins|Enterprise Admins|Schema Admins|Administrators|Account Operators|Backup Operators|Server Operators|DnsAdmins|Cert Publishers|Remote Desktop Users)"
+  | WHERE NOT actor LIKE "*$"
+  | WHERE TO_LOWER(group_name) RLIKE "(domain admins|enterprise admins|schema admins|administrators|account operators|backup operators|server operators|dnsadmins|cert publishers|remote desktop users)"
   | STATS add_count = COUNT(*) BY agent_id, hostn, actor, target_user, group_name, src_ip
   | WHERE add_count >= 1
-  | EVAL dyn_risk = CASE(group_name RLIKE "(?i)(Domain Admins|Enterprise Admins|Schema Admins)", 98, group_name RLIKE "(?i)(Administrators|DnsAdmins)", 95, 90)
+  | EVAL dyn_risk = CASE(TO_LOWER(group_name) RLIKE "(domain admins|enterprise admins|schema admins)", 98, TO_LOWER(group_name) RLIKE "(administrators|dnsadmins)", 95, 90)
   | KEEP agent_id, hostn, actor, target_user, group_name, src_ip, add_count, dyn_risk
   | SORT dyn_risk DESC, add_count DESC
   | LIMIT 200

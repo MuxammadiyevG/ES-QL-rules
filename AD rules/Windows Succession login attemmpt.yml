@@ -1,7 +1,13 @@
 rule_id: ebfefa1b-33a8-4582-8cb6-a2b8353228ab
-name: Windows Succession login attempt
+name: Windows Account Targeted From Multiple Sources (Distributed Brute Force)
 description: |
-  Ushbu qoida Active Directory muhitida `Windows Succession login attempt` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
+  Ushbu qoida bitta akkauntga BIR NECHA xil manbadan (`src_ip`) muvaffaqiyatsiz logon (4625)
+  urinishlarini aniqlaydi — taqsimlangan brute force / credential stuffing belgisi. Bitta
+  akkauntning qisqa vaqtda 3+ xil IP'dan ko'p marta xato kirishi shubhali.
+  SOC triage:
+  - `username` nishon akkaunt, `source_ips` qaysi manbalar (reputatsiya/geolokatsiya)?
+  - Akkaunt imtiyozlimi (Domain Admins)?
+  - Tasdiqlansa: manbalarni bloklang, akkauntni himoyalang (MFA/reset), monitoringni kuchaytiring.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -10,38 +16,40 @@ index:
 query_language: esql
 query: |
   FROM logs-winlog*
-  | WHERE event.code == "4624"
-  | EVAL
-      username   = winlog.event_data.TargetUserName,
-      user_sid   = winlog.event_data.TargetUserSid,
-      src_ip     = winlog.event_data.IpAddress,
-      logon_type = winlog.event_data.LogonType,
-      status     = winlog.event_data.Status
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "4625"
+  | EVAL username   = winlog.event_data.TargetUserName
+  | EVAL src_ip     = COALESCE(winlog.event_data.IpAddress, "-")
+  | EVAL logon_type = COALESCE(winlog.event_data.LogonType, "-")
+  | EVAL status     = COALESCE(winlog.event_data.Status, "-")
+  | WHERE username IS NOT NULL AND NOT username LIKE "*$"
+  | WHERE src_ip != "-" AND src_ip != "::1" AND src_ip != "127.0.0.1"
   | STATS
       failure_count = COUNT(*),
+      unique_sources = COUNT_DISTINCT(src_ip),
       source_ips    = VALUES(src_ip),
       logon_types   = VALUES(logon_type),
+      status_codes  = VALUES(status),
       first_seen    = MIN(@timestamp),
       last_seen     = MAX(@timestamp)
-    BY
-      agent_id, username,
-      host.name
-  | KEEP agent_id, failure_count, source_ips, logon_types, first_seen, last_seen
-  | SORT failure_count DESC
-  
+    BY agent_id, username, bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE failure_count >= 10 AND unique_sources >= 3
+  | EVAL dyn_risk = CASE(unique_sources >= 10, 90, unique_sources >= 5, 85, 80)
+  | KEEP agent_id, username, bucket, failure_count, unique_sources, source_ips, logon_types,
+      status_codes, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, failure_count DESC
   | LIMIT 200
-enabled: false
+enabled: true
 tags:
-  - attack.lateral-movement
-  - attack.t1021
-  - attack.t1550.002
+  - attack.credential-access
+  - attack.t1110
   - detection.emerging-threats
 severity: high
 risk_score: 85
 mitre_attack:
-  TA0008:
-    T1021: []
-    T1550: ["T1550.002"]
+  TA0006:
+    T1110: []
 nist: ["AC-17", "AU-2", "AU-12", "SI-4"]
 pci_dss: ["10.2.5", "8.1.6"]
 gdpr: ["32.1.a"]

@@ -1,15 +1,9 @@
 rule_id: 78be1990-8025-4c92-a216-38381b55acca
 name: Audit Policy Configuration - Current State
 description: |
-  Ushbu qoida persistence va defense evasion texnikalariga bog'liq bo'lib, `Audit Policy Configuration - Current State` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
-  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
-  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
-  SOC triage bosqichlari:
-  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
-  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
-  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
-  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+  Baseline/compliance qoidasi: audit policy o'zgarishlarini (4719) yig'adi va mavjud
+  subkategoriya/o'zgarish maydonlarini ko'rsatadi. Audit konfiguratsiyasining holatini
+  kuzatish uchun (alert emas; tahdid varianti "Audit Policy Disabled or Modified" rule'ida).
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,30 +14,23 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code == "4719"
-  | EVAL 
-      configuring_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
-      category = "Unknown",
-      subcategory = "Unknown",
-      audit_changes = COALESCE(event.action, "Unknown")
-  | STATS 
+  | EVAL configuring_user = COALESCE(winlog.event_data.SubjectUserName, "-")
+  | EVAL category    = COALESCE(winlog.event_data.CategoryId, "-")
+  | EVAL subcategory = COALESCE(winlog.event_data.SubcategoryId, winlog.event_data.SubcategoryGuid, "-")
+  | EVAL changes     = COALESCE(winlog.event_data.AuditPolicyChanges, "-")
+  | STATS
       config_changes = COUNT(*),
       categories = VALUES(category),
       subcategories = VALUES(subcategory),
-      changes = VALUES(audit_changes),
+      change_values = VALUES(changes),
       users = VALUES(configuring_user),
       first_change = MIN(@timestamp),
-      last_change = MAX(@timestamp)
+      last_change  = MAX(@timestamp)
     BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 day, @timestamp)
   | WHERE config_changes >= 1
   | KEEP agent_id, bucket, winlog.computer_name, config_changes, categories, subcategories,
-      changes, users, first_change, last_change
+      change_values, users, first_change, last_change
   | SORT config_changes DESC
   | LIMIT 200
 enabled: false
@@ -51,8 +38,8 @@ tags:
   - detection.baseline
   - detection.compliance
   - monitoring.audit-policy
-severity: high
-risk_score: 75
+severity: low
+risk_score: 30
 nist: ["AC-17", "AU-6", "AU-12", "CM-6"]
 pci_dss: ["10.2.7", "10.2", "2.2"]
 gdpr: ["32.1.a"]

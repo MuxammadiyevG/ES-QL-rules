@@ -24,8 +24,8 @@ query: |
   | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
   | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
   | WHERE event.code == "4672"
   | EVAL 
       target_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
@@ -33,9 +33,9 @@ query: |
       logon_id = COALESCE(winlog.event_data.SubjectLogonId, "Unknown"),
       privileges_raw = COALESCE(winlog.event_data.PrivilegeList, "Unknown")
   /* Filter for sensitive privileges */
-  | WHERE privileges_raw RLIKE "(?i)(SeDebugPrivilege|SeTcbPrivilege|SeBackupPrivilege|SeRestorePrivilege|SeCreateTokenPrivilege|SeAssignPrimaryTokenPrivilege|SeLoadDriverPrivilege|SeImpersonatePrivilege|SeTakeOwnershipPrivilege)"
+  | WHERE TO_LOWER(privileges_raw) RLIKE "(sedebugprivilege|setcbprivilege|sebackupprivilege|serestoreprivilege|secreatetokenprivilege|seassignprimarytokenprivilege|seloaddriverprivilege|seimpersonateprivilege|setakeownershipprivilege)"
   /* Exclude system accounts */
-  | WHERE NOT (target_user RLIKE "(?i)(SYSTEM|LOCAL SERVICE|NETWORK SERVICE|\\$$)")
+  | WHERE NOT (TO_LOWER(target_user) RLIKE "(system|local service|network service|\\$$)")
   | STATS 
       privilege_grants = COUNT(*),
       privileges_list = VALUES(privileges_raw),

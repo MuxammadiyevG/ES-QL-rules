@@ -1,0 +1,52 @@
+rule_id: net00002-0000-4000-a000-000000000002
+name: Outbound Scan / Many Distinct Destinations by One Process
+description: |
+  Ushbu qoida bitta jarayon qisqa vaqtda KO'P xil tashqi IP'ga ulanishini aniqlaydi (WFP 5156)
+  — tarmoq skani, beaconing yoki tarqoq C2 belgisi (T1046/T1071).
+  SOC triage:
+  - `application` qonuniy (brauzer/update) emasmi? `unique_dests` qancha? namuna `dest_addresses`.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.code == "5156"
+  | EVAL app = TO_LOWER(COALESCE(winlog.event_data.Application, "-"))
+  | EVAL dst = COALESCE(winlog.event_data.DestAddress, "-")
+  | EVAL dir = COALESCE(winlog.event_data.Direction, "-")
+  | WHERE dir == "Outbound"
+  | EVAL is_internal = CASE(dst RLIKE "(10|127|169\\.254|172\\.1[6-9]|172\\.2[0-9]|172\\.3[01]|192\\.168)\\..*", 1, 0)
+  | EVAL is_ipv4 = CASE(dst RLIKE ".*\\..*\\..*\\..*", 1, 0)
+  | WHERE is_ipv4 == 1 AND is_internal == 0
+  // Brauzer va ma'lum update jarayonlarini chiqarib tashlang (o'z muhitingizga moslang)
+  | WHERE NOT app RLIKE ".*(chrome|msedge|firefox|brave|opera|svchost|teams|onedrive|outlook|excel|winword|trustedinstaller|msmpeng|googleupdate|backgroundtaskhost).exe"
+  | STATS
+      conn_count = COUNT(*),
+      unique_dests = COUNT_DISTINCT(dst),
+      sample_dests = VALUES(dst),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, app, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE unique_dests >= 20
+  | EVAL dyn_risk = CASE(unique_dests >= 100, 85, unique_dests >= 50, 80, 72)
+  | KEEP agent_id, bucket, winlog.computer_name, app, conn_count, unique_dests, sample_dests, dyn_risk, first_seen, last_seen
+  | SORT unique_dests DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.discovery
+  - attack.command-and-control
+  - attack.t1046
+  - Network
+severity: medium
+risk_score: 75
+mitre_attack:
+  TA0007:
+    T1046: []
+nist: ["SI-4", "AU-12", "SC-7"]
+pci_dss: ["10.2.7", "11.4", "1.3"]
+gdpr: ["32.1.a"]

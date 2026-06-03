@@ -1,15 +1,16 @@
 rule_id: ffe32351-ecbe-4604-9816-7190f8629ac8
 name: Kerberos Service Ticket Request - Kerberoasting
 description: |
-  Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Kerberos Service Ticket Request - Kerberoasting` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
-  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
-  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
-  SOC triage bosqichlari:
-  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
-  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
-  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
-  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+  Ushbu qoida credential access texnikasi Kerberoasting'ni aniqlaydi: bitta foydalanuvchi
+  qisqa vaqt ichida ko'p sonli xil SPN (service) uchun TGS (4769) so'rashi, ayniqsa zaif
+  RC4 (0x17) shifrlash bilan — bu hujumchi service akkaunt parol-hashlarini offline crack
+  qilish uchun yig'ayotganini bildiradi.
+  Qonuniy holatlar: ko'p servisga ulanadigan ilova/integration serverlari, vulnerability skaneri.
+  SOC triage:
+  - `requestor` (so'rovchi akkaunt) kim, qaysi `services` so'ralgan?
+  - `rc4_count > 0` bo'lsa: domen AES'da bo'lsa RC4 so'rovi shubhali.
+  - So'rov manbasini (`src_ips`) va requestor odatdagi xulqini tekshiring.
+  - Tasdiqlansa: service akkaunt parolini rotatsiya qiling (uzun, AES), manbani cheklang.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,49 +21,39 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code == "4769"
-  | EVAL 
-      requesting_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, "Unknown"),
-      service_name = COALESCE(winlog.event_data.ServiceName, "Unknown"),
-      service_sid = COALESCE(winlog.event_data.ServiceSid, "Unknown"),
-      ticket_encryption = COALESCE(winlog.event_data.TicketEncryptionType, "Unknown"),
-      is_rc4 = CASE(ticket_encryption == "0x17", 1, 0),
-      source_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress, "Unknown")
-  /* Filter for successful TGS requests with RC4 or suspicious patterns */
-  | WHERE (
-      ticket_encryption == "0x17"  /* RC4-HMAC */
-      OR service_name NOT RLIKE "(?i)(\\$$|krbtgt)"  /* Exclude computer accounts and krbtgt */
-    )
-  /* Exclude common service accounts and computer accounts */
-  | WHERE NOT (service_name RLIKE "(?i)(\\$$|SYSTEM|LOCAL SERVICE|NETWORK SERVICE)")
-  | STATS 
+  // Ixtiyoriy: faqat DC'lar bilan cheklash uchun o'z nomlash konvensiyangizga moslab yoqing:
+  // | WHERE TO_LOWER(winlog.computer_name) RLIKE ".*(dc[0-9]|addc|domaincontroller).*"
+  | EVAL requestor   = winlog.event_data.TargetUserName
+  | EVAL service_name = winlog.event_data.ServiceName
+  | EVAL enc         = COALESCE(winlog.event_data.TicketEncryptionType, "-")
+  | EVAL status      = COALESCE(winlog.event_data.Status, "-")
+  | EVAL src_ip      = COALESCE(winlog.event_data.IpAddress, "-")
+  // Faqat muvaffaqiyatli so'rovlar; mashina (HOST$@REALM) requestorlarni va krbtgt/mashina servislarni chiqaramiz
+  | WHERE status == "0x0"
+  | WHERE requestor IS NOT NULL AND NOT requestor LIKE "*$@*"
+  | WHERE service_name IS NOT NULL AND NOT service_name LIKE "*$" AND NOT TO_LOWER(service_name) RLIKE "krbtgt.*"
+  | EVAL is_rc4 = CASE(enc == "0x17", 1, 0)
+  | STATS
       ticket_requests = COUNT(*),
       unique_services = COUNT_DISTINCT(service_name),
-      max_rc4 = MAX(is_rc4),
-      services_requested = VALUES(service_name),
-      encryption_types = VALUES(ticket_encryption),
-      source_ips = VALUES(source_ip),
-      first_request = MIN(@timestamp),
-      last_request = MAX(@timestamp)
-    BY agent_id, winlog.computer_name, requesting_user, bucket = DATE_TRUNC(30 minutes, @timestamp)
-  | WHERE ticket_requests >= 3 OR unique_services >= 3
-  | EVAL 
-      attack_confidence = CASE(
-        unique_services >= 10 AND max_rc4 == 1, "Critical - Active Kerberoasting",
-        unique_services >= 5, "High - Potential Kerberoasting",
-        "Medium - Suspicious TGS Activity"
-      )
-  | KEEP agent_id, bucket, winlog.computer_name, requesting_user, ticket_requests, unique_services,
-      services_requested, encryption_types, attack_confidence, first_request, last_request
-  | SORT ticket_requests DESC
+      rc4_count       = SUM(is_rc4),
+      services        = VALUES(service_name),
+      enc_types       = VALUES(enc),
+      src_ips         = VALUES(src_ip),
+      first_seen      = MIN(@timestamp),
+      last_seen       = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, requestor, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE unique_services >= 10 OR (rc4_count >= 1 AND unique_services >= 5)
+  | EVAL dyn_risk = CASE(
+      rc4_count >= 1 AND unique_services >= 10, 95,
+      unique_services >= 10, 88,
+      82)
+  | KEEP agent_id, bucket, winlog.computer_name, requestor, ticket_requests, unique_services,
+      rc4_count, services, enc_types, src_ips, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, unique_services DESC
   | LIMIT 200
-enabled: false
+enabled: true
 tags:
   - attack.credential-access
   - attack.t1558.003

@@ -1,0 +1,50 @@
+rule_id: ps000006-0000-4000-a000-000000000006
+name: PowerShell Suspicious Obfuscation
+description: |
+  Ushbu qoida obfuskatsiya texnikalarini aniqlaydi: `-bxor` (XOR dekod), `[char[]]`/`-join`
+  (char-array qurish), `[Convert]::FromBase64String`, yoki ScriptBlock ichida uzun (120+)
+  base64/alfanumerik blob. Bular payload'ni yashirish belgisidir (T1027).
+  SOC triage:
+  - `sample_script` ni deobfuskatsiya qiling; qonuniy minifikatsiya bo'lishi mumkin — tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-PowerShell/Operational"
+  | WHERE event.code == "4104"
+  | EVAL script_block = COALESCE(winlog.event_data.ScriptBlockText, "")
+  | EVAL sl = TO_LOWER(script_block)
+  | WHERE sl RLIKE ".*(-bxor|\\[char\\[\\]\\]|-join *\\(|\\[convert\\]::frombase64string).*"
+      OR sl RLIKE ".*[a-z0-9+/]{120,}.*"
+  | EVAL actor = COALESCE(winlog.user.name, "-")
+  | EVAL sb_sample = SUBSTRING(script_block, 1, 400)
+  | STATS
+      hits = COUNT(*),
+      sample_scripts = VALUES(sb_sample),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, actor, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE hits >= 1
+  | EVAL dyn_risk = 80
+  | KEEP agent_id, bucket, winlog.computer_name, actor, hits, sample_scripts, dyn_risk, first_seen, last_seen
+  | SORT hits DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1027
+  - attack.t1059.001
+  - PowerShell
+severity: medium
+risk_score: 80
+mitre_attack:
+  TA0005:
+    T1027: []
+nist: ["SI-4", "AU-12", "CM-7"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

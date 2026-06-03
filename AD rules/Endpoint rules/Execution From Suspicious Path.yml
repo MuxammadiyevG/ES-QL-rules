@@ -1,0 +1,54 @@
+rule_id: ep000005-0000-4000-a000-000000000005
+name: Process Execution From Suspicious Path
+description: |
+  Ushbu qoida shubhali joydan (Temp/AppData/ProgramData/Public/Recycle) ishga tushgan
+  jarayonni aniqlaydi — malware/dropper ko'pincha shu joylardan ishlaydi (T1204).
+  Sysmon 1 (Image).
+  SOC triage:
+  - `image` qayerda, `command_line`/`parent` nima? Hash'ni (`hashes`) reputatsiyada tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational"
+  | WHERE event.code == "1"
+  | EVAL img = TO_LOWER(COALESCE(winlog.event_data.Image, "-"))
+  | EVAL cmd = COALESCE(winlog.event_data.CommandLine, "-")
+  | EVAL parent = COALESCE(winlog.event_data.ParentImage, "-")
+  | EVAL actor = COALESCE(winlog.event_data.User, "-")
+  | EVAL hashes = COALESCE(winlog.event_data.Hashes, "-")
+  | WHERE img RLIKE ".*(.appdata.local.temp.|.appdata.roaming.|.windows.temp.|.programdata.|.users.public.|.recycle.|.perflogs.).*\\.exe"
+  | WHERE NOT img RLIKE ".*(.appdata.local.microsoft.|.programdata.microsoft.|.programdata.package.cache.).*"
+  | STATS
+      exec_count = COUNT(*),
+      images = VALUES(img),
+      command_lines = VALUES(cmd),
+      parents = VALUES(parent),
+      hashes = VALUES(hashes),
+      users = VALUES(actor),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE exec_count >= 1
+  | EVAL dyn_risk = 78
+  | KEEP agent_id, bucket, winlog.computer_name, exec_count, images, command_lines, parents, hashes, users, dyn_risk, first_seen, last_seen
+  | SORT exec_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.execution
+  - attack.t1204
+  - Sysmon
+severity: medium
+risk_score: 78
+mitre_attack:
+  TA0002:
+    T1204: []
+nist: ["SI-4", "AU-12", "CM-7"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

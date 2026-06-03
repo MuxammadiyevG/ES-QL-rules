@@ -1,0 +1,48 @@
+rule_id: def00003-0000-4000-a000-000000000003
+name: Microsoft Defender Protection Disabled / Tampered
+description: |
+  Ushbu qoida Defender himoyasini o'chirish/buzishni aniqlaydi: real-time protection off (5001),
+  yoki 5007 orqali DisableRealtimeMonitoring / DisableAntiSpyware / DisableBehaviorMonitoring /
+  TamperProtection o'chirilishi (T1562.001).
+  SOC triage:
+  - Kim/nima o'chirgan? Ruxsatsiz bo'lsa — host komprometatsiya ehtimoli yuqori.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Windows Defender/Operational"
+  | WHERE event.code IN ("5001", "5004", "5010", "5012", "5101", "5007")
+  | EVAL newval = TO_LOWER(COALESCE(`winlog.event_data.New Value`, "-"))
+  | EVAL evt = event.code
+  | WHERE evt != "5007"
+      OR newval RLIKE ".*(disableantispyware|disablerealtimemonitoring|disablebehaviormonitoring|disableioavprotection|disableonaccessprotection|disablescanonrealtimeenable|tamperprotection.* = 0x0|disableantivirus).*"
+  | STATS
+      events = COUNT(*),
+      event_codes = VALUES(evt),
+      new_values = VALUES(newval),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE events >= 1
+  | EVAL dyn_risk = 88
+  | KEEP agent_id, bucket, winlog.computer_name, events, event_codes, new_values, dyn_risk, first_seen, last_seen
+  | SORT events DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1562.001
+  - Defender
+severity: high
+risk_score: 88
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.001"]
+nist: ["SI-3", "SI-4", "AU-12"]
+pci_dss: ["5.1", "5.2", "11.4"]
+gdpr: ["32.1.a"]

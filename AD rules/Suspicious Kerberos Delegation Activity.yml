@@ -1,15 +1,15 @@
 rule_id: c3ca9c3e-42cd-4e89-bc4c-8141a9c92e65
 name: Suspicious Kerberos Delegation Activity
 description: |
-  Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Suspicious Kerberos Delegation Activity` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
-  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
-  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
-  SOC triage bosqichlari:
-  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
-  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
-  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
-  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+  Ushbu qoida Kerberos delegation (S4U2Self/S4U2Proxy) faoliyatini aniqlaydi: 4769 TGS
+  so'rovida `TransmittedServices` to'ldirilgan bo'lsa — bu constrained/protocol-transition
+  delegatsiya ishlatilganini bildiradi. Hujumchi buzilgan delegatsiya huquqi orqali boshqa
+  foydalanuvchi nomidan servislarga kirishi mumkin (lateral movement).
+  Qonuniy holatlar: web/SQL front-end servislar uchun sozlangan constrained delegation.
+  SOC triage:
+  - `requestor` delegatsiyaga ruxsat berilgan akkauntmi (msDS-AllowedToDelegateTo)?
+  - `services` va `transmitted_list` — qaysi servisga, kim nomidan?
+  - Tasdiqlanmasa: delegatsiya sozlamasini olib tashlang, akkauntni cheklang.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,44 +20,34 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code == "4769"
-  | EVAL 
-      requesting_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, "Unknown"),
-      service_name = COALESCE(winlog.event_data.ServiceName, "Unknown"),
-      ticket_options = COALESCE(winlog.event_data.TicketOptions, "Unknown"),
-      source_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress, "Unknown"),
-      transited_services = "None"
-  /* Look for delegation indicators */
-  | WHERE (
-      /* Ticket options indicating delegation (forwarded/forwarded-requested) */
-      ticket_options RLIKE "0x40000000|0x80000000"
-      /* Delegation chain field may be unavailable in current mapping */
-      OR ticket_options RLIKE "0x20000000"
-    )
-  /* Exclude computer accounts which commonly use delegation */
-  | WHERE NOT (requesting_user RLIKE "\\$$")
-  | STATS 
+  // Ixtiyoriy DC scoping:
+  // | WHERE TO_LOWER(winlog.computer_name) RLIKE ".*(dc[0-9]|addc|domaincontroller).*"
+  | EVAL requestor    = winlog.event_data.TargetUserName
+  | EVAL service_name = COALESCE(winlog.event_data.ServiceName, "-")
+  | EVAL transmitted  = COALESCE(winlog.event_data.TransmittedServices, "-")
+  | EVAL ticket_opts  = COALESCE(winlog.event_data.TicketOptions, "-")
+  | EVAL src_ip       = COALESCE(winlog.event_data.IpAddress, "-")
+  // TransmittedServices faqat S4U (delegatsiya) so'rovlarida to'ladi
+  | WHERE transmitted != "-" AND transmitted != ""
+  | WHERE requestor IS NOT NULL
+  | STATS
       delegation_requests = COUNT(*),
-      services_accessed = COUNT_DISTINCT(service_name),
-      services_list = VALUES(service_name),
-      ticket_options_list = VALUES(ticket_options),
-      source_ips = VALUES(source_ip),
-      transited_services_list = VALUES(transited_services),
-      first_request = MIN(@timestamp),
-      last_request = MAX(@timestamp)
-    BY agent_id, winlog.computer_name, requesting_user, bucket = DATE_TRUNC(1 hour, @timestamp)
+      services_accessed   = COUNT_DISTINCT(service_name),
+      services            = VALUES(service_name),
+      transmitted_list    = VALUES(transmitted),
+      ticket_options      = VALUES(ticket_opts),
+      src_ips             = VALUES(src_ip),
+      first_seen          = MIN(@timestamp),
+      last_seen           = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, requestor, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE delegation_requests >= 3
-  | KEEP agent_id, bucket, winlog.computer_name, requesting_user, delegation_requests, services_accessed,
-      services_list, ticket_options_list, transited_services_list, first_request, last_request
-  | SORT delegation_requests DESC
+  | EVAL dyn_risk = CASE(services_accessed >= 5, 85, 75)
+  | KEEP agent_id, bucket, winlog.computer_name, requestor, delegation_requests, services_accessed,
+      services, transmitted_list, ticket_options, src_ips, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, delegation_requests DESC
   | LIMIT 200
-enabled: false
+enabled: true
 tags:
   - attack.credential-access
   - attack.lateral-movement

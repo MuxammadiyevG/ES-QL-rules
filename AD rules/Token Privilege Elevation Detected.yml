@@ -1,15 +1,14 @@
 rule_id: 23399502-1bfc-43a1-8717-e0be623b6c66
 name: Token Privilege Elevation Detected
 description: |
-  Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Token Privilege Elevation Detected` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
-  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
-  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
-  SOC triage bosqichlari:
-  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
-  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
-  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
-  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+  Ushbu qoida bir logon sessiyasida imtiyozli token berilishini aniqlaydi: 4624 (logon) va
+  4672 (Special Privileges Assigned) bir xil `logon_id` ostida korrelyatsiya qilinadi.
+  SYSTEM sessiyalari (0x3e7/0x3e4/0x3e5) chiqariladi. Bu admin/imtiyozli kirishni va token
+  manipulyatsiyasini kuzatish imkonini beradi.
+  SOC triage:
+  - `account`/`logon_id` — qaysi akkaunt imtiyozli token oldi?
+  - Bu kutilgan admin sessiyasimi?
+  - Tasdiqlanmasa: sessiyani tekshiring, 4673/4674 imtiyoz ishlatilishi bilan bog'lang.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,36 +19,30 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code IN ("4624", "4672")
-  | EVAL 
-      target_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, "Unknown"),
-      logon_id = COALESCE(winlog.event_data.SubjectLogonId, winlog.event_data.TargetLogonId, "Unknown"),
-      is_elevation = CASE(event.code == "4672", 1, 0),
-      is_logon = CASE(event.code == "4624", 1, 0),
-      logon_type = COALESCE(winlog.event_data.LogonType, "Unknown"),
-      elevated_token = COALESCE(winlog.event_data.ElevatedToken, "Unknown")
-  | WHERE logon_id != "Unknown" AND logon_id != "0x3e7"
-  | STATS 
+  | EVAL logon_id = CASE(event.code == "4624", winlog.event_data.TargetLogonId, winlog.event_data.SubjectLogonId)
+  | EVAL account  = CASE(event.code == "4624", winlog.event_data.TargetUserName, winlog.event_data.SubjectUserName)
+  | EVAL logon_type = COALESCE(winlog.event_data.LogonType, "-")
+  | EVAL is_elevation = CASE(event.code == "4672", 1, 0)
+  | EVAL is_logon = CASE(event.code == "4624", 1, 0)
+  | WHERE logon_id IS NOT NULL AND NOT logon_id IN ("0x3e7", "0x3e4", "0x3e5", "0x0")
+  | WHERE account IS NOT NULL AND NOT account LIKE "*$"
+  | WHERE NOT TO_LOWER(account) RLIKE "(system|local service|network service)"
+  | STATS
       total_events = COUNT(*),
       elevations = SUM(is_elevation),
       logons = SUM(is_logon),
       logon_types = VALUES(logon_type),
-      elevated_tokens = VALUES(elevated_token),
       first_seen = MIN(@timestamp),
-      last_seen = MAX(@timestamp)
-    BY agent_id, winlog.computer_name, target_user, logon_id, bucket = DATE_TRUNC(5 minutes, @timestamp)
+      last_seen  = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, account, logon_id, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE elevations >= 1 AND logons >= 1
-  | KEEP agent_id, bucket, winlog.computer_name, target_user, logon_id, elevations, logons,
-      logon_types, elevated_tokens, first_seen, last_seen
+  | EVAL dyn_risk = 80
+  | KEEP agent_id, bucket, winlog.computer_name, account, logon_id, elevations, logons,
+      logon_types, dyn_risk, first_seen, last_seen
   | SORT elevations DESC
   | LIMIT 200
-enabled: false
+enabled: true
 tags:
   - attack.privilege-escalation
   - attack.defense-evasion

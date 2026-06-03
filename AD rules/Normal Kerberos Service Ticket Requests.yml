@@ -1,15 +1,9 @@
 rule_id: 026e78d3-5cfa-4d86-8a23-0b92cb3008d3
 name: Normal Kerberos Service Ticket Requests
 description: |
-  Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Normal Kerberos Service Ticket Requests` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
-  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
-  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
-  SOC triage bosqichlari:
-  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
-  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
-  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
-  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+  Baseline/monitoring qoidasi: muvaffaqiyatli TGS (4769) so'rovlarini foydalanuvchi va
+  servis bo'yicha yig'adi. Kerberoasting yoki anomal TGS xulqi uchun normal darajani
+  belgilash maqsadida ishlatiladi (alert emas, kontekst).
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,43 +14,36 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code == "4769"
-  | EVAL 
-      requesting_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, "Unknown"),
-      service_name = COALESCE(winlog.event_data.ServiceName, "Unknown"),
-      source_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress, "Unknown"),
-      ticket_encryption = COALESCE(winlog.event_data.TicketEncryptionType, "Unknown")
-  /* Filter for successful requests */
-  | WHERE ticket_encryption IS NOT NULL
-  /* Exclude krbtgt and computer accounts */
-  | WHERE NOT (service_name RLIKE "(?i)(krbtgt|\\$$)")
-  | STATS 
-      tgs_requests = COUNT(*),
+  | EVAL requestor    = winlog.event_data.TargetUserName
+  | EVAL service_name = winlog.event_data.ServiceName
+  | EVAL enc          = COALESCE(winlog.event_data.TicketEncryptionType, "-")
+  | EVAL status       = COALESCE(winlog.event_data.Status, "-")
+  | EVAL src_ip       = COALESCE(winlog.event_data.IpAddress, "-")
+  | WHERE status == "0x0"
+  | WHERE requestor IS NOT NULL AND NOT requestor LIKE "*$@*"
+  | WHERE service_name IS NOT NULL AND NOT service_name LIKE "*$" AND NOT TO_LOWER(service_name) RLIKE "krbtgt.*"
+  | STATS
+      tgs_requests    = COUNT(*),
       unique_services = COUNT_DISTINCT(service_name),
-      users = VALUES(requesting_user),
-      services = VALUES(service_name),
-      source_ips = VALUES(source_ip),
-      encryption_types = VALUES(ticket_encryption),
-      first_request = MIN(@timestamp),
-      last_request = MAX(@timestamp)
+      users           = VALUES(requestor),
+      services        = VALUES(service_name),
+      src_ips         = VALUES(src_ip),
+      encryption_types = VALUES(enc),
+      first_request   = MIN(@timestamp),
+      last_request    = MAX(@timestamp)
     BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE tgs_requests >= 1
   | KEEP agent_id, bucket, winlog.computer_name, tgs_requests, unique_services, users,
-      services, source_ips, encryption_types, first_request, last_request
+      services, src_ips, encryption_types, first_request, last_request
   | SORT tgs_requests DESC
   | LIMIT 200
 enabled: false
 tags:
   - detection.baseline
   - monitoring.service-access
-severity: high
-risk_score: 75
+severity: low
+risk_score: 30
 nist: ["AU-2", "AU-12", "AC-7", "IA-2"]
 pci_dss: ["10.2.4", "10.2.5", "8.1.6"]
 gdpr: ["32.1.a", "32.2"]

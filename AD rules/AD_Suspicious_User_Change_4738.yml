@@ -24,14 +24,14 @@ query: |
   | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
   | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | EVAL changed_attrs = CONCAT(COALESCE(winlog.event_data.UserAccountControl, ""), " ", COALESCE(winlog.event_data.ServicePrincipalNames, ""), " ", COALESCE(winlog.event_data.ScriptPath, ""), " ", COALESCE(winlog.event_data.HomeDirectory, ""))
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  | EVAL changed_attrs = CONCAT(COALESCE(winlog.event_data.NewUacValue, ""), " ", COALESCE(winlog.event_data.ServicePrincipalNames, ""), " ", COALESCE(winlog.event_data.AllowedToDelegateTo, ""), " ", COALESCE(winlog.event_data.SidHistory, ""), " ", COALESCE(winlog.event_data.ScriptPath, ""))
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
   | WHERE event.code == "4738"
   | WHERE actor IS NOT NULL
-  | WHERE NOT actor RLIKE ".*\\$$"
+  | WHERE NOT actor LIKE "*$"
   | STATS event_count = COUNT(*) BY agent_id, hostn, actor, target_user, src_ip, changed_attrs
   | WHERE event_count >= 1
-  | EVAL dyn_risk = CASE(changed_attrs RLIKE "(?i)(spn|script|delegat|trustedfor|admincount)", 90, event_count >= 3, 82, 74)
+  | EVAL dyn_risk = CASE(TO_LOWER(changed_attrs) RLIKE "(spn|script|delegat|trustedfor|admincount)", 90, event_count >= 3, 82, 74)
   | KEEP agent_id, hostn, actor, target_user, src_ip, changed_attrs, event_count, dyn_risk
   | SORT dyn_risk DESC, event_count DESC
   | LIMIT 200

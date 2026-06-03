@@ -23,9 +23,9 @@ query: |
   | EVAL hostn = winlog.computer_name
   | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, winlog.event_data.SubjectUserName)
   | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress, winlog.event_data.ClientAddress)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, "-")
   | EVAL fail_code = COALESCE(winlog.event_data.Status, "")
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
   | WHERE event.code == "4771"
   | WHERE src_ip IS NOT NULL AND src_ip NOT IN ("-", "::1", "127.0.0.1")
   | STATS fail_count = COUNT(*), distinct_users = COUNT_DISTINCT(target_user) BY agent_id, hostn, src_ip, fail_code

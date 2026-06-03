@@ -1,15 +1,16 @@
 rule_id: 5bdd228b-cae6-486f-a186-9a027b726227
-name: Account Lockout Policy Disabled or Weakened
+name: Account Lockout / Domain Policy Changed
 description: |
-  Ushbu qoida persistence va defense evasion texnikalariga bog'liq bo'lib, `Account Lockout Policy Disabled or Weakened` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
-  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
-  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
-  SOC triage bosqichlari:
-  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
-  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
-  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
-  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+  Ushbu qoida domen siyosati o'zgarishini aniqlaydi (4739 — Domain Policy Changed). 4739
+  kamdan-kam va yuqori imtiyoz talab qiladi; lockout/parol siyosatini zaiflashtirish brute
+  force'ga yo'l ochadi.
+  Eslatma: sizning indeksingizda `LockoutThreshold`/`LockoutDuration` MAVJUD EMAS — shu
+  sabab aniq lockout qiymatini ko'rsata olmaydi; rule har qanday 4739 o'zgarishini va mavjud
+  `MinimumPasswordLength` ni surface qiladi. Lockout qiymatini ko'rish uchun audit/parser'da
+  shu maydonlarni yoqing.
+  SOC triage:
+  - `actor` kim, bu rasmiy baseline o'zgarishimi (change ticket)?
+  - Tasdiqlanmasa: siyosatni tiklang, aktorni cheklang.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,24 +21,26 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code == "4739"
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, "-")
+  | EVAL min_pwd_length = COALESCE(winlog.event_data.MinimumPasswordLength, "-")
+  | EVAL domain = COALESCE(winlog.event_data.TargetDomainName, winlog.event_data.SubjectDomainName, "-")
+  | WHERE actor IS NOT NULL AND NOT actor LIKE "*$"
   | STATS
-      event_count = COUNT(*),
-      users = VALUES(winlog.event_data.SubjectUserName),
-      hosts = VALUES(winlog.computer_name),
-      policy_changes = VALUES(event.action)
-    BY agent_id, bucket = DATE_TRUNC(1 hour, @timestamp)
-  | WHERE event_count >= 1
-  | KEEP agent_id, bucket, event_count, users, hosts, policy_changes
-  | SORT event_count DESC
+      change_count = COUNT(*),
+      actors = VALUES(actor),
+      domains = VALUES(domain),
+      min_lengths = VALUES(min_pwd_length),
+      first_change = MIN(@timestamp),
+      last_change  = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE change_count >= 1
+  | EVAL dyn_risk = 78
+  | KEEP agent_id, bucket, winlog.computer_name, change_count, actors, domains, min_lengths,
+      dyn_risk, first_change, last_change
+  | SORT change_count DESC
   | LIMIT 200
-enabled: false
+enabled: true
 tags:
   - attack.defense-evasion
   - attack.persistence

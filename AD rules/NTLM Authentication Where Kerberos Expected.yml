@@ -24,8 +24,8 @@ query: |
   | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
   | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
   | WHERE event.code IN ("4624", "4776")
   | EVAL 
       target_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, "Unknown"),
@@ -34,10 +34,10 @@ query: |
       logon_type = COALESCE(winlog.event_data.LogonType, "Unknown"),
       logon_process = COALESCE(winlog.event_data.LogonProcessName, "Unknown")
   /* Filter for NTLM authentication */
-  | WHERE auth_package RLIKE "(?i)NTLM"
+  | WHERE TO_LOWER(auth_package) RLIKE "ntlm"
     AND logon_type IN ("3", "9", "10")
   /* Exclude computer accounts and system accounts */
-  | WHERE NOT (target_user RLIKE "(?i)(\\$$|SYSTEM|ANONYMOUS)")
+  | WHERE NOT (TO_LOWER(target_user) RLIKE "(\\$$|system|anonymous)")
   | STATS 
       ntlm_auth_count = COUNT(*),
       unique_sources = COUNT_DISTINCT(source_ip),

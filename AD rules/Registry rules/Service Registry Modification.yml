@@ -1,0 +1,54 @@
+rule_id: reg00003-0000-4000-a000-000000000003
+name: Service Registry Key Modification (ImagePath / ServiceDll)
+description: |
+  Ushbu qoida xizmat registriga (Services\<name>\ImagePath yoki Parameters\ServiceDll)
+  yozishni aniqlaydi (Sysmon 13) — xizmat orqali persistence yoki svchost-DLL hijack
+  (T1543.003 / T1574.002).
+  SOC triage:
+  - `details` (yangi yo'l) qonuniy joydami? `target_objects` qaysi xizmat?
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational"
+  | WHERE event.code == "13"
+  | EVAL tobj = TO_LOWER(COALESCE(winlog.event_data.TargetObject, "-"))
+  | EVAL details = COALESCE(winlog.event_data.Details, "-")
+  | EVAL img = COALESCE(winlog.event_data.Image, "-")
+  | EVAL actor = COALESCE(winlog.event_data.User, "-")
+  | WHERE tobj RLIKE ".*currentcontrolset.services..*" AND tobj RLIKE ".*(imagepath|servicedll|failurecommand)$"
+  | EVAL is_susp = CASE(TO_LOWER(details) RLIKE ".*(temp|appdata|programdata|users.public|powershell|cmd\\.exe|rundll32|\\.bat|\\.ps1).*", 1, 0)
+  | STATS
+      hits = COUNT(*),
+      susp_hits = SUM(is_susp),
+      target_objects = VALUES(tobj),
+      details = VALUES(details),
+      images = VALUES(img),
+      users = VALUES(actor),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE hits >= 1
+  | EVAL dyn_risk = CASE(susp_hits >= 1, 88, 70)
+  | KEEP agent_id, bucket, winlog.computer_name, hits, susp_hits, target_objects, details, images, users, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, hits DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.persistence
+  - attack.t1543.003
+  - attack.t1574.002
+  - Registry
+severity: high
+risk_score: 80
+mitre_attack:
+  TA0003:
+    T1543: ["T1543.003"]
+nist: ["SI-4", "AU-12", "CM-7"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

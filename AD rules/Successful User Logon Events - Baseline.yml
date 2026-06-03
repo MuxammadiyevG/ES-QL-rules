@@ -24,8 +24,8 @@ query: |
   | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
   | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
   | WHERE event.code == "4624"
     AND winlog.event_data.LogonType IN ("2", "3", "10", "11")
   | EVAL 
@@ -42,7 +42,7 @@ query: |
       ),
       auth_package = COALESCE(winlog.event_data.AuthenticationPackageName, "Unknown")
   /* Exclude system accounts */
-  | WHERE NOT (target_user RLIKE "(?i)(\\$$|SYSTEM|ANONYMOUS|DWM-)")
+  | WHERE NOT (TO_LOWER(target_user) RLIKE "(\\$$|system|anonymous|dwm-)")
   | STATS 
       logon_count = COUNT(*),
       unique_users = COUNT_DISTINCT(target_user),

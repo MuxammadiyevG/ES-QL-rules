@@ -1,15 +1,15 @@
 rule_id: 27433a7c-c099-4db9-8fa5-d6269e35cb4c
 name: Kerberos Pre-Authentication Failure - AS-REP Roasting
 description: |
-  Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Kerberos Pre-Authentication Failure - AS-REP Roasting` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
-  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
-  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
-  SOC triage bosqichlari:
-  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
-  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
-  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
-  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+  Ushbu qoida credential access texnikasi AS-REP Roasting'ni aniqlaydi: "Do not require
+  Kerberos preauthentication" yoqilgan akkauntlarga AS-REQ (4768) — PreAuthType=0 bilan
+  muvaffaqiyatli javob, yoki RC4 (0x17) shifrlangan TGT. Bunday akkaunt hashlari preauth'siz
+  olinib, offline crack qilinishi mumkin.
+  Qonuniy holatlar: eski/legacy akkauntlar (kam uchraydi — alohida tasdiqlang).
+  SOC triage:
+  - `users` ro'yxatidagi akkauntlar haqiqatan preauth talab qilmasligini tekshiring.
+  - `nopreauth` va `unique_users` qiymatlari ommaviy roasting belgisimi?
+  - Tasdiqlansa: akkauntlarga "require preauth"ni yoqing, parollarni reset qiling.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,48 +20,39 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code == "4768"
-  | EVAL 
-      target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.TargetUserName, "Unknown"),
-      source_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress, "Unknown"),
-      service_name = COALESCE(winlog.event_data.ServiceName, "Unknown"),
-      status = COALESCE(winlog.event_data.Status, "Unknown"),
-      pre_auth_type = COALESCE(winlog.event_data.PreAuthType, "Unknown"),
-      failure_code = COALESCE(winlog.event_data.Status, "Unknown")
-  /* Filter for pre-auth failures and relevant error codes */
-  | WHERE status IN ("0x18", "0x6", "0xC0000234")
-    OR pre_auth_type == "0"
-    OR failure_code IN ("0x18", "0x6")
-  /* Exclude computer accounts */
-  | WHERE NOT (target_user RLIKE "\\$$")
-  | STATS 
-      failure_count = COUNT(*),
-      unique_users = COUNT_DISTINCT(target_user),
-      targeted_users = VALUES(target_user),
-      source_ips = VALUES(source_ip),
-      status_codes = VALUES(status),
-      pre_auth_types = VALUES(pre_auth_type),
-      first_attempt = MIN(@timestamp),
-      last_attempt = MAX(@timestamp)
+  // Ixtiyoriy DC scoping:
+  // | WHERE TO_LOWER(winlog.computer_name) RLIKE ".*(dc[0-9]|addc|domaincontroller).*"
+  | EVAL user    = winlog.event_data.TargetUserName
+  | EVAL preauth = COALESCE(winlog.event_data.PreAuthType, "-")
+  | EVAL enc     = COALESCE(winlog.event_data.TicketEncryptionType, "-")
+  | EVAL status  = COALESCE(winlog.event_data.Status, "-")
+  | EVAL src_ip  = COALESCE(winlog.event_data.IpAddress, "-")
+  | WHERE user IS NOT NULL AND NOT user LIKE "*$"
+  // Preauth talab qilmaydigan muvaffaqiyatli TGT, yoki RC4 shifr
+  | WHERE (preauth == "0" AND status == "0x0") OR enc == "0x17"
+  | EVAL is_nopreauth = CASE(preauth == "0", 1, 0)
+  | EVAL is_rc4 = CASE(enc == "0x17", 1, 0)
+  | STATS
+      roast_events = COUNT(*),
+      unique_users = COUNT_DISTINCT(user),
+      nopreauth    = SUM(is_nopreauth),
+      rc4          = SUM(is_rc4),
+      users        = VALUES(user),
+      src_ips      = VALUES(src_ip),
+      first_seen   = MIN(@timestamp),
+      last_seen    = MAX(@timestamp)
     BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(30 minutes, @timestamp)
-  | WHERE failure_count >= 5 OR unique_users >= 3
-  | EVAL 
-      attack_confidence = CASE(
-        unique_users >= 10, "High - Mass AS-REP Roasting",
-        unique_users >= 5, "Medium - Targeted AS-REP Roasting",
-        "Low - Possible Reconnaissance"
-      )
-  | KEEP agent_id, bucket, winlog.computer_name, failure_count, unique_users, targeted_users,
-      source_ips, status_codes, attack_confidence, first_attempt, last_attempt
-  | SORT failure_count DESC
+  | WHERE nopreauth >= 1 OR unique_users >= 10
+  | EVAL dyn_risk = CASE(
+      unique_users >= 10, 90,
+      nopreauth >= 1, 85,
+      78)
+  | KEEP agent_id, bucket, winlog.computer_name, roast_events, unique_users, nopreauth, rc4,
+      users, src_ips, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, unique_users DESC
   | LIMIT 200
-enabled: false
+enabled: true
 tags:
   - attack.credential-access
   - attack.t1558.004

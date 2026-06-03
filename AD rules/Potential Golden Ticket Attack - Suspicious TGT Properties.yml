@@ -1,15 +1,15 @@
 rule_id: c2207e8a-7c8c-431e-949d-5bd9f38d0320
 name: Potential Golden Ticket Attack - Suspicious TGT Properties
 description: |
-  Ushbu qoida persistence, privilege escalation va credential access texnikalariga bog'liq bo'lib, `Potential Golden Ticket Attack - Suspicious TGT Properties` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
-  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
-  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
-  SOC triage bosqichlari:
-  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
-  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
-  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
-  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+  Ushbu qoida soxta Kerberos ticket (Golden/Silver) belgilarini evristik tarzda aniqlaydi:
+  zamonaviy AD'da deyarli uchramaydigan DES (0x1/0x3) shifrli ticketlar yoki AES o'rniga
+  RC4 (0x17) bilan so'ralgan TGT (4768). Encryption downgrade ko'pincha mimikatz/forged
+  ticket bilan bog'liq.
+  Qonuniy holatlar: juda eski legacy tizimlar (DES/RC4) — alohida ro'yxatga oling.
+  SOC triage:
+  - `enc_types` qaysi: DES (0x1/0x3) — deyarli har doim shubhali; RC4 — domen AES bo'lsa shubhali.
+  - `users`/`services` va `src_ips` ni KDC normal xulqi bilan solishtiring.
+  - Tasdiqlansa: krbtgt parolini IKKI marta rotatsiya qiling (Golden Ticket containment), Tier-0 IR.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,46 +20,36 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code IN ("4768", "4769")
-  | EVAL 
-      target_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, "Unknown"),
-      service_name = COALESCE(winlog.event_data.ServiceName, "Unknown"),
-      ticket_encryption = COALESCE(winlog.event_data.TicketEncryptionType, "Unknown"),
-      source_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress, "Unknown"),
-      ticket_options = COALESCE(winlog.event_data.TicketOptions, "Unknown"),
-      status = COALESCE(winlog.event_data.Status, "0x0")
-  /* Look for suspicious patterns */
-  | WHERE (
-      /* Unusual encryption (DES, rare types) */
-      ticket_encryption IN ("0x1", "0x3", "0xFFFFFF")
-      /* Requests for krbtgt account */
-      OR target_user RLIKE "(?i)krbtgt"
-      OR service_name RLIKE "(?i)krbtgt"
-      /* Abnormal ticket options indicating forged ticket */
-      OR ticket_options RLIKE "0x40810000|0x60810010"
-    )
-  | STATS 
+  // Ixtiyoriy DC scoping:
+  // | WHERE TO_LOWER(winlog.computer_name) RLIKE ".*(dc[0-9]|addc|domaincontroller).*"
+  | EVAL user         = winlog.event_data.TargetUserName
+  | EVAL service_name = COALESCE(winlog.event_data.ServiceName, "-")
+  | EVAL enc          = COALESCE(winlog.event_data.TicketEncryptionType, "-")
+  | EVAL opts         = COALESCE(winlog.event_data.TicketOptions, "-")
+  | EVAL src_ip       = COALESCE(winlog.event_data.IpAddress, "-")
+  | WHERE user IS NOT NULL
+  // DES (deyarli har doim shubhali) yoki RC4 bilan TGT so'rovi
+  | WHERE enc IN ("0x1", "0x3") OR (enc == "0x17" AND event.code == "4768")
+  | EVAL is_des = CASE(enc IN ("0x1", "0x3"), 1, 0)
+  | STATS
       suspicious_requests = COUNT(*),
-      users = VALUES(target_user),
-      services = VALUES(service_name),
-      encryption_types = VALUES(ticket_encryption),
-      source_ips = VALUES(source_ip),
-      ticket_options_list = VALUES(ticket_options),
-      first_seen = MIN(@timestamp),
-      last_seen = MAX(@timestamp)
+      des_count           = SUM(is_des),
+      users               = VALUES(user),
+      services            = VALUES(service_name),
+      enc_types           = VALUES(enc),
+      ticket_options      = VALUES(opts),
+      src_ips             = VALUES(src_ip),
+      first_seen          = MIN(@timestamp),
+      last_seen           = MAX(@timestamp)
     BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(30 minutes, @timestamp)
   | WHERE suspicious_requests >= 1
-  | KEEP agent_id, bucket, winlog.computer_name, suspicious_requests, users, services,
-      encryption_types, source_ips, ticket_options_list, first_seen, last_seen
-  | SORT suspicious_requests DESC
+  | EVAL dyn_risk = CASE(des_count >= 1, 95, 85)
+  | KEEP agent_id, bucket, winlog.computer_name, suspicious_requests, des_count, users, services,
+      enc_types, ticket_options, src_ips, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, suspicious_requests DESC
   | LIMIT 200
-enabled: false
+enabled: true
 tags:
   - attack.credential-access
   - attack.persistence

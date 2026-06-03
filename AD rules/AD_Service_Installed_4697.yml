@@ -1,15 +1,14 @@
 rule_id: a3b9885d-5e50-4df6-b501-76b80bcc0963
 name: AD Service Installed via Security Log (4697)
 description: |
-  Ushbu qoida persistence texnikalariga tegishli bo'lib, xavfsizlik jurnalida yangi servis yaratilishini aniqlaydi.
-  4697 orqali zararli servis o'rnatilishi hujumchiga rebootdan keyin ham saqlanib qoladigan kirish nuqtasi beradi va AD ichida yashirin ijroni ta'minlaydi.
-  Qonuniy holatlar: ruxsatli dastur agentlari, patching jarayoni, backup/monitoring vositalari o'rnatilishi.
-  SOC triage bosqichlari:
-  - `actor`, servis nomi (`target_user`) va `hostn` ni aniq belgilang.
-  - O'rnatish amali rasmiy change ticket/deploymentga mosligini tekshiring.
-  - `src_ip` manzili va boshqaruv hostining odatiy admin yo'li ekanini tekshiring.
-  - Servisni ishga tushirayotgan akkauntning guruh a'zoligi hamda imtiyozlarini baholang.
-  - Tasdiqlanmagan bo'lsa servisni o'chiring, akkauntni cheklang va persistence indikatorlari bo'yicha keng ko'lamli tekshiruv o'tkazing.
+  Ushbu qoida xavfsizlik jurnalida yangi servis yaratilishini aniqlaydi (4697 — "Security"
+  kanali). Servis binari yo'li (mavjud bo'lsa) `ImagePath` da bo'ladi. Shubhali yo'l yoki
+  interpretator persistence belgisi.
+  Eslatma: sizning indeksingizda `ServiceFileName` yo'q — `ImagePath` ishlatildi (4697 uni
+  to'ldirmasa, faqat servis nomi bo'yicha ishlaydi).
+  SOC triage:
+  - `actor` kim, `service_name`/`service_path` shubhalimi (`suspicious_hits`)?
+  - Tasdiqlanmasa: servisni o'chiring, akkauntni cheklang.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,22 +19,32 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.ServiceName, winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | EVAL service_file = COALESCE(winlog.event_data.ServiceName, "")
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
   | WHERE event.code == "4697"
-  | WHERE actor IS NOT NULL
-  | WHERE NOT actor RLIKE ".*\\$$"
-  | STATS install_count = COUNT(*) BY agent_id, hostn, actor, target_user, src_ip, service_file
+  | EVAL actor        = COALESCE(winlog.event_data.SubjectUserName, "-")
+  | EVAL service_name = COALESCE(winlog.event_data.ServiceName, "-")
+  | EVAL service_path = COALESCE(winlog.event_data.ImagePath, "-")
+  | EVAL service_account = COALESCE(winlog.event_data.AccountName, "-")
+  | EVAL service_type = COALESCE(winlog.event_data.ServiceType, "-")
+  | EVAL suspicious = CASE(
+      TO_LOWER(service_path) RLIKE ".*(temp|appdata|programdata|users.public|powershell|cmd.exe|wscript|cscript|mshta|rundll32|regsvr32|encodedcommand|frombase64).*"
+      OR TO_LOWER(service_name) RLIKE ".*(update|microsoft|windows|security|system)[0-9]+.*", 1, 0)
+  | STATS
+      install_count = COUNT(*),
+      services      = VALUES(service_name),
+      service_paths = VALUES(service_path),
+      service_accounts = VALUES(service_account),
+      service_types = VALUES(service_type),
+      suspicious_hits = SUM(suspicious),
+      first_install = MIN(@timestamp),
+      last_install  = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
   | WHERE install_count >= 1
-  | EVAL dyn_risk = CASE(service_file RLIKE "(?i)(temp|appdata|powershell|cmd\\.exe|\\\\users\\\\public)", 92, install_count >= 2, 87, 83)
-  | KEEP agent_id, hostn, actor, target_user, src_ip, service_file, install_count, dyn_risk
+  | EVAL dyn_risk = CASE(suspicious_hits >= 1, 92, install_count >= 2, 85, 80)
+  | KEEP agent_id, bucket, winlog.computer_name, actor, install_count, services, service_paths,
+      service_accounts, service_types, suspicious_hits, dyn_risk, first_install, last_install
   | SORT dyn_risk DESC, install_count DESC
   | LIMIT 200
-enabled: false
+enabled: true
 tags:
   - AD
   - Persistence
@@ -46,7 +55,7 @@ references:
   - "https://attack.mitre.org/techniques/T1543/003/"
 mitre_attack:
   TA0003:
-    T1543: [T1543.003]
+    T1543: ["T1543.003"]
 nist: ["SI-4", "AU-12", "CM-7"]
 pci_dss: ["10.2.7", "11.4"]
 gdpr: ["32.1.a"]

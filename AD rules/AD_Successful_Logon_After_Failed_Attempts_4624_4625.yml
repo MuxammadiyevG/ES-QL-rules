@@ -27,13 +27,13 @@ query: |
   | EVAL src_ip      = COALESCE(winlog.event_data.IpAddress, "")
   | EVAL logon_type  = COALESCE(winlog.event_data.LogonType, "")
   // DC hostlarni aniqlash
-  | WHERE winlog.computer_name RLIKE "(?i).*(WINDC|ADDC|-DC|DOMAINCONTROLLER).*"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
   // Tizim akkauntlarini chiqarib tashlash
   | WHERE NOT (
       target_user LIKE "*$"
       OR target_user == "-"
       OR target_user == ""
-      OR target_user RLIKE "(?i)(system|network service|local service|anonymous logon)"
+      OR TO_LOWER(target_user) RLIKE "(system|network service|local service|anonymous logon)"
   )
   // Localhost va noma'lum IPlarni chiqarib tashlash
   | WHERE NOT (

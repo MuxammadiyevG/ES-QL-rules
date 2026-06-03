@@ -24,8 +24,8 @@ query: |
   | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
   | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
   | WHERE event.code == "4720"
   | EVAL 
       new_account = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.TargetUserName, "Unknown"),
@@ -34,7 +34,7 @@ query: |
       new_account_domain = COALESCE(winlog.event_data.TargetDomainName, "Unknown"),
       sam_account = COALESCE(winlog.event_data.SamAccountName, "Unknown"),
       sid = COALESCE(winlog.event_data.TargetSid, "Unknown")
-  | WHERE creator NOT RLIKE "(?i)(SYSTEM|\\$$)"
+  | WHERE NOT TO_LOWER(creator) RLIKE "(system|.*\\$)"
   | STATS 
       accounts_created = COUNT(*),
       new_accounts = VALUES(new_account),

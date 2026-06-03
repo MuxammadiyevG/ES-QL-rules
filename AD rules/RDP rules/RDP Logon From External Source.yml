@@ -1,0 +1,54 @@
+rule_id: rdp00002-0000-4000-a000-000000000002
+name: RDP Logon From External (Non-RFC1918) Source
+description: |
+  Ushbu qoida tashqi (internal bo'lmagan) IPv4 manzildan muvaffaqiyatli RDP logon (4624,
+  LogonType 10) ni aniqlaydi. Internet'dan to'g'ridan-to'g'ri RDP juda xavfli kirish nuqtasi.
+  SOC triage:
+  - `src_ip` qayerdan (geo/reputatsiya), `target_user` kim?
+  - RDP internetga ochiqligini tekshiring; VPN/gateway orqali bo'lishi kerak.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "4624"
+  | WHERE winlog.event_data.LogonType == "10"
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, "-")
+  | EVAL target_user = winlog.event_data.TargetUserName
+  | EVAL workstation = COALESCE(winlog.event_data.WorkstationName, "-")
+  | WHERE target_user IS NOT NULL AND NOT target_user LIKE "*$"
+  | EVAL is_internal = CASE(src_ip RLIKE "(10|127|169\\.254|172\\.1[6-9]|172\\.2[0-9]|172\\.3[01]|192\\.168)\\..*", 1, 0)
+  | EVAL is_ipv4 = CASE(src_ip RLIKE ".*\\..*\\..*\\..*", 1, 0)
+  | WHERE is_ipv4 == 1 AND is_internal == 0
+  | STATS
+      logon_count = COUNT(*),
+      users = VALUES(target_user),
+      workstations = VALUES(workstation),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, src_ip, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE logon_count >= 1
+  | EVAL dyn_risk = 85
+  | KEEP agent_id, bucket, winlog.computer_name, src_ip, logon_count, users, workstations,
+      dyn_risk, first_seen, last_seen
+  | SORT logon_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.lateral-movement
+  - attack.t1021.001
+  - RDP
+severity: high
+risk_score: 85
+mitre_attack:
+  TA0008:
+    T1021: ["T1021.001"]
+nist: ["AC-17", "AU-2", "AU-12", "SI-4"]
+pci_dss: ["10.2.5", "8.1.6"]
+gdpr: ["32.1.a"]

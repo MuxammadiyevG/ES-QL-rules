@@ -1,0 +1,56 @@
+rule_id: lm000002-0000-4000-a000-000000000002
+name: PsExec / Remote Service Execution
+description: |
+  Ushbu qoida PsExec va shunga o'xshash remote-exec toollarini aniqlaydi: `PSEXESVC`,
+  `paexec`, `csexec`, `remcom`, `winexesvc` — target hostda servis sifatida ishga tushadi
+  (T1021.002/T1569.002). Sysmon 1 (Image/CommandLine).
+  SOC triage:
+  - `images`/`command_lines` qaysi tool? Kim/qayerdan? Admin ishimi yoki hujum?
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational"
+  | WHERE event.code == "1"
+  | EVAL img = TO_LOWER(COALESCE(winlog.event_data.Image, "-"))
+  | EVAL cmd = TO_LOWER(COALESCE(winlog.event_data.CommandLine, "-"))
+  | EVAL parent = COALESCE(winlog.event_data.ParentImage, "-")
+  | EVAL actor = COALESCE(winlog.event_data.User, "-")
+  | WHERE img RLIKE ".*(psexesvc|paexec|csexec|remcom|winexesvc|psexec).exe"
+      OR cmd RLIKE ".*(psexec.*accepteula|psexec.*-s .*cmd|\\\\\\\\.*-u .*-p ).*"
+  | STATS
+      exec_count = COUNT(*),
+      images = VALUES(img),
+      command_lines = VALUES(cmd),
+      parents = VALUES(parent),
+      users = VALUES(actor),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE exec_count >= 1
+  | EVAL dyn_risk = 82
+  | KEEP agent_id, bucket, winlog.computer_name, exec_count, images, command_lines, parents, users, dyn_risk, first_seen, last_seen
+  | SORT exec_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.lateral-movement
+  - attack.execution
+  - attack.t1021.002
+  - attack.t1569.002
+  - Lateral Movement
+severity: high
+risk_score: 82
+mitre_attack:
+  TA0008:
+    T1021: ["T1021.002"]
+  TA0002:
+    T1569: ["T1569.002"]
+nist: ["AC-17", "AU-2", "AU-12", "SI-4"]
+pci_dss: ["10.2.5", "8.1.6"]
+gdpr: ["32.1.a"]

@@ -25,13 +25,13 @@ query: |
   | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
   | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
   | EVAL changed = COALESCE(event.action, "")
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
   | WHERE event.code == "4739"
   | WHERE actor IS NOT NULL
-  | WHERE NOT actor RLIKE ".*\\$$"
+  | WHERE NOT actor LIKE "*$"
   | STATS change_count = COUNT(*) BY agent_id, hostn, actor, src_ip, changed
   | WHERE change_count >= 1
-  | EVAL dyn_risk = CASE(change_count >= 3, 94, changed RLIKE "(?i)(0|1)", 91, 88)
+  | EVAL dyn_risk = CASE(change_count >= 3, 94, TO_LOWER(changed) RLIKE "(0|1)", 91, 88)
   | KEEP agent_id, hostn, actor, src_ip, changed, change_count, dyn_risk
   | SORT dyn_risk DESC, change_count DESC
   | LIMIT 200

@@ -1,15 +1,14 @@
 rule_id: 2cf6a561-d74d-4ddb-bb91-ef0df9550c51
 name: Rapid Network Logons Across Multiple Systems
 description: |
-  Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Rapid Network Logons Across Multiple Systems` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
-  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
-  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
-  SOC triage bosqichlari:
-  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
-  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
-  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
-  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+  Ushbu qoida lateral movement'ni aniqlaydi: bitta akkaunt (`source_user`) bitta manbadan
+  qisqa vaqtda KO'P xil hostga network logon (4624, LogonType 3) qilsa. Bu pass-the-hash,
+  PsExec yoki credential bilan tarmoq bo'ylab tez tarqalish belgisidir.
+  Eslatma: bu rule hostlar bo'ylab agregatsiya qiladi (agent_id bo'yicha bo'linmaydi).
+  SOC triage:
+  - `source_user`/`source_ip` va `target_hosts` — qaysi tizimlarga ketma-ket kirilgan?
+  - `logon_rate` (host/min) odatiy emasmi?
+  - Tasdiqlanmasa: akkauntni bloklang, manba hostni izolyatsiya qiling, IR.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,47 +19,30 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security"
-  | EVAL hostn = winlog.computer_name
-  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
-  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
-  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
-  | WHERE hostn RLIKE "(?i)(WINDC|ADDC|-DC|DOMAINCONTROLLER)"
-  | WHERE NOT actor RLIKE ".*\\$$"
   | WHERE event.code == "4624"
-    AND winlog.event_data.LogonType == "3"
-  | EVAL 
-      source_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, "Unknown"),
-      source_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress, "Unknown"),
-      dest_host = COALESCE(winlog.computer_name, "Unknown"),
-      workstation = COALESCE(winlog.event_data.WorkstationName, "Unknown"),
-      auth_package = COALESCE(winlog.event_data.AuthenticationPackageName, "Unknown"),
-      logon_process = COALESCE(winlog.event_data.LogonProcessName, "Unknown")
+  | WHERE winlog.event_data.LogonType == "3"
+  | EVAL source_user = winlog.event_data.TargetUserName
+  | EVAL source_ip   = COALESCE(winlog.event_data.IpAddress, "-")
+  | EVAL auth_package = COALESCE(winlog.event_data.AuthenticationPackageName, "-")
+  | WHERE source_user IS NOT NULL AND NOT source_user LIKE "*$"
   | WHERE source_ip != "-" AND source_ip != "::1" AND source_ip != "127.0.0.1"
-  /* Exclude computer accounts */
-  | WHERE NOT (source_user RLIKE "\\$$")
-  | STATS 
+  | STATS
       total_logons = COUNT(*),
-      unique_hosts = COUNT_DISTINCT(dest_host),
-      target_hosts = VALUES(dest_host),
-      workstations = VALUES(workstation),
+      unique_hosts = COUNT_DISTINCT(winlog.computer_name),
+      target_hosts = VALUES(winlog.computer_name),
       auth_packages = VALUES(auth_package),
-      logon_processes = VALUES(logon_process),
-      first_logon = MIN(@timestamp),
-      last_logon = MAX(@timestamp)
-    BY agent_id, source_user, source_ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
+      first_logon  = MIN(@timestamp),
+      last_logon   = MAX(@timestamp)
+    BY source_user, source_ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE unique_hosts >= 5
-  | EVAL 
-      logon_rate = ROUND(unique_hosts * 60.0 / DATE_DIFF("seconds", first_logon, last_logon), 2),
-      movement_severity = CASE(
-        unique_hosts >= 20, "Critical - Mass Lateral Movement",
-        unique_hosts >= 10, "High - Active Lateral Movement",
-        "Medium - Potential Lateral Movement"
-      )
-  | KEEP agent_id, bucket, source_user, source_ip, total_logons, unique_hosts, logon_rate,
-      target_hosts, auth_packages, movement_severity, first_logon, last_logon
-  | SORT unique_hosts DESC
+  | EVAL span_sec = DATE_DIFF("seconds", first_logon, last_logon)
+  | EVAL logon_rate = CASE(span_sec > 0, ROUND(unique_hosts * 60.0 / span_sec, 2), unique_hosts * 1.0)
+  | EVAL dyn_risk = CASE(unique_hosts >= 20, 92, unique_hosts >= 10, 85, 78)
+  | KEEP source_user, source_ip, bucket, total_logons, unique_hosts, logon_rate, target_hosts,
+      auth_packages, dyn_risk, first_logon, last_logon
+  | SORT dyn_risk DESC, unique_hosts DESC
   | LIMIT 200
-enabled: false
+enabled: true
 tags:
   - attack.lateral-movement
   - attack.t1021

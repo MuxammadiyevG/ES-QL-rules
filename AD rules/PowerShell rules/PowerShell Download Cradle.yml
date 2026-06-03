@@ -1,0 +1,51 @@
+rule_id: ps000002-0000-4000-a000-000000000002
+name: PowerShell Download Cradle
+description: |
+  Ushbu qoida PowerShell orqali masofadan kod yuklab ijro etishni (download cradle) aniqlaydi:
+  `Net.WebClient`, `DownloadString/DownloadFile`, `Invoke-WebRequest/iwr`, `Invoke-RestMethod`,
+  `Start-BitsTransfer` + ko'pincha `IEX`. T1105 (Ingress Tool Transfer) + T1059.001.
+  SOC triage:
+  - `sample_script` da qaysi URL/domen? `user`/`host` kim?
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-PowerShell/Operational"
+  | WHERE event.code == "4104"
+  | EVAL script_block = COALESCE(winlog.event_data.ScriptBlockText, "")
+  | EVAL actor = COALESCE(winlog.user.name, "-")
+  | WHERE TO_LOWER(script_block) RLIKE ".*(net.webclient|downloadstring|downloadfile|downloaddata|invoke-webrequest|invoke-restmethod|start-bitstransfer|webclient\\).download|system.net.webrequest).*"
+  | EVAL sb_sample = SUBSTRING(script_block, 1, 400)
+  | STATS
+      hits = COUNT(*),
+      sample_scripts = VALUES(sb_sample),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, actor, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE hits >= 1
+  | EVAL dyn_risk = 84
+  | KEEP agent_id, bucket, winlog.computer_name, actor, hits, sample_scripts, dyn_risk, first_seen, last_seen
+  | SORT hits DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.execution
+  - attack.command-and-control
+  - attack.t1059.001
+  - attack.t1105
+  - PowerShell
+severity: high
+risk_score: 84
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.001"]
+  TA0011:
+    T1105: []
+nist: ["SI-4", "AU-12", "CM-7"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]
