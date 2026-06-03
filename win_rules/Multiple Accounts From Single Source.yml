@@ -7,10 +7,10 @@ description: |
   SOC triage:
   - `src_ip` jump/VDI emasmi? `users` ro'yxati — bir necha akkaunt bitta manbadan nega?
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
@@ -42,7 +42,7 @@ tags:
 severity: medium
 risk_score: 72
 mitre_attack:
-  TA0008:
+  TA0001:
     T1078: []
 nist: ["AC-7", "AU-12", "SI-4"]
 pci_dss: ["10.2.5", "8.1.6"]

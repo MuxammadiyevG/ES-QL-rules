@@ -7,10 +7,10 @@ description: |
   SOC triage:
   - `task_names`/`user_names` — qaysi task, kim o'chirdi? Qonuniy o'zgartirishmi?
 type: esql
-params: '{}'
+params: "{}"
 schedule_interval: 10m
 index:
-- logs-winlog*
+  - logs-winlog*
 query_language: esql
 query: |
   FROM logs-winlog*
@@ -40,7 +40,7 @@ tags:
 severity: medium
 risk_score: 60
 mitre_attack:
-  TA0005:
+  TA0003:
     T1053: ["T1053.005"]
 nist: ["SI-4", "AU-12", "CM-7"]
 pci_dss: ["10.2.7", "11.4"]
