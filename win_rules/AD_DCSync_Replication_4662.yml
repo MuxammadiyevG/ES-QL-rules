@@ -1,0 +1,62 @@
+rule_id: 3535a57d-86ba-4e63-bb63-45b8385a8f92
+name: AD DCSync Replication Rights Abuse Detection (4662)
+description: |
+  Ushbu qoida DCSync hujumini aniqlaydi: 4662 hodisasida `Properties` maydonida
+  Directory Replication kengaytirilgan huquq GUID'lari (DS-Replication-Get-Changes
+  1131f6aa, -All 1131f6ad, -In-Filtered-Set 89e95b76) bo'lib, buni MASHINA bo'lmagan
+  akkaunt amalga oshirsa — bu NTDS credential'larini masofadan olishga urinish.
+  Qonuniy holatlar: DC mashina akkauntlari o'zaro replikatsiyasi (rule ularni `$` orqali
+  chiqarib tashlaydi), Azure AD Connect/identity-sync xizmat akkauntlari (whitelist qiling).
+  SOC triage:
+  - `actor` qaysi akkaunt, DC emasligini tasdiqlang; `objects`/`props_seen` ni ko'ring.
+  - Ruxsat etilgan sync xizmati ro'yxatda bormi?
+  - Tasdiqlanmasa: akkauntni darhol bloklang, krbtgt rotatsiya rejasini va Tier-0 containment'ni boshlang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "4662"
+  | EVAL actor        = winlog.event_data.SubjectUserName
+  | EVAL actor_domain = COALESCE(winlog.event_data.SubjectDomainName, "-")
+  | EVAL props        = COALESCE(winlog.event_data.Properties, "")
+  | EVAL obj          = COALESCE(winlog.event_data.ObjectName, "-")
+  | EVAL src_ip       = COALESCE(winlog.event_data.IpAddress, "-")
+  // Replication kengaytirilgan huquq GUID'lari Properties ichida bo'ladi
+  | WHERE TO_LOWER(props) RLIKE ".*(1131f6aa|1131f6ad|89e95b76).*"
+  // MASHINA akkauntlarini (DC-to-DC replikatsiya — qonuniy) chiqaramiz
+  | WHERE actor IS NOT NULL AND NOT actor LIKE "*$"
+  | STATS
+      dcsync_count = COUNT(*),
+      objects      = VALUES(obj),
+      props_seen   = VALUES(props),
+      src_ips      = VALUES(src_ip),
+      first_seen   = MIN(@timestamp),
+      last_seen    = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, actor, actor_domain, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE dcsync_count >= 1
+  | EVAL dyn_risk = CASE(dcsync_count >= 3, 99, 97)
+  | KEEP agent_id, bucket, winlog.computer_name, actor, actor_domain, dcsync_count,
+      objects, props_seen, src_ips, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, dcsync_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - AD
+  - Directory Changes
+  - DCSync
+severity: high
+risk_score: 95
+references:
+  - "https://attack.mitre.org/techniques/T1003/006/"
+mitre_attack:
+  TA0006:
+    T1003: ["T1003.006"]
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

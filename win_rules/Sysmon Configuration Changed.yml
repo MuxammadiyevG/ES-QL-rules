@@ -1,0 +1,40 @@
+rule_id: 128b9dc2-8785-45ee-a42d-f4c753c86773
+name: Sysmon Configuration Changed
+description: |
+  Ushbu qoida Sysmon konfiguratsiyasi o'zgartirilishini aniqlaydi (Sysmon EventID 16). Hujumchi
+  monitoring qamrovini kamaytirish uchun Sysmon config'ini o'zgartirishi mumkin (T1562).
+  Konfiguratsiya o'zgarishi rejalashtirilgan deployment bilan mosligini tasdiqlang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational"
+  | WHERE event.code == "16"
+  | STATS
+      hits = COUNT(*),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE hits >= 1
+  | EVAL dyn_risk = 80
+  | KEEP agent_id, bucket, winlog.computer_name, hits, dyn_risk, first_seen, last_seen
+  | SORT hits DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1562
+  - Sysmon
+severity: high
+risk_score: 80
+mitre_attack:
+  TA0005:
+    T1562: []
+nist: ["SI-4", "AU-12", "CM-7"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

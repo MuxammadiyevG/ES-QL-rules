@@ -1,0 +1,73 @@
+rule_id: e6c437bb-3bef-46f0-b9c4-bba0a776e0a3
+name: Sensitive Privilege Used - Potential Abuse
+description: |
+  Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Sensitive Privilege Used - Potential Abuse` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
+  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
+  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
+  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
+  | WHERE event.code IN ("4673", "4674")
+  | EVAL 
+      user_account = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
+      privilege = COALESCE(winlog.event_data.PrivilegeList, "Unknown"),
+      process = COALESCE(winlog.event_data.ProcessName, winlog.event_data.ProcessName, "Unknown"),
+      object_server = COALESCE(winlog.event_data.ObjectServer, "Unknown"),
+      object_type = COALESCE(winlog.event_data.ObjectType, "Unknown")
+  /* Filter for high-risk privileges */
+  | WHERE TO_LOWER(privilege) RLIKE "(sedebugprivilege|setcbprivilege|sebackupprivilege|serestoreprivilege|seloaddriverprivilege|setakeownershipprivilege|seassignprimarytokenprivilege|seimpersonateprivilege)"
+  /* Exclude system processes */
+  | WHERE NOT (TO_LOWER(user_account) RLIKE "(system|local service|network service)")
+    AND NOT (TO_LOWER(process) RLIKE "(svchost\\.exe|services\\.exe|lsass\\.exe)")
+  | STATS 
+      privilege_uses = COUNT(*),
+      unique_privileges = COUNT_DISTINCT(privilege),
+      privileges_used = VALUES(privilege),
+      processes = VALUES(process),
+      object_types = VALUES(object_type),
+      first_use = MIN(@timestamp),
+      last_use = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, user_account, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE privilege_uses >= 3
+  | KEEP agent_id, bucket, winlog.computer_name, user_account, privilege_uses, unique_privileges,
+      privileges_used, processes, object_types, first_use, last_use
+  | SORT privilege_uses DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - attack.privilege-escalation
+  - attack.credential-access
+  - attack.defense-evasion
+  - attack.t1134
+  - attack.t1003
+  - detection.emerging-threats
+severity: high
+risk_score: 75
+mitre_attack:
+  TA0004:
+    T1134: []
+    T1543: []
+  TA0006:
+    T1003: []
+nist: ["AU-6", "AU-9", "SI-4"]
+pci_dss: ["10.2.7", "10.5"]
+gdpr: ["32.1.a", "32.2"]

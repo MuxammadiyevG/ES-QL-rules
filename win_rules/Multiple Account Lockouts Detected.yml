@@ -1,0 +1,55 @@
+rule_id: 21c621b5-a42d-41c3-9de8-5f201900bcf4
+name: Multiple Account Lockouts Detected
+description: |
+  Ushbu qoida ko'p sonli akkaunt qulflanishini (4740) aniqlaydi. 4740 da qulflangan akkaunt
+  `TargetUserName` da, qo'ng'iroq qilgan kompyuter `TargetDomainName` da bo'ladi (Subject —
+  DC mashina akkaunti, shu sabab actor-filtri qo'llanmaydi). Ko'p lockout password spray yoki
+  brute force belgisidir.
+  SOC triage:
+  - `locked_accounts`/`caller_machines` — qaysi akkauntlar, qayerdan?
+  - Tasdiqlansa: manbani toping/bloklang, ta'sirlangan akkauntlarni tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "4740"
+  | EVAL locked_account = winlog.event_data.TargetUserName
+  | EVAL caller_machine = COALESCE(winlog.event_data.TargetDomainName, "-")
+  | WHERE locked_account IS NOT NULL
+  | STATS
+      lockout_count = COUNT(*),
+      unique_accounts = COUNT_DISTINCT(locked_account),
+      locked_accounts = VALUES(locked_account),
+      caller_machines = VALUES(caller_machine),
+      first_lockout = MIN(@timestamp),
+      last_lockout  = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE lockout_count >= 3 OR unique_accounts >= 3
+  | EVAL attack_type = CASE(
+      unique_accounts >= 5, "Password Spraying Likely",
+      lockout_count >= 10, "Aggressive Brute Force",
+      "Multiple Lockouts")
+  | EVAL dyn_risk = CASE(unique_accounts >= 5, 85, lockout_count >= 10, 80, 70)
+  | KEEP agent_id, bucket, winlog.computer_name, lockout_count, unique_accounts, locked_accounts,
+      caller_machines, attack_type, dyn_risk, first_lockout, last_lockout
+  | SORT dyn_risk DESC, lockout_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.t1110
+  - detection.emerging-threats
+severity: high
+risk_score: 70
+mitre_attack:
+  TA0006:
+    T1110: []
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

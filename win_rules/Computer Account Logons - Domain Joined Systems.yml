@@ -1,0 +1,45 @@
+rule_id: e8ca9cc3-9493-4ccd-a6e1-52ddae4fe9a1
+name: Computer Account Logons - Domain Joined Systems
+description: |
+  Baseline/monitoring qoidasi: mashina (computer$) akkauntlarining network logon (4624,
+  LogonType 3) hodisalarini yig'adi. Domenga ulangan tizimlar autentikatsiyasining normal
+  darajasini kuzatish uchun (alert emas, kontekst).
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "4624"
+  | WHERE winlog.event_data.LogonType == "3"
+  | EVAL computer_account = winlog.event_data.TargetUserName
+  | EVAL source_ip = COALESCE(winlog.event_data.IpAddress, "-")
+  | EVAL workstation = COALESCE(winlog.event_data.WorkstationName, "-")
+  | WHERE computer_account IS NOT NULL AND computer_account LIKE "*$"
+  | STATS
+      auth_count = COUNT(*),
+      unique_computers = COUNT_DISTINCT(computer_account),
+      computer_accounts = VALUES(computer_account),
+      source_ips = VALUES(source_ip),
+      first_auth = MIN(@timestamp),
+      last_auth  = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE auth_count >= 1
+  | KEEP agent_id, bucket, winlog.computer_name, auth_count, unique_computers, computer_accounts,
+      source_ips, first_auth, last_auth
+  | SORT auth_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - detection.baseline
+  - monitoring.infrastructure
+severity: low
+risk_score: 30
+nist: ["AU-2", "AU-12", "AC-7", "IA-2"]
+pci_dss: ["10.2.4", "10.2.5", "8.1.6"]
+gdpr: ["32.1.a", "32.2"]
+mitre_attack: []

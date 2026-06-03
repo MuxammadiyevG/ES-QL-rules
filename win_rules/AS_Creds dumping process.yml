@@ -1,0 +1,104 @@
+rule_id: a7c3e9f2-1b45-4d8a-9c6e-2f0b8d4a7e3c
+name: Windows Credential Dumping Detected (SAM / NTDS / DCSync / SeDebug)
+description: |
+  Ushbu qoida credential dumping'ni ko'p signal orqali aniqlaydi ("Security" kanali):
+  - SAM/SECURITY/SYSTEM registry hive dump (4656/4663, ObjectName)
+  - NTDS.dit faylga kirish (4656/4663, ObjectName)
+  - DCSync replikatsiya huquqi (4662, Properties GUID, mashina bo'lmagan actor)
+  - SeDebug/SeTcb/SeBackup imtiyozi (4672/4673, PrivilegeList)
+  - Security log tozalash (1102 — izlarni yashirish)
+  Eslatma: sizning indeksingizda Sysmon maydonlari (TargetImage/GrantedAccess) yo'q, shu
+  sabab LSASS-access (Sysmon 10) signali olib tashlandi. Sysmon bo'lsa, alohida qo'shsa
+  bo'ladi.
+  SOC triage:
+  - `actor` kim, `sample_target`/`sample_priv` nima? `dcsync_hits`/`ntds_hits` kombinatsiyasi?
+  - Tasdiqlansa: hostni izolyatsiya qiling, akkauntlarni reset qiling, IR boshlang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL ec           = event.code
+  | EVAL actor        = COALESCE(winlog.event_data.SubjectUserName, winlog.user.name, "-")
+  | EVAL actor_domain = COALESCE(winlog.event_data.SubjectDomainName, "-")
+  | EVAL actor_logon  = COALESCE(winlog.event_data.SubjectLogonId, "-")
+  | EVAL target_obj   = COALESCE(winlog.event_data.ObjectName, "-")
+  | EVAL priv         = COALESCE(winlog.event_data.PrivilegeList, "-")
+  | EVAL props        = COALESCE(winlog.event_data.Properties, "-")
+  | EVAL access       = COALESCE(winlog.event_data.AccessMask, "-")
+  // SIGNAL 1: SAM/SECURITY/SYSTEM hive dump
+  | EVAL is_sam = CASE(ec IN ("4656", "4663") AND TO_LOWER(target_obj) RLIKE ".*(machine.sam|machine.security|config.sam|config.security|config.system).*", 1, 0)
+  // SIGNAL 2: NTDS.dit kirish
+  | EVAL is_ntds = CASE(ec IN ("4656", "4663") AND TO_LOWER(target_obj) RLIKE ".*ntds.dit.*", 1, 0)
+  // SIGNAL 3: DCSync replikatsiya huquqi (mashina bo'lmagan actor)
+  | EVAL is_dcsync = CASE(ec == "4662" AND TO_LOWER(props) RLIKE ".*(1131f6aa|1131f6ad|89e95b76).*" AND NOT actor LIKE "*$", 1, 0)
+  // SIGNAL 4: SeDebug/SeTcb imtiyozi (4672, non-system, non-machine)
+  | EVAL is_debug = CASE(ec == "4672" AND TO_LOWER(priv) RLIKE ".*(sedebugprivilege|setcbprivilege).*" AND NOT actor LIKE "*$" AND NOT TO_LOWER(actor) RLIKE "(system|local service|network service)", 1, 0)
+  // SIGNAL 5: Sezgir imtiyoz ishlatilishi (4673)
+  | EVAL is_sensitive = CASE(ec == "4673" AND TO_LOWER(priv) RLIKE ".*(sedebugprivilege|setcbprivilege|sebackupprivilege).*" AND NOT TO_LOWER(actor) RLIKE "(system|local service|network service)", 1, 0)
+  // SIGNAL 6: Security log tozalandi (izlarni yashirish)
+  | EVAL is_logclear = CASE(ec == "1102", 1, 0)
+  | EVAL dump_score = is_sam + is_ntds + is_dcsync + is_debug + is_sensitive + is_logclear
+  | WHERE dump_score >= 1
+  | STATS
+      total_events    = COUNT(*),
+      sam_hits        = SUM(is_sam),
+      ntds_hits       = SUM(is_ntds),
+      dcsync_hits     = SUM(is_dcsync),
+      debug_hits      = SUM(is_debug),
+      sensitive_hits  = SUM(is_sensitive),
+      logclear_hits   = SUM(is_logclear),
+      unique_objects  = COUNT_DISTINCT(target_obj),
+      sample_target   = MAX(target_obj),
+      sample_access   = MAX(access),
+      sample_priv     = MAX(priv),
+      first_seen      = MIN(@timestamp),
+      last_seen       = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, actor, actor_domain, actor_logon
+  | EVAL dyn_risk = CASE(
+      dcsync_hits >= 1 AND (sam_hits + ntds_hits) >= 1, 99,
+      ntds_hits >= 1 AND sensitive_hits >= 1, 97,
+      dcsync_hits >= 1, 95,
+      ntds_hits >= 1, 92,
+      sam_hits >= 1 AND (debug_hits + sensitive_hits) >= 1, 88,
+      logclear_hits >= 1 AND (sam_hits + ntds_hits + dcsync_hits) >= 1, 85,
+      debug_hits >= 1 AND sensitive_hits >= 1, 80,
+      sam_hits >= 1, 75,
+      (debug_hits + sensitive_hits) >= 1, 68,
+      logclear_hits >= 1, 60,
+      50)
+  | KEEP agent_id, winlog.computer_name, actor, actor_domain, actor_logon, total_events,
+      sam_hits, ntds_hits, dcsync_hits, debug_hits, sensitive_hits, logclear_hits,
+      unique_objects, sample_target, sample_access, sample_priv, dyn_risk, first_seen, last_seen
+  // Faqat kuchli dumping signali bo'lsa alert (SeDebug/SeBackup privilege yolg'iz juda shovqinli — ular faqat enrichment)
+  | WHERE (sam_hits + ntds_hits + dcsync_hits) >= 1
+  | SORT dyn_risk DESC, total_events DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - Credential Dumping
+  - SAM
+  - NTDS
+  - DCSync
+  - SeDebugPrivilege
+  - Credential Access
+  - Windows
+  - T1003
+severity: critical
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1003/"
+  - "https://attack.mitre.org/techniques/T1003/002/"
+  - "https://attack.mitre.org/techniques/T1003/003/"
+  - "https://attack.mitre.org/techniques/T1003/006/"
+nist: ["AC-6", "AU-12", "SI-3", "IR-4", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2", "10.6.1"]
+gdpr: ["32.1.a", "32.1.b"]
+mitre_attack:
+  TA0006:
+    T1003: ["T1003.002", "T1003.003", "T1003.006"]

@@ -1,0 +1,54 @@
+rule_id: 4d06c4a8-c85c-4e58-aa0a-8b86bbb69f7f
+name: Suspicious Process Making Outbound Connection
+description: |
+  Ushbu qoida skript/LOLBin jarayonlari (powershell, cmd, wscript, mshta, rundll32, regsvr32,
+  certutil, bitsadmin) tashqi (internal bo'lmagan) IP'ga CHIQUVCHI ulanish qilishini aniqlaydi
+  (WFP 5156). Bu C2 yoki tool yuklash belgisi (T1071/T1105).
+  SOC triage:
+  - `applications` qaysi jarayon, `dest_addresses` qayerga? Domen/IP reputatsiyasini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.code == "5156"
+  | EVAL app = TO_LOWER(COALESCE(winlog.event_data.Application, "-"))
+  | EVAL dst = COALESCE(winlog.event_data.DestAddress, "-")
+  | EVAL dport = COALESCE(winlog.event_data.DestPort, "-")
+  | EVAL dir = COALESCE(winlog.event_data.Direction, "-")
+  | WHERE dir == "Outbound"
+  | WHERE app RLIKE ".*(powershell|pwsh|cmd|wscript|cscript|mshta|rundll32|regsvr32|certutil|bitsadmin|installutil|msbuild|hh).exe"
+  | EVAL is_internal = CASE(dst RLIKE "(10|127|169\\.254|172\\.1[6-9]|172\\.2[0-9]|172\\.3[01]|192\\.168)\\..*", 1, 0)
+  | EVAL is_ipv4 = CASE(dst RLIKE ".*\\..*\\..*\\..*", 1, 0)
+  | WHERE is_ipv4 == 1 AND is_internal == 0
+  | STATS
+      conn_count = COUNT(*),
+      unique_dests = COUNT_DISTINCT(dst),
+      applications = VALUES(app),
+      dest_addresses = VALUES(dst),
+      dest_ports = VALUES(dport),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE conn_count >= 1
+  | EVAL dyn_risk = 85
+  | KEEP agent_id, bucket, winlog.computer_name, conn_count, unique_dests, applications, dest_addresses, dest_ports, dyn_risk, first_seen, last_seen
+  | SORT conn_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.command-and-control
+  - attack.t1071
+  - Network
+severity: high
+risk_score: 85
+mitre_attack:
+  TA0011:
+    T1071: []
+nist: ["SI-4", "AU-12", "SC-7"]
+pci_dss: ["10.2.7", "11.4", "1.3"]
+gdpr: ["32.1.a"]

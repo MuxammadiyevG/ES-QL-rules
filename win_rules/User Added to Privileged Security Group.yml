@@ -1,0 +1,74 @@
+rule_id: 87e7244e-1025-4a91-b934-ea78a69557c3
+name: User Added to Privileged Security Group
+description: |
+  Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `User Added to Privileged Security Group` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
+  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
+  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
+  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
+  | WHERE event.code IN ("4728", "4732", "4756")
+  | EVAL 
+      added_user = COALESCE(winlog.event_data.MemberName, "Unknown"),
+      group_name = COALESCE(winlog.event_data.TargetUserName, "Unknown"),
+      added_by = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
+      added_by_domain = COALESCE(winlog.event_data.SubjectDomainName, winlog.event_data.SubjectDomainName, "Unknown"),
+      group_sid = COALESCE(winlog.event_data.TargetSid, "Unknown")
+  /* Match privileged group SIDs and names */
+  | WHERE group_sid IN (
+      "S-1-5-32-544",    /* Administrators */
+      "S-1-5-32-548",    /* Account Operators */
+      "S-1-5-32-549",    /* Server Operators */
+      "S-1-5-32-550",    /* Print Operators */
+      "S-1-5-32-551",    /* Backup Operators */
+      "S-1-5-32-552"     /* Replicators */
+    )
+    OR TO_LOWER(group_name) RLIKE "(domain admins|enterprise admins|schema admins|administrators|account operators|backup operators|server operators|print operators|group policy creator|dnsadmins|cert publishers)"
+  | STATS 
+      privileged_additions = COUNT(*),
+      users_added = VALUES(added_user),
+      privileged_groups = VALUES(group_name),
+      group_sids = VALUES(group_sid),
+      first_addition = MIN(@timestamp),
+      last_addition = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, added_by, added_by_domain, bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE privileged_additions >= 1
+  | KEEP agent_id, bucket, winlog.computer_name, added_by, added_by_domain, privileged_additions,
+      users_added, privileged_groups, group_sids, first_addition, last_addition
+  | SORT privileged_additions DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - attack.privilege-escalation
+  - attack.persistence
+  - attack.t1098
+  - attack.t1078.002
+  - detection.critical
+severity: high
+risk_score: 95
+mitre_attack:
+  TA0004:
+    T1098: []
+    T1078: ["T1078.002"]
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

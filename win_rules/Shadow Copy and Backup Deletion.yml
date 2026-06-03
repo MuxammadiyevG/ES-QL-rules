@@ -1,0 +1,50 @@
+rule_id: 366fa119-5e46-418d-a614-077684021ee7
+name: Shadow Copy / Backup Deletion (Ransomware Prep)
+description: |
+  Ushbu qoida shadow copy yoki backup'larni o'chirishni aniqlaydi: `vssadmin delete shadows`,
+  `wmic shadowcopy delete`, `wbadmin delete`, `bcdedit recoveryenabled no` — ransomware oldidan
+  tiklanishni bloklash uchun klassik (T1490). Sysmon 1.
+  SOC triage:
+  - DARHOL javob — `command_lines` ni tekshiring, host'ni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational"
+  | WHERE event.code == "1"
+  | EVAL cmd = TO_LOWER(COALESCE(winlog.event_data.CommandLine, "-"))
+  | EVAL actor = COALESCE(winlog.event_data.User, "-")
+  | EVAL parent = COALESCE(winlog.event_data.ParentImage, "-")
+  | WHERE cmd RLIKE ".*(vssadmin|wbadmin|wmic|bcdedit|win32_shadowcopy).*"
+  | WHERE cmd RLIKE ".*(delete shadows|shadowcopy delete|delete catalog|delete systemstatebackup|recoveryenabled no|ignoreallfailures|resize shadowstorage).*"
+  | STATS
+      exec_count = COUNT(*),
+      command_lines = VALUES(cmd),
+      parents = VALUES(parent),
+      users = VALUES(actor),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE exec_count >= 1
+  | EVAL dyn_risk = 96
+  | KEEP agent_id, bucket, winlog.computer_name, exec_count, command_lines, parents, users, dyn_risk, first_seen, last_seen
+  | SORT exec_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.impact
+  - attack.t1490
+  - Sysmon
+severity: critical
+risk_score: 96
+mitre_attack:
+  TA0040:
+    T1490: []
+nist: ["SI-4", "AU-12", "CP-9"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

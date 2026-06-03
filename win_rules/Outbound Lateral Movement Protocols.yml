@@ -1,0 +1,52 @@
+rule_id: f2adca4d-93bb-44b4-86fd-1874948dac81
+name: Outbound Lateral Movement Protocols (SMB/WinRM/WMI/SSH)
+description: |
+  Ushbu qoida bitta hostdan ichki tarmoqdagi KO'P hostga lateral protokollar bo'yicha chiquvchi
+  ulanishni aniqlaydi: 445 (SMB), 5985/5986 (WinRM), 135 (WMI/DCOM), 22 (SSH). Bitta manba
+  ko'p nishonga ulansa — lateral sweep/movement (T1021).
+  SOC triage:
+  - Manba host odatda admin/management hostmi? `dest_ports`/`unique_dests` ni ko'ring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.code == "5156"
+  | EVAL app = TO_LOWER(COALESCE(winlog.event_data.Application, "-"))
+  | EVAL dst = COALESCE(winlog.event_data.DestAddress, "-")
+  | EVAL dport = COALESCE(winlog.event_data.DestPort, "-")
+  | EVAL dir = COALESCE(winlog.event_data.Direction, "-")
+  | WHERE dir == "Outbound"
+  | WHERE dport IN ("445", "5985", "5986", "135", "22")
+  | WHERE dst != "127.0.0.1" AND dst != "::1"
+  | STATS
+      conn_count = COUNT(*),
+      unique_dests = COUNT_DISTINCT(dst),
+      dest_ports = VALUES(dport),
+      applications = VALUES(app),
+      sample_dests = VALUES(dst),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE unique_dests >= 5
+  | EVAL dyn_risk = CASE(unique_dests >= 20, 82, unique_dests >= 10, 75, 68)
+  | KEEP agent_id, bucket, winlog.computer_name, conn_count, unique_dests, dest_ports, applications, sample_dests, dyn_risk, first_seen, last_seen
+  | SORT unique_dests DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.lateral-movement
+  - attack.t1021
+  - Network
+severity: medium
+risk_score: 75
+mitre_attack:
+  TA0008:
+    T1021: []
+nist: ["SI-4", "AU-12", "SC-7"]
+pci_dss: ["10.2.7", "11.4", "1.3"]
+gdpr: ["32.1.a"]

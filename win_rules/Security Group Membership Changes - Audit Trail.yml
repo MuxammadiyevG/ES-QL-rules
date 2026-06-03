@@ -1,0 +1,66 @@
+rule_id: f8781401-3afb-4079-8be5-df0758cc701e
+name: Security Group Membership Changes - Audit Trail
+description: |
+  Ushbu qoida privilege escalation va persistence texnikalariga bog'liq bo'lib, `Security Group Membership Changes - Audit Trail` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
+  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
+  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
+  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
+  | WHERE event.code IN ("4728", "4729", "4732", "4733", "4756", "4757")
+  | EVAL 
+      modifier = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
+      target_user = COALESCE(winlog.event_data.MemberName, winlog.event_data.TargetUserName, "Unknown"),
+      group_name = COALESCE(winlog.event_data.TargetUserName, "Unknown"),
+      change_type = CASE(
+        event.code IN ("4728", "4732", "4756"), "Member Added",
+        event.code IN ("4729", "4733", "4757"), "Member Removed",
+        "Unknown"
+      )
+  | STATS 
+      changes = COUNT(*),
+      unique_groups = COUNT_DISTINCT(group_name),
+      modifiers = VALUES(modifier),
+      affected_users = VALUES(target_user),
+      groups = VALUES(group_name),
+      change_types = VALUES(change_type),
+      first_change = MIN(@timestamp),
+      last_change = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE changes >= 1
+  | KEEP agent_id, bucket, winlog.computer_name, changes, unique_groups, modifiers,
+      affected_users, groups, change_types, first_change, last_change
+  | SORT changes DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - detection.baseline
+  - detection.compliance
+  - monitoring.group-management
+severity: high
+risk_score: 75
+mitre_attack:
+  TA0003:
+    T1098: []
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

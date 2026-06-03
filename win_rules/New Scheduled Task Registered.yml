@@ -1,0 +1,48 @@
+rule_id: 13214b0c-9184-4f17-8f0d-598cc366904b
+name: New Scheduled Task Registered (Non-Microsoft)
+description: |
+  Ushbu qoida yangi scheduled task ro'yxatdan o'tishini aniqlaydi (TaskScheduler/Operational
+  106) — Microsoft\Windows ichidagi tizim tasklaridan tashqari. Persistence/execution uchun
+  klassik (T1053.005). Security 4698 bilan to'ldiruvchi.
+  SOC triage:
+  - `task_names` qanday nom, `user_contexts` kim yaratgan? Tegishli task XML'ini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-TaskScheduler/Operational"
+  | WHERE event.code == "106"
+  | EVAL tn = COALESCE(winlog.event_data.TaskName, "-")
+  | EVAL uc = COALESCE(winlog.event_data.UserContext, "-")
+  | WHERE NOT TO_LOWER(tn) RLIKE ".*.microsoft.windows..*"
+  | STATS
+      hits = COUNT(*),
+      task_names = VALUES(tn),
+      user_contexts = VALUES(uc),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE hits >= 1
+  | EVAL dyn_risk = 75
+  | KEEP agent_id, bucket, winlog.computer_name, hits, task_names, user_contexts, dyn_risk, first_seen, last_seen
+  | SORT hits DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1053.005
+  - ScheduledTask
+severity: medium
+risk_score: 75
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.005"]
+nist: ["SI-4", "AU-12", "CM-7"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

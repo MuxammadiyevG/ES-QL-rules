@@ -1,0 +1,55 @@
+rule_id: 4e3c5760-df96-43d8-b4ee-3c52451124f0
+name: LSA Security / Authentication Package Injection
+description: |
+  Ushbu qoida LSA "Security Packages" / "Authentication Packages" / "Notification Packages"
+  registriga yozishni aniqlaydi (Sysmon 13) — SSP/AP DLL injection orqali credential
+  o'g'irlash va persistence (T1547.005 / T1556.002).
+  SOC triage:
+  - `details` da yangi DLL nomi bormi (standart ro'yxatdan tashqari)? Juda kam o'zgaradi.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational"
+  | WHERE event.code == "13"
+  | EVAL tobj = TO_LOWER(COALESCE(winlog.event_data.TargetObject, "-"))
+  | EVAL details = COALESCE(winlog.event_data.Details, "-")
+  | EVAL img = COALESCE(winlog.event_data.Image, "-")
+  | EVAL actor = COALESCE(winlog.event_data.User, "-")
+  | WHERE tobj RLIKE ".*lsa.*" AND tobj RLIKE ".*(security packages|authentication packages|notification packages|lsapid|lsass).*"
+  | STATS
+      hits = COUNT(*),
+      target_objects = VALUES(tobj),
+      details = VALUES(details),
+      images = VALUES(img),
+      users = VALUES(actor),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE hits >= 1
+  | EVAL dyn_risk = 90
+  | KEEP agent_id, bucket, winlog.computer_name, hits, target_objects, details, images, users, dyn_risk, first_seen, last_seen
+  | SORT hits DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.persistence
+  - attack.credential-access
+  - attack.t1547.005
+  - attack.t1556.002
+  - Registry
+severity: high
+risk_score: 90
+mitre_attack:
+  TA0003:
+    T1547: ["T1547.005"]
+  TA0006:
+    T1556: ["T1556.002"]
+nist: ["SI-4", "AU-12", "AC-6"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a", "32.1.b"]

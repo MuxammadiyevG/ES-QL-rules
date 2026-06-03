@@ -1,0 +1,64 @@
+rule_id: c30d20ea-6cf0-4c5d-afce-a8fad2d0ae77
+name: AD Sensitive Object Modified (5136)
+description: |
+  Ushbu qoida sezgir AD obyektlariga (imtiyozli guruhlar, krbtgt, AdminSDHolder) 5136
+  o'zgarishini aniqlaydi: `ObjectName` ichida shu nomlar bo'lsa, MASHINA bo'lmagan akkaunt
+  tomonidan.
+  ESLATMA: sizning indeksingizda `ObjectDN`/`AttributeLDAPDisplayName`/`AttributeValue`
+  MAVJUD EMAS — shu sabab aynan qaysi atribut o'zgarganini ko'rsata olmaydi; DN uchun
+  `ObjectName` ishlatildi. Foydalanuvchi-obyekt atribut o'zgarishlari (SPN/delegatsiya/
+  SID history/UAC) uchun `AD_Suspicious_User_Change_4738` rule'idan foydalaning (u sizda
+  mavjud maydonlarni ishlatadi).
+  SOC triage:
+  - `actor` kim, `objects` qaysi sezgir obyekt, `operation` qo'shildimi/o'chirildimi?
+  - Tasdiqlanmasa: o'zgarishni rollback qiling, huquqlarni qayta baholang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "5136"
+  | EVAL actor       = winlog.event_data.SubjectUserName
+  | EVAL object_name = COALESCE(winlog.event_data.ObjectName, "-")
+  | EVAL object_type = COALESCE(winlog.event_data.ObjectType, "-")
+  | EVAL op_raw      = COALESCE(winlog.event_data.OperationType, "-")
+  | EVAL operation   = CASE(op_raw == "%%14674", "Value Added", op_raw == "%%14675", "Value Deleted", op_raw)
+  | EVAL src_ip      = COALESCE(winlog.event_data.IpAddress, "-")
+  | WHERE actor IS NOT NULL AND NOT actor LIKE "*$"
+  // Sezgir obyektlar (ObjectName DN'ni o'z ichiga olsa)
+  | WHERE TO_LOWER(object_name) RLIKE ".*(adminsdholder|krbtgt|domain admins|enterprise admins|schema admins|cn=policies,cn=system|cn=schema,cn=configuration).*"
+  | STATS
+      modify_count = COUNT(*),
+      objects = VALUES(object_name),
+      object_types = VALUES(object_type),
+      operations = VALUES(operation),
+      src_ips = VALUES(src_ip),
+      first_seen = MIN(@timestamp),
+      last_seen  = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, actor, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE modify_count >= 1
+  | EVAL dyn_risk = 90
+  | KEEP agent_id, bucket, winlog.computer_name, actor, modify_count, objects, object_types,
+      operations, src_ips, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, modify_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - AD
+  - Directory Changes
+  - Persistence
+severity: high
+risk_score: 84
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+mitre_attack:
+  TA0003:
+    T1098: []
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

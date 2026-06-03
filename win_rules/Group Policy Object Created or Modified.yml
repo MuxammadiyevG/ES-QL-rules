@@ -1,0 +1,57 @@
+rule_id: f4695ec1-a212-401b-b9ae-a70b4a203c13
+name: Group Policy Object Created or Modified
+description: |
+  Ushbu qoida GPO yaratish/o'zgartirishni aniqlaydi: 5136/5137/5141 da `ObjectName` ichida
+  "CN=Policies,CN=System" bo'lsa. Hujumchi GPO orqali domen bo'ylab kod ijro etishi yoki
+  huquq oshirishi mumkin.
+  ESLATMA: sizning indeksingizda `ObjectDN`/`ObjectClass` MAVJUD EMAS — DN uchun `ObjectName`
+  ishlatildi. 5136 DN'ni ObjectName'ga yozmasa, rule hech narsa qaytarmaydi (xato bermaydi).
+  SOC triage:
+  - `modifier` GPO boshqarishga vakolatlimi? `objects` nima?
+  - Tasdiqlanmasa: GPO'ni qaytaring, scheduled-task/script qismini tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code IN ("5136", "5137", "5141")
+  | EVAL modifier    = winlog.event_data.SubjectUserName
+  | EVAL object_name = COALESCE(winlog.event_data.ObjectName, "-")
+  | EVAL object_type = COALESCE(winlog.event_data.ObjectType, "-")
+  | EVAL op_raw      = COALESCE(winlog.event_data.OperationType, "-")
+  | EVAL operation   = CASE(op_raw == "%%14674", "Value Added", op_raw == "%%14675", "Value Deleted", op_raw)
+  | WHERE modifier IS NOT NULL AND NOT modifier LIKE "*$"
+  | WHERE TO_LOWER(object_name) RLIKE ".*cn=policies,cn=system.*"
+  | STATS
+      modifications = COUNT(*),
+      objects_modified = VALUES(object_name),
+      object_types = VALUES(object_type),
+      operations = VALUES(operation),
+      first_change = MIN(@timestamp),
+      last_change  = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, modifier, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE modifications >= 1
+  | EVAL dyn_risk = CASE(modifications >= 5, 88, 80)
+  | KEEP agent_id, bucket, winlog.computer_name, modifier, modifications, objects_modified,
+      object_types, operations, dyn_risk, first_change, last_change
+  | SORT dyn_risk DESC, modifications DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1484.001
+  - detection.critical
+severity: high
+risk_score: 80
+mitre_attack:
+  TA0004:
+    T1484: ["T1484.001"]
+nist: ["AC-6", "AU-12", "AC-2"]
+pci_dss: ["7.1", "7.2", "10.2.2"]
+gdpr: ["32.1.a", "32.1.b"]

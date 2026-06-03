@@ -1,0 +1,67 @@
+rule_id: 27433a7c-c099-4db9-8fa5-d6269e35cb4c
+name: Kerberos Pre-Authentication Failure - AS-REP Roasting
+description: |
+  Ushbu qoida credential access texnikasi AS-REP Roasting'ni aniqlaydi: "Do not require
+  Kerberos preauthentication" yoqilgan akkauntlarga AS-REQ (4768) — PreAuthType=0 bilan
+  muvaffaqiyatli javob, yoki RC4 (0x17) shifrlangan TGT. Bunday akkaunt hashlari preauth'siz
+  olinib, offline crack qilinishi mumkin.
+  Qonuniy holatlar: eski/legacy akkauntlar (kam uchraydi — alohida tasdiqlang).
+  SOC triage:
+  - `users` ro'yxatidagi akkauntlar haqiqatan preauth talab qilmasligini tekshiring.
+  - `nopreauth` va `unique_users` qiymatlari ommaviy roasting belgisimi?
+  - Tasdiqlansa: akkauntlarga "require preauth"ni yoqing, parollarni reset qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "4768"
+  // Ixtiyoriy DC scoping:
+  // | WHERE TO_LOWER(winlog.computer_name) RLIKE ".*(dc[0-9]|addc|domaincontroller).*"
+  | EVAL user    = winlog.event_data.TargetUserName
+  | EVAL preauth = COALESCE(winlog.event_data.PreAuthType, "-")
+  | EVAL enc     = COALESCE(winlog.event_data.TicketEncryptionType, "-")
+  | EVAL status  = COALESCE(winlog.event_data.Status, "-")
+  | EVAL src_ip  = COALESCE(winlog.event_data.IpAddress, "-")
+  | WHERE user IS NOT NULL AND NOT user LIKE "*$"
+  // Preauth talab qilmaydigan muvaffaqiyatli TGT, yoki RC4 shifr
+  | WHERE (preauth == "0" AND status == "0x0") OR enc == "0x17"
+  | EVAL is_nopreauth = CASE(preauth == "0", 1, 0)
+  | EVAL is_rc4 = CASE(enc == "0x17", 1, 0)
+  | STATS
+      roast_events = COUNT(*),
+      unique_users = COUNT_DISTINCT(user),
+      nopreauth    = SUM(is_nopreauth),
+      rc4          = SUM(is_rc4),
+      users        = VALUES(user),
+      src_ips      = VALUES(src_ip),
+      first_seen   = MIN(@timestamp),
+      last_seen    = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE nopreauth >= 1 OR unique_users >= 10
+  | EVAL dyn_risk = CASE(
+      unique_users >= 10, 90,
+      nopreauth >= 1, 85,
+      78)
+  | KEEP agent_id, bucket, winlog.computer_name, roast_events, unique_users, nopreauth, rc4,
+      users, src_ips, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, unique_users DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.t1558.004
+  - detection.emerging-threats
+severity: high
+risk_score: 85
+mitre_attack:
+  TA0006:
+    T1558: ["T1558.004"]
+nist: ["AU-2", "AU-12", "AC-7", "IA-2"]
+pci_dss: ["10.2.4", "10.2.5", "8.1.6"]
+gdpr: ["32.1.a", "32.2"]

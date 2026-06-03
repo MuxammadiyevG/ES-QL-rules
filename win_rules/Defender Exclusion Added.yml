@@ -1,0 +1,47 @@
+rule_id: def00002-0000-4000-a000-000000000002
+name: Microsoft Defender Exclusion Added
+description: |
+  Ushbu qoida Defender'ga istisno (exclusion) qo'shilishini aniqlaydi (5007, `New Value` ichida
+  "Exclusions"). Hujumchilar AV'dan qochish uchun o'z papkasi/jarayonini exclusion'ga qo'shadi
+  (T1562.001).
+  SOC triage:
+  - `new_values` da qaysi yo'l/jarayon exclude qilingan? Bu ruxsatli o'zgarishmi?
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Windows Defender/Operational"
+  | WHERE event.code == "5007"
+  | EVAL newval = COALESCE(`winlog.event_data.New Value`, "-")
+  | EVAL oldval = COALESCE(`winlog.event_data.Old Value`, "-")
+  | WHERE TO_LOWER(newval) RLIKE ".*exclusions.*"
+  | STATS
+      changes = COUNT(*),
+      new_values = VALUES(newval),
+      old_values = VALUES(oldval),
+      first_seen = MIN(@timestamp),
+      last_seen = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE changes >= 1
+  | EVAL dyn_risk = 85
+  | KEEP agent_id, bucket, winlog.computer_name, changes, new_values, old_values, dyn_risk, first_seen, last_seen
+  | SORT changes DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1562.001
+  - Defender
+severity: high
+risk_score: 85
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.001"]
+nist: ["SI-3", "SI-4", "AU-12"]
+pci_dss: ["5.1", "5.2", "11.4"]
+gdpr: ["32.1.a"]

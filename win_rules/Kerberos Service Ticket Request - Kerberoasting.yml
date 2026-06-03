@@ -1,0 +1,68 @@
+rule_id: ffe32351-ecbe-4604-9816-7190f8629ac8
+name: Kerberos Service Ticket Request - Kerberoasting
+description: |
+  Ushbu qoida credential access texnikasi Kerberoasting'ni aniqlaydi: bitta foydalanuvchi
+  qisqa vaqt ichida ko'p sonli xil SPN (service) uchun TGS (4769) so'rashi, ayniqsa zaif
+  RC4 (0x17) shifrlash bilan — bu hujumchi service akkaunt parol-hashlarini offline crack
+  qilish uchun yig'ayotganini bildiradi.
+  Qonuniy holatlar: ko'p servisga ulanadigan ilova/integration serverlari, vulnerability skaneri.
+  SOC triage:
+  - `requestor` (so'rovchi akkaunt) kim, qaysi `services` so'ralgan?
+  - `rc4_count > 0` bo'lsa: domen AES'da bo'lsa RC4 so'rovi shubhali.
+  - So'rov manbasini (`src_ips`) va requestor odatdagi xulqini tekshiring.
+  - Tasdiqlansa: service akkaunt parolini rotatsiya qiling (uzun, AES), manbani cheklang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "4769"
+  // Ixtiyoriy: faqat DC'lar bilan cheklash uchun o'z nomlash konvensiyangizga moslab yoqing:
+  // | WHERE TO_LOWER(winlog.computer_name) RLIKE ".*(dc[0-9]|addc|domaincontroller).*"
+  | EVAL requestor   = winlog.event_data.TargetUserName
+  | EVAL service_name = winlog.event_data.ServiceName
+  | EVAL enc         = COALESCE(winlog.event_data.TicketEncryptionType, "-")
+  | EVAL status      = COALESCE(winlog.event_data.Status, "-")
+  | EVAL src_ip      = COALESCE(winlog.event_data.IpAddress, "-")
+  // Faqat muvaffaqiyatli so'rovlar; mashina (HOST$@REALM) requestorlarni va krbtgt/mashina servislarni chiqaramiz
+  | WHERE status == "0x0"
+  | WHERE requestor IS NOT NULL AND NOT requestor LIKE "*$@*"
+  | WHERE service_name IS NOT NULL AND NOT service_name LIKE "*$" AND NOT TO_LOWER(service_name) RLIKE "krbtgt.*"
+  | EVAL is_rc4 = CASE(enc == "0x17", 1, 0)
+  | STATS
+      ticket_requests = COUNT(*),
+      unique_services = COUNT_DISTINCT(service_name),
+      rc4_count       = SUM(is_rc4),
+      services        = VALUES(service_name),
+      enc_types       = VALUES(enc),
+      src_ips         = VALUES(src_ip),
+      first_seen      = MIN(@timestamp),
+      last_seen       = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, requestor, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE unique_services >= 10 OR (rc4_count >= 1 AND unique_services >= 5)
+  | EVAL dyn_risk = CASE(
+      rc4_count >= 1 AND unique_services >= 10, 95,
+      unique_services >= 10, 88,
+      82)
+  | KEEP agent_id, bucket, winlog.computer_name, requestor, ticket_requests, unique_services,
+      rc4_count, services, enc_types, src_ips, dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, unique_services DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.t1558.003
+  - detection.emerging-threats
+severity: high
+risk_score: 85
+mitre_attack:
+  TA0006:
+    T1558: ["T1558.003"]
+nist: ["AU-2", "AU-12", "AC-7", "IA-2"]
+pci_dss: ["10.2.4", "10.2.5", "8.1.6"]
+gdpr: ["32.1.a", "32.2"]

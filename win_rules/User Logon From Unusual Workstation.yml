@@ -1,0 +1,55 @@
+rule_id: 556f281b-01f2-4179-9ef2-664f776fc13e
+name: User Logon From Unusual Workstation
+description: |
+  Ushbu qoida bitta foydalanuvchi qisqa vaqtda KO'P xil workstation/manbadan logon qilishini
+  aniqlaydi (4624, LogonType 2/3/10). Bir foydalanuvchining bir soatda 5+ xil ish-stansiyadan
+  kirishi credential almashinuvi yoki o'g'irlangan akkaunt belgisi bo'lishi mumkin.
+  Eslatma: foydalanuvchi bo'yicha hostlar aro agregatsiya qiladi.
+  SOC triage:
+  - `target_user`/`workstations` — manbalar haqiqiy va kutilganmi?
+  - Tasdiqlanmasa: akkauntni tekshiring, parolni reset qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "4624"
+  | WHERE winlog.event_data.LogonType IN ("2", "3", "10")
+  | EVAL target_user = winlog.event_data.TargetUserName
+  | EVAL workstation = COALESCE(winlog.event_data.WorkstationName, winlog.event_data.IpAddress, "-")
+  | EVAL logon_type  = winlog.event_data.LogonType
+  | WHERE target_user IS NOT NULL AND NOT target_user LIKE "*$"
+  | WHERE NOT TO_LOWER(target_user) RLIKE "(system|anonymous logon|dwm-.*|umfd-.*|.*service)"
+  | WHERE workstation != "-" AND workstation != ""
+  | STATS
+      logon_count = COUNT(*),
+      unique_workstations = COUNT_DISTINCT(workstation),
+      workstations = VALUES(workstation),
+      logon_types  = VALUES(logon_type),
+      first_seen   = MIN(@timestamp),
+      last_seen    = MAX(@timestamp)
+    BY target_user, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE unique_workstations >= 5
+  | EVAL dyn_risk = CASE(unique_workstations >= 15, 85, unique_workstations >= 10, 80, 72)
+  | KEEP target_user, bucket, logon_count, unique_workstations, workstations, logon_types,
+      dyn_risk, first_seen, last_seen
+  | SORT dyn_risk DESC, unique_workstations DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.lateral-movement
+  - attack.t1021
+  - detection.anomaly
+severity: high
+risk_score: 75
+mitre_attack:
+  TA0008:
+    T1021: []
+nist: ["AC-17", "AU-2", "AU-12", "SI-4"]
+pci_dss: ["10.2.5", "8.1.6"]
+gdpr: ["32.1.a"]

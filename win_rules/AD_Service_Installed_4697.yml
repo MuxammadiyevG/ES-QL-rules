@@ -1,0 +1,61 @@
+rule_id: a3b9885d-5e50-4df6-b501-76b80bcc0963
+name: AD Service Installed via Security Log (4697)
+description: |
+  Ushbu qoida xavfsizlik jurnalida yangi servis yaratilishini aniqlaydi (4697 — "Security"
+  kanali). Servis binari yo'li (mavjud bo'lsa) `ImagePath` da bo'ladi. Shubhali yo'l yoki
+  interpretator persistence belgisi.
+  Eslatma: sizning indeksingizda `ServiceFileName` yo'q — `ImagePath` ishlatildi (4697 uni
+  to'ldirmasa, faqat servis nomi bo'yicha ishlaydi).
+  SOC triage:
+  - `actor` kim, `service_name`/`service_path` shubhalimi (`suspicious_hits`)?
+  - Tasdiqlanmasa: servisni o'chiring, akkauntni cheklang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code == "4697"
+  | EVAL actor        = COALESCE(winlog.event_data.SubjectUserName, "-")
+  | EVAL service_name = COALESCE(winlog.event_data.ServiceName, "-")
+  | EVAL service_path = COALESCE(winlog.event_data.ImagePath, "-")
+  | EVAL service_account = COALESCE(winlog.event_data.AccountName, "-")
+  | EVAL service_type = COALESCE(winlog.event_data.ServiceType, "-")
+  | EVAL suspicious = CASE(
+      TO_LOWER(service_path) RLIKE ".*(temp|appdata|programdata|users.public|powershell|cmd.exe|wscript|cscript|mshta|rundll32|regsvr32|encodedcommand|frombase64).*"
+      OR TO_LOWER(service_name) RLIKE ".*(update|microsoft|windows|security|system)[0-9]+.*", 1, 0)
+  | STATS
+      install_count = COUNT(*),
+      services      = VALUES(service_name),
+      service_paths = VALUES(service_path),
+      service_accounts = VALUES(service_account),
+      service_types = VALUES(service_type),
+      suspicious_hits = SUM(suspicious),
+      first_install = MIN(@timestamp),
+      last_install  = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE install_count >= 1
+  | EVAL dyn_risk = CASE(suspicious_hits >= 1, 92, install_count >= 2, 85, 80)
+  | KEEP agent_id, bucket, winlog.computer_name, actor, install_count, services, service_paths,
+      service_accounts, service_types, suspicious_hits, dyn_risk, first_install, last_install
+  | SORT dyn_risk DESC, install_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - AD
+  - Persistence
+  - Service Creation
+severity: high
+risk_score: 83
+references:
+  - "https://attack.mitre.org/techniques/T1543/003/"
+mitre_attack:
+  TA0003:
+    T1543: ["T1543.003"]
+nist: ["SI-4", "AU-12", "CM-7"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

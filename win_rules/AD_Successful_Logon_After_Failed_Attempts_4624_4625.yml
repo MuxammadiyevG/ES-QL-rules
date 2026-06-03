@@ -1,0 +1,100 @@
+rule_id: 91de9d76-ca74-4758-ae76-a12745b841b3
+name: AD Successful Logon After Multiple Failed Attempts (4624/4625)
+description: |
+  Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, bir xil manbadan ketma-ket muvaffaqiyatsiz urinishlardan keyin muvaffaqiyatli kirishni aniqlaydi.
+  4625 hodisalari ortidan 4624 paydo bo'lishi brute-force yoki credential stuffing muvaffaqiyatga erishganini ko'rsatishi mumkin, bu AD ichida hujumchiga haqiqiy akkaunt bilan harakatlanish imkonini beradi.
+  Qonuniy holatlar sifatida foydalanuvchining parolni bir necha marta noto'g'ri kiritishi, saqlangan eski credentiallar yoki servis konfiguratsiyasi xatolari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - `actor` va `target_user` ni, shuningdek qaysi `hostn` va `src_ip` da hodisa bo'lganini aniqlang.
+  - Ushbu kirishlar rejalashtirilgan test, deployment yoki change ticket bilan bog'liqligini tasdiqlang.
+  - `src_ip` manbasi, tarmoq segmenti va tarixiy faoliyatini chuqur tekshiring.
+  - Ta'sirlangan akkauntlarning guruh a'zoligi, ayniqsa Domain Admins/Enterprise Admins bilan bog'liqligini tekshiring.
+  - Shubhali bo'lsa manba IP ni cheklang, akkaunt credentiallarini reset qiling va komprometatsiya doirasini containment qiling.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code IN ("4624", "4625")
+  // Faqat tarmoq loginlari (Type 3) va RDP (Type 10)
+  | WHERE winlog.event_data.LogonType IN ("3", "10")
+  // Muhim maydonlar
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName, "")
+  | EVAL src_ip      = COALESCE(winlog.event_data.IpAddress, "")
+  | EVAL logon_type  = COALESCE(winlog.event_data.LogonType, "")
+  // DC hostlarni aniqlash
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  // Tizim akkauntlarini chiqarib tashlash
+  | WHERE NOT (
+      target_user LIKE "*$"
+      OR target_user == "-"
+      OR target_user == ""
+      OR TO_LOWER(target_user) RLIKE "(system|network service|local service|anonymous logon)"
+  )
+  // Localhost va noma'lum IPlarni chiqarib tashlash
+  | WHERE NOT (
+      src_ip == "-"
+      OR src_ip == "::1"
+      OR src_ip == "127.0.0.1"
+      OR src_ip == ""
+  )
+  // Muvaffaqiyatli va xato urinishlarni belgilash
+  | EVAL is_success = CASE(event.code == "4624", 1, 0)
+  | EVAL is_failure = CASE(event.code == "4625", 1, 0)
+  | STATS
+      total_events   = COUNT(*),
+      success_count  = SUM(is_success),
+      failure_count  = SUM(is_failure),
+      first_seen     = MIN(@timestamp),
+      last_seen      = MAX(@timestamp),
+      target_users   = VALUES(target_user),
+      logon_types    = VALUES(logon_type),
+      target_domains = VALUES(winlog.event_data.TargetDomainName),
+      logon_ids      = VALUES(winlog.event_data.TargetLogonId)
+  BY
+      agent_id,
+      src_ip,
+      winlog.computer_name,
+      bucket = DATE_TRUNC(15 minutes, @timestamp)
+  // Kamida 5 xato + 1 muvaffaqiyatli kirish
+  | WHERE failure_count >= 5 AND success_count >= 1
+  | EVAL dyn_risk = CASE(
+      failure_count >= 25 AND success_count >= 2, 90,
+      failure_count >= 15,                        84,
+      78
+  )
+  | KEEP
+      agent_id,
+      bucket,
+      winlog.computer_name,
+      src_ip,
+      total_events,
+      success_count,
+      failure_count,
+      first_seen,
+      last_seen,
+      target_users,
+      target_domains,
+      logon_types,
+      logon_ids,
+      dyn_risk
+  | SORT dyn_risk DESC, failure_count DESC
+enabled: true
+tags:
+  - AD
+  - Authentication
+  - Credential Access
+severity: high
+risk_score: 78
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+mitre_attack:
+  TA0006:
+    T1110: []
+nist: ["AU-2", "AU-12", "AC-7", "IA-2"]
+pci_dss: ["10.2.4", "10.2.5", "8.1.6"]
+gdpr: ["32.1.a", "32.2"]
