@@ -1,4 +1,4 @@
-rule_id: def00003-0000-4000-a000-000000000003
+rule_id: eb67c32f-d123-4f26-a6e0-ad8348faafee
 name: Microsoft Defender Protection Disabled / Tampered
 description: |
   Ushbu qoida Defender himoyasini o'chirish/buzishni aniqlaydi: real-time protection off (5001),

@@ -1,4 +1,4 @@
-rule_id: ada00003-0000-4000-a000-000000000003
+rule_id: 89ee353a-cbc0-470c-898e-8f839c644a43
 name: Computer Account Created (MachineAccountQuota Abuse)
 description: |
   Ushbu qoida yangi computer account yaratilishini (4741) aniqlaydi. Oddiy domen foydalanuvchisi

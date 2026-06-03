@@ -1,4 +1,4 @@
-rule_id: aa000002-0000-4000-a000-000000000002
+rule_id: 5c1ff6ba-1f76-4275-a7ba-e53de4f304b4
 name: Disabled / Expired / Locked Account Logon Attempt
 description: |
   Ushbu qoida o'chirilgan, muddati o'tgan yoki qulflangan akkauntga kirish urinishini

@@ -1,4 +1,4 @@
-rule_id: ada00002-0000-4000-a000-000000000002
+rule_id: 6ef11743-9fe6-4d75-a81e-c7a90278a6a0
 name: PrintNightmare - Print Spooler Spawning Process
 description: |
   Ushbu qoida Print Spooler (`spoolsv.exe`) shell/skript yoki noodatiy jarayon ishga
