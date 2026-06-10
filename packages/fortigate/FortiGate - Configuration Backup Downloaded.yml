@@ -1,0 +1,58 @@
+rule_id: 06417cc9-b8df-4c95-b616-15d3a1a409e6
+name: FortiGate - Configuration Backup Downloaded
+description: |
+  Ushbu qoida FortiGate qurilmasidan admin tomonidan to'liq konfiguratsiya zaxira nusxasini
+  (backup) yuklab olinishini aniqlaydi. Konfiguratsiya faylida parollar, VPN kalitlari va
+  boshqa maxfiy ma'lumotlar bo'lishi mumkin, shu sababli uni yuklab olish credential exposure
+  yoki ma'lumot o'g'irlash (Collection / Exfiltration) belgisi bo'lishi mumkin (T1602, T1567).
+  Qonuniy holatlar: rejaviy backup jarayonlari, migratsiya, audit.
+
+  SOC triage bosqichlari:
+  - Backupni yuklab olgan admin (`user.name`) va manba IP (`source.ip`)ni aniqlang.
+  - Yuklab olish vaqti rejaviy backup oynasiga mos kelishini tekshiring.
+  - Bir admindan qisqa vaqt ichida bir nechta backup so'rovlari bo'lsa shubhali deb baholang.
+  - Noqonuniy bo'lsa, admin akkauntini bloklang va credentiallarni yangilang.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 20 minutes
+  /* FortiGate event/system logs surface only as raw `message` in this deployment; heuristic match. Requires FortiGate event-log onboarding to fire. */
+  | WHERE TO_LOWER(message) RLIKE ".*(configuration backup|configuration is downloaded|cfg backuped|config download).*"
+  | EVAL Device = COALESCE(observer.name, "FortiGate")
+  | STATS
+      download_count = COUNT(*),
+      users = VALUES(user.name),
+      src_ips = VALUES(source.ip),
+      messages = VALUES(message),
+      last_seen = MAX(@timestamp)
+    BY Device, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | KEEP bucket, Device, download_count, users, src_ips, messages, last_seen
+  | SORT download_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.collection
+  - attack.exfiltration
+  - attack.t1602
+  - attack.t1567
+  - fortigate.audit
+  - configuration.management
+severity: high
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1602/"
+  - "https://attack.mitre.org/techniques/T1567/"
+  - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference"
+nist: ["AC-6", "AU-12", "SC-28"]
+pci_dss: ["10.2.1", "10.2.2", "3.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0009:
+    T1602: []
+  TA0010:
+    T1567: []

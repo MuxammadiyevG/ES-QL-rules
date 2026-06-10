@@ -13,30 +13,30 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd execve telemetry */
-  | WHERE event.action == "execve" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "process_started")
+  | WHERE event.action == "executed"
   /* selection: firewall modification commands */
   | WHERE (
       /* iptables DROP rules */
-      (process.name == "iptables" AND COALESCE(process.command_line, "") RLIKE "(?i)DROP")
+      (process.name == "iptables" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*drop.*")
       /* firewall-cmd remove */
-      OR (process.name == "firewall-cmd" AND COALESCE(process.command_line, "") RLIKE "(?i)remove")
+      OR (process.name == "firewall-cmd" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*remove.*")
       /* ufw delete */
-      OR (process.name == "ufw" AND COALESCE(process.command_line, "") RLIKE "(?i)delete")
+      OR (process.name == "ufw" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*delete.*")
       /* nft delete or flush */
-      OR (process.name == "nft" AND COALESCE(process.command_line, "") RLIKE "(?i)(delete|flush)")
+      OR (process.name == "nft" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*(delete|flush).*")
     )
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       executables = VALUES(process.executable),
       parent_processes = VALUES(process.parent.pid),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, executables, parent_processes, hosts, raw_samples
   | SORT event_count DESC
 enabled: false

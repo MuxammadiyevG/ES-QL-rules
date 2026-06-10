@@ -20,26 +20,27 @@ type: esql
 params: '{}'
 schedule_interval: 15m
 index:
-  - logs-nginx*
+  - logs-nginx.access-*
 query_language: esql
 query: |
-  FROM logs-nginx*
-  | WHERE event.original RLIKE "(?i).*(/admin|/administrator|/phpmyadmin|/pma|/wp-admin|/cpanel|/webadmin|/console|/dashboard|/manage|/portal|/backend).*"
+  FROM logs-nginx.access-*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | WHERE TO_LOWER(event.original) RLIKE ".*(/admin|/administrator|/phpmyadmin|/pma|/wp-admin|/cpanel|/webadmin|/console|/dashboard|/manage|/portal|/backend).*"
   | EVAL access_result = CASE(
-      event.outcome IN ("200", "301", "302"), "Successful-Access",
-      event.outcome == "403", "Forbidden",
-      event.outcome == "404", "Not-Found",
-      event.outcome == "401", "Unauthorized",
+      http.response.status_code IN (200, 301, 302), "Successful-Access",
+      http.response.status_code == 403, "Forbidden",
+      http.response.status_code == 404, "Not-Found",
+      http.response.status_code == 401, "Unauthorized",
     "Other"
   )
-  | STATS 
+  | STATS
     total_attempts = COUNT(*),
     successful_access = SUM(CASE(access_result == "Successful-Access", 1, 0)),
     forbidden_count = SUM(CASE(access_result == "Forbidden", 1, 0)),
     not_found_count = SUM(CASE(access_result == "Not-Found", 1, 0)),
-    unique_admin_paths = COUNT_DISTINCT(event.original),
-    admin_urls = VALUES(event.original)
-  BY agent_id, source.ip, bucket = DATE_TRUNC(20 minutes, @timestamp)
+    unique_admin_paths = COUNT_DISTINCT(url.path),
+    admin_urls = VALUES(url.path)
+  BY agent_id, source.ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE total_attempts >= 5
   | EVAL probe_confidence = CASE(
       unique_admin_paths >= 10, "high",
@@ -59,6 +60,7 @@ tags:
   - reconnaissance
   - privilege_escalation
   - web_application
+  - attack.t1595
 severity: high
 risk_score: 71
 references:
@@ -66,5 +68,5 @@ references:
 nist: ["AC-3", "AC-6"]
 pci_dss: "8.1.6"
 mitre_attack:
-  TA0007:
-    T1018: []
+  TA0043:
+    T1595: []

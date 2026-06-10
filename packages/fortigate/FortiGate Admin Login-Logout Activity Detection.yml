@@ -43,7 +43,7 @@ severity: low
 risk_score: 50
 references:
   - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference/"
-nist: []
-pci_dss: []
-gdpr: []
+nist: ["AC-2", "AU-2", "AU-12"]
+pci_dss: ["10.2.1", "10.2.2"]
+gdpr: ["32.1.b"]
 mitre_attack: []

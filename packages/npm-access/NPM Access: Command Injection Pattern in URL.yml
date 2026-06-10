@@ -17,7 +17,7 @@ query_language: esql
 query: |
   FROM logs-npm.access-*
   | WHERE @timestamp >= NOW() - 300 seconds
-  | WHERE event.original RLIKE """(?i).*(;ls |;id |;whoami|;cat |;wget |;curl |\|ls |\|id |\|whoami|\|cat |\|wget |\|curl |%3bls|%3bid|%7cls|%7cid|/bin/sh|/bin/bash|cmd\.exe|powershell|%60id%60).*"""
+  | WHERE TO_LOWER(event.original) RLIKE """.*(;ls |;id |;whoami|;cat |;wget |;curl |\|ls |\|id |\|whoami|\|cat |\|wget |\|curl |%3bls|%3bid|%7cls|%7cid|/bin/sh|/bin/bash|cmd\.exe|powershell|%60id%60).*"""
   | EVAL host_name = host.hostname
   | EVAL log_path  = log.file.path
   | STATS
@@ -27,11 +27,11 @@ query: |
       last_seen   = MAX(@timestamp),
       first_seen  = MIN(@timestamp)
     BY host_name, log_path
-  | WHERE event_count >= 1
   | KEEP
       host_name, log_path, event_count,
       log_paths, samples, last_seen, first_seen
   | SORT event_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - attack.initial-access

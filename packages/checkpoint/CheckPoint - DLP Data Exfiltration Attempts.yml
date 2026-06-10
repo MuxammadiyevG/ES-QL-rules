@@ -15,7 +15,7 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- checkpoint-*
+- filebeat-checkpoint-*
 query_language: esql
 query: |
   FROM filebeat-checkpoint-*

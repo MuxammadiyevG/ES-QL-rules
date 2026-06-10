@@ -14,10 +14,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- logs-nginx*
+- logs-nginx.access-*
 query_language: esql
 query: |
-  FROM logs-nginx* | WHERE @timestamp >= NOW() - 45 minutes
+  FROM logs-nginx.access-* | WHERE @timestamp >= NOW() - 45 minutes
   | WHERE data_stream.dataset == "nginx.access"
   | WHERE url.original LIKE "*<script*" 
      OR url.original LIKE "*javascript:*" 
@@ -51,7 +51,7 @@ query: |
 enabled: true
 tags:
 - attack.initial-access
-- attack.t1059
+- attack.t1190
 - nginx
 - xss
 - code-injection
@@ -65,6 +65,4 @@ pci_dss: ["6.5.7", "11.4"]
 gdpr: ["35.7.d"]
 mitre_attack:
   TA0001:
-    T1189: []
-  TA0006:
-    T1539: []
+    T1190: []

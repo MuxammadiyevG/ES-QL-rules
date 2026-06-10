@@ -13,17 +13,17 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   // Filter for process execution events in Linux Audit logs
-  | WHERE event.action == "execve" 
-     OR (event.dataset RLIKE "(?i).*auditd.*" AND event.type == "process_started")
+  | WHERE event.action == "executed"
   // Selection: Identify iptables being used to establish BPFDoor-style port redirection
-  | EVAL cmd = COALESCE(process.command_line, "")
+  | EVAL cmd = COALESCE(MV_CONCAT(process.args, " "), "")
   | WHERE process.name == "iptables" 
-      AND cmd RLIKE "(?i).*\\\\-t\\\\s+nat.*"
-      AND cmd RLIKE "(?i).*PREROUTING.*"
-      AND cmd RLIKE "(?i).*\\\\-\\\\-dport.*"
-      AND cmd RLIKE "(?i).*REDIRECT.*"
-      AND cmd RLIKE "(?i).*\\\\-\\\\-to\\\\-ports.*"
+      AND TO_LOWER(cmd) RLIKE ".*\\\\-t\\\\s+nat.*"
+      AND TO_LOWER(cmd) RLIKE ".*prerouting.*"
+      AND TO_LOWER(cmd) RLIKE ".*\\\\-\\\\-dport.*"
+      AND TO_LOWER(cmd) RLIKE ".*redirect.*"
+      AND TO_LOWER(cmd) RLIKE ".*\\\\-\\\\-to\\\\-ports.*"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
@@ -36,10 +36,9 @@ query: |
     BY 
       agent_id, host.name, 
       user.name, 
-      bucket = DATE_TRUNC(20m, @timestamp)
-  | WHERE event_count >= 1
-  | KEEP 
-      bucket, host.name, user.name, event_count, users, processes, 
+      bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP
+      agent_id, bucket, host.name, user.name, event_count, users, processes,
       command_lines, executables, parent_pids, hosts, raw_samples
   | SORT event_count DESC
 enabled: false

@@ -12,28 +12,27 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd SYSCALL events */
-  | WHERE event.dataset RLIKE "(?i)auditd"
   /* selection: execve syscalls by agent_id, web user (uid 33 / www-data) */
   | WHERE (
-      COALESCE(event.original, "") RLIKE "(?i)syscall=59"  /* execve */
-      OR COALESCE(event.original, "") RLIKE "(?i)syscall=322" /* execveat */
+      TO_LOWER(COALESCE(event.original, "")) RLIKE ".*syscall=59.*"  /* execve */
+      OR TO_LOWER(COALESCE(event.original, "")) RLIKE ".*syscall=322.*" /* execveat */
       OR event.action IN ("execve", "execveat", "executed")
     )
     AND (
-      user.id == "33" 
-      OR user.name RLIKE "(?i)(www-data|apache|nginx|tomcat)"
+      user.id == "33"
+      OR TO_LOWER(user.name) RLIKE ".*(www-data|apache|nginx|tomcat).*"
     )
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, command_lines, hosts, raw_samples
   | SORT event_count DESC
 enabled: false

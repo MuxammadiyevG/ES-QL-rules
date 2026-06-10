@@ -19,7 +19,7 @@ query_language: esql
 query: |
   FROM logs-npm.access-*
   | WHERE @timestamp >= NOW() - 300 seconds
-  | WHERE event.original RLIKE """\[.*\] - 5\d\d \d{3} -.*"""
+  | WHERE event.original RLIKE """\[.*\] - 5\d\d .*"""
   | EVAL log_path   = log.file.path
   | EVAL host_name  = host.hostname
   | EVAL raw        = event.original
@@ -35,6 +35,7 @@ query: |
       host_name, log_path, error_count,
       log_paths, samples, last_seen, first_seen
   | SORT error_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - detection.availability

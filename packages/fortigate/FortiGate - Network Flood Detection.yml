@@ -29,9 +29,9 @@ severity: critical
 risk_score: 90
 references:
   - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference"
-nist: []
-gdpr: []
-pci_dss: []
+nist: ["SC-5", "SI-4"]
+gdpr: ["32.1.b"]
+pci_dss: ["6.6"]
 mitre_attack:
   TA0040:
     T1498: []

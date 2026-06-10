@@ -14,16 +14,16 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - logs-nginx*
+  - logs-nginx.access-*
 query_language: esql
 query: |
-  FROM logs-nginx*
-  | WHERE @timestamp >= NOW() - 10 minutes
+  FROM logs-nginx.access-*
+  | WHERE @timestamp >= NOW() - 20 minutes
   | WHERE data_stream.dataset == "nginx.access"
   | WHERE http.response.status_code >= 400 AND http.response.status_code < 500
   | EVAL actor      = COALESCE(user_agent.original, "Unknown")
-  | EVAL src_ip     = COALESCE(source.ip, "Unknown")
-  | EVAL geo_country = COALESCE(source.geo.country_name, "Unknown")
+  | EVAL src_ip     = COALESCE(TO_STRING(source.ip), "Unknown")
+  | EVAL geo_country = COALESCE(source.geo.geo.country_name, "Unknown")
   | STATS
       error_count   = COUNT(*),
       unique_pages  = COUNT_DISTINCT(url.original),
@@ -33,9 +33,9 @@ query: |
       geo_countries = VALUES(geo_country),
       first_seen    = MIN(@timestamp),
       last_seen     = MAX(@timestamp)
-    BY agent.id, src_ip, bucket = DATE_TRUNC(2 minutes, @timestamp)
+    BY agent_id, src_ip, bucket = DATE_TRUNC(2 minutes, @timestamp)
   | WHERE error_count >= 40 AND unique_pages >= 20
-  | KEEP agent.id, bucket, src_ip, error_count, unique_pages,
+  | KEEP agent_id, bucket, src_ip, error_count, unique_pages,
          status_codes, urls, user_agents, geo_countries,
          first_seen, last_seen
   | SORT error_count DESC

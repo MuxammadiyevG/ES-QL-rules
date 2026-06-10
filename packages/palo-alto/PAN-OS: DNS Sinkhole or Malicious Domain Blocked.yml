@@ -1,0 +1,63 @@
+rule_id: 152d3f1f-ff61-469a-aef7-9a6cdf918076
+name: "PAN-OS: DNS Sinkhole or Malicious Domain Blocked"
+description: |
+  Ushbu qoida Palo Alto threat log'da DNS sinkhole yoki spyware/DNS
+  kategoriyasidagi zararli domen hit'larini kuzatadi (panw.threat dataset).
+  DNS sinkhole — firewall zararli domen so'rovini soxta IP'ga yo'naltiradi,
+  bu esa ichki hostda malware infektsiyasi yoki C2 domen orqali aloqa
+  urinishini ko'rsatadi (T1071.004 - DNS).
+  Qonuniy holatlar: yangi qo'shilgan threat feed false positive, test domeni.
+  SOC triage bosqichlari:
+  - Sinkhole bo'lgan domen va so'rov yuborgan ichki host (source.ip)'ni aniqlang.
+  - Host'da malware borligini EDR/antivirus orqali tekshiring.
+  - Bir host'dan takroriy sinkhole hit — faol infektsiya belgisi.
+  - Domen threat intel'da ma'lum C2/malware ekanligini tasdiqlang.
+  - Kerak bo'lsa: host'ni izolyatsiya qiling, to'liq tekshiruv o'tkazing.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-panw*
+query_language: esql
+query: |
+  FROM logs-panw*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.dataset == "panw.threat"
+  | WHERE panw.panos.threat.category IN ("dns", "dns-malware", "dns-c2", "spyware", "dns-security")
+  | STATS
+      hit_count       = COUNT(*),
+      source_ips      = VALUES(source.ip),
+      unique_src_ips  = COUNT_DISTINCT(source.ip),
+      dest_ips        = VALUES(destination.ip),
+      domains         = VALUES(dns.question.name),
+      threat_names    = VALUES(panw.panos.threat.name),
+      categories      = VALUES(panw.panos.threat.category),
+      actions         = VALUES(event.action),
+      devices         = VALUES(observer.hostname),
+      first_seen      = MIN(@timestamp),
+      last_seen       = MAX(@timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | KEEP bucket, source.ip, hit_count, unique_src_ips, source_ips, dest_ips,
+         domains, threat_names, categories, actions, devices, first_seen, last_seen
+  | SORT hit_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.command-and-control
+  - attack.t1071.004
+  - paloalto
+  - threat
+  - dns
+  - firewall
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1071/004/"
+  - "https://docs.paloaltonetworks.com/pan-os/admin/threat-prevention/dns-security"
+nist: ["SI-3", "SI-4", "SC-7", "IR-4"]
+pci_dss: ["5.2", "10.6.1", "11.5"]
+gdpr: ["32.1.b"]
+hipaa: ["164.312.b"]
+mitre_attack:
+  TA0011:
+    T1071: ["T1071.004"]

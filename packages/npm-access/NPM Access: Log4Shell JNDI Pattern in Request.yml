@@ -1,0 +1,55 @@
+rule_id: 06d732bd-128c-4693-b7a4-86ebfe5d0857
+name: "NPM Access: Log4Shell JNDI Pattern in Request"
+description: |
+  Ushbu qoida HTTP request (URL, header, user-agent) da Log4Shell (CVE-2021-44228)
+  JNDI injection pattern'larini aniqlaydi: ${jndi:ldap://...}, ${jndi:rmi://...},
+  ${jndi:dns://...} va obfuscatsiya qilingan variantlar (${lower:j}ndi).
+  Bu Log4j RCE exploitation urinishi (T1190 - Exploit Public-Facing Application).
+  Qonuniy holatlar: yo'q, bu pattern har doim shubhali.
+  SOC triage bosqichlari:
+  - event.original — to'liq payload va callback URL (LDAP/RMI/DNS) ni saqlang.
+  - Backend Java application Log4j ishlatadimi va patch qilinganmi tekshiring.
+  - Outbound connection (callback server'ga) bo'lganmi network logda tekshiring.
+  - Client IP ni darhol bloklang, incident oching, backend serverni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-npm.access-*
+query_language: esql
+query: |
+  FROM logs-npm.access-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE TO_LOWER(event.original) RLIKE """.*(\$\{jndi:|\$\{::-j\}ndi|\$\{lower:j\}|\$\{upper:j\}|jndi:ldap|jndi:rmi|jndi:dns|jndi:nis|jndi:iiop|jndi:corba|%24%7bjndi).*"""
+  | EVAL host_name = host.hostname
+  | EVAL log_path  = log.file.path
+  | STATS
+      event_count = COUNT(*),
+      log_paths   = VALUES(log.file.path),
+      samples     = VALUES(event.original),
+      last_seen   = MAX(@timestamp),
+      first_seen  = MIN(@timestamp)
+    BY host_name, log_path
+  | KEEP
+      host_name, log_path, event_count,
+      log_paths, samples, last_seen, first_seen
+  | SORT event_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1190
+  - detection.threat-hunting
+  - owasp.a06-vulnerable-components
+  - cve.2021-44228
+severity: critical
+risk_score: 95
+references:
+  - "https://attack.mitre.org/techniques/T1190/"
+  - "https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+nist: ["SI-3", "SI-4", "RA-5", "IR-4", "AC-3"]
+pci_dss: ["6.3.1", "6.6", "11.3", "10.6.1", "12.10.1"]
+gdpr: ["32.1.b", "25.1"]
+mitre_attack:
+  TA0001:
+    T1190: []

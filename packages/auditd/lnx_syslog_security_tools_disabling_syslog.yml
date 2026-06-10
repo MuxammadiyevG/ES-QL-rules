@@ -12,20 +12,19 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd events only */
-  | WHERE event.dataset RLIKE "(?i)auditd"
   /* Detect stopping of security services */
-  | WHERE COALESCE(event.original, "") RLIKE "(?i)(stopping iptables|stopping ip6tables|stopping firewalld|stopping cbdaemon|stopping falcon-sensor)"
+  | WHERE TO_LOWER(COALESCE(event.original, "")) RLIKE ".*(stopping iptables|stopping ip6tables|stopping firewalld|stopping cbdaemon|stopping falcon-sensor).*"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP
       agent_id, bucket,
       host.name,

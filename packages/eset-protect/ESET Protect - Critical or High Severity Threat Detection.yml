@@ -15,25 +15,25 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
-- logs-eset.protect*
+- logs-eset.protect-*
 query_language: esql
 query: |
-  FROM logs-eset.protect*
-  | WHERE @timestamp >= NOW() - 30 minutes
-  | WHERE data_stream.dataset == "eset_protect.detection"
-  | WHERE eset_protect.detection.severity_level RLIKE "(?i)(critical|high|error|fatal)"
+  FROM logs-eset.protect-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.category == "Threat_Event"
+  | WHERE eset_protect.severity IN ("Critical", "Fatal")
   | STATS
       event_count = COUNT(*),
-      detection_names = VALUES(eset_protect.detection.display_name),
-      categories = VALUES(eset_protect.detection.category),
-      object_names = VALUES(eset_protect.detection.object_name),
-      object_hashes = VALUES(eset_protect.detection.object_hash_sha1),
-      response_actions = VALUES(eset_protect.detection.responses.description),
-      users = VALUES(eset_protect.detection.context.user_name),
-      devices = VALUES(eset_protect.detection.context.device_uuid)
-    BY agent_id, bucket = DATE_TRUNC(10 minutes, @timestamp)
-  | WHERE event_count >= 1
-  | KEEP bucket, event_count, detection_names, categories, object_names, object_hashes, response_actions, users, devices
+      detection_names = VALUES(rule.name),
+      threat_types = VALUES(eset_protect.threat_type),
+      object_uris = VALUES(eset_protect.object_uri),
+      object_hashes = VALUES(file.hash.sha1),
+      actions_taken = VALUES(eset_protect.action_taken),
+      threat_handled = VALUES(eset_protect.threat_handled),
+      users = VALUES(eset_protect.user),
+      devices = VALUES(host.name)
+    BY host.name, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | KEEP bucket, host.name, event_count, detection_names, threat_types, object_uris, object_hashes, actions_taken, threat_handled, users, devices
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

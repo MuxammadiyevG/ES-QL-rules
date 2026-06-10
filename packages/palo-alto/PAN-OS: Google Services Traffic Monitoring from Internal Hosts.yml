@@ -57,7 +57,7 @@ query: |
       last_seen        = MAX(@timestamp),
       first_seen       = MIN(@timestamp)
     BY source.ip, panw.panos.source.zone, network.application
-  | WHERE session_count >= 1
+  | WHERE session_count >= 5
   | EVAL
       source_ip    = source.ip,
       src_zone     = panw.panos.source.zone,
@@ -71,6 +71,7 @@ query: |
       end_reasons, rulesets, flow_ids,
       last_seen, first_seen
   | SORT total_bytes DESC
+  | LIMIT 100
 enabled: true
 tags:
   - detection.informational

@@ -25,7 +25,7 @@ query: |
       total_received_bytes = SUM(COALESCE(d_bytes, 0)),
       event_count = COUNT(*)
     BY source.ip, destination.ip, event.action
-  | WHERE event_count > 0 AND total_sent_bytes > 104857600
+  | WHERE total_sent_bytes > 104857600
   | SORT total_sent_bytes DESC
   | LIMIT 50
 enabled: true
@@ -37,9 +37,9 @@ severity: high
 risk_score: 75
 references:
   - "https://attack.mitre.org/techniques/T1041/"
-pci_dss: []
-gdpr: []
-nist: []
+pci_dss: ["10.6.1"]
+gdpr: ["32.1.b"]
+nist: ["SC-7", "SI-4", "AU-12"]
 mitre_attack:
   TA0010:
     T1041: []

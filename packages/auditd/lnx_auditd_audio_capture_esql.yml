@@ -12,22 +12,22 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd EXECVE or SYSCALL */
-  | WHERE event.dataset RLIKE "(?i)auditd"
   /* selection 1: arecord execution */
   | WHERE (
-      process.name == "arecord" 
+      process.name == "arecord"
       AND (
-        COALESCE(process.command_line, "") RLIKE "(?i)-vv" 
-        OR COALESCE(process.command_line, "") RLIKE "(?i)-fdat"
+        TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*-vv.*"
+        OR TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*-fdat.*"
       )
     )
     /* selection 2: ecasound memfd_create */
     OR (
-      process.executable RLIKE "/ecasound$" 
+      process.executable RLIKE ".*/ecasound"
       AND (
-        COALESCE(event.original, "") RLIKE "(?i)syscall=319" /* memfd_create */
-        OR COALESCE(event.original, "") RLIKE "(?i)syscall=memfd_create"
+        TO_LOWER(COALESCE(event.original, "")) RLIKE ".*syscall=319.*" /* memfd_create */
+        OR TO_LOWER(COALESCE(event.original, "")) RLIKE ".*syscall=memfd_create.*"
       )
     )
   | STATS
@@ -35,11 +35,10 @@ query: |
       users = VALUES(user.name),
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, command_lines, hosts, raw_samples
   | SORT event_count DESC
 enabled: false

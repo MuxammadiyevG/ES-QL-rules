@@ -1,12 +1,14 @@
 rule_id: 1e1b31d8-2fb2-44bb-9fcb-d3d003b95534
-name: Sysmon Linux - Suspicious File Creation via Privileged User
+name: Linux Auth - Suspicious File Op via sudo/root
 description: |
-  Ushbu qoida Linux tizimlarida Sysmon Event 11 (FileCreate) hodisalarini kuzatadi.
-  Imtiyozli foydalanuvchi tomonidan shubhali fayl yaratilishi T1044 texnikasiga ishora qilishi mumkin.
+  Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi sudo komandalarini kuzatib,
+  fayl yaratuvchi buyruqlar (touch/cp/dd/tee/install) shubhali kataloglarda (/tmp,
+  /dev/shm, /var/tmp, /run) imtiyoz bilan ishlatilishini aniqlaydi. Bu persistence yoki
+  payload tashlash (T1044) texnikasiga ishora qilishi mumkin.
   Qonuniy holatlar: rejalashtirilgan deployment skriptlari, paket o'rnatishlari, konfiguratsiya yangilanishlari.
   SOC triage bosqichlari:
   - `actor` (user.name) va `user.effective.name` ni tekshiring.
-  - `process.command_line` va `process.working_directory` ni tahlil qiling.
+  - `process.command_line` (cmd) va `process.working_directory` ni tahlil qiling.
   - Yaratilgan fayl yo'li shubhali katalogda emasligini tasdiqlang (/tmp, /dev/shm, /var/tmp).
   - Noqonuniy faoliyat tasdiqlansa: faylni karantinga oling, manbani cheklang.
 type: esql
@@ -26,11 +28,11 @@ query: |
   | EVAL cmd         = COALESCE(process.command_line, "Unknown")
   | EVAL working_dir = COALESCE(process.working_directory, "Unknown")
   | EVAL eff_user    = COALESCE(user.effective.name, "Unknown")
-  /* wazuh-agentd tomonidan yaratilgan fayllarni chiqarib tashlash */
-  | WHERE NOT actor RLIKE "(?i)(wazuh|zabbix)"
-  /* Shubhali kataloglarda fayl yaratish */
-  | WHERE working_dir RLIKE "(?i)(/tmp|/dev/shm|/var/tmp|/run|/proc)"
-     OR cmd RLIKE "(?i)(touch\\s|cp\\s|mv\\s|tee\\s|dd\\s|install\\s)"
+  /* Monitoring agentlarini chiqarib tashlash */
+  | WHERE actor NOT IN ("wazuh", "zabbix")
+  /* Shubhali kataloglarda fayl yaratuvchi buyruqlar */
+  | WHERE TO_LOWER(working_dir) RLIKE ".*(/tmp|/dev/shm|/var/tmp|/run|/proc).*"
+     OR TO_LOWER(cmd) RLIKE ".*(touch\\s|cp\\s|tee\\s|dd\\s|install\\s).*"
   | STATS
       file_create_count = COUNT(*),
       commands          = VALUES(cmd),
@@ -40,7 +42,7 @@ query: |
       hosts             = VALUES(hostn),
       first_seen        = MIN(@timestamp),
       last_seen         = MAX(@timestamp)
-    BY agent_id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
+    BY agent_id, actor, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE file_create_count >= 2
   | KEEP agent_id, bucket, actor, file_create_count, commands,
          working_dirs, eff_users, src_ips, hosts, first_seen, last_seen
@@ -51,7 +53,7 @@ tags:
   - attack.persistence
   - attack.t1044
   - detection.linux
-  - sysmon.event11
+  - linux.auth.sudo
 severity: medium
 risk_score: 60
 nist: ["AU-2", "AU-12", "SI-7"]

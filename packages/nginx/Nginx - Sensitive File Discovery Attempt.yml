@@ -7,10 +7,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
- - "logs-nginx*"
+ - "logs-nginx.access-*"
 query_language: esql
 query: |
-  FROM logs-nginx*
+  FROM logs-nginx.access-*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE url.original LIKE "*.env*" 
      OR url.original LIKE "*.git*" 
@@ -21,7 +21,7 @@ query: |
       attempt_count = COUNT(*),
       requested_files = VALUES(url.original)
     BY agent_id, source.ip
-  | WHERE attempt_count >= 1
+  | WHERE attempt_count >= 3
   | KEEP agent_id, source.ip, attempt_count, requested_files
   | SORT attempt_count DESC
 enabled: true

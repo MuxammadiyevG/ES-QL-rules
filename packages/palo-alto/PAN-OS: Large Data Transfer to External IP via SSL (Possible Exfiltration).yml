@@ -71,6 +71,7 @@ query: |
       url_categories, rulesets,
       last_seen, first_seen
   | SORT total_bytes DESC
+  | LIMIT 100
 enabled: true
 tags:
   - attack.exfiltration

@@ -41,6 +41,7 @@ query: |
       src_ips, dst_ips, dst_ports, rule_names,
       last_seen, first_seen
   | SORT drop_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - detection.informational

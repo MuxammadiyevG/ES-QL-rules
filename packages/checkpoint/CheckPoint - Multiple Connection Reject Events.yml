@@ -14,7 +14,7 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- checkpoint-*
+- filebeat-checkpoint-*
 query_language: esql
 query: |
   FROM filebeat-checkpoint-*
@@ -45,5 +45,5 @@ nist: ["SC-7", "SI-4"]
 pci_dss: ["1.2.1", "10.6.1"]
 gdpr: ["35.7.d"]
 mitre_attack:
-  TA0007:
+  TA0011:
     T1095: []

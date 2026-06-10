@@ -32,7 +32,6 @@ query: |
       first_seen          = MIN(@timestamp),
       last_seen           = MAX(@timestamp)
     BY agent_id, host.hostname, bucket = DATE_TRUNC(5 minutes, @timestamp)
-  | WHERE warn_count >= 1
   | KEEP
       bucket, host.hostname, warn_count,
       affected_hosts, unique_hosts,
@@ -50,11 +49,9 @@ tags:
 severity: low
 risk_score: 25
 references:
-  - "https://attack.mitre.org/techniques/T1497/"
+  - "https://docs.vmware.com/en/VMware-vSphere/index.html"
 nist: ["SI-4", "AU-6"]
 pci_dss: ["10.6.1"]
 gdpr: ["35.7.d"]
 hipaa: ["164.312.b"]
-mitre_attack:
-  TA0005:
-    T1497: []
+mitre_attack: {}

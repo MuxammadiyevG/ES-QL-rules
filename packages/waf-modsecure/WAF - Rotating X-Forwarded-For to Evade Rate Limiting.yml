@@ -1,0 +1,64 @@
+rule_id: 62988312-e341-4547-b1b9-22563cb7c3c7
+name: WAF - Rotating X-Forwarded-For to Evade Rate Limiting
+description: |
+  Bir xil source.ip (TCP socket) va user-agent dan kelgan so'rovlarda ko'p
+  sonli turli X-Forwarded-For (network.forwarded_ip) qiymatlari aniqlandi.
+  Hujumchilar IP-asoslangan rate limiting va blocklist'lardan qochish uchun
+  XFF sarlavhasini soxtalashtirib aylantiradilar — bitta jismoniy manba ko'p
+  IP ko'rinishida namoyon bo'ladi (T1190, defense evasion).
+  Qonuniy holatlar: legitimate reverse proxy/CDN/load balancer zanjiri (bu
+  holatda forwarded_ip qiymatlari barqaror diapazonda bo'ladi).
+  SOC triage bosqichlari:
+  - `distinct_xff` soni yuqori, lekin `source.ip` bitta bo'lsa — bu XFF rotation.
+  - `forwarded_ips` ro'yxatidagi qiymatlar real ECMP/CDN diapazonidanmi yoki
+    tasodifiy/spoof ko'rinishdami tekshiring.
+  - Rate limiting'ni faqat XFF emas, balki `source.ip`/session/fingerprint
+    darajasida ham qo'llang.
+  - `source.ip` ni va u trigger qilgan WAF qoidalarini bloklash uchun korrelyatsiya qiling.
+  - Reverse proxy/WAF konfiguratsiyasida ishonchli proxy ro'yxatini (trusted XFF) tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-nginx.waf*
+query_language: esql
+query: |
+  FROM logs-nginx.waf*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.category == "intrusion_detection"
+  | WHERE network.forwarded_ip IS NOT NULL
+  | STATS
+      total_events       = COUNT(*),
+      distinct_xff       = COUNT_DISTINCT(network.forwarded_ip),
+      forwarded_ips      = VALUES(network.forwarded_ip),
+      triggered_rules    = VALUES(rule.id),
+      rule_descriptions  = VALUES(rule.description),
+      targeted_domains   = VALUES(url.domain),
+      match_data         = VALUES(nginx.modsecurity.match_data),
+      reasons            = VALUES(event.reason),
+      first_seen         = MIN(@timestamp),
+      last_seen          = MAX(@timestamp)
+    BY agent_id, source.ip, user_agent.original, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE distinct_xff >= 10
+  | KEEP agent_id, bucket, source.ip, user_agent.original, total_events, distinct_xff,
+        forwarded_ips, triggered_rules, rule_descriptions, targeted_domains,
+        match_data, reasons, first_seen, last_seen
+  | SORT distinct_xff DESC, total_events DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1027
+  - attack.initial-access
+  - attack.t1190
+  - detection.medium
+severity: medium
+risk_score: 65
+nist: ["SI-4", "SC-7", "AU-6"]
+pci_dss: ["6.4.1", "11.4"]
+gdpr: ["32.1.a"]
+mitre_attack:
+  TA0005:
+    T1027: []
+  TA0001:
+    T1190: []

@@ -65,7 +65,7 @@ query: |
       last_seen        = MAX(@timestamp),
       first_seen       = MIN(@timestamp)
     BY panw.panos.destination.nat.ip, panw.panos.source.zone, panw.panos.url_category_list
-  | WHERE session_count >= 1
+  | WHERE session_count >= 5
   | EVAL
       nat_dest_ip  = panw.panos.destination.nat.ip,
       src_zone     = panw.panos.source.zone,
@@ -79,6 +79,7 @@ query: |
       end_reasons, rulesets, flow_ids,
       last_seen, first_seen
   | SORT session_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - detection.informational
@@ -89,9 +90,9 @@ risk_score: 20
 references:
   - "https://attack.mitre.org/techniques/T1190/"
   - "https://attack.mitre.org/techniques/T1078/"
-nist: ["AC-17", "AU-12", "IA-2", "SC-7"]
+nist: ["AC-3", "SI-4"]
 pci_dss: ["10.6.1", "8.2.1"]
-gdpr: ["32.1.b", "30"]
+gdpr: ["32.1.b"]
 mitre_attack:
   TA0001:
     T1190: []

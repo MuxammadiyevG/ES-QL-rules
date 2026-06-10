@@ -12,8 +12,8 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd EXECVE */
-  | WHERE event.dataset RLIKE "(?i)auditd"
   /* selection: suspicious activities */
   | WHERE (
       process.name IN (
@@ -21,7 +21,7 @@ query: |
         "wireshark", "tshark", "rawshark", "rdesktop", "xfreerdp", 
         "nmap", "ssh", "scp", "sftp", "ftp"
       )
-      OR COALESCE(event.original, "") RLIKE "(?i)key=susp_activity"
+      OR TO_LOWER(COALESCE(event.original, "")) RLIKE ".*key=susp_activity.*"
     )
   /* Filter out common legit admin activity */
   | WHERE NOT (user.name IN ("root", "admin") AND process.name IN ("ssh", "scp"))
@@ -29,12 +29,10 @@ query: |
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  /* Threshold to reduce noise */
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, hosts, raw_samples
   | SORT event_count DESC
 enabled: false

@@ -1,0 +1,69 @@
+rule_id: e5c2a1e3-bff1-4ee1-9812-e97c01439424
+name: "PAN-OS: GlobalProtect Login from Unusual Geo or Multiple Failures"
+description: |
+  Ushbu qoida GlobalProtect gateway/portal orqali VPN autentifikatsiyasidagi
+  ko'p sonli muvaffaqiyatsiz urinishlarni yoki geografik anomaliyalarni kuzatadi.
+  Bir foydalanuvchi uchun bir nechta turli mamlakatlardan kelgan urinishlar yoki
+  takroriy login failure'lar — credential stuffing, account takeover yoki
+  ruxsatsiz remote access urinishini ko'rsatishi mumkin (T1078 / T1110).
+  Qonuniy holatlar: xodimning safari, mobil tarmoq, VPN qayta ulanishi.
+  SOC triage bosqichlari:
+  - Foydalanuvchi va manba IP geolokatsiyasini odatdagi joylashuv bilan solishtiring.
+  - Bir vaqtda turli mamlakatlardan urinishlar ("impossible travel") borligini tekshiring.
+  - Failure'lardan keyin muvaffaqiyatli ulanish bo'lganmi?
+  - Foydalanuvchi bilan bog'lanib, urinish unga tegishli ekanligini tasdiqlang.
+  - Kerak bo'lsa: hisobni vaqtincha o'chiring, MFA majburiy qiling, IP'ni bloklang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-panw*
+query_language: esql
+query: |
+  FROM logs-panw*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.dataset == "panw.globalprotect"
+  | WHERE event.category == "authentication"
+  | STATS
+      attempt_count    = COUNT(*),
+      failure_count    = COUNT(CASE(event.outcome == "failure", 1, NULL)),
+      users            = VALUES(source.user.name),
+      source_ips       = VALUES(source.ip),
+      unique_src_ips   = COUNT_DISTINCT(source.ip),
+      src_countries    = VALUES(source.geo.country_name),
+      unique_countries = COUNT_DISTINCT(source.geo.country_name),
+      outcomes         = VALUES(event.outcome),
+      devices          = VALUES(observer.hostname),
+      first_seen       = MIN(@timestamp),
+      last_seen        = MAX(@timestamp)
+    BY agent_id, source.user.name, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE failure_count >= 5 OR unique_countries >= 2
+  | KEEP bucket, source.user.name, attempt_count, failure_count, unique_src_ips,
+         unique_countries, users, source_ips, src_countries, outcomes, devices,
+         first_seen, last_seen
+  | SORT failure_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.initial-access
+  - attack.t1078
+  - attack.credential-access
+  - attack.t1110
+  - paloalto
+  - globalprotect
+  - vpn
+  - firewall
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+  - "https://attack.mitre.org/techniques/T1110/"
+nist: ["AC-7", "AC-17", "IA-2", "SI-4"]
+pci_dss: ["8.1.6", "8.3.1", "10.2.4"]
+gdpr: ["32.1.b"]
+hipaa: ["164.312.b"]
+mitre_attack:
+  TA0001:
+    T1078: []
+  TA0006:
+    T1110: []

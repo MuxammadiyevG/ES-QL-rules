@@ -12,12 +12,12 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd SYSCALL events */
-  | WHERE event.dataset RLIKE "(?i)auditd"
   /* selection: mknod/mknodat syscall */
-  | WHERE COALESCE(event.original, "") RLIKE "(?i)syscall=133" 
-    OR COALESCE(event.original, "") RLIKE "(?i)syscall=135"
-    OR COALESCE(event.original, "") RLIKE "(?i)syscall=mknod"
+  | WHERE TO_LOWER(COALESCE(event.original, "")) RLIKE ".*syscall=133.*"
+    OR TO_LOWER(COALESCE(event.original, "")) RLIKE ".*syscall=135.*"
+    OR TO_LOWER(COALESCE(event.original, "")) RLIKE ".*syscall=mknod.*"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
@@ -25,8 +25,7 @@ query: |
       executables = VALUES(process.executable),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, hosts, raw_samples
   | SORT event_count DESC
 enabled: false

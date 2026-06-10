@@ -11,10 +11,11 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* file creation events */
   | WHERE event.category == "file" AND event.type == "creation"
   /* selection: profile.d and script extension */
-  | WHERE file.path RLIKE "(?i)^/etc/profile\\.d/.*\\.(sh|csh)$"
+  | WHERE TO_LOWER(file.path) RLIKE "/etc/profile\\.d/.*\\.(sh|csh)"
   /* Filter: exclude OS package managers */
   | WHERE NOT (process.name IN ("dpkg", "yum", "dnf", "apt", "dockerd", "ansible-playbook"))
   | STATS
@@ -23,8 +24,7 @@ query: |
       processes = VALUES(process.name),
       file_paths = VALUES(file.path),
       hosts = VALUES(host.name)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, file_paths, hosts
   | SORT event_count DESC
 enabled: false

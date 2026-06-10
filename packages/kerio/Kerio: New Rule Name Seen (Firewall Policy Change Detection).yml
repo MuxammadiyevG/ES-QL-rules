@@ -28,12 +28,12 @@ query: |
       last_seen    = MAX(@timestamp),
       first_seen   = MIN(@timestamp)
     BY rule.name
-  | EVAL rule_name = rule.name
   | KEEP
-      rule_name, event_count,
+      rule.name, event_count,
       actions, src_ips, dst_ports, protos,
       last_seen, first_seen
   | SORT first_seen DESC
+  | LIMIT 100
 enabled: true
 tags:
   - detection.informational

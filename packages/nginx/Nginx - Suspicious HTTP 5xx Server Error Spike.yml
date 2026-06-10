@@ -14,10 +14,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- logs-nginx*
+- logs-nginx.access-*
 query_language: esql
 query: |
-  FROM logs-nginx* 
+  FROM logs-nginx.access-*
   | WHERE @timestamp >= NOW() - 30 minutes
   | WHERE data_stream.dataset == "nginx.access"
   | WHERE http.response.status_code >= 500 AND http.response.status_code < 600

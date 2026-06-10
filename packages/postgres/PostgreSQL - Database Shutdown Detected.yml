@@ -20,8 +20,7 @@ query: |
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE data_stream.dataset == "postgresql.log"
   | WHERE event.action IN ("postgres-fatal", "postgres-log")
-  | WHERE postgresql.log.message RLIKE
-      "(?i)(terminating connection due|aborting any active transactions|shutting down|database system is shut down)"
+  | WHERE TO_LOWER(postgresql.log.message) RLIKE ".*(terminating connection due|aborting any active transactions|shutting down|database system is shut down).*"
   | EVAL actor    = COALESCE(user.name, "Unknown")
   | EVAL db       = COALESCE(db.name, "Unknown")
   | EVAL hostn    = COALESCE(host.hostname, "Unknown")
@@ -37,8 +36,7 @@ query: |
       hosts          = VALUES(hostn),
       first_seen     = MIN(@timestamp),
       last_seen      = MAX(@timestamp)
-    BY agent_id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
-  | WHERE shutdown_count >= 1
+    BY agent_id, actor, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, actor, shutdown_count, databases,
          pg_levels, messages, pids, hosts, first_seen, last_seen
   | SORT shutdown_count DESC

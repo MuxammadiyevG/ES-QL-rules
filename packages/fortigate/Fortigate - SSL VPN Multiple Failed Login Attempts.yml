@@ -14,7 +14,7 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- logs-fortinet.fortigate-firewall-*
+- logs-fortinet.fortigate-*
 query_language: esql
 query: |
   FROM logs-fortinet.fortigate-*

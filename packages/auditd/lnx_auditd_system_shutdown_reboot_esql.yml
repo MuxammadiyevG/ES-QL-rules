@@ -11,16 +11,16 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
-  | WHERE event.action == "execve" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "process_started")
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.action == "executed"
   | WHERE process.name IN ("shutdown", "poweroff", "reboot", "halt")
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       hosts = VALUES(host.name)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, hosts
   | SORT event_count DESC
 enabled: false

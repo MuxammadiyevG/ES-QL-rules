@@ -15,25 +15,28 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- logs-eset.protect*
+- logs-eset.protect-*
 query_language: esql
 query: |
-  FROM logs-eset.protect*
-  | WHERE @timestamp >= NOW() - 45 minutes
-  | WHERE data_stream.dataset == "eset_protect.detection"
-  | WHERE eset_protect.detection.network_communication.remote.ip_address IS NOT NULL
-  | WHERE eset_protect.detection.category RLIKE "(?i)(network|communication)"
+  FROM logs-eset.protect-*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | WHERE event.category == "FirewallAggregated_Event"
+  | WHERE eset_protect.target_address IS NOT NULL OR eset_protect.source_address IS NOT NULL
+  | EVAL remote_address = COALESCE(TO_STRING(eset_protect.target_address), TO_STRING(eset_protect.source_address))
   | STATS
       event_count = COUNT(*),
-      remote_ips = VALUES(eset_protect.detection.network_communication.remote.ip_address),
-      remote_ports = VALUES(eset_protect.detection.network_communication.remote.port),
-      protocols = VALUES(eset_protect.detection.network_communication.protocol_name),
-      directions = VALUES(eset_protect.detection.network_communication.direction),
-      processes = VALUES(eset_protect.detection.context.process.path),
-      detection_types = VALUES(eset_protect.detection.type_name)
-    BY agent_id, host.hostname, eset_protect.detection.context.device_uuid, bucket = DATE_TRUNC(10 minutes, @timestamp)
+      total_aggregates = SUM(eset_protect.aggregate_count),
+      source_addresses = VALUES(eset_protect.source_address),
+      target_addresses = VALUES(eset_protect.target_address),
+      target_ports = VALUES(eset_protect.target_port),
+      source_ports = VALUES(eset_protect.source_port),
+      protocols = VALUES(eset_protect.protocol),
+      inbound_values = VALUES(eset_protect.inbound),
+      actions_taken = VALUES(eset_protect.action_taken),
+      processes = VALUES(eset_protect.process_name)
+    BY host.name, remote_address, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 10
-  | KEEP bucket, host.hostname, eset_protect.detection.context.device_uuid, event_count, remote_ips, remote_ports, protocols, directions, processes, detection_types
+  | KEEP bucket, host.name, remote_address, event_count, total_aggregates, source_addresses, target_addresses, target_ports, source_ports, protocols, inbound_values, actions_taken, processes
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

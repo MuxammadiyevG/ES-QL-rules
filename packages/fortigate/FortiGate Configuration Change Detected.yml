@@ -36,7 +36,7 @@ severity: high
 risk_score: 75
 references:
   - "https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-monitor-configuration-changes-on-FortiGate/ta-p/195383"
-nist: []
-pci_dss: []
-gdpr: []
+nist: ["CM-3", "AU-12"]
+pci_dss: ["10.2.2"]
+gdpr: ["32.1.b"]
 mitre_attack: []

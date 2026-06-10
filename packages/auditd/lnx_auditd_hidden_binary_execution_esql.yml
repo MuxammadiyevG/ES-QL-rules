@@ -11,10 +11,11 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd PATH type events with execution */
-  | WHERE event.action RLIKE "(?i)(executed|exec)" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "start")
+  | WHERE event.action == "executed"
   /* selection: files in hidden directories */
-  | WHERE file.path RLIKE "(?i)/\\.[^/]+/" OR process.executable RLIKE "(?i)/\\.[^/]+/"
+  | WHERE TO_LOWER(file.path) RLIKE ".*/\\.[^/]+/.*" OR TO_LOWER(process.executable) RLIKE ".*/\\.[^/]+/.*"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
@@ -24,8 +25,7 @@ query: |
       parent_processes = VALUES(process.parent.pid),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, file_paths, parent_processes, hosts, raw_samples
   | SORT event_count DESC
 enabled: false

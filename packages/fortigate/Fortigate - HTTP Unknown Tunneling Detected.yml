@@ -14,22 +14,19 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- logs-fortinet.fortigate-firewall-*
+- logs-fortinet.fortigate-*
 query_language: esql
 query: |
   FROM logs-fortinet.fortigate-*
   | WHERE @timestamp >= NOW() - 45 minutes
-  | WHERE TO_LOWER(message) LIKE "%http_decoder: http.unknown.tunnelling%"
-  | WHERE fortinet.fortigate.subtype == "ips"
+  | WHERE TO_LOWER(message) LIKE "%http.unknown.tunnelling%"
   | STATS
       event_count = COUNT(*),
       dst_ips = VALUES(destination.ip),
-      dst_ports = VALUES(destination.port),
-      policies = VALUES(rule.id),
-      profiles = VALUES(fortinet.fortigate.profile)
+      sample_messages = VALUES(message)
     BY source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
   | WHERE event_count >= 18
-  | KEEP bucket, source.ip, event_count, dst_ips, dst_ports, policies, profiles
+  | KEEP bucket, source.ip, event_count, dst_ips, sample_messages
   | SORT event_count DESC
   | LIMIT 100
 

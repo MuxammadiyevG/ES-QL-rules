@@ -21,16 +21,16 @@ query: |
   FROM filebeat-tomcat-*
   | WHERE @timestamp >= NOW() - 30 minutes
   | WHERE data_stream.dataset == "tomcat.access"
-  | WHERE rsa.misc.client LIKE "*nikto*"
-     OR rsa.misc.client LIKE "*dirbuster*"
-     OR rsa.misc.client LIKE "*nuclei*"
-     OR rsa.misc.client LIKE "*gobuster*"
-     OR rsa.misc.client LIKE "*sqlmap*"
-     OR rsa.misc.client LIKE "*masscan*"
-     OR rsa.misc.client LIKE "*nmap*"
-     OR rsa.misc.client LIKE "*ZAP*"
-     OR rsa.misc.client LIKE "*acunetix*"
-     OR rsa.misc.client LIKE "*burpsuite*"
+  | WHERE TO_LOWER(rsa.misc.client) LIKE "*nikto*"
+     OR TO_LOWER(rsa.misc.client) LIKE "*dirbuster*"
+     OR TO_LOWER(rsa.misc.client) LIKE "*nuclei*"
+     OR TO_LOWER(rsa.misc.client) LIKE "*gobuster*"
+     OR TO_LOWER(rsa.misc.client) LIKE "*sqlmap*"
+     OR TO_LOWER(rsa.misc.client) LIKE "*masscan*"
+     OR TO_LOWER(rsa.misc.client) LIKE "*nmap*"
+     OR TO_LOWER(rsa.misc.client) LIKE "*zap*"
+     OR TO_LOWER(rsa.misc.client) LIKE "*acunetix*"
+     OR TO_LOWER(rsa.misc.client) LIKE "*burpsuite*"
   | STATS
       scan_count = COUNT(*),
       unique_paths = COUNT_DISTINCT(rsa.web.urlpage),
@@ -62,3 +62,5 @@ gdpr: ["32.1"]
 mitre_attack:
   TA0043:
     T1595: []
+  TA0007:
+    T1046: []

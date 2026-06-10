@@ -6,11 +6,11 @@ description: |
 type: esql
 params: '{}'
 schedule_interval: 10m
-index: 
- - "logs-nginx*"
+index:
+ - "logs-nginx.access-*"
 query_language: esql
 query: |
-  FROM logs-nginx*
+  FROM logs-nginx.access-*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE http.response.status_code == 403
   | STATS

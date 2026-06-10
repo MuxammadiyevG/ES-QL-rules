@@ -45,6 +45,7 @@ query: |
       dst_ips, dst_ports, actions, rule_names,
       pkt_lengths, last_seen, first_seen
   | SORT syn_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - detection.informational

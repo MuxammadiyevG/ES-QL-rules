@@ -11,16 +11,16 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
-  | WHERE event.action == "execve" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "process_started")
-  | WHERE process.name == "crond" AND NOT (COALESCE(process.executable, "") RLIKE "(?i)^/(usr/)?sbin/crond")
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.action == "executed"
+  | WHERE process.name == "crond" AND NOT (TO_LOWER(COALESCE(process.executable, "")) RLIKE "/(usr/)?sbin/crond.*")
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
       hosts = VALUES(host.name)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, hosts
   | SORT event_count DESC
 enabled: false

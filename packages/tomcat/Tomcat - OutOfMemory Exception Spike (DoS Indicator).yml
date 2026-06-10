@@ -1,0 +1,59 @@
+rule_id: 894f95f5-3eb8-4a2a-84e7-06c72118f14a
+name: Tomcat - OutOfMemory / Exception Spike (DoS Indicator)
+description: |
+  Ushbu qoida qisqa vaqt ichida ko'p sonli HTTP 500 server xatoliklari
+  yoki exception (OutOfMemoryError, StackOverflowError, NullPointerException
+  va h.k.) ko'rinishidagi to'satdan ko'tarilishni aniqlaydi. Bu resource
+  exhaustion, application-layer DoS yoki muvaffaqiyatsiz exploit urinishi
+  belgisi bo'lishi mumkin (T1499).
+  Qonuniy holatlar: deploy yangilanishi, DB/backend nosozligi, memory
+  pressure, traffic spike.
+  SOC triage bosqichlari:
+  - Spike boshlanish vaqtini va davomiyligini aniqlang
+  - Xatoliklar bitta endpoint'gami yoki keng tarqalganmi tekshiring
+  - Bir vaqtda deploy yoki maintenance bo'lganligini tekshiring
+  - JVM heap/GC metrikalarini va catalina.out loglarini tekshiring
+  - Manba IP majmuini tekshiring — bitta IP DoS yaratayaptimi?
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-tomcat-*
+query_language: esql
+query: |
+  FROM filebeat-tomcat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "tomcat.access"
+  | WHERE rsa.misc.result_code RLIKE "5[0-9][0-9]"
+     OR TO_LOWER(rsa.web.urlpage) LIKE "*outofmemory*"
+     OR TO_LOWER(rsa.web.urlpage) LIKE "*stackoverflow*"
+     OR TO_LOWER(rsa.web.urlpage) LIKE "*exception*"
+  | STATS
+      error_count = COUNT(*),
+      error_codes = VALUES(rsa.misc.result_code),
+      affected_urls = VALUES(rsa.web.urlpage),
+      unique_ips = COUNT_DISTINCT(source.ip),
+      source_ips = VALUES(source.ip),
+      methods = VALUES(rsa.web.p_web_method)
+    BY agent_id, rsa.network.host_dst, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE error_count >= 100
+  | KEEP agent_id, bucket, rsa.network.host_dst, error_count, unique_ips, error_codes, affected_urls, source_ips, methods
+  | SORT error_count DESC
+  | LIMIT 50
+enabled: true
+tags:
+  - attack.impact
+  - attack.t1499
+  - tomcat
+  - dos
+  - availability
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1499/"
+nist: ["SI-4", "SC-5"]
+pci_dss: ["6.5.6", "12.10.1"]
+gdpr: ["32.1"]
+mitre_attack:
+  TA0040:
+    T1499: []

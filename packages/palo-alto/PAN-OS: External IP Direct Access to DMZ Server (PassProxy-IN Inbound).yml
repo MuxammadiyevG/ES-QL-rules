@@ -52,7 +52,7 @@ query: |
       last_seen        = MAX(@timestamp),
       first_seen       = MIN(@timestamp)
     BY source.ip, destination.ip, panw.panos.destination.zone, panw.panos.ruleset
-  | WHERE session_count >= 1 AND total_bytes > 500000
+  | WHERE total_bytes > 10000000 OR session_count >= 5
   | EVAL
       source_ip    = source.ip,
       dest_ip      = destination.ip,
@@ -67,6 +67,7 @@ query: |
       end_reasons, flow_ids,
       last_seen, first_seen
   | SORT total_bytes DESC
+  | LIMIT 100
 enabled: true
 tags:
   - attack.initial-access

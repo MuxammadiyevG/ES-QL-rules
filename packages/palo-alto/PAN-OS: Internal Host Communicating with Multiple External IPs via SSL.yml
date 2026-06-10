@@ -52,7 +52,7 @@ query: |
       last_seen          = MAX(@timestamp),
       first_seen         = MIN(@timestamp)
     BY source.ip, panw.panos.source.zone, panw.panos.destination.zone
-  | WHERE session_count >= 10 AND unique_dst_ips >= 1
+  | WHERE session_count >= 10 AND unique_dst_ips >= 5
   | EVAL
       source_ip    = source.ip,
       src_zone     = panw.panos.source.zone,
@@ -65,6 +65,7 @@ query: |
       end_reasons, rulesets, url_categories,
       last_seen, first_seen
   | SORT session_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - detection.informational

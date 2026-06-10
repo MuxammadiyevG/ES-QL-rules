@@ -13,24 +13,24 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd execve telemetry */
-  | WHERE event.action == "execve" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "process_started")
+  | WHERE event.action == "executed"
   /* selection: tcpdump or tshark with capture flags */
   | WHERE (
-      (process.name == "tcpdump" AND COALESCE(process.command_line, "") RLIKE "(?i)-c.*-i")
-      OR (process.name == "tshark" AND COALESCE(process.command_line, "") RLIKE "(?i)-c.*-i")
+      (process.name == "tcpdump" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*-c.*-i.*")
+      OR (process.name == "tshark" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*-c.*-i.*")
     )
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       executables = VALUES(process.executable),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
-  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, executables, network_interfaces, hosts, raw_samples
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, executables, hosts, raw_samples
   | SORT event_count DESC
 enabled: false
 tags:

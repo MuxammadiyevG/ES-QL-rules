@@ -21,8 +21,6 @@ query: |
   | WHERE data_stream.dataset == "postgresql.log"
   | WHERE event.outcome == "failure"
   | WHERE postgresql.log.severity == "FATAL"
-  | WHERE event.action IN ("postgres-fatal", "postgres-auth-failed",
-                            "postgres-connection-refused", "postgres-error")
   | EVAL actor    = COALESCE(user.name, "Unknown")
   | EVAL db       = COALESCE(db.name, "Unknown")
   | EVAL hostn    = COALESCE(host.hostname, "Unknown")

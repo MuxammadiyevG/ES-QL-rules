@@ -12,16 +12,17 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* file creation events */
   | WHERE event.category == "file" AND event.type == "creation"
   /* selection: cron directories */
   | WHERE (
-      file.path RLIKE "(?i)^/etc/cron\\.d/"
-      OR file.path RLIKE "(?i)^/etc/cron\\.daily/"
-      OR file.path RLIKE "(?i)^/etc/cron\\.hourly/"
-      OR file.path RLIKE "(?i)^/etc/cron\\.monthly/"
-      OR file.path RLIKE "(?i)^/etc/cron\\.weekly/"
-      OR file.path RLIKE "(?i)^/var/spool/cron/crontabs/"
+      TO_LOWER(file.path) RLIKE "/etc/cron\\.d/.*"
+      OR TO_LOWER(file.path) RLIKE "/etc/cron\\.daily/.*"
+      OR TO_LOWER(file.path) RLIKE "/etc/cron\\.hourly/.*"
+      OR TO_LOWER(file.path) RLIKE "/etc/cron\\.monthly/.*"
+      OR TO_LOWER(file.path) RLIKE "/etc/cron\\.weekly/.*"
+      OR TO_LOWER(file.path) RLIKE "/var/spool/cron/crontabs/.*"
       OR file.path IN ("/etc/cron.allow", "/etc/cron.deny", "/etc/crontab")
     )
   /* Filter: exclude OS package managers and updates */
@@ -32,8 +33,7 @@ query: |
       processes = VALUES(process.name),
       file_paths = VALUES(file.path),
       hosts = VALUES(host.name)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, file_paths, hosts
   | SORT event_count DESC
 enabled: false

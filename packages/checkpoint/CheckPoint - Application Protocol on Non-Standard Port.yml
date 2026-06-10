@@ -1,0 +1,63 @@
+rule_id: 61444a9d-9766-4b04-8259-51f947c7258c
+name: CheckPoint - Application Protocol on Non-Standard Port
+description: |
+  Ushbu qoida ruxsat berilgan trafikda aniqlangan application protocol port'ga
+  mos kelmaydigan holatlarni aniqlaydi (masalan, HTTP 443'da emas balki 8081'da,
+  DNS 53'da emas balki yuqori portda). Bu C2 callback yoki protocol tunneling
+  belgisi bo'lishi mumkin (T1571 - Non-Standard Port).
+  Qonuniy holatlar: ichki dasturlar nostandart portlarda ishlashi, dev/test muhitlar.
+  SOC triage bosqichlari:
+  - Aniqlangan application/service va destination.port mosligini tekshiring
+  - Source IP host va undagi process'ni identifikatsiya qiling
+  - Destination IP'ni threat intel bilan solishtiring
+  - Trafik pattern (beaconing interval, hajm) tahlil qiling
+  - Ruxsat etilgan ichki application ekanligini tasdiqlang yoki rad eting
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- filebeat-checkpoint-*
+query_language: esql
+query: |
+  FROM filebeat-checkpoint-*
+  | WHERE @timestamp >= NOW() - 45 minutes
+  | WHERE checkpoint.fw_action == "Accept" OR checkpoint.fw_action == "Allow"
+  | WHERE network.application IS NOT NULL
+  | EVAL app = TO_LOWER(network.application)
+  | EVAL mismatch = CASE(
+      app RLIKE "http" AND NOT app RLIKE "https" AND destination.port != 80 AND destination.port != 8080, 1,
+      app RLIKE "https" AND destination.port != 443 AND destination.port != 8443, 1,
+      app RLIKE "dns" AND destination.port != 53, 1,
+      app RLIKE "ssh" AND destination.port != 22, 1,
+      0)
+  | WHERE mismatch == 1
+  | STATS
+      event_count = COUNT(*),
+      apps        = VALUES(network.application),
+      dst_ports   = VALUES(destination.port),
+      services    = VALUES(checkpoint.service),
+      protocols   = VALUES(network.protocol),
+      first_seen  = MIN(@timestamp),
+      last_seen   = MAX(@timestamp)
+    BY agent_id, source.ip, destination.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE event_count >= 3
+  | KEEP bucket, source.ip, destination.ip, event_count, apps, dst_ports, services, protocols, first_seen, last_seen
+  | SORT event_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+- attack.command-and-control
+- attack.t1571
+- checkpoint
+- non-standard-port
+- c2
+severity: medium
+risk_score: 62
+references:
+- "https://attack.mitre.org/techniques/T1571/"
+nist: ["SC-7", "SI-4", "AU-12"]
+pci_dss: ["1.3", "10.6.1", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0011:
+    T1571: []

@@ -7,10 +7,10 @@ type: esql
 params: '{}'
 schedule_interval: 15m
 index:
- - "logs-nginx*"
+ - "logs-nginx.access-*"
 query_language: esql
 query: |
-  FROM logs-nginx*
+  FROM logs-nginx.access-*
   | WHERE @timestamp >= NOW() - 30 minutes
   | WHERE http.request.method IN ("PUT", "DELETE", "TRACK", "DEBUG", "CONNECT")
   | STATS

@@ -6,10 +6,10 @@ type: esql
 params: '{}'
 schedule_interval: 5m
 index:
- - "logs-nginx*"
+ - "logs-nginx.access-*"
 query_language: esql
 query: |
-  FROM logs-nginx*
+  FROM logs-nginx.access-*
   | WHERE @timestamp >= NOW() - 10 minutes
   | WHERE url.original LIKE "*/bin/*"
      OR url.original LIKE "*whoami*"
@@ -20,7 +20,7 @@ query: |
       injection_count = COUNT(*),
       full_urls = VALUES(url.original)
     BY agent_id, source.ip
-  | WHERE injection_count >= 1
+  | WHERE injection_count >= 3
   | KEEP agent_id, source.ip, injection_count, full_urls
 enabled: true
 tags:

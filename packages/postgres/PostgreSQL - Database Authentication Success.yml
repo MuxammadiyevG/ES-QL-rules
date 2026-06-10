@@ -22,7 +22,7 @@ query: |
   | WHERE data_stream.dataset == "postgresql.log"
   | WHERE event.action == "postgres-connection"
   | WHERE event.outcome == "success"
-  | WHERE postgresql.log.message RLIKE "(?i)(connection authorized|connection authenticated)"
+  | WHERE TO_LOWER(postgresql.log.message) RLIKE ".*(connection authorized|connection authenticated).*"
   | EVAL actor    = COALESCE(user.name, "Unknown")
   | EVAL db       = COALESCE(db.name, "Unknown")
   | EVAL hostn    = COALESCE(host.hostname, "Unknown")
@@ -37,8 +37,7 @@ query: |
       hosts       = VALUES(hostn),
       first_seen  = MIN(@timestamp),
       last_seen   = MAX(@timestamp)
-    BY agent_id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
-  | WHERE auth_count >= 1
+    BY agent_id, actor, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, actor, auth_count, databases,
          pids, messages, hosts, first_seen, last_seen
   | SORT auth_count DESC

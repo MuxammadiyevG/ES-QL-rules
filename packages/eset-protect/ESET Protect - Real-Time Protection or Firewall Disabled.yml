@@ -1,0 +1,60 @@
+rule_id: 070190d1-be8a-4a02-8383-f170a82b672b
+name: ESET Protect - Real-Time Protection or Firewall Disabled
+description: |
+  Ushbu qoida ESET Protect endpoint himoya moduli (real-time protection, firewall,
+  web/HIPS) o'chirilganini aniqlaydi. Himoya modulining o'chirilishi defense evasion
+  texnikasiga (T1562.001 - Disable or Modify Tools) ishora qiladi va ko'pincha keyingi
+  malware ishga tushishidan oldin amalga oshiriladi.
+  Qonuniy holatlar: rejalashtirilgan administrativ maintenance, dasturni qayta o'rnatish.
+  SOC triage bosqichlari:
+  - Qaysi modul o'chirilganini va kim tomonidan ekanligini aniqlang.
+  - Change ticket yoki maintenance oynasi borligini tekshiring.
+  - O'chirilgan host da keyingi threat detection borligini ko'ring.
+  - Noqonuniy faoliyat tasdiqlansa: modulni qayta yoqing, host ni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-eset.protect-*
+query_language: esql
+query: |
+  // HEURISTIC / BEST-EFFORT: This cluster has no dedicated protection-status / module-state
+  // field. Disabling of real-time protection or the firewall is approximated by scanning the
+  // raw Audit_Event payload (event.original) and action_taken/detail for protection/real-time/
+  // firewall together with disabled/off/stopped wording. Accuracy depends on Audit_Event
+  // content and should be validated against real disable events before production use.
+  FROM logs-eset.protect-*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | WHERE event.category == "Audit_Event"
+  | WHERE TO_LOWER(COALESCE(event.original, "")) RLIKE ".*(protection|real-time|realtime|firewall|hips|antivirus).*(disabled|off|stopped|deactivated|paused).*"
+      OR TO_LOWER(COALESCE(eset_protect.action_taken, "")) RLIKE ".*(disabled|turned off|stopped|deactivated|paused).*"
+      OR TO_LOWER(COALESCE(eset_protect.detail, "")) RLIKE ".*(protection|real-time|realtime|firewall|hips|antivirus).*(disabled|off|stopped|deactivated|paused).*"
+  | STATS
+      event_count = COUNT(*),
+      actions     = VALUES(event.action),
+      actions_taken = VALUES(eset_protect.action_taken),
+      details     = VALUES(eset_protect.detail),
+      users       = VALUES(eset_protect.user),
+      processes   = VALUES(eset_protect.process_name)
+    BY host.name, source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP bucket, host.name, source.ip, event_count, actions, actions_taken, details, users, processes
+  | SORT event_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+- attack.defense-evasion
+- attack.t1562
+- attack.t1562.001
+- eset
+- impair-defenses
+severity: high
+risk_score: 80
+references:
+- "https://attack.mitre.org/techniques/T1562/001/"
+nist: ["SI-3", "SI-4", "CM-6"]
+pci_dss: ["5.1", "5.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1562:
+      - "T1562.001"

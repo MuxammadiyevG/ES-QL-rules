@@ -14,10 +14,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- logs-fortinet.fortigate-firewall-*
+- logs-fortinet.fortigate-*
 query_language: esql
 query: |
-  FROM logs-fortinet.fortigate-firewall-*
+  FROM logs-fortinet.fortigate-*
   | WHERE @timestamp >= NOW() - 45 minutes
   | WHERE event.action == "login"
   | WHERE event.outcome == "failure"

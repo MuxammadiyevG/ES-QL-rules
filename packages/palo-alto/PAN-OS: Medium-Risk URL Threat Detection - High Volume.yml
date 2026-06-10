@@ -59,6 +59,7 @@ query: |
       actions, rule_names, total_bytes,
       last_seen, first_seen
   | SORT event_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - attack.command-and-control

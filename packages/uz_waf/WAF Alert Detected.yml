@@ -48,7 +48,6 @@ query: |
       last_seen     = MAX(@timestamp),
       first_seen    = MIN(@timestamp)
     BY agent_id, source.ip, event.reason
-  | WHERE event_count >= 1
   | KEEP
       agent_id,
       source.ip,
@@ -65,13 +64,12 @@ query: |
       last_seen,
       first_seen
   | SORT event_count DESC
+  | LIMIT 200
 
 enabled: true
 tags:
   - attack.initial-access
   - attack.t1190
-  - attack.t1059.007
-  - attack.t1055
   - detection.waf
   - source.nginx
 severity: medium
@@ -86,5 +84,3 @@ gdpr: ["32.1.b"]
 mitre_attack:
   TA0001:
     T1190: []
-  TA0006:
-    T1110: ["T1110.003"]

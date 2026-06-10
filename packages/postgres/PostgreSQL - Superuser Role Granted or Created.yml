@@ -1,0 +1,60 @@
+rule_id: af48c35b-bb73-4ab3-86b4-36ea07c2a4ed
+name: PostgreSQL - Superuser Role Granted or Created
+description: |
+  Ushbu qoida PostgreSQL log (logs-postgresql.log-*) ichida SUPERUSER huquqi beruvchi
+  yoki yangi imtiyozli rol yaratuvchi DDL buyruqlarini aniqlaydi
+  (CREATE ROLE ... SUPERUSER, ALTER ROLE ... SUPERUSER, GRANT). Bu account manipulation
+  (T1098) yoki privilege escalation belgisi bo'lib, persistence yoki to'liq nazoratga
+  olib kelishi mumkin.
+  Qonuniy holatlar: DBA tomonidan rejalashtirilgan rol boshqaruvi, migratsiya skriptlari.
+  SOC triage bosqichlari:
+  - Buyruqni kim (`actor`) va qaysi `db.name` da bajarganini aniqlang.
+  - SUPERUSER huquqi berilgan rolni va sababni tekshiring.
+  - Change ticket borligini tasdiqlang.
+  - Noqonuniy faoliyat tasdiqlansa: rolni qaytaring, credentiallarni rotatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-postgresql.log-*
+query_language: esql
+query: |
+  FROM logs-postgresql.log-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "postgresql.log"
+  | WHERE TO_LOWER(postgresql.log.message) RLIKE ".*(create\\s+role|alter\\s+role).*superuser.*"
+     OR TO_LOWER(postgresql.log.message) RLIKE ".*grant\\s+.*(superuser|rds_superuser|pg_execute_server_program).*"
+  | EVAL actor    = COALESCE(user.name, "Unknown")
+  | EVAL db       = COALESCE(db.name, "Unknown")
+  | EVAL hostn    = COALESCE(host.hostname, "Unknown")
+  | EVAL pg_msg   = COALESCE(postgresql.log.message, "Unknown")
+  | EVAL pid      = COALESCE(process.pid, 0)
+  | STATS
+      grant_count = COUNT(*),
+      databases   = VALUES(db),
+      messages    = VALUES(pg_msg),
+      pids        = VALUES(pid),
+      hosts       = VALUES(hostn),
+      first_seen  = MIN(@timestamp),
+      last_seen   = MAX(@timestamp)
+    BY agent_id, actor, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, actor, grant_count, databases,
+         messages, pids, hosts, first_seen, last_seen
+  | SORT grant_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.persistence
+  - attack.privilege_escalation
+  - attack.t1098
+  - detection.postgresql
+severity: high
+risk_score: 80
+nist: ["AC-2", "AC-6", "AU-2", "AU-12"]
+pci_dss: ["7.1", "8.1.6", "10.2.5"]
+gdpr: ["32.1.a", "32.2", "35.7.d"]
+mitre_attack:
+  TA0003:
+    T1098: []
+  TA0004:
+    T1098: []

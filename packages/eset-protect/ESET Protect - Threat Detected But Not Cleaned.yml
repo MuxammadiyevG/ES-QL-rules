@@ -1,0 +1,60 @@
+rule_id: e8979ec2-bf63-4421-8c19-0860cf60c95e
+name: ESET Protect - Threat Detected But Not Cleaned
+description: |
+  Ushbu qoida ESET Protect tomonidan aniqlangan, biroq tozalanmagan yoki karantinga
+  olinmagan (cleaned/quarantined emas) threat'larni aniqlaydi. Bunday holatda zararli
+  obyekt tizimda saqlanib qoladi va keyingi kompromisaga olib kelishi mumkin
+  (incomplete remediation / impact).
+  Qonuniy holatlar: user postponement, manual intervention talab qilinadigan obyekt,
+  read-only media.
+  SOC triage bosqichlari:
+  - Response action nima bo'lganini (none/blocked/deleted/error) aniqlang.
+  - Threat turi va obyekt yo'lini threat intelligence bilan solishtiring.
+  - Host da threat hali ham mavjudligini tasdiqlang.
+  - Noqonuniy faoliyat tasdiqlansa: majburiy remediation yoki host izolyatsiyasi.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-eset.protect-*
+query_language: esql
+query: |
+  FROM logs-eset.protect-*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | WHERE event.category == "Threat_Event"
+  | WHERE eset_protect.threat_handled == false
+  | STATS
+      event_count      = COUNT(*),
+      detection_names  = VALUES(rule.name),
+      threat_types     = VALUES(eset_protect.threat_type),
+      object_uris      = VALUES(eset_protect.object_uri),
+      object_hashes    = VALUES(file.hash.sha1),
+      actions_taken    = VALUES(eset_protect.action_taken),
+      action_errors    = VALUES(eset_protect.action_error),
+      severity_levels  = VALUES(eset_protect.severity),
+      users            = VALUES(eset_protect.user)
+    BY host.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP bucket, host.name, event_count,
+         detection_names, threat_types, object_uris, object_hashes, actions_taken, action_errors, severity_levels, users
+  | SORT event_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+- attack.defense-evasion
+- attack.impact
+- attack.t1562
+- eset
+- unhandled-threat
+- incomplete-remediation
+severity: high
+risk_score: 80
+references:
+- "https://attack.mitre.org/tactics/TA0005/"
+- "https://attack.mitre.org/tactics/TA0040/"
+nist: ["SI-3", "IR-4", "IR-5"]
+pci_dss: ["5.1", "5.2", "10.6.1"]
+gdpr: ["35.7.d"]
+mitre_attack:
+  TA0005:
+    T1562: []
+  TA0040: {}

@@ -1,5 +1,5 @@
 rule_id: 5fb566bd-3753-479d-9e99-ae2533012754
-name: WAF Attack from Previously Unseen Geographic Region
+name: WAF Attack from High-Risk Geographic Region
 description: |
   Odatda hujumlar kuzatilmagan yangi geografik mintaqadan (mamlakat yoki kontinent)
   WAF qoidalari ishga tushdi. Bu yangi hujum kampaniyasining boshlanishini yoki
@@ -40,7 +40,6 @@ query: |
     BY agent_id, source.geo.country_name, source.geo.country_iso_code,
        source.geo.continent_name, source.geo.region_name,
        bucket = DATE_TRUNC(10 minutes, @timestamp)
-  | WHERE attack_count >= 1
   | KEEP agent_id, bucket, source.geo.country_name, source.geo.country_iso_code,
         source.geo.continent_name, source.geo.region_name,
         attack_count, unique_sources, source_ips, unique_rules,
@@ -56,7 +55,7 @@ tags:
 - detection.medium
 severity: medium
 risk_score: 65
-nist: ["SI-4", "AU-6", "AC-17"]
+nist: ["SI-4", "AC-2"]
 pci_dss: ['11.4', '8.3']
 gdpr: ["32.1.a"]
 mitre_attack:

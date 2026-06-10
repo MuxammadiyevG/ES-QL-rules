@@ -1,0 +1,56 @@
+rule_id: 25ee7fc5-a192-4f00-94d6-e43ff2da5874
+name: FortiGate - FortiToken / MFA Disabled or Bypassed
+description: |
+  Ushbu qoida FortiGate qurilmasida admin tomonidan ikki bosqichli autentifikatsiya (2FA),
+  FortiToken yoki MFA o'chirib qo'yilishi yoki chetlab o'tilishini aniqlaydi.
+  MFA ni o'chirish hujumchiga akkauntdan keyinchalik erkin foydalanish imkonini beradi va
+  bu Credential Access / Account Manipulation belgisi bo'lishi mumkin (T1556).
+  Qonuniy holatlar: foydalanuvchi token almashtirish, rejaviy konfiguratsiya o'zgarishi.
+
+  SOC triage bosqichlari:
+  - O'zgarishni amalga oshirgan admin (`user.name`) va manba IP (`source.ip`)ni aniqlang.
+  - Qaysi foydalanuvchi yoki admin akkauntida MFA o'chirilganini `message` orqali tekshiring.
+  - O'zgarish tasdiqlangan Change Management bileti bilan mos kelishini tekshiring.
+  - Noqonuniy bo'lsa, MFA ni qayta yoqing va barcha admin sessiyalarini uzing.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-fortinet.fortigate-*
+query_language: esql
+query: |
+  FROM logs-fortinet.fortigate-*
+  | WHERE @timestamp >= NOW() - 20 minutes
+  /* FortiGate event/system logs surface only as raw `message` in this deployment; heuristic match. Requires FortiGate event-log onboarding to fire. */
+  | WHERE TO_LOWER(message) RLIKE ".*(two-factor|two_factor|fortitoken|2fa|mfa).*"
+    AND TO_LOWER(message) RLIKE ".*(disable|removed|unset).*"
+  | EVAL Device = COALESCE(observer.name, "FortiGate")
+  | STATS
+      change_count = COUNT(*),
+      users = VALUES(user.name),
+      src_ips = VALUES(source.ip),
+      messages = VALUES(message),
+      last_seen = MAX(@timestamp)
+    BY Device, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | KEEP bucket, Device, change_count, users, src_ips, messages, last_seen
+  | SORT change_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.defense-evasion
+  - attack.t1556
+  - fortigate.audit
+  - authentication
+  - mfa
+severity: high
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1556/"
+  - "https://docs.fortinet.com/document/fortigate/7.4.0/fortios-log-message-reference"
+nist: ["IA-2", "AC-6", "AU-12"]
+pci_dss: ["8.3.1", "8.4", "10.2.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1556: []

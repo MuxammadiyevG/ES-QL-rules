@@ -47,6 +47,7 @@ query: |
       dst_ips, dst_ports, rule_names,
       last_seen, first_seen
   | SORT conn_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - attack.command-and-control

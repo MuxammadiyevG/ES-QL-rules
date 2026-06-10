@@ -1,9 +1,9 @@
 rule_id: d4411e69-12d7-479f-a4a8-019d0b8c9808
-name: Sysmon Linux - SSH Login Activity Detected
+name: Linux Auth - SSH Login Activity
 description: |
-  Ushbu qoida Linux tizimlarida SSH kirish va chiqish hodisalarini kuzatadi.
-  Muvaffaqiyatli va muvaffaqiyatsiz SSH urinishlari, noma'lum foydalanuvchilar
-  hamda session ochilish/yopilish hodisalari monitoring qilinadi.
+  Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi SSH kirish va chiqish hodisalarini kuzatadi.
+  sshd tomonidan qayd etilgan muvaffaqiyatli va muvaffaqiyatsiz SSH urinishlari, noma'lum
+  foydalanuvchilar hamda session ochilish/yopilish hodisalari monitoring qilinadi.
   Bu qoida asosan audit va visibility maqsadida low severity darajasida belgilangan.
   Qonuniy holatlar: administratorlar, DevOps, servis akkauntlarining oddiy SSH kirishlari.
   SOC triage bosqichlari:
@@ -36,7 +36,8 @@ query: |
   | EVAL src_port    = COALESCE(source.port, 0)
   | EVAL outcome     = COALESCE(event.outcome, "Unknown")
   | EVAL action      = COALESCE(event.action, "Unknown")
-  | EVAL related_ip  = COALESCE(TO_STRING(MV_FIRST(related.ip)), "Unknown")
+  | EVAL geo_city    = COALESCE(source.geo.city_name, "Unknown")
+  | EVAL geo_country = COALESCE(source.geo.country_name, "Unknown")
   | STATS
       event_count    = COUNT(*),
       success_count  = COUNT_IF(outcome == "success"),
@@ -47,14 +48,12 @@ query: |
       geo_cities     = VALUES(geo_city),
       geo_countries  = VALUES(geo_country),
       hosts          = VALUES(hostn),
-      related_ips    = VALUES(related_ip),
       first_seen     = MIN(@timestamp),
       last_seen      = MAX(@timestamp)
-    BY agent_id, actor, bucket = DATE_TRUNC(1 hour, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, actor, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, actor, event_count, success_count,
-         failure_count, actions, src_ips, src_ports,hosts, related_ips,
-         first_seen, last_seen
+         failure_count, actions, src_ips, src_ports, geo_cities, geo_countries,
+         hosts, first_seen, last_seen
   | SORT event_count DESC
   | LIMIT 200
 enabled: true
@@ -62,7 +61,7 @@ tags:
   - attack.initial_access
   - attack.t1078
   - detection.linux
-  - sysmon.ssh
+  - linux.auth.ssh
 severity: low
 risk_score: 21
 nist: ["AU-2", "AU-12", "AC-17", "IA-2"]

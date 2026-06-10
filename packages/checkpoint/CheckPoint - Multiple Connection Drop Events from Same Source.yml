@@ -14,7 +14,7 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- checkpoint-*
+- filebeat-checkpoint-*
 query_language: esql
 query: |
   FROM filebeat-checkpoint-*
@@ -35,15 +35,16 @@ query: |
 enabled: true
 tags:
 - attack.discovery
-- attack.reconnaissance
+- attack.t1046
 - checkpoint
 - network-scan
 severity: medium
 risk_score: 60
 references:
-- "https://attack.mitre.org/tactics/TA0043/"
+- "https://attack.mitre.org/techniques/T1046/"
 nist: ["SC-7", "SI-4"]
 pci_dss: ["1.4", "10.6.1"]
 gdpr: ["35.7.d"]
 mitre_attack:
-  TA0043: {}
+  TA0007:
+    T1046: []

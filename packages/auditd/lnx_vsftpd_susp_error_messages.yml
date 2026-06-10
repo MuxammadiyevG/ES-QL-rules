@@ -11,20 +11,20 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd events only */
-  | WHERE event.dataset RLIKE "(?i)vsftpd"
+  | WHERE TO_LOWER(event.dataset) RLIKE ".*vsftpd.*"
   /* Detect relevant VSFTPD error messages */
-  | WHERE COALESCE(event.message, "") RLIKE "(?i)(Connection refused: too many sessions for this address.|Connection refused: tcp_wrappers denial.|Bad HTTP verb.|port and pasv both active|pasv and port both active|Transfer done \\(but failed to open directory\\)\\.|Could not set file modification time\\.|bug: pid active in ptrace_sandbox_free|PTRACE_SETOPTIONS failure|weird status:|couldn't handle sandbox event|syscall .* out of bounds|syscall not permitted:|syscall validate failed:|Input line too long\\.|poor buffer accounting in str_netfd_alloc|vsf_sysutil_read_loop)"
+  | WHERE TO_LOWER(COALESCE(event.original, "")) RLIKE ".*(connection refused: too many sessions for this address.|connection refused: tcp_wrappers denial.|bad http verb.|port and pasv both active|pasv and port both active|transfer done \\(but failed to open directory\\)\\.|could not set file modification time\\.|bug: pid active in ptrace_sandbox_free|ptrace_setoptions failure|weird status:|couldn't handle sandbox event|out of bounds|syscall not permitted:|syscall validate failed:|input line too long\\.|poor buffer accounting in str_netfd_alloc|vsf_sysutil_read_loop).*"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       hosts = VALUES(host.name),
-      raw_samples = VALUES(event.message)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+      raw_samples = VALUES(event.original)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP
       agent_id, bucket,
       host.name,

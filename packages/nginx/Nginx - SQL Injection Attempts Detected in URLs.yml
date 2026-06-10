@@ -14,13 +14,13 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- logs-nginx*
+- logs-nginx.access-*
 query_language: esql
 query: |
-  FROM logs-nginx* 
+  FROM logs-nginx.access-*
   | WHERE @timestamp >= NOW() - 45 minutes
   | WHERE data_stream.dataset == "nginx.access"
-  | WHERE url.original RLIKE "(?i)(union.*select|select.*from|insert.*into|delete.*from|drop.*table|update.*set|exec.*xp_|';.*--|\\*.*from|concat.*\\(|char.*\\(|cast.*\\(|convert.*\\(|benchmark.*\\(|sleep.*\\(|waitfor.*delay|information_schema|sysobjects|syscolumns)"
+  | WHERE TO_LOWER(url.original) RLIKE ".*(union select|union all select|information_schema|sysobjects|syscolumns|or 1=1|or 1 = 1|and 1=1|' or '|sleep\\(|benchmark\\(|waitfor delay|xp_cmdshell|concat\\(|cast\\(|convert\\(|; --|/\\*\\*/|0x).*"
   | STATS
       event_count = COUNT(*),
       urls = VALUES(url.original),

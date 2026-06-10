@@ -14,22 +14,22 @@ type: esql
 params: '{}'
 schedule_interval: 15m
 index:
-- filebeat-nginx-*
+- logs-nginx.error-*
 query_language: esql
 query: |
-  FROM filebeat-nginx-*
+  FROM logs-nginx.error-*
   | WHERE @timestamp >= NOW() - 1 hour
-  | WHERE data_stream.dataset == "nginx.error"
-  | WHERE message RLIKE "(?i)failed \\(36: File name too long\\)"
+  /* nginx error logs are unstructured: everything is in `message`; client IP grokked out */
+  | WHERE TO_LOWER(message) RLIKE ".*file name too long.*"
+  | GROK message "client: %{IP:client_ip}"
+  | EVAL src_ip = COALESCE(client_ip, "unknown")
   | STATS
       event_count = COUNT(*),
-      urls = VALUES(url.original),
-      methods = VALUES(http.request.method),
-      user_agents = VALUES(user_agent.original),
+      sample_messages = VALUES(message),
       hosts = VALUES(host.name)
-    BY agent_id, source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
+    BY agent_id, src_ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | WHERE event_count >= 5
-  | KEEP agent_id, bucket, source.ip, event_count, urls, methods, user_agents, hosts
+  | KEEP agent_id, bucket, src_ip, event_count, sample_messages, hosts
   | SORT event_count DESC
   | LIMIT 100
 enabled: true

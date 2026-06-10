@@ -14,13 +14,13 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- filebeat-nginx-*
+- logs-nginx.access-*
 query_language: esql
 query: |
-  FROM filebeat-nginx-*
+  FROM logs-nginx.access-*
   | WHERE @timestamp >= NOW() - 45 minutes
   | WHERE data_stream.dataset == "nginx.access"
-  | WHERE url.original RLIKE "(?i)(\\.\\./|\\.\\.\\.\\\\|\\.\\.%2[fF]|%2[eE]%2[eE]%2[fF]|\\.\\.\\\\|/etc/passwd|/etc/shadow|/windows/win\\.ini|/boot\\.ini|c:\\\\windows|config\\.php|wp-config|database\\.yml)"
+  | WHERE TO_LOWER(url.original) RLIKE ".*(\\.\\./|\\.\\.\\.\\\\|\\.\\.%2[ff]|%2[ee]%2[ee]%2[ff]|\\.\\.\\\\|/etc/passwd|/etc/shadow|/windows/win\\.ini|/boot\\.ini|c:\\\\windows|config\\.php|wp-config|database\\.yml).*"
   | STATS
       event_count = COUNT(*),
       urls = VALUES(url.original),
@@ -35,7 +35,7 @@ query: |
 enabled: true
 tags:
 - attack.initial-access
-- attack.t1083
+- attack.t1190
 - nginx
 - path-traversal
 - directory-traversal
@@ -48,5 +48,5 @@ nist: ["SI-4", "CM-7"]
 pci_dss: ["6.5.8", "11.4"]
 gdpr: ["35.7.d"]
 mitre_attack:
-  TA0007:
-    T1083: []
+  TA0001:
+    T1190: []

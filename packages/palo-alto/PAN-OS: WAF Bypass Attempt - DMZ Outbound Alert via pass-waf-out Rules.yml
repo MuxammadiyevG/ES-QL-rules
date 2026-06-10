@@ -85,9 +85,10 @@ query: |
       dst_countries, dst_cities, flow_ids,
       last_seen, first_seen
   | SORT alert_count DESC
+  | LIMIT 100
 enabled: true
 tags:
-  - attack.defense-evasion
+  - attack.initial-access
   - attack.command-and-control
   - attack.t1190
   - attack.t1071.001
@@ -101,5 +102,7 @@ nist: ["SC-7", "SI-3", "AU-12", "IR-4"]
 pci_dss: ["6.4.1", "6.3.2", "11.4"]
 gdpr: ["32.1.b"]
 mitre_attack:
+  TA0001:
+    T1190: []
   TA0011:
     T1071: ["T1071.001"]

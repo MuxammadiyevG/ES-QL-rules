@@ -15,7 +15,6 @@ query: |
   | WHERE @timestamp >= NOW() - 300 seconds
   | KEEP
       @timestamp,
-      agent_id,
       host.name,
       host.ip,
       source.ip,
@@ -25,18 +24,25 @@ query: |
       rule.name,
       eset_protect.event,
       eset_protect.severity,
+      eset_protect.threat_type,
+      eset_protect.action_taken,
+      eset_protect.object_uri,
       eset_protect.source_address,
       eset_protect.source_address_type,
       eset_protect.target_address,
       eset_protect.target_address_type,
       eset_protect.protocol,
       eset_protect.handled,
+      eset_protect.threat_handled,
       eset_protect.inbound,
       eset_protect.aggregate_count,
       eset_protect.os_name,
       eset_protect.group_name,
-      eset_protect.source_uuid
+      eset_protect.source_uuid,
+      eset_protect.user,
+      user.name
   | SORT @timestamp DESC
+  | LIMIT 200
 enabled: true
 tags:
   - detection.eset

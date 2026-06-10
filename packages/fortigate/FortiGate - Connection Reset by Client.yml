@@ -42,6 +42,9 @@ severity: low
 risk_score: 25
 references:
   - "https://community.fortinet.com/t5/FortiGate/Technical-Tip-Log-messages-with-action-client-rst-or-server-rst/ta-p/190225"
+nist: ["SI-4", "CA-7"]
+pci_dss: ["10.6.1"]
+gdpr: ["32.1.b"]
 mitre_attack:
   TA0043:
     T1595: []

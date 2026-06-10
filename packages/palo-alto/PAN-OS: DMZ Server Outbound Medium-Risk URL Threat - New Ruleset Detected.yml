@@ -18,7 +18,6 @@ query: |
   | WHERE @timestamp >= NOW() - 300 seconds
   | WHERE event.kind == "alert"
   | WHERE event.category == "intrusion_detection"
-  | WHERE event.action == "alert"
   | WHERE panw.panos.source.zone == "DMZ"
   | WHERE panw.panos.url_category_list LIKE "*medium-risk*"
   | WHERE panw.panos.threat.id == "(9999)"
@@ -88,6 +87,7 @@ query: |
       dst_countries, dst_cities, flow_ids, seq_numbers,
       last_seen, first_seen
   | SORT alert_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - attack.command-and-control

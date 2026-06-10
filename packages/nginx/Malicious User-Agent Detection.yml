@@ -20,35 +20,36 @@ type: esql
 params: '{}'
 schedule_interval: 15m
 index:
-  - filebeat-nginx-access-*
+  - logs-nginx.access-*
 query_language: esql
 query: |
-  FROM logs-nginx*
-  | WHERE event.original IS NOT NULL
+  FROM logs-nginx.access-*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | WHERE user_agent.original IS NOT NULL
   | EVAL malicious_ua = CASE(
-      event.original RLIKE "(?i).*(sqlmap|nikto|nmap|masscan|metasploit|burp|acunetix|nessus|openvas|w3af|dirbuster|gobuster|wfuzz|hydra|medusa|john|aircrack).*", true,
-      event.original RLIKE "(?i).*(python-requests|curl|wget|libwww-perl|go-http-client|java\\/|ruby|perl|scrapy).*", true,
-      event.original == "-" OR LENGTH(event.original) < 10, true,
+      TO_LOWER(user_agent.original) RLIKE ".*(sqlmap|nikto|nmap|masscan|metasploit|burp|acunetix|nessus|openvas|w3af|dirbuster|gobuster|wfuzz|hydra|medusa|john|aircrack).*", true,
+      TO_LOWER(user_agent.original) RLIKE ".*(python-requests|curl|wget|libwww-perl|go-http-client|java\\/|ruby|perl|scrapy).*", true,
+      user_agent.original == "-" OR LENGTH(user_agent.original) < 10, true,
       false
     )
   | WHERE malicious_ua == true
   | EVAL tool_category = CASE(
-      event.original RLIKE "(?i).*(sqlmap|acunetix|w3af).*", "Web-Vuln-Scanner",
-      event.original RLIKE "(?i).*(nikto|dirbuster|gobuster|wfuzz).*", "Web-Fuzzer",
-      event.original RLIKE "(?i).*(nmap|masscan|nessus|openvas).*", "Network-Scanner",
-      event.original RLIKE "(?i).*(metasploit|burp|hydra).*", "Exploitation-Tool",
-      event.original RLIKE "(?i).*(python|curl|wget|scrapy).*", "Custom-Script",
+      TO_LOWER(user_agent.original) RLIKE ".*(sqlmap|acunetix|w3af).*", "Web-Vuln-Scanner",
+      TO_LOWER(user_agent.original) RLIKE ".*(nikto|dirbuster|gobuster|wfuzz).*", "Web-Fuzzer",
+      TO_LOWER(user_agent.original) RLIKE ".*(nmap|masscan|nessus|openvas).*", "Network-Scanner",
+      TO_LOWER(user_agent.original) RLIKE ".*(metasploit|burp|hydra).*", "Exploitation-Tool",
+      TO_LOWER(user_agent.original) RLIKE ".*(python|curl|wget|scrapy).*", "Custom-Script",
       "Unknown-Tool"
     )
-  | STATS 
+  | STATS
       request_count = COUNT(*),
-      unique_paths = COUNT_DISTINCT(event.original),
-      unique_uas = COUNT_DISTINCT(event.original),
-      paths_accessed = VALUES(event.original),
-      user_agents = VALUES(event.original),
-      http_methods = VALUES(event.action)
+      unique_paths = COUNT_DISTINCT(url.path),
+      unique_uas = COUNT_DISTINCT(user_agent.original),
+      paths_accessed = VALUES(url.path),
+      user_agents = VALUES(user_agent.original),
+      http_methods = VALUES(http.request.method)
     BY agent_id, source.ip, tool_category
-    , bucket = DATE_TRUNC(20 minutes, @timestamp)
+    , bucket = DATE_TRUNC(15 minutes, @timestamp)
   | WHERE request_count >= 5
   | EVAL risk_score = request_count * 10 + unique_paths * 5
   | WHERE risk_score >= 30

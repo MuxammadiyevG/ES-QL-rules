@@ -45,6 +45,7 @@ query: |
       dst_ips, dst_ports, protos, tcp_flags, rule_names,
       last_seen, first_seen
   | SORT drop_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - attack.command-and-control

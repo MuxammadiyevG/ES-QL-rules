@@ -1,0 +1,61 @@
+rule_id: 1b244bae-aaab-4555-8800-a3c3dafccf01
+name: PostgreSQL - COPY TO PROGRAM or File Abuse
+description: |
+  Ushbu qoida PostgreSQL log (logs-postgresql.log-*) ichida operatsion tizim buyrug'ini
+  ishga tushiruvchi yoki server fayllariga o'qish/yozish imkonini beruvchi xavfli
+  funksiyalarni aniqlaydi: COPY ... TO/FROM PROGRAM, pg_read_file, pg_write_file,
+  lo_export, lo_import. Bu command execution (T1059) yoki data exfiltration (T1041)
+  texnikasiga ishora qilishi mumkin.
+  Qonuniy holatlar: ETL/backup pipeline, ma'lum ma'muriy import/export skriptlari.
+  SOC triage bosqichlari:
+  - Buyruqni kim (`actor`) va qaysi `db.name` da bajarganini aniqlang.
+  - PROGRAM target yoki fayl yo'lini tekshiring — shubhali binar yoki maxfiy fayl emasmi.
+  - Foydalanuvchi superuser huquqiga ega bo'lishi kerakligini tasdiqlang.
+  - Noqonuniy faoliyat tasdiqlansa: sessiyani uzing, credentiallarni rotatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-postgresql.log-*
+query_language: esql
+query: |
+  FROM logs-postgresql.log-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "postgresql.log"
+  | WHERE TO_LOWER(postgresql.log.message) RLIKE ".*copy\\s+.*\\s+(to|from)\\s+program.*"
+     OR TO_LOWER(postgresql.log.message) RLIKE ".*(pg_read_file|pg_read_binary_file|pg_write_file|lo_export|lo_import|pg_ls_dir).*"
+  | EVAL actor    = COALESCE(user.name, "Unknown")
+  | EVAL db       = COALESCE(db.name, "Unknown")
+  | EVAL hostn    = COALESCE(host.hostname, "Unknown")
+  | EVAL pg_msg   = COALESCE(postgresql.log.message, "Unknown")
+  | EVAL pid      = COALESCE(process.pid, 0)
+  | STATS
+      abuse_count = COUNT(*),
+      databases   = VALUES(db),
+      messages    = VALUES(pg_msg),
+      pids        = VALUES(pid),
+      hosts       = VALUES(hostn),
+      first_seen  = MIN(@timestamp),
+      last_seen   = MAX(@timestamp)
+    BY agent_id, actor, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, actor, abuse_count, databases,
+         messages, pids, hosts, first_seen, last_seen
+  | SORT abuse_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.execution
+  - attack.exfiltration
+  - attack.t1059
+  - attack.t1041
+  - detection.postgresql
+severity: high
+risk_score: 82
+nist: ["AU-2", "AU-12", "SI-4", "AC-6"]
+pci_dss: ["6.5.1", "10.2.5", "10.6.1"]
+gdpr: ["32.1.a", "32.2", "35.7.d"]
+mitre_attack:
+  TA0002:
+    T1059: []
+  TA0010:
+    T1041: []

@@ -13,23 +13,22 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd execve telemetry */
-  | WHERE event.action == "execve" OR (event.dataset RLIKE "(?i)auditd" AND event.type == "process_started")
+  | WHERE event.action == "executed"
   /* selection: wget with --post-file flag */
-  | WHERE process.name == "wget" AND COALESCE(process.command_line, "") RLIKE "(?i)--post-file="
+  | WHERE process.name == "wget" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*--post-file=.*"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       executables = VALUES(process.executable),
       file_paths = VALUES(file.path),
-      destination_ips = VALUES(destination.ip),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
-  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, executables, file_paths, destination_ips, hosts, raw_samples
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, executables, file_paths, hosts, raw_samples
   | SORT event_count DESC
 enabled: false
 tags:

@@ -2,7 +2,7 @@ rule_id: 0cd409c0-6feb-497b-b7b4-5aa27c130ff6
 name: Fortigate - Multiple Configuration Changes from Same Source
 description: |
   Ushbu qoida Fortigate firewall'da bir xil manbadan qisqa vaqt ichida ko'p konfiguratsiya o'zgarishlarini aniqlaydi.
-  Bu defense evasion (T1089) belgisi bo'lishi mumkin.
+  Bu defense evasion (T1562.001) belgisi bo'lishi mumkin.
   Qonuniy holatlar: rejalashtirilgan maintenance, bulk configuration deployment.
   SOC triage bosqichlari:
   - O'zgarishlarni amalga oshirgan admin user'ni identifikatsiya qiling
@@ -14,12 +14,12 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-- logs-fortinet.fortigate-firewall-*
+- logs-fortinet.fortigate-*
 query_language: esql
 query: |
-  FROM logs-fortinet.fortigate-firewall-*
+  FROM logs-fortinet.fortigate-*
   | WHERE @timestamp >= NOW() - 45 minutes
-  | WHERE message RLIKE "(?i)Configuration is changed in the admin session"
+  | WHERE TO_LOWER(message) RLIKE ".*configuration is changed in the admin session.*"
   | WHERE fortinet.fortigate.subtype == "system"
   | WHERE log.level == "alert"
   | STATS
@@ -35,16 +35,16 @@ query: |
 enabled: true
 tags:
 - attack.defense-evasion
-- attack.t1089
+- attack.t1562.001
 - fortigate
 - configuration-change
 severity: medium
 risk_score: 65
 references:
-- "https://attack.mitre.org/techniques/T1089/"
+- "https://attack.mitre.org/techniques/T1562/001/"
 nist: ["CM-3", "CM-5", "AU-6"]
 pci_dss: ["10.2.7"]
 gdpr: ["35.7.d"]
 mitre_attack:
   TA0005:
-    T1089: []
+    T1562: ["T1562.001"]

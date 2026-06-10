@@ -12,29 +12,28 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd events only */
-  | WHERE event.dataset RLIKE "(?i)auditd"
   /* crontab file modification */
   | WHERE (
       /* direct REPLACE action from cron service */
-      COALESCE(event.original, "") RLIKE "(?i)REPLACE"
+      TO_LOWER(COALESCE(event.original, "")) RLIKE ".*replace.*"
       OR
       /* writes to crontab locations */
-      COALESCE(file.path, "") RLIKE "(?i)/etc/crontab"
+      TO_LOWER(COALESCE(file.path, "")) RLIKE ".*/etc/crontab.*"
       OR
-      COALESCE(file.path, "") RLIKE "(?i)/var/spool/cron"
+      TO_LOWER(COALESCE(file.path, "")) RLIKE ".*/var/spool/cron.*"
     )
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       files = VALUES(file.path),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP
       agent_id, bucket,
       host.name,

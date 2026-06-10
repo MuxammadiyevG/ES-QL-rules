@@ -12,12 +12,12 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* auditd SYSCALL events */
-  | WHERE event.dataset RLIKE "(?i)auditd"
   /* selection: sysinfo syscall */
-  | WHERE COALESCE(event.original, "") RLIKE "(?i)syscall=99" OR COALESCE(event.original, "") RLIKE "(?i)syscall=sysinfo"
+  | WHERE TO_LOWER(COALESCE(event.original, "")) RLIKE ".*syscall=99.*" OR TO_LOWER(COALESCE(event.original, "")) RLIKE ".*syscall=sysinfo.*"
   /* filter: exclude Splunk */
-  | WHERE NOT (process.executable RLIKE "/bin/splunkd$")
+  | WHERE NOT (process.executable RLIKE ".*splunkd")
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
@@ -25,8 +25,7 @@ query: |
       executables = VALUES(process.executable),
       hosts = VALUES(host.name),
       raw_samples = VALUES(event.original)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, hosts, raw_samples
   | SORT event_count DESC
 enabled: false

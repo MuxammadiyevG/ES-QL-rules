@@ -41,6 +41,7 @@ query: |
       dst_ports, dst_ips, protos, rule_names,
       last_seen, first_seen
   | SORT unique_ports DESC
+  | LIMIT 100
 enabled: true
 tags:
   - attack.discovery

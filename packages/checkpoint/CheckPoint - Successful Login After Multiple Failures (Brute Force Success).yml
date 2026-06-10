@@ -1,0 +1,63 @@
+rule_id: e0f903ff-0f72-4330-bb3b-71b38052b6f0
+name: CheckPoint - Successful Login After Multiple Failures (Brute Force Success)
+description: |
+  Ushbu qoida bir xil source/user uchun qisqa vaqt ichida ko'p sonli authentication
+  failure'dan keyin muvaffaqiyatli login bo'lganligini aniqlaydi.
+  Bu brute force yoki credential stuffing hujumi muvaffaqiyatli yakunlangani belgisi
+  (T1110 - Brute Force, T1078 - Valid Accounts).
+  Qonuniy holatlar: foydalanuvchi parolni bir necha marta noto'g'ri kiritib, keyin to'g'ri kiritgan.
+  SOC triage bosqichlari:
+  - Source IP geo-location va reputation'ini tekshiring
+  - Muvaffaqiyatli login bo'lgan user account'ni identifikatsiya qiling
+  - Failure va success vaqt oralig'ini tahlil qiling (avtomatlashtirilgan hujum?)
+  - Login type va auth method'ni tekshiring (VPN, admin, portal)
+  - Account compromise va credential reset zarurligini baholang
+  - Keyingi suspicious faoliyatni (lateral movement) qidiring
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- filebeat-checkpoint-*
+query_language: esql
+query: |
+  FROM filebeat-checkpoint-*
+  | WHERE @timestamp >= NOW() - 45 minutes
+  | WHERE checkpoint.fw_action == "Authorize"
+  | EVAL is_failure = CASE(checkpoint.auth_status == "Failure" OR event.outcome == "failure", 1, 0)
+  | EVAL is_success = CASE(checkpoint.auth_status == "Successful" OR event.outcome == "success", 1, 0)
+  | STATS
+      fail_count    = SUM(is_failure),
+      success_count = SUM(is_success),
+      event_count   = COUNT(*),
+      users         = VALUES(user.name),
+      dst_ips       = VALUES(destination.ip),
+      auth_methods  = VALUES(checkpoint.auth_method),
+      first_seen    = MIN(@timestamp),
+      last_seen     = MAX(@timestamp)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE fail_count >= 5 AND success_count >= 1
+  | KEEP bucket, source.ip, fail_count, success_count, event_count, users, dst_ips, auth_methods, first_seen, last_seen
+  | SORT fail_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+- attack.credential-access
+- attack.t1110
+- attack.initial-access
+- attack.t1078
+- checkpoint
+- brute-force
+- authentication
+severity: high
+risk_score: 82
+references:
+- "https://attack.mitre.org/techniques/T1110/"
+- "https://attack.mitre.org/techniques/T1078/"
+nist: ["AC-7", "IA-2", "AU-6"]
+pci_dss: ["8.2.4", "10.2.4", "10.2.5"]
+gdpr: ["32.2", "32.1.b"]
+mitre_attack:
+  TA0006:
+    T1110: []
+  TA0001:
+    T1078: []

@@ -26,6 +26,7 @@ query: |
      OR rsa.web.urlpage LIKE "/admin/*"
      OR rsa.web.urlpage LIKE "/manager/html*"
      OR rsa.web.urlpage LIKE "/manager/text*"
+  | WHERE rsa.misc.result_code IN ("401", "403")
   | STATS
       event_count = COUNT(*),
       accessed_paths = VALUES(rsa.web.urlpage),
@@ -58,3 +59,5 @@ gdpr: ["32.1"]
 mitre_attack:
   TA0004:
     T1078: []
+  TA0003:
+    T1505: ["T1505.003"]

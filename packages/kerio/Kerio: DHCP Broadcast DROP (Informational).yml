@@ -37,6 +37,7 @@ query: |
       src_ips, rule_names, pkt_lengths,
       last_seen, first_seen
   | SORT drop_count DESC
+  | LIMIT 100
 enabled: true
 tags:
   - detection.informational

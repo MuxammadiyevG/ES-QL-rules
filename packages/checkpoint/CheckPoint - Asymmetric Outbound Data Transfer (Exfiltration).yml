@@ -1,0 +1,59 @@
+rule_id: 5a187db2-19b8-43d2-90dc-92a7826a8c70
+name: CheckPoint - Asymmetric Outbound Data Transfer (Exfiltration)
+description: |
+  Ushbu qoida ichki hostdan tashqi destination'ga yuborilgan (outbound) baytlar
+  qabul qilingan (inbound) baytlardan keskin ko'p bo'lgan session'larni aniqlaydi.
+  Asimmetrik outbound transfer data exfiltration belgisi bo'lishi mumkin
+  (T1048 - Exfiltration Over Alternative Protocol).
+  Qonuniy holatlar: backup upload, cloud sync, katta fayl yuklash, video stream upload.
+  SOC triage bosqichlari:
+  - Source IP host va undagi process/foydalanuvchini identifikatsiya qiling
+  - Destination IP va port'ni threat intel bilan solishtiring
+  - Transfer hajmi va davomiyligini tahlil qiling
+  - Application/service legitimate ekanligini tekshiring (cloud backup vs unknown)
+  - Data classification va sensitivity'ni baholang
+  - Containment va network isolation zarurligini aniqlang
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+- filebeat-checkpoint-*
+query_language: esql
+query: |
+  FROM filebeat-checkpoint-*
+  | WHERE @timestamp >= NOW() - 1 hour
+  | WHERE checkpoint.fw_action == "Accept" OR checkpoint.fw_action == "Allow"
+  | WHERE source.bytes IS NOT NULL AND destination.bytes IS NOT NULL
+  | WHERE NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+  | STATS
+      out_bytes  = SUM(source.bytes),
+      in_bytes   = SUM(destination.bytes),
+      event_count = COUNT(*),
+      dst_ports  = VALUES(destination.port),
+      services   = VALUES(checkpoint.service),
+      apps       = VALUES(network.application),
+      first_seen = MIN(@timestamp),
+      last_seen  = MAX(@timestamp)
+    BY agent_id, source.ip, destination.ip, bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | EVAL ratio = out_bytes / (in_bytes + 1.0)
+  | WHERE out_bytes >= 10000000 AND ratio >= 10
+  | KEEP bucket, source.ip, destination.ip, out_bytes, in_bytes, ratio, event_count, dst_ports, services, apps, first_seen, last_seen
+  | SORT out_bytes DESC
+  | LIMIT 100
+enabled: true
+tags:
+- attack.exfiltration
+- attack.t1048
+- checkpoint
+- data-exfiltration
+- network
+severity: high
+risk_score: 80
+references:
+- "https://attack.mitre.org/techniques/T1048/"
+nist: ["SC-7", "AC-4", "SI-4"]
+pci_dss: ["3.4", "10.6.1", "11.4"]
+gdpr: ["32.1.b", "35.7.d"]
+mitre_attack:
+  TA0010:
+    T1048: []

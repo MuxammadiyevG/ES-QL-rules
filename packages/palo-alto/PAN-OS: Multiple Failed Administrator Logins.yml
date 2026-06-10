@@ -1,0 +1,62 @@
+rule_id: 7ec0243e-1dc3-42b1-a1b0-5f4edc45f6ea
+name: "PAN-OS: Multiple Failed Administrator Logins"
+description: |
+  Ushbu qoida Palo Alto NGFW boshqaruv interfeysiga (web/CLI) administrator
+  hisoblari orqali qisqa vaqt ichida ko'p sonli muvaffaqiyatsiz login
+  urinishlarini aniqlaydi (panw.system / auth, event.outcome failure).
+  Bu firewall mgmt'ga brute-force yoki credential guessing hujumi belgisi
+  bo'lishi mumkin (T1110 - Brute Force).
+  Qonuniy holatlar: admin parolni unutgan, eskirgan saqlangan parol, automation xatosi.
+  SOC triage bosqichlari:
+  - Qaysi admin hisob va qaysi manba IP'dan urinishlar kelganini aniqlang.
+  - Manba IP ichki yoki tashqi ekanligini tekshiring — tashqi IP yuqori xavf.
+  - Urinishlardan keyin muvaffaqiyatli login bo'lganmi (parol topilganmi)?
+  - Mgmt interfeysga kirish faqat ruxsat etilgan IP'lardan ekanligini tasdiqlang.
+  - Kerak bo'lsa: manba IP'ni bloklang, admin parolni majburiy almashtiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-panw*
+query_language: esql
+query: |
+  FROM logs-panw*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.dataset == "panw.system"
+  | WHERE event.category == "authentication"
+  | WHERE event.outcome == "failure"
+  | STATS
+      failure_count   = COUNT(*),
+      admin_users     = VALUES(source.user.name),
+      source_ips      = VALUES(source.ip),
+      unique_src_ips  = COUNT_DISTINCT(source.ip),
+      devices         = VALUES(observer.hostname),
+      reasons         = VALUES(event.reason),
+      first_seen      = MIN(@timestamp),
+      last_seen       = MAX(@timestamp)
+    BY agent_id, observer.hostname, source.user.name, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE failure_count >= 5
+  | KEEP bucket, observer.hostname, source.user.name, failure_count, unique_src_ips,
+         admin_users, source_ips, devices, reasons, first_seen, last_seen
+  | SORT failure_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.credential-access
+  - attack.t1110
+  - paloalto
+  - authentication
+  - brute-force
+  - firewall
+severity: high
+risk_score: 72
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+  - "https://docs.paloaltonetworks.com/pan-os/admin/monitoring/view-and-manage-logs/log-types-and-severity-levels"
+nist: ["AC-7", "IA-2", "AU-12", "SI-4"]
+pci_dss: ["8.1.6", "8.2.1", "10.2.4"]
+gdpr: ["32.1.b"]
+hipaa: ["164.312.b"]
+mitre_attack:
+  TA0006:
+    T1110: []

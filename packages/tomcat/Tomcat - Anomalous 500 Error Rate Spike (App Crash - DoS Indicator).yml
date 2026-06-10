@@ -21,7 +21,7 @@ query: |
   FROM filebeat-tomcat-*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE data_stream.dataset == "tomcat.access"
-  | WHERE rsa.misc.result_code LIKE "5*"
+  | WHERE rsa.misc.result_code RLIKE "5[0-9][0-9]"
   | STATS
       error_count = COUNT(*),
       error_codes = VALUES(rsa.misc.result_code),

@@ -1,0 +1,66 @@
+rule_id: c799c929-d6d0-46d9-8680-fce9e0f92a7a
+name: Tomcat - JSP Webshell Upload Then Access
+description: |
+  Ushbu qoida .jsp yoki .jspx fayllarga qaratilgan shubhali so'rovlarni
+  aniqlaydi — katta hajmli POST (webshell yuklash) yoki upload/temp
+  kataloglaridagi .jsp fayllarga GET (yuklangan webshell'ni ishga tushirish).
+  Bu webshell deploy qilish va persistent kirish belgisi bo'lishi mumkin
+  (T1505.003).
+  Qonuniy holatlar: JSP ilovasining normal sahifalari (lekin /upload/,
+  /temp/, /work/ ostidagi .jsp fayllar deyarli har doim shubhali).
+  SOC triage bosqichlari:
+  - Target .jsp path'ni va u joylashgan katalogni tekshiring
+  - POST hajmini (packet_length) tekshiring — webshell payload'mi?
+  - Response code'ni tekshiring (200 = webshell ishlayapti!)
+  - Serverda yangi .jsp fayllari paydo bo'lganligini fayl tizimida tekshiring
+  - Manba IP'dan keyingi GET so'rovlarini korrelyatsiya qiling
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - filebeat-tomcat-*
+query_language: esql
+query: |
+  FROM filebeat-tomcat-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE data_stream.dataset == "tomcat.access"
+  | WHERE (TO_LOWER(rsa.web.urlpage) LIKE "*.jsp" OR TO_LOWER(rsa.web.urlpage) LIKE "*.jspx"
+           OR TO_LOWER(rsa.web.urlpage) LIKE "*.jsp?*" OR TO_LOWER(rsa.web.urlpage) LIKE "*.jspx?*")
+  | WHERE (rsa.web.p_web_method == "POST" AND rsa.network.packet_length > 1048576)
+     OR (rsa.web.p_web_method == "GET"
+         AND (TO_LOWER(rsa.web.urlpage) LIKE "*/upload/*"
+              OR TO_LOWER(rsa.web.urlpage) LIKE "*/uploads/*"
+              OR TO_LOWER(rsa.web.urlpage) LIKE "*/temp/*"
+              OR TO_LOWER(rsa.web.urlpage) LIKE "*/tmp/*"
+              OR TO_LOWER(rsa.web.urlpage) LIKE "*/work/*"
+              OR TO_LOWER(rsa.web.urlpage) LIKE "*/files/*"))
+  | STATS
+      event_count = COUNT(*),
+      jsp_paths = VALUES(rsa.web.urlpage),
+      response_codes = VALUES(rsa.misc.result_code),
+      methods = VALUES(rsa.web.p_web_method),
+      user_agents = VALUES(rsa.misc.client),
+      max_size = MAX(rsa.network.packet_length),
+      target_hosts = VALUES(rsa.network.host_dst)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | KEEP agent_id, bucket, source.ip, event_count, jsp_paths, response_codes, methods, user_agents, max_size, target_hosts
+  | SORT event_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+  - attack.persistence
+  - attack.t1505.003
+  - tomcat
+  - webshell
+  - jsp
+severity: high
+risk_score: 85
+references:
+  - "https://attack.mitre.org/techniques/T1505/003/"
+  - "https://owasp.org/www-community/attacks/Web_Shell"
+nist: ["SI-3", "SI-4", "CM-7"]
+pci_dss: ["6.5.1", "6.5.8"]
+gdpr: ["32.1"]
+mitre_attack:
+  TA0003:
+    T1505: ["T1505.003"]

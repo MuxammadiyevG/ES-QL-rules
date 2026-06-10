@@ -1,0 +1,59 @@
+rule_id: d503f6d9-7d27-474e-b253-3fcc8e89281f
+name: Nginx - Successful Request After WAF/4xx Burst (Possible Bypass)
+description: |
+  Ushbu qoida bitta source.ip dan qisqa vaqt ichida ko'p 4xx (WAF/access-denied) javoblardan keyin
+  attack-looking path'ga muvaffaqiyatli 2xx javob kelganini aniqlaydi.
+  Bu WAF yoki access control bypass urinishi muvaffaqiyatga erishganini bildiradi (T1190).
+  Qonuniy holatlar: user broken-link burst keyin to'g'ri sahifaga kirishi, crawler.
+  SOC triage bosqichlari:
+  - 4xx burst pattern va keyingi 200 so'rovni tahlil qiling
+  - Muvaffaqiyatli so'ralgan path attack-looking ekanligini tekshiring
+  - WAF yoki application access control sozlamalarini review qiling
+  - Bypass aniqlansa — manba IP ni bloklang va WAF rule yangilang
+  - Data access yoki exfiltration bo'lganmi tekshiring
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-nginx.access-*
+query_language: esql
+query: |
+  FROM logs-nginx.access-*
+  | WHERE @timestamp >= NOW() - 20 minutes
+  | WHERE data_stream.dataset == "nginx.access"
+  | EVAL is_4xx = CASE(http.response.status_code >= 400 AND http.response.status_code < 500, 1, 0)
+  | EVAL is_2xx_attack = CASE(
+      http.response.status_code >= 200 AND http.response.status_code < 300
+        AND TO_LOWER(url.original) RLIKE ".*(union select|\\.\\./|etc/passwd|\\<script|\\$\\{jndi:|/admin|/wp-admin|/phpmyadmin|\\.env|wp-config|\\.git|cmd=|exec=|/bin/).*", 1, 0)
+  | STATS
+      total_requests = COUNT(*),
+      blocked_4xx = SUM(is_4xx),
+      success_after_block = SUM(is_2xx_attack),
+      attack_paths = VALUES(url.path),
+      status_codes = VALUES(http.response.status_code),
+      user_agents = VALUES(user_agent.original)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE blocked_4xx >= 10 AND success_after_block >= 1
+  | EVAL risk_score = (blocked_4xx * 2) + (success_after_block * 40)
+  | KEEP agent_id, bucket, source.ip, total_requests, blocked_4xx, success_after_block, attack_paths, status_codes, user_agents, risk_score
+  | SORT risk_score DESC
+  | LIMIT 100
+enabled: false
+tags:
+- attack.initial-access
+- attack.t1190
+- nginx
+- waf-bypass
+- access-control-bypass
+- web-exploitation
+severity: high
+risk_score: 78
+references:
+- "https://attack.mitre.org/techniques/T1190/"
+- "https://owasp.org/www-community/Web_Application_Firewall"
+nist: ["SI-4", "SC-7", "AC-4"]
+pci_dss: ["6.5.1", "11.4"]
+gdpr: ["35.7.d"]
+mitre_attack:
+  TA0001:
+    T1190: []

@@ -11,20 +11,20 @@ index:
 query_language: esql
 query: |
   FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
   /* Only SSHD / SSH events */
-  | WHERE event.dataset RLIKE "(?i)sshd"
+  | WHERE TO_LOWER(event.dataset) RLIKE ".*sshd.*"
   /* Detect relevant SSH error messages */
-  | WHERE COALESCE(event.message, "") RLIKE "(?i)(unexpected internal error|unknown or unsupported key type|invalid certificate signing key|invalid elliptic curve value|incorrect signature|error in libcrypto|unexpected bytes remain after decoding|fatal: buffer_get_string: bad string|Local: crc32 compensation attack|bad client public DH value|Corrupted MAC on input)"
+  | WHERE TO_LOWER(COALESCE(event.original, "")) RLIKE ".*(unexpected internal error|unknown or unsupported key type|invalid certificate signing key|invalid elliptic curve value|incorrect signature|error in libcrypto|unexpected bytes remain after decoding|fatal: buffer_get_string: bad string|local: crc32 compensation attack|bad client public dh value|corrupted mac on input).*"
   | STATS
       event_count = COUNT(*),
       users = VALUES(user.name),
       processes = VALUES(process.name),
       executables = VALUES(process.executable),
-      command_lines = VALUES(process.command_line),
+      command_lines = VALUES(process.title),
       hosts = VALUES(host.name),
-      raw_samples = VALUES(event.message)
-    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(20 minutes, @timestamp)
-  | WHERE event_count >= 1
+      raw_samples = VALUES(event.original)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
   | KEEP
       agent_id, bucket,
       host.name,

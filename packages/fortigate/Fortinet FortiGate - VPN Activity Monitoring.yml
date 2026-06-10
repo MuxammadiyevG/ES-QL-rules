@@ -16,10 +16,10 @@ type: esql
 params: '{}'
 schedule_interval: 10m
 index:
-  - logs-fortinet*
+  - logs-fortinet.fortigate-*
 query_language: esql
 query: |
-  FROM logs-fortinet*
+  FROM logs-fortinet.fortigate-*
   | WHERE @timestamp >= NOW() - 300 minutes
   | WHERE fortinet.fortigate.subtype == "vpn"
   /* Statistikani filtrlab, faqat muhim voqealarni qoldirishingiz ham mumkin */

@@ -1,15 +1,17 @@
 rule_id: 35c9f69c-c94d-4e36-b618-e5565954417c
-name: Sysmon Linux - Suspicious Outbound Network Connection
+name: Linux Auth - SSH Connection from Many Distinct Sources
 description: |
-  Ushbu qoida Linux tizimlarida Sysmon Event 3 (Network Connection) hodisalarini kuzatadi.
-  Bir xil manzilga ko'p ulanish urinishlari C2 aloqa, port scanning yoki data exfiltration belgisi bo'lishi mumkin (T1043).
-  Qonuniy holatlar: monitoring agentlari, backup servislar, deployment pipeline ulanishlari.
+  Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi sshd hodisalarini kuzatib,
+  bitta host ko'p sonli turli `source.ip` manzillaridan SSH autentifikatsiya urinishlari
+  qabul qilayotganini aniqlaydi. Bu password spray, scanning yoki distributed brute-force
+  belgisi bo'lishi mumkin (T1110). auth.log network ulanishlarini ko'rmaydi — shu sabab
+  qoida faqat SSH autentifikatsiya maydonlariga tayanadi.
+  Qonuniy holatlar: bastion/jump host, NAT orqasidagi ko'p mijoz, monitoring agentlari.
   SOC triage bosqichlari:
-  - `actor` (user.name) va `source.ip` ni tekshiring.
-  - `destination.ip` va port legitimligini tekshiring.
-  - Ulanish chastotasi va vaqt intervalini tahlil qiling.
-  - GeoIP ma'lumotlarini (`source.geo`) tekshiring.
-  - Noqonuniy faoliyat tasdiqlansa: firewall qoidasi qo'shing, manbani izolyatsiya qiling.
+  - Qaysi `host`ga ko'p `source.ip` dan urinish kelayotganini tekshiring.
+  - Muvaffaqiyatsiz urinishlardan keyin muvaffaqiyatli kirish borligini ko'ring.
+  - `source.geo` orqali noodatiy mamlakat/shaharlarni aniqlang.
+  - Noqonuniy faoliyat tasdiqlansa: IP larni bloklang, fail2ban/firewall qo'llang.
 type: esql
 params: '{}'
 schedule_interval: 10m
@@ -20,42 +22,47 @@ query: |
   FROM logs-linux.auth-*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE data_stream.dataset == "linux.auth"
-  | WHERE event.category == "authentication" OR event.category == "session"
+  | WHERE event.category == "authentication"
+  | WHERE event.action IN (
+      "ssh-login-success",
+      "ssh-login-failed",
+      "ssh-invalid-user"
+    )
   | EVAL actor    = COALESCE(user.name, "Unknown")
   | EVAL hostn    = COALESCE(host.hostname, "Unknown")
   | EVAL src_ip   = COALESCE(TO_STRING(source.ip), "Unknown")
-  | EVAL src_port = COALESCE(source.port, 0)
-  | EVAL related_ips = COALESCE(TO_STRING(related.ip), "Unknown")
+  | EVAL outcome  = COALESCE(event.outcome, "Unknown")
+  | EVAL action   = COALESCE(event.action, "Unknown")
   /* Monitoring agentlarini chiqarib tashlash */
-  | WHERE NOT actor RLIKE "(?i)(wazuh|zabbix|nagios|elastic)"
-  /* Bir xil IP dan ko'p ulanish */
+  | WHERE actor NOT IN ("wazuh", "zabbix", "nagios", "elastic")
   | STATS
-      conn_count    = COUNT(*),
-      actors        = VALUES(actor),
-      src_ports     = VALUES(src_port),
-      geo_cities    = VALUES(geo_city),
-      geo_countries = VALUES(geo_country),
-      hosts         = VALUES(hostn),
-      first_seen    = MIN(@timestamp),
-      last_seen     = MAX(@timestamp)
-    BY agent_id, src_ip, bucket = DATE_TRUNC(1 hour, @timestamp)
-  /* Event 3 frequency rule: bir xil dst IP ga >= 2 ulanish (timeframe 60s analog) */
-  | WHERE conn_count >= 2
-  | KEEP agent_id, bucket, src_ip, conn_count, actors,
-         src_ports, related_ips, hosts, first_seen, last_seen
-  | SORT conn_count DESC
+      conn_count      = COUNT(*),
+      distinct_srcs   = COUNT_DISTINCT(src_ip),
+      success_count   = COUNT_IF(outcome == "success"),
+      failure_count   = COUNT_IF(outcome == "failure"),
+      actors          = VALUES(actor),
+      src_ips         = VALUES(src_ip),
+      actions         = VALUES(action),
+      first_seen      = MIN(@timestamp),
+      last_seen       = MAX(@timestamp)
+    BY agent_id, hostn, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  /* Bitta host ko'p turli manbadan SSH urinishi (scanning/spray) */
+  | WHERE distinct_srcs >= 5
+  | KEEP agent_id, bucket, hostn, conn_count, distinct_srcs, success_count,
+         failure_count, actors, src_ips, actions, first_seen, last_seen
+  | SORT distinct_srcs DESC, conn_count DESC
   | LIMIT 200
 enabled: false
 tags:
-  - attack.command_and_control
-  - attack.t1043
+  - attack.credential_access
+  - attack.t1110
   - detection.linux
-  - sysmon.event3
+  - linux.auth.ssh
 severity: medium
 risk_score: 60
 nist: ["AU-2", "AU-12", "SC-7"]
 pci_dss: ["10.2.4", "10.2.5", "1.3.2"]
 gdpr: ["32.1.a", "32.2"]
 mitre_attack:
-  TA0010:
-    T1048: [] 
+  TA0006:
+    T1110: []
