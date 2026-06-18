@@ -1,0 +1,31 @@
+rule_id: 8a848f3a-fa6b-43ce-b645-c1141f1160c1
+name: UniFi Network Application Updated
+description: |
+  Ushbu qoida UniFi Network ilovasining versiyasi yangilanganini aniqlaydi.
+  O'zgarish ruxsat etilgan change ticket bilan mosligi va rollback ehtiyoji tekshirilishi kerak.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Network Updated"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|578\\|Network Updated\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIapplication=%{DATA:application} UNIFIapplicationVersion=%{DATA:new_version} UNIFIapplicationPriorVersion=%{DATA:old_version} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = 55
+  | KEEP @timestamp, event_time, application, old_version, new_version, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, Software Update, Change Monitoring]
+severity: medium
+risk_score: 55
+references: []
+mitre_attack:
+  TA0003:
+    T1505: []
+nist: ["CM-3", "CM-5", "AU-12"]
+pci_dss: ["6.3", "10.2"]
+gdpr: ["32.1.b"]

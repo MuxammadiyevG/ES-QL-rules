@@ -1,0 +1,33 @@
+rule_id: b19a3caf-2ee5-46b6-b566-0a725ccc628c
+name: UniFi WiFi Client Roamed
+description: |
+  Ushbu qoida klientning bir APdan boshqa APga roaming qilishini kuzatadi.
+  Oldingi va yangi AP, kanal, band hamda RSSI qiymatlari chiqariladi.
+  Yangi RSSI oldingisidan yomon bo'lsa noto'g'ri roaming yoki RF muammosi bo'lishi mumkin.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "udmpro" AND event.action == "WiFi Client Roamed"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|402\\|WiFi Client Roamed\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIconnectedToDeviceName=%{DATA:new_ap_name} UNIFIconnectedToDeviceIp=%{IP:new_ap_ip} UNIFIconnectedToDeviceMac=%{MAC:new_ap_mac} UNIFIconnectedToDeviceModel=%{DATA:new_ap_model} UNIFIconnectedToDeviceVersion=%{DATA:new_ap_version} UNIFIlastConnectedToDeviceName=%{DATA:old_ap_name} UNIFIlastConnectedToDeviceIp=%{IP:old_ap_ip} UNIFIlastConnectedToDeviceMac=%{MAC:old_ap_mac} UNIFIlastConnectedToDeviceModel=%{DATA:old_ap_model} UNIFIlastConnectedToDeviceVersion=%{DATA:old_ap_version} UNIFIclientAlias=%{DATA:client_alias} UNIFIclientHostname=%{DATA:client_hostname} UNIFIclientIp=%{IP:client_ip} UNIFIclientMac=%{MAC:client_mac} UNIFIwifiChannel=%{NUMBER:new_channel} UNIFIwifiChannelWidth=%{NUMBER:new_channel_width} UNIFIwifiName=%{DATA:wifi_name} UNIFIwifiBand=%{DATA:new_band} UNIFIWiFiRssi=%{NUMBER:new_rssi} UNIFIlastConnectedToWiFiChannel=%{NUMBER:old_channel} UNIFIlastConnectedToWiFiChannelWidth=%{NUMBER:old_channel_width} UNIFIlastConnectedToWiFiBand=%{DATA:old_band} UNIFIlastConnectedToWiFiRssi=%{NUMBER:old_rssi} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL rssi_delta = TO_INTEGER(new_rssi) - TO_INTEGER(old_rssi)
+  | EVAL dyn_risk = CASE(rssi_delta < 0, 55, TO_INTEGER(new_rssi) <= -80, 50, 25)
+  | KEEP @timestamp, event_time, client_alias, client_hostname, client_ip, client_mac, old_ap_name, old_ap_ip, old_ap_mac, new_ap_name, new_ap_ip, new_ap_mac, wifi_name, old_band, new_band, old_channel, new_channel, old_rssi, new_rssi, rssi_delta, message, dyn_risk
+  | SORT dyn_risk DESC, @timestamp DESC
+  | LIMIT 200
+enabled: false
+tags: [UniFi, WiFi, Roaming]
+severity: low
+risk_score: 25
+references: []
+mitre_attack:
+  TA0040:
+    T1498: []
+nist: ["AC-18", "AU-12", "SI-4"]
+pci_dss: ["10.2"]
+gdpr: ["32.1.b"]

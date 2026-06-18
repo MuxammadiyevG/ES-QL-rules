@@ -1,0 +1,35 @@
+rule_id: 96d56317-37cc-459d-99da-272f7f43c845
+name: UniFi WiFi Client Connected
+description: |
+  Ushbu qoida UniFi simsiz tarmog'iga yangi klient ulanishini kuzatadi.
+  Hodisa klient MAC/IP, SSID, AP, kanal, RSSI va autentifikatsiya usulini alertga chiqaradi.
+  SOC triage:
+  - client_mac va client_ip qurilma inventariga mosligini tekshiring.
+  - AP va SSID ruxsat etilganligini tasdiqlang.
+  - Juda past RSSI, noma'lum MAC yoki noodatiy VLAN holatlarini tekshiring.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "udmpro" AND event.action == "WiFi Client Connected"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|400\\|WiFi Client Connected\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIconnectedToDeviceName=%{DATA:ap_name} UNIFIconnectedToDeviceIp=%{IP:ap_ip} UNIFIconnectedToDeviceMac=%{MAC:ap_mac} UNIFIconnectedToDeviceModel=%{DATA:ap_model} UNIFIconnectedToDeviceVersion=%{DATA:ap_version} UNIFIclientAlias=%{DATA:client_alias} UNIFIclientHostname=%{DATA:client_hostname} UNIFIclientIp=%{IP:client_ip} UNIFIclientMac=%{MAC:client_mac} UNIFIwifiChannel=%{NUMBER:wifi_channel} UNIFIwifiChannelWidth=%{NUMBER:wifi_channel_width} UNIFIwifiName=%{DATA:wifi_name} UNIFIwifiBand=%{DATA:wifi_band} UNIFIauthMethod=%{DATA:auth_method} UNIFIWiFiRssi=%{NUMBER:wifi_rssi} UNIFInetworkName=%{DATA:network_name} UNIFInetworkSubnet=%{DATA:network_subnet} UNIFInetworkVlan=%{NUMBER:network_vlan} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = CASE(TO_INTEGER(wifi_rssi) <= -85, 65, TO_INTEGER(wifi_rssi) <= -75, 45, 25)
+  | KEEP @timestamp, event_time, client_alias, client_hostname, client_ip, client_mac, ap_name, ap_ip, ap_mac, ap_model, ap_version, wifi_name, wifi_band, wifi_channel, wifi_channel_width, wifi_rssi, auth_method, network_name, network_subnet, network_vlan, message, dyn_risk
+  | SORT dyn_risk DESC, @timestamp DESC
+  | LIMIT 200
+enabled: false
+tags: [UniFi, WiFi, Client Lifecycle]
+severity: low
+risk_score: 25
+references: []
+mitre_attack:
+  TA0001:
+    T1078: []
+nist: ["AC-18", "AU-12", "CM-8"]
+pci_dss: ["1.2", "10.2"]
+gdpr: ["32.1.b"]

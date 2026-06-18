@@ -1,0 +1,31 @@
+rule_id: 6f3fea91-4851-4f29-be47-79eb3d1ac4ce
+name: UniFi AP Channel Changed
+description: |
+  Ushbu qoida AP kanalining o'zgarishini kuzatadi.
+  Auto-channel optimizatsiyasi qonuniy sabab bo'lishi mumkin, lekin tez-tez o'zgarish interferensiya yoki RF beqarorligini ko'rsatadi.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "udmpro" AND event.action == "AP Channel Change"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|530\\|AP Channel Change\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIdeviceMac=%{MAC:ap_mac} UNIFIdeviceName=%{DATA:ap_name} UNIFIdeviceModel=%{DATA:ap_model} UNIFIdeviceIp=%{IP:ap_ip} UNIFIdeviceVersion=%{DATA:ap_version} UNIFIcurrentChannel=%{NUMBER:current_channel} UNIFIpriorChannel=%{NUMBER:prior_channel} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = 35
+  | KEEP @timestamp, event_time, ap_name, ap_ip, ap_mac, ap_model, ap_version, prior_channel, current_channel, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, AP, Channel Change, RF]
+severity: low
+risk_score: 35
+references: []
+mitre_attack:
+  TA0040:
+    T1498: []
+nist: ["SI-4", "CM-3", "AU-12"]
+pci_dss: ["10.2", "11.5"]
+gdpr: ["32.1.b"]

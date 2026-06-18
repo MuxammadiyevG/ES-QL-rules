@@ -1,0 +1,31 @@
+rule_id: e41f3041-94d0-4345-b919-c164e5123fbf
+name: UniFi Receive SFP Signal Loss
+description: |
+  Ushbu qoida SFP modulida receive signal yo'qolishini aniqlaydi.
+  Bu uplink uzilishi, optik kabel shikasti, modul nosozligi yoki ataylab uzib qo'yish oqibati bo'lishi mumkin.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Receive SFP Signal Loss"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|559\\|Receive SFP Signal Loss\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIdeviceMac=%{MAC:device_mac} UNIFIdeviceName=%{DATA:device_name} UNIFIdeviceModel=%{DATA:device_model} UNIFIdeviceIp=%{IP:device_ip} UNIFIdeviceVersion=%{DATA:device_version} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = 90
+  | KEEP @timestamp, event_time, device_name, device_ip, device_mac, device_model, device_version, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, SFP, Availability, Critical]
+severity: critical
+risk_score: 90
+references: []
+mitre_attack:
+  TA0040:
+    T1498: []
+nist: ["CP-8", "SI-4", "AU-12"]
+pci_dss: ["10.2", "11.5", "12.10"]
+gdpr: ["32.1.b", "32.1.c"]

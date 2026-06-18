@@ -1,0 +1,33 @@
+rule_id: 789ab361-15b1-41ed-a1b8-43a1022171d1
+name: UniFi Device IP Address Conflict
+description: |
+  Ushbu qoida bir IP manzildan bir nechta qurilma foydalanayotganini aniqlaydi.
+  Noto'g'ri static IP, DHCP xatosi, rogue device yoki ARP spoofing ehtimolini tekshiring.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Device IP Address Conflict"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|539\\|Device IP Address Conflict\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFInetworkName=%{DATA:network_name} UNIFInetworkSubnet=%{DATA:network_subnet} UNIFInetworkVlan=%{NUMBER:network_vlan} UNIFIreference=%{DATA:reference} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | GROK message "Multiple devices are using the same %{IP:conflicted_ip} IP address\\."
+  | EVAL dyn_risk = 85
+  | KEEP @timestamp, event_time, conflicted_ip, network_name, network_subnet, network_vlan, reference, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, IP Conflict, Rogue Device, ARP]
+severity: high
+risk_score: 85
+references: []
+mitre_attack:
+  TA0006:
+    T1557:
+      - T1557.002
+nist: ["SC-7", "SI-4", "CM-8", "AU-12"]
+pci_dss: ["1.2", "10.2", "11.5"]
+gdpr: ["32.1.a", "32.1.b"]

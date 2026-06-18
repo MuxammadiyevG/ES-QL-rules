@@ -1,0 +1,31 @@
+rule_id: 32bdc8f2-aec7-4662-96e7-d26e7b726cc3
+name: UniFi Device Reconnected
+description: |
+  Ushbu qoida UniFi AP yoki switch qayta ulanganini aniqlaydi.
+  Oldingi offline davomiyligi, uplink switch va port ma'lumotlari chiqariladi.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Device Reconnected"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|513\\|Device Reconnected\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIdeviceMac=%{MAC:device_mac} UNIFIdeviceName=%{DATA:device_name} UNIFIdeviceModel=%{DATA:device_model} UNIFIdeviceIp=%{IP:device_ip} UNIFIdeviceVersion=%{DATA:device_version} UNIFIconnectedToDeviceName=%{DATA:uplink_name} UNIFIconnectedToDevicePort=%{NUMBER:uplink_port} UNIFIconnectedToDeviceIp=%{IP:uplink_ip} UNIFIconnectedToDeviceMac=%{MAC:uplink_mac} UNIFIconnectedToDeviceModel=%{DATA:uplink_model} UNIFIconnectedToDeviceVersion=%{DATA:uplink_version} UNIFIreportedDuration=%{DATA:reported_duration} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = 45
+  | KEEP @timestamp, event_time, device_name, device_ip, device_mac, device_model, device_version, uplink_name, uplink_port, uplink_ip, uplink_mac, reported_duration, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, Device Reconnected, Availability]
+severity: medium
+risk_score: 45
+references: []
+mitre_attack:
+  TA0040:
+    T1499: []
+nist: ["SI-4", "CP-8", "AU-12"]
+pci_dss: ["10.2", "11.5"]
+gdpr: ["32.1.b"]

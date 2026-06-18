@@ -1,0 +1,31 @@
+rule_id: 41f655d5-8b83-49a7-b28e-e22eb2bef7c4
+name: UniFi Wired Client Disconnected
+description: |
+  Ushbu qoida kabel klientining uzilishini switch porti, davomiylik va trafik hajmi bilan kuzatadi.
+  Takroriy uzilishlar kabel, port, NIC yoki switch muammosini ko'rsatishi mumkin.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Wired Client Disconnected"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|404\\|Wired Client Disconnected\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIlastConnectedToDeviceName=%{DATA:switch_name} UNIFIlastConnectedToDevicePort=%{NUMBER:switch_port} UNIFIlastConnectedToDeviceIp=%{IP:switch_ip} UNIFIlastConnectedToDeviceMac=%{MAC:switch_mac} UNIFIlastConnectedToDeviceModel=%{DATA:switch_model} UNIFIlastConnectedToDeviceVersion=%{DATA:switch_version} UNIFIclientAlias=%{DATA:client_alias} UNIFIclientHostname=%{DATA:client_hostname} UNIFIclientIp=%{IP:client_ip} UNIFIclientMac=%{MAC:client_mac} UNIFIduration=%{DATA:duration} UNIFIusageDown=%{DATA:usage_down} UNIFIusageUp=%{DATA:usage_up} UNIFInetworkName=%{DATA:network_name} UNIFInetworkSubnet=%{DATA:network_subnet} UNIFInetworkVlan=%{NUMBER:network_vlan} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = 30
+  | KEEP @timestamp, event_time, client_alias, client_hostname, client_ip, client_mac, switch_name, switch_port, switch_ip, switch_mac, duration, usage_up, usage_down, network_name, network_subnet, network_vlan, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 200
+enabled: false
+tags: [UniFi, Wired, Disconnect]
+severity: low
+risk_score: 30
+references: []
+mitre_attack:
+  TA0040:
+    T1499: []
+nist: ["AU-12", "SI-4", "CM-8"]
+pci_dss: ["10.2", "11.5"]
+gdpr: ["32.1.b"]

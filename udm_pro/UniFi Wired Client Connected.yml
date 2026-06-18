@@ -1,0 +1,31 @@
+rule_id: 664d27b3-12c2-450a-8848-e45dbd332184
+name: UniFi Wired Client Connected
+description: |
+  Ushbu qoida kabel orqali yangi klient ulanishini switch, port, MAC, link speed va VLAN bilan kuzatadi.
+  Noma'lum MAC yoki ruxsatsiz switch portiga ulanish fizik kirish xavfini ko'rsatishi mumkin.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Wired Client Connected"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|403\\|Wired Client Connected\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIconnectedToDeviceName=%{DATA:switch_name} UNIFIconnectedToDevicePort=%{NUMBER:switch_port} UNIFIconnectedToDeviceIp=%{IP:switch_ip} UNIFIconnectedToDeviceMac=%{MAC:switch_mac} UNIFIconnectedToDeviceModel=%{DATA:switch_model} UNIFIconnectedToDeviceVersion=%{DATA:switch_version} UNIFIclientAlias=%{DATA:client_alias} UNIFIclientMac=%{MAC:client_mac} UNIFIlinkSpeed=%{DATA:link_speed} UNIFInetworkName=%{DATA:network_name} UNIFInetworkSubnet=%{DATA:network_subnet} UNIFInetworkVlan=%{NUMBER:network_vlan} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = 35
+  | KEEP @timestamp, event_time, client_alias, client_mac, switch_name, switch_port, switch_ip, switch_mac, switch_model, switch_version, link_speed, network_name, network_subnet, network_vlan, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 200
+enabled: false
+tags: [UniFi, Wired, Client Lifecycle]
+severity: medium
+risk_score: 35
+references: []
+mitre_attack:
+  TA0001:
+    T1200: []
+nist: ["AC-18", "CM-8", "PE-3", "AU-12"]
+pci_dss: ["1.2", "9.1", "10.2"]
+gdpr: ["32.1.b"]

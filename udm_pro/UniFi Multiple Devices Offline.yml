@@ -1,0 +1,31 @@
+rule_id: f49ed9ca-1791-4327-8695-68cc688df113
+name: UniFi Multiple Devices Offline
+description: |
+  Ushbu qoida bir nechta UniFi qurilmasi bir vaqtda offline bo'lganini aniqlaydi.
+  Bu switch/uplink uzilishi, elektr ta'minoti muammosi, controller nosozligi yoki DoS belgisi bo'lishi mumkin.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Multiple Devices Offline"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|515\\|Multiple Devices Offline\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIdeviceList=%{DATA:device_list} cnt=%{NUMBER:device_count} UNIFIreference=%{DATA:reference} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = CASE(TO_INTEGER(device_count) >= 10, 95, TO_INTEGER(device_count) >= 5, 90, 85)
+  | KEEP @timestamp, event_time, device_list, device_count, reference, message, dyn_risk
+  | SORT dyn_risk DESC, @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, Multiple Devices Offline, Availability, Critical]
+severity: critical
+risk_score: 85
+references: []
+mitre_attack:
+  TA0040:
+    T1498: []
+nist: ["CP-8", "SI-4", "AU-12", "IR-4"]
+pci_dss: ["10.2", "11.5", "12.10"]
+gdpr: ["32.1.b", "32.1.c"]
