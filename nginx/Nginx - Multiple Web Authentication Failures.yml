@@ -1,0 +1,47 @@
+rule_id: c22bbc9e-5518-4edb-afe5-f5e72b42d802
+name: Nginx - Multiple Web Authentication Failures
+description: |
+  Ushbu qoida Nginx web server'da bir xil manbadan ko'p marta authentication failure hodisalarini aniqlaydi.
+  Bu brute force attack yoki credential stuffing urinishi belgisi (T1110).
+  Qonuniy holatlar: user parol xatosi, credential expiration, misconfigured client.
+  SOC triage bosqichlari:
+  - Source IP geo-location va reputation tekshiring
+  - Target URL va authentication endpoint'ni aniqlang
+  - User agent va request pattern'ini tahlil qiling
+  - Muvaffaqiyatli login bo'lganmi keyinroq tekshiring
+  - Rate limiting yoki IP blocking zarurligini baholang
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-nginx.access-*
+query_language: esql
+query: |
+  FROM logs-nginx.access-* | WHERE @timestamp >= NOW() - 4 hours
+  | WHERE http.response.status_code == 401 OR http.response.status_code == 403
+  | STATS
+      event_count = COUNT(*),
+      sample_urls = VALUES(url.path),
+      hosts = VALUES(host.name)
+    BY agent_id, source.ip, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE event_count >= 8
+  | KEEP agent_id, bucket, source.ip, event_count, sample_urls, hosts
+  | SORT event_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+- attack.credential-access
+- attack.t1110
+- nginx
+- web-authentication
+- brute-force
+severity: high
+risk_score: 75
+references:
+- "https://attack.mitre.org/techniques/T1110/"
+nist: ["AC-7", "AU-6"]
+pci_dss: ["10.2.4", "10.2.5", "11.4"]
+gdpr: ["32.2", "35.7.d"]
+mitre_attack:
+  TA0006:
+    T1110: []

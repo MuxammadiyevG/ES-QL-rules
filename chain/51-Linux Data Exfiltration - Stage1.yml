@@ -1,0 +1,39 @@
+rule_id: a4d2b88d-657e-46df-a1c4-2cee4486e15c
+name: "Chain: Linux Data Exfiltration — Stage 1: Archive or Staging Creation"
+description: |
+  Linux Data Exfiltration zanjiri — 1-bosqich (2 dan).
+  Archive or Staging Creation.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.action == "executed" | WHERE process.name IN ("tar", "gzip", "gunzip", "zip", "unzip", "7z", "7za", "bzip2", "xz", "zstd") | EVAL host.name = host.hostname, cmd_args = MV_CONCAT(process.args, " ") | KEEP @timestamp, host.name, user.name, process.name, process.executable, cmd_args | LIMIT 500
+tags:
+  - attack.collection
+  - attack.t1560
+  - auditd
+  - chain
+  - correlation
+  - linux
+severity: medium
+risk_score: 40
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  frequency: 1
+  timeframe_sec: 900
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0009:
+    T1560: ["T1560.001"]

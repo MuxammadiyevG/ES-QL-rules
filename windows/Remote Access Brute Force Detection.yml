@@ -1,0 +1,59 @@
+rule_id: 47d45aa7-fb7a-4485-ab51-71281dffe813
+#//RULE-NIST-04 — Remote Desktop Brute Force (NIST AC-17)
+#//Control Family: AC (Access Control)
+#//Objective: Detect RDP/SSH brute force attacks on remote access services
+#//Threat scenario: Attacker attempts to gain initial access via exposed remote services
+#//Data sources: Windows Security 4625 (failed logon events)
+#//ECS fields used: event.code, winlog.event_data.IpAddress, winlog.event_data.TargetUserName
+#//Field validation: Verify all ECS fields exist in your indices before enabling
+#//Tuning notes: Adjust threshold for VPN vs direct RDP, allowlist known jump hosts
+
+name: "Remote Access Brute Force Detection"
+description: |
+  Detects brute force attacks against RDP (port 3389) and SSH (port 22) services.
+  Multiple failed authentication attempts from single source indicate automated credential stuffing.
+  High risk when targeting internet-facing systems or critical infrastructure.
+  False positives: User with forgotten password, legacy applications with hardcoded credentials.
+  Triage: Check source IP reputation, review geo-location anomalies, verify if target account is privileged.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp > NOW() - 5 minutes
+    AND event.code == "4625"
+  | STATS
+      failure_count = COUNT(*),
+      unique_users = COUNT_DISTINCT(winlog.event_data.TargetUserName),
+      users_targeted = VALUES(winlog.event_data.TargetUserName)
+    BY agent_id, winlog.computer_name, winlog.event_data.IpAddress, bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE failure_count >= 10
+  | EVAL attack_type = "RDP-BruteForce",
+         severity_level = CASE(
+           failure_count >= 50, "critical",
+           failure_count >= 30, "high",
+           "medium"
+         )
+  | KEEP agent_id, bucket, winlog.computer_name, winlog.event_data.IpAddress, failure_count, unique_users, users_targeted, attack_type, severity_level
+  | SORT failure_count DESC
+enabled: false
+tags:
+  - nist_800_53
+  - control_AC-17
+  - family_AC
+  - initial_access
+  - brute_force
+  - remote_services
+severity: high
+risk_score: 80
+references:
+  - "NIST SP 800-53 Rev.5 AC-17: Remote Access"
+  - "MITRE ATT&CK T1110: Brute Force"
+nist: ["AC-17"]
+pci_dss: ["8.2.5"]
+mitre_attack:
+  TA0006:
+    T1110: []

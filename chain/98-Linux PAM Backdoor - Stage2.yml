@@ -1,0 +1,44 @@
+rule_id: 7eccc9a0-a91f-40ff-bcac-bd700e57e349
+name: "Chain: Linux PAM Backdoor — Stage 2: Successful Authentication After PAM Change"
+description: |
+  Linux PAM Backdoor zanjiri — 2-bosqich (2 dan).
+  Successful Authentication After PAM Change.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE auditd.message_type IN ("user_auth", "user_start") AND auditd.result == "success" | EVAL host.name = host.hostname, user.name = auditd.data.acct | KEEP host.name, user.name, auditd.message_type, auditd.result, auditd.data.terminal, auditd.data.addr, source.ip, agent_id | LIMIT 500
+tags:
+  - attack.credential_access
+  - attack.persistence
+  - auditd
+  - authentication
+  - chain
+  - correlation
+  - linux
+severity: critical
+risk_score: 90
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - ac72d119-6878-48fa-9fa8-eb5e4877a025
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0006:
+    T1556: ["T1556.003"]
+    T1078: []

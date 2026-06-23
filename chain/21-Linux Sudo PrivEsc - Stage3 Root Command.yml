@@ -1,0 +1,55 @@
+rule_id: 0c27a7c4-94e3-427d-a25b-3c097f72f69f
+name: "Chain: Root Command After Sudo Escalation (Linux)"
+description: |
+  Linux sudo privesc zanjiri — 3-bosqich.
+  Sudo'dan o'tgandan keyin root (uid=0) sifatida buyruq bajarilishi.
+  2-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.action == "executed" AND auditd.data.uid == "0"
+  | EVAL host.name = host.hostname, cmdline = MV_CONCAT(process.args, " ")
+  | KEEP @timestamp, agent_id, host.name, user.name, process.name, process.executable, cmdline
+  | LIMIT 500
+tags:
+  - attack.execution
+  - attack.t1059.004
+  - linux
+  - root-command
+  - correlation
+  - chain
+severity: high
+risk_score: 82
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 300
+  dedup_fields:
+    - host.name
+    - process.name
+  check_diff: true
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 3
+  depends_on_rule_ids:
+    - 097764a7-491e-4e78-a500-64b44d146f03
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1059/004/"
+nist: ["AC-6", "AU-2"]
+pci_dss: ["10.2.2"]
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.004"]

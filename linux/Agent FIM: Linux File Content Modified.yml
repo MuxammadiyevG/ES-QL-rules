@@ -1,0 +1,83 @@
+rule_id: 8af7ec11-b009-4c31-b51b-65203a963ab1
+name: "Agent FIM: Linux File Content Modified"
+description: |
+  Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, fayl yoki directory mazmuni yoki atributlarining o'zgartirilganligini aniqlaydi.
+  Ayniqsa `/etc/passwd` kabi kritik tizim fayllarida o'zgarish sodir bo'lganda xavfli bo'lib, hujumchi persistence yoki credential manipulation maqsadida ishlayotgan bo'lishi mumkin.
+  Qonuniy holatlar: rejalashtirilgan tizim yangilanishlari, administrator konfiguratsiya o'zgarishlari, dastur o'rnatish.
+  SOC triage bosqichlari:
+  - `/etc/passwd`, `/etc/shadow`, `/etc/sudoers` kabi kritik fayllar o'zgartirilgan bo'lsa ustuvor ko'rib chiqing.
+  - O'zgarishni amalga oshirgan foydalanuvchining sudo huquqlarini tekshiring.
+  - Tasdiqlangan change ticket borligini tekshiring.
+  - Noqonuniy bo'lsa: faylni tiklang, sessiyani to'xtating, hostni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type == "syscall"
+  | WHERE auditd.data.syscall IN ("open", "openat", "write", "truncate", "ftruncate", "unlink", "unlinkat")
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(auditd.data.subj_user, auditd.data.uid)
+  | EVAL file_path    = auditd.paths.name
+  | EVAL file_mode    = auditd.paths.mode
+  | EVAL hash_code    = auditd.paths.cap_fp
+  | EVAL hash_algo    = "SHA256"
+  | EVAL syscall      = auditd.data.syscall
+  | EVAL tty          = auditd.data.tty
+  | EVAL is_critical  = CASE(
+      auditd.paths.name == "/etc/passwd",    "YES - /etc/passwd",
+      auditd.paths.name == "/etc/shadow",    "YES - /etc/shadow",
+      auditd.paths.name == "/etc/sudoers",   "YES - /etc/sudoers",
+      auditd.paths.name == "/etc/hosts",     "YES - /etc/hosts",
+      auditd.paths.name == "/etc/crontab",   "YES - /etc/crontab",
+      "NO"
+    )
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count    = COUNT(*),
+      host_names     = VALUES(host.hostname),
+      actors         = VALUES(auditd.data.subj_user),
+      file_paths     = VALUES(auditd.paths.name),
+      file_modes     = VALUES(auditd.paths.mode),
+      hash_codes     = VALUES(auditd.paths.cap_fp),
+      syscalls       = VALUES(auditd.data.syscall),
+      ttys           = VALUES(auditd.data.tty),
+      critical_files = VALUES(is_critical),
+      last_seen      = MAX(@timestamp),
+      first_seen     = MIN(@timestamp)
+    BY agent_id, host.hostname, auditd.paths.name, auditd.data.subj_user
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = host.hostname,
+      file_name         = auditd.paths.name,
+      user              = auditd.data.subj_user
+  | KEEP
+      agent_id, host_name, file_name, user, event_count,
+      host_names, actors, file_paths, file_modes,
+      hash_codes, syscalls, ttys, critical_files,
+      last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.impact
+  - attack.t1070.004
+  - attack.t1565.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1070/004/"
+  - "https://attack.mitre.org/techniques/T1565/001/"
+nist: ["SI-7", "AU-9", "CM-3", "IR-4"]
+pci_dss: ["10.5.1", "11.5", "6.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.004"]
+  TA0040:
+    T1565: ["T1565.001"]

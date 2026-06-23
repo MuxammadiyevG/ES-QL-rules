@@ -1,0 +1,40 @@
+rule_id: 2435637a-ef31-4edd-af99-e823683bf467
+name: "Chain: Linux Shared-Library Preload Hijack — Stage 1: LD Preload Config Modified"
+description: |
+  Linux Shared-Library Preload Hijack zanjiri — 1-bosqich (2 dan).
+  LD Preload Config Modified.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.module == "file_integrity" AND event.type == "change" AND (file.path LIKE "/etc/ld.so.preload" OR file.path LIKE "/etc/ld.so.conf*" OR file.path LIKE "/etc/ld.so.cache*") | EVAL host.name = host.hostname | KEEP @timestamp, file.path, host.name | LIMIT 500
+tags:
+  - attack.defense-evasion
+  - attack.persistence
+  - auditd
+  - chain
+  - correlation
+  - file_integrity
+  - linux
+severity: high
+risk_score: 65
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - file.path
+    - host.name
+  timeframe_sec: 3600
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0005:
+    T1574: ["T1574.006"]

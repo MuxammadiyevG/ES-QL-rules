@@ -1,0 +1,41 @@
+rule_id: 9778f73b-6d49-4f63-a3b0-acd593ca1b03
+name: "Chain: Linux SUID/SGID Privilege Escalation — Stage 1: SUID/SGID Bit Set via chmod"
+description: |
+  Linux SUID/SGID Privilege Escalation zanjiri — 1-bosqich (2 dan).
+  SUID/SGID Bit Set via chmod.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.action == "executed" AND process.name == "chmod" | EVAL args_str = MV_CONCAT(process.args, "|") | WHERE args_str RLIKE ".*[|]4[0-9][0-9][0-9][|].*" OR args_str RLIKE ".*[|]2[0-9][0-9][0-9][|].*" OR args_str RLIKE ".*[|]6[0-9][0-9][0-9][|].*" OR args_str RLIKE ".*[|][+]s[|].*" OR args_str RLIKE ".*[|]u[+]s[|].*" OR args_str RLIKE ".*[|]g[+]s[|].*" | EVAL host_name = host.hostname, cmd_args = args_str | KEEP process.name, process.executable, cmd_args, host_name, user.name, @timestamp | LIMIT 500
+tags:
+  - attack.privilege-escalation
+  - chain
+  - correlation
+  - linux-auditd
+  - sgid
+  - suid
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+  timeframe_sec: 3600
+  dedup_fields:
+    - process.executable
+    - cmd_args
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0004:
+    T1548: ["T1548.001"]

@@ -1,0 +1,54 @@
+rule_id: cd82f399-d441-42ec-be61-c19cc80d5c82
+name: "Chain: Linux User Added to Group"
+description: |
+  Linux yangi-foydalanuvchi backdoor zanjiri — 2-bosqich.
+  Hisob guruhga (sudo/wheel/admin) qo'shilishi.
+  1-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.action IN ("added-group-account-to", "modified-group-account", "added-user-to-group")
+  | EVAL host.name = host.hostname, cmdline = MV_CONCAT(process.args, " ")
+  | KEEP @timestamp, agent_id, host.name, user.name, auditd.data.acct, process.name, cmdline, event.action
+  | LIMIT 500
+tags:
+  - attack.privilege-escalation
+  - attack.t1098
+  - linux
+  - group-membership
+  - correlation
+  - chain
+severity: high
+risk_score: 78
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - cmdline
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - a5c8653e-7c6e-4c13-af51-d5c78fa62385
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+nist: ["AC-2", "AC-6"]
+pci_dss: ["7.1", "10.2.5"]
+mitre_attack:
+  TA0004:
+    T1098: []

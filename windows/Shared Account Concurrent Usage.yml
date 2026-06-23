@@ -1,0 +1,74 @@
+rule_id: 07c6d069-4ca0-4a90-9714-689496fc9286
+#//RULE-NIST-11 — Shared Account Usage (NIST IA-4, AC-2)
+#//Control Family: IA (Identification and Authentication), AC (Access Control)
+#//Objective: Detect concurrent logins from shared/generic accounts
+#//Threat scenario: Shared credentials used by agent_id, multiple individuals violating accountability
+#//Data sources: Windows Security 4624, concurrent sessions from same account
+#//ECS fields used: event.code, user.name, source.ip, host.name
+#//Field validation: Verify all ECS fields exist in your indices before enabling
+#//Tuning notes: Allowlist known service accounts, adjust concurrent login threshold
+#
+name: "Shared Account Concurrent Usage"
+description: |
+  Detects multiple concurrent logins from same user account from different source IPs.
+  Shared accounts violate individual accountability and non-repudiation requirements.
+  Concurrent sessions from geographically distinct locations indicate credential sharing or compromise.
+  False positives: Legitimate service accounts, VPN reconnections, load-balanced applications.
+  Triage: Verify if account is designated shared/service account, check if IPs belong to same user, 
+  review account activity for anomalies.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-winlog*
+  - logs-updive.audit*
+query_language: esql
+query: |
+  FROM logs-winlog*, logs-updive.audit*
+  | WHERE @timestamp >= NOW() - 10 minutes
+    AND event.outcome == "success"
+    AND (event.code == "4624" OR event.action IN ("ssh_login", "login", "user-login"))
+  | EVAL user_id = COALESCE(winlog.event_data.TargetUserName, user.name),
+         source_addr = COALESCE(winlog.event_data.IpAddress, TO_STRING(source.ip))
+  | WHERE user_id IS NOT NULL
+    AND NOT user_id LIKE "*$"
+    AND source_addr IS NOT NULL
+    AND source_addr != "-"
+    AND source_addr != "::1"
+    AND source_addr != "127.0.0.1"
+  | STATS
+      login_count = COUNT(*),
+      unique_ips = COUNT_DISTINCT(source_addr),
+      source_ips = VALUES(source_addr),
+      unique_hosts = COUNT_DISTINCT(host.name),
+      hosts = VALUES(host.name)
+    BY agent_id, user_id
+    , bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE unique_ips >= 2 OR unique_hosts >= 2
+  | EVAL account_type = CASE(
+      TO_LOWER(user_id) RLIKE ".*(admin|svc|service|system|root).*", "Privileged",
+      "Standard"
+    )
+  | EVAL concurrent_sessions = unique_ips * unique_hosts
+  | EVAL risk_score = concurrent_sessions * 20
+  | WHERE risk_score >= 40
+  | KEEP agent_id, bucket, user_id, login_count, unique_ips, source_ips, unique_hosts, hosts, account_type, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - nist_800_53
+  - control_IA-4
+  - control_AC-2
+  - family_IA
+  - family_AC
+  - credential_access
+  - policy_violation
+severity: medium
+risk_score: 50
+references:
+  - "NIST SP 800-53 Rev.5 IA-4: Identifier Management"
+  - "NIST SP 800-53 Rev.5 AC-2: Account Management"
+nist: ["IA-4", "AC-2"]
+pci_dss: ["8.1"]
+gdpr: []
+mitre_attack: []

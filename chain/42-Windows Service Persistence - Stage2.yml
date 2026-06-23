@@ -1,0 +1,44 @@
+rule_id: 34729e5c-3574-4c60-b002-c898c00efc18
+name: "Chain: Windows Service Persistence — Stage 2: Suspicious Service Started"
+description: |
+  Windows Service Persistence zanjiri — 2-bosqich (2 dan).
+  Suspicious Service Started.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.code == "7036" AND winlog.channel == "System" | EVAL service.name = winlog.event_data.param1, service.status = winlog.event_data.param2 | KEEP @timestamp, host.name, service.name, service.status | LIMIT 500
+tags:
+  - attack.persistence
+  - chain
+  - correlation
+  - service-execution
+  - windows
+  - winlog
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - service.name
+    - service.status
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - ac0ab9b7-0ae5-4f69-a7ed-74d9ce82b2d5
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0003:
+    T1543: ["T1543.003"]

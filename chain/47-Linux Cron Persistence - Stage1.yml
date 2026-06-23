@@ -1,0 +1,42 @@
+rule_id: 5618a5c7-90f8-42c3-8fd6-41f5c3044d1c
+name: "Chain: Linux Cron Persistence — Stage 1: Cron File Integrity Change"
+description: |
+  Linux Cron Persistence zanjiri — 1-bosqich (2 dan).
+  Cron File Integrity Change.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.module == "file_integrity" AND event.type == "change" | WHERE file.path LIKE "/etc/cron*" OR file.path LIKE "/var/spool/cron*" | EVAL host.name = host.hostname | KEEP @timestamp, host.name, file.path, event.action, file.owner, file.mode, user.name | LIMIT 500
+tags:
+  - attack.persistence
+  - auditd
+  - chain
+  - correlation
+  - file_integrity
+  - linux
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - file.path
+    - event.action
+  timeframe_sec: 900
+  dedup_fields:
+    - file.path
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.003"]

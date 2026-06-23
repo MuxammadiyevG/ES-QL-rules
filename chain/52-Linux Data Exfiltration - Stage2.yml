@@ -1,0 +1,43 @@
+rule_id: b3d148e3-9368-4fc7-bfad-c79670b4e2fb
+name: "Chain: Linux Data Exfiltration — Stage 2: Outbound Data Transfer"
+description: |
+  Linux Data Exfiltration zanjiri — 2-bosqich (2 dan).
+  Outbound Data Transfer.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.action == "executed" | WHERE process.name IN ("curl", "wget", "scp", "nc", "rsync", "sftp", "ftp", "ssh") | EVAL host.name = host.hostname, cmd_args = MV_CONCAT(process.args, " ") | WHERE cmd_args IS NOT NULL | EVAL args_lower = TO_LOWER(cmd_args) | WHERE args_lower RLIKE ".*(https?://).*" AND NOT args_lower RLIKE ".*(localhost|127[.]0[.]0[.]1|motd[.]ubuntu[.]com).*" | KEEP @timestamp, host.name, user.name, process.name, process.executable, cmd_args | LIMIT 500
+tags:
+  - attack.exfiltration
+  - attack.t1048
+  - auditd
+  - chain
+  - correlation
+  - linux
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - a4d2b88d-657e-46df-a1c4-2cee4486e15c
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0010:
+    T1048: ["T1048.003"]
+    T1041: []

@@ -1,0 +1,56 @@
+rule_id: f9a07fb9-e24f-43b8-b295-3fc8659b9d0d
+name: "Chain: Sudo Authentication Failures (Linux)"
+description: |
+  Linux sudo privesc zanjiri — 1-bosqich.
+  Bitta foydalanuvchi bo'yicha ko'p muvaffaqiyatsiz sudo autentifikatsiyasi (user_auth fail).
+  Korrelyatsiya user.name bo'yicha.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE auditd.message_type == "user_auth" AND auditd.result == "fail"
+      AND TO_LOWER(auditd.summary.how) RLIKE ".*(sudo|/su).*"
+  | EVAL host.name = host.hostname, user.name = auditd.data.acct
+  | KEEP @timestamp, agent_id, user.name, host.name, auditd.summary.how, auditd.result
+  | LIMIT 500
+tags:
+  - attack.privilege-escalation
+  - attack.t1110
+  - attack.t1548.003
+  - linux
+  - sudo
+  - correlation
+  - chain
+severity: medium
+risk_score: 65
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - user.name
+  frequency: 3
+  timeframe_sec: 120
+  dedup_fields:
+    - user.name
+    - host.name
+  ignore_sec: 60
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - user.name
+references:
+  - "https://attack.mitre.org/techniques/T1548/003/"
+nist: ["AC-6", "AU-2"]
+pci_dss: ["8.1.6", "10.2.2"]
+mitre_attack:
+  TA0004:
+    T1548: ["T1548.003"]

@@ -1,0 +1,53 @@
+rule_id: c88f5da2-dc40-47b3-844f-2a7bae54d509
+name: "Chain: Defender Protection Disabled or Exclusion Added (5001/5007)"
+description: |
+  Defender evasion zanjiri — 1-bosqich.
+  Windows Defender real-time himoyasi o'chirilishi (5001) yoki konfiguratsiya/exclusion o'zgartirilishi (5007).
+  Korrelyatsiya host bo'yicha.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Windows Defender/Operational" AND event.code IN ("5001", "5007")
+  | EVAL host.name = winlog.computer_name
+  | KEEP @timestamp, agent_id, host.name, event.code
+  | LIMIT 500
+tags:
+  - attack.defense-evasion
+  - attack.t1562.001
+  - windows
+  - defender
+  - correlation
+  - chain
+severity: high
+risk_score: 80
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - event.code
+  ignore_sec: 120
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1562/001/"
+nist: ["SI-4", "SI-3"]
+pci_dss: ["5.1", "5.2"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.001"]

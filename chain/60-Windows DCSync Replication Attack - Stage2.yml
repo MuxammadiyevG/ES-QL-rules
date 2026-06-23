@@ -1,0 +1,49 @@
+rule_id: 98cdd92c-d7a9-4bf8-a436-12c418102251
+name: "Chain: Windows DCSync Replication Attack — Stage 2: Special Privileges Assigned Post-DCSync"
+description: |
+  Windows DCSync Replication Attack zanjiri — 2-bosqich (2 dan).
+  Special Privileges Assigned Post-DCSync.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND event.code == "4672" | EVAL user_name = winlog.event_data.SubjectUserName, host_name = winlog.computer_name, privilege_list = winlog.event_data.PrivilegeList | WHERE NOT user_name LIKE "*$" | KEEP user_name, host_name, privilege_list | LIMIT 500
+tags:
+  - active-directory
+  - attack.credential-access
+  - attack.privilege-escalation
+  - chain
+  - correlation
+  - dcsync
+  - windows
+severity: critical
+risk_score: 95
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - event.code
+    - winlog.channel
+  frequency: 1
+  timeframe_sec: 3600
+  dedup_fields:
+    - user_name
+    - host_name
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 44e284e1-91a3-44d1-9f7d-fcd2b06e3929
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0004:
+    T1003: ["T1003.006"]
+    T1078: ["T1078.002"]

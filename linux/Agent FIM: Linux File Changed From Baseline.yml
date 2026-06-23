@@ -1,0 +1,77 @@
+rule_id: 49ed6f4b-3d83-4e1b-a0a9-a63922e27574
+name: "Agent FIM: Linux File Changed From Baseline"
+description: |
+  Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, faylning baseline dan o'zgarganligini aniqlaydi.
+  Hujumchi tizim fayllarini, konfiguratsiya fayllarini yoki binary fayllarni o'zgartirishi orqali persistence yoki anti-forensics maqsadida faoliyat yuritayotgan bo'lishi mumkin.
+  Qonuniy holatlar: rejalashtirilgan tizim yangilanishlari, patch management, dastur o'rnatish.
+  SOC triage bosqichlari:
+  - `host.hostname`, `user.name` va o'zgartirilgan fayl `auditd.paths.name` ni identifikatsiya qiling.
+  - Fayl hash qiymatini (`auditd.paths.cap_fp`) baseline bilan solishtiring.
+  - O'zgarish uchun tasdiqlangan change ticket borligini tekshiring.
+  - Noqonuniy bo'lsa: faylni tiklang, sessiyani to'xtating, hostni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type IN ("syscall", "path")
+  | WHERE auditd.data.syscall IN ("write", "truncate", "ftruncate", "rename", "renameat", "renameat2")
+  | EVAL host_name   = host.hostname
+  | EVAL actor       = COALESCE(auditd.data.subj_user, auditd.data.uid)
+  | EVAL file_path   = auditd.paths.name
+  | EVAL file_inode  = auditd.paths.inode
+  | EVAL file_mode   = auditd.paths.mode
+  | EVAL hash_code   = auditd.paths.cap_fp
+  | EVAL target_hash = auditd.paths.cap_fi
+  | EVAL hash_algo   = "SHA256"
+  | EVAL syscall     = auditd.data.syscall
+  | EVAL tty         = auditd.data.tty
+  | WHERE file_path IS NOT NULL
+  | STATS
+      event_count    = COUNT(*),
+      host_names     = VALUES(host.hostname),
+      actors         = VALUES(auditd.data.subj_user),
+      file_paths     = VALUES(auditd.paths.name),
+      file_modes     = VALUES(auditd.paths.mode),
+      hash_codes     = VALUES(auditd.paths.cap_fp),
+      target_hashes  = VALUES(auditd.paths.cap_fi),
+      syscalls       = VALUES(auditd.data.syscall),
+      ttys           = VALUES(auditd.data.tty),
+      last_seen      = MAX(@timestamp),
+      first_seen     = MIN(@timestamp)
+    BY agent_id,host.hostname, auditd.paths.name, auditd.data.subj_user
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = host.hostname,
+      file_name         = auditd.paths.name,
+      user              = auditd.data.subj_user
+  | KEEP
+      agent_id, host_name, file_name, user, event_count,
+      host_names, actors, file_paths, file_modes,
+      hash_codes, target_hashes, syscalls, ttys,
+      last_seen, first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.impact
+  - attack.t1070.004
+  - attack.t1565.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1070/004/"
+  - "https://attack.mitre.org/techniques/T1565/001/"
+nist: ["SI-7", "AU-9", "CM-3", "IR-4"]
+pci_dss: ["10.5.1", "11.5", "6.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.004"]
+  TA0040:
+    T1565: ["T1565.001"]

@@ -1,0 +1,56 @@
+rule_id: 6e056ab7-69c2-4951-b7bf-933148ff4be3
+name: "Chain: Privileged Access After Kerberoasting (4672)"
+description: |
+  Kerberoasting zanjiri — 2-bosqich.
+  Service ticket spike'dan keyin o'sha hisobga maxsus imtiyozlar berilishi (4672).
+  1-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security" AND event.code == "4672"
+  | EVAL user.name = winlog.event_data.SubjectUserName, host.name = winlog.computer_name
+  | WHERE user.name IS NOT NULL AND NOT user.name LIKE "*$"
+      AND NOT TO_LOWER(user.name) IN ("system", "local service", "network service")
+  | KEEP @timestamp, agent_id, user.name, host.name, event.code
+  | LIMIT 500
+tags:
+  - attack.privilege-escalation
+  - attack.t1558.003
+  - windows
+  - privileged-logon
+  - correlation
+  - chain
+severity: high
+risk_score: 85
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - user.name
+  timeframe_sec: 300
+  dedup_fields:
+    - user.name
+    - host.name
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 65b0b2bd-176f-42fd-9efd-2d7d08a96759
+  timeframe_sec: 3600
+  correlate_by:
+    - user.name
+references:
+  - "https://attack.mitre.org/techniques/T1558/003/"
+nist: ["AC-6"]
+pci_dss: ["10.2.2"]
+mitre_attack:
+  TA0004:
+    T1078: []

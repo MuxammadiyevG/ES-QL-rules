@@ -1,0 +1,43 @@
+rule_id: 3560e6dd-5b28-49dd-9419-1e18fe1e7680
+name: "Chain: Windows Kerberos TGT Abuse — Stage 2: Privileged Logon After TGT Burst"
+description: |
+  Windows Kerberos TGT Abuse zanjiri — 2-bosqich (2 dan).
+  Privileged Logon After TGT Burst.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" | WHERE event.code == "4672" | WHERE NOT winlog.event_data.SubjectUserName LIKE "*$" | WHERE NOT winlog.event_data.SubjectUserName == "СИСТЕМА" | WHERE NOT winlog.event_data.SubjectUserName == "SYSTEM" | WHERE NOT winlog.event_data.SubjectUserName LIKE "DWM-*" | EVAL host.name = winlog.computer_name, user.name = winlog.event_data.SubjectUserName, privilege_list = winlog.event_data.PrivilegeList | KEEP @timestamp, `host.name`, `user.name`, privilege_list | LIMIT 1000
+tags:
+  - attack.lateral_movement
+  - attack.privilege_escalation
+  - chain
+  - correlation
+  - kerberos
+  - windows
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 900
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - cc65a0a9-d67a-4a4c-bc34-edf5cbff51e0
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0008:
+    T1558: ["T1558.001"]
+    T1078: ["T1078.002"]

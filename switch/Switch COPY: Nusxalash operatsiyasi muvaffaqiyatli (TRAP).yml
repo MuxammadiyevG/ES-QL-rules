@@ -1,0 +1,25 @@
+rule_id: 686c26bc-ff5d-47a0-bfc6-f5a39024d12a
+name: "Switch COPY: Nusxalash operatsiyasi muvaffaqiyatli (TRAP)"
+description: |
+  Switch da fayl nusxalash operatsiyasi (backup, firmware upload,
+  config copy va h.k.) muvaffaqiyatli yakunlandi.
+  Bu firmware yangilanishi, config backup yoki config restore bo'lishi mumkin.
+  SOC triage: Kim bajardi? GCLI logidan tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-switch.syslog-*
+query_language: esql
+query: |
+  FROM logs-switch.syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE event.original RLIKE ".*COPY.*TRAP.*"
+  | KEEP @timestamp, host.name, event.action, event.original
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.copy
+severity: low
+risk_score: 15

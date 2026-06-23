@@ -1,0 +1,55 @@
+rule_id: 1dea38dd-09b2-48db-9709-7448009fc1fc
+name: "Chain: Web Path Probing / Scanner (Nginx)"
+description: |
+  Veb hujum zanjiri — 1-bosqich.
+  Bitta source.ip qisqa vaqtda ko'p turli url.path so'rasa (scanner/recon).
+  Korrelyatsiya dvigateli source.ip bo'yicha url.path noyobligini hisoblaydi (different_field).
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-nginx.access-*
+query_language: esql
+query: |
+  FROM logs-nginx.access-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE source.ip IS NOT NULL AND url.path IS NOT NULL
+  | KEEP @timestamp, source.ip, url.path, http.request.method, http.response.status_code, user_agent.original
+  | LIMIT 1000
+tags:
+  - attack.reconnaissance
+  - attack.t1595
+  - web
+  - nginx
+  - scanner
+  - correlation
+  - chain
+severity: medium
+risk_score: 65
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - source.ip
+  different_field: url.path
+  frequency: 15
+  timeframe_sec: 120
+  dedup_fields:
+    - source.ip
+    - url.path
+  ignore_sec: 30
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - source.ip
+references:
+  - "https://attack.mitre.org/techniques/T1595/"
+nist: ["SI-4", "SC-7"]
+pci_dss: ["6.6", "11.4"]
+mitre_attack:
+  TA0043:
+    T1595: []

@@ -1,0 +1,54 @@
+rule_id: e1d4dca7-4d5b-4878-9121-c2f8c3aab6b0
+name: "Chain: Logon After Account Backdoor Setup (4624)"
+description: |
+  Windows hisob backdoor zanjiri — 3-bosqich.
+  Yangi/imtiyozli qilingan hisob bilan kirish (4624). 2-bosqichga bog'langan — backdoor ishlatilishi.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security" AND event.code == "4624" AND winlog.event_data.LogonType IN ("2", "3", "10")
+  | EVAL user.name = winlog.event_data.TargetUserName, host.name = winlog.computer_name
+  | WHERE user.name IS NOT NULL AND NOT user.name LIKE "*$"
+  | KEEP @timestamp, agent_id, user.name, host.name, event.code, winlog.event_data.LogonType
+  | LIMIT 500
+tags:
+  - attack.persistence
+  - attack.t1078
+  - windows
+  - logon
+  - correlation
+  - chain
+severity: high
+risk_score: 85
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - user.name
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 3
+  depends_on_rule_ids:
+    - c9dbc828-a998-4263-a3fc-a9ef78dc90dc
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+nist: ["AC-2"]
+pci_dss: ["10.2.5"]
+mitre_attack:
+  TA0003:
+    T1078: []

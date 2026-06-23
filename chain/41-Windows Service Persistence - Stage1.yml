@@ -1,0 +1,40 @@
+rule_id: ac0ab9b7-0ae5-4f69-a7ed-74d9ce82b2d5
+name: "Chain: Windows Service Persistence — Stage 1: Suspicious Service Installation"
+description: |
+  Windows Service Persistence zanjiri — 1-bosqich (2 dan).
+  Suspicious Service Installation.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.code == "7045" AND winlog.channel == "System" | EVAL image_path_lower = TO_LOWER(winlog.event_data.ImagePath), service.name = winlog.event_data.ServiceName, process.executable = winlog.event_data.ImagePath | WHERE image_path_lower RLIKE ".*temp.*" OR image_path_lower RLIKE ".*users.*" OR image_path_lower RLIKE ".*appdata.*" OR image_path_lower RLIKE ".*public.*" OR image_path_lower RLIKE ".*downloads.*" | KEEP @timestamp, host.name, service.name, process.executable | LIMIT 500
+tags:
+  - attack.persistence
+  - chain
+  - correlation
+  - service-installation
+  - windows
+  - winlog
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - service.name
+    - process.executable
+  timeframe_sec: 3600
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0003:
+    T1543: ["T1543.003"]

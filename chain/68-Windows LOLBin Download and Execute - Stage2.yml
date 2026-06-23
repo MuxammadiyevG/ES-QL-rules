@@ -1,0 +1,48 @@
+rule_id: 5c317a10-3fa1-44a4-b67c-b8d57d591ad1
+name: "Chain: Windows LOLBin Download and Execute — Stage 2: LOLBin Outbound Network Connection"
+description: |
+  Windows LOLBin Download and Execute zanjiri — 2-bosqich (2 dan).
+  LOLBin Outbound Network Connection.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" | WHERE event.code == "3" | EVAL img = TO_LOWER(COALESCE(winlog.event_data.Image, "-")) | EVAL host_name = winlog.computer_name | EVAL dest_ip = COALESCE(winlog.event_data.DestinationIp, "-") | EVAL dest_port = COALESCE(winlog.event_data.DestinationPort, "-") | EVAL user_name = COALESCE(winlog.event_data.User, "-") | WHERE img RLIKE ".*(certutil|bitsadmin|mshta|regsvr32|curl|wget|powershell|wscript|cscript|rundll32)[.]exe.*" | WHERE dest_ip != "127.0.0.1" | WHERE dest_ip != "::1" | KEEP host_name, img, dest_ip, dest_port, user_name, @timestamp | LIMIT 500
+tags:
+  - attack.command-and-control
+  - attack.execution
+  - attack.t1059
+  - attack.t1071
+  - chain
+  - correlation
+  - sysmon
+  - windows
+severity: critical
+risk_score: 91
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+    - dest_ip
+    - dest_port
+    - user_name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - fdff3c09-a358-4c93-9d8f-acd2709b6fa0
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.001"]
+    T1071: ["T1071.001"]

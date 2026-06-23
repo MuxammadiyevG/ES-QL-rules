@@ -1,0 +1,81 @@
+rule_id: 339ec88b-9d24-4d3b-8819-83dca8ab6ee4
+#//RULE-NIST-02 — Failed Privileged Access Attempts (NIST AC-3)
+#//Control Family: AC (Access Control)
+#//Objective: Detect repeated failed access to privileged resources
+#//Threat scenario: Credential stuffing or privilege escalation attempts
+#//Data sources: Windows Security 4656/4663, Linux auditd syscall failures
+#//ECS fields used: winlog.keywords, event.code, winlog.event_data.SubjectUserName, winlog.event_data.ObjectName (Windows); user.name, file.path (Linux)
+#//Field validation: Verify all ECS fields exist in your indices before enabling
+#//Tuning notes: Adjust threshold per environment (5-10 failures/5min), allowlist monitoring tools
+
+name: "Excessive Failed Privileged Access"
+description: |
+  Detects multiple failed attempts to access privileged files, registry keys, or execute privileged processes.
+  Indicates potential unauthorized privilege escalation or lateral movement attempts.
+  High confidence when combined with non-standard user accounts or unusual access patterns.
+  False positives: Misconfigured applications, legitimate troubleshooting.
+  Triage: Review user's typical behavior baseline, check for concurrent authentication failures, verify source IP.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+  - logs-updive.audit*
+query_language: esql
+query: |
+  FROM logs-winlog*, logs-updive.audit*
+  | WHERE @timestamp > NOW() - 5 minutes
+  AND (
+    event.code IN ("4656", "4663", "5145")
+    OR (auditd.result == "fail" AND auditd.message_type == "syscall")
+  )
+  | EVAL
+    object_path = COALESCE(winlog.event_data.ObjectName, file.path),
+    subject_user = COALESCE(winlog.event_data.SubjectUserName, user.name),
+    sensitive_path = CASE(
+      TO_LOWER(COALESCE(winlog.event_data.ObjectName, "")) RLIKE ".*(system32.config|windows.system32.drivers|ntds.dit).*", true,
+      TO_LOWER(COALESCE(file.path, "")) RLIKE ".*(passwd|shadow|sudoers|/root/|/etc/securetty).*", true,
+      false
+    )
+  | WHERE sensitive_path
+  | STATS
+    failure_count = COUNT(*),
+    unique_targets = COUNT_DISTINCT(object_path),
+    failed_paths = VALUES(object_path),
+    failed_processes = VALUES(COALESCE(process.name, winlog.event_data.ProcessName))
+  BY
+    agent_id, host.name,
+    subject_user,
+    bucket = DATE_TRUNC(5 minutes, @timestamp)
+  | WHERE failure_count >= 5
+  | EVAL severity_multiplier = CASE(
+    failure_count > 20, 3,
+    failure_count > 10, 2,
+    1
+  )
+  | KEEP
+    agent_id, bucket,
+    host.name,
+    subject_user,
+    failure_count,
+    unique_targets,
+    failed_paths,
+    failed_processes,
+    severity_multiplier
+  | SORT failure_count DESC
+enabled: false
+tags:
+  - nist_800_53
+  - control_AC-3
+  - family_AC
+  - privilege_escalation
+  - defense_evasion
+severity: high
+risk_score: 68
+references:
+  - "NIST SP 800-53 Rev.5 AC-3: Access Enforcement"
+nist: ["AC-3"]
+pci_dss: ["7.1"]
+mitre_attack:
+  TA0004:
+    T1548: []

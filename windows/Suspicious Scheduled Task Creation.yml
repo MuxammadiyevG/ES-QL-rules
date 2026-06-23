@@ -1,0 +1,68 @@
+rule_id: 81a83a11-d12a-4465-a129-c6c8b3f1e927
+#//RULE-NIST-31 — Scheduled Task Creation (NIST CM-6, SI-4)
+#//Control Family: CM (Configuration Management), SI (System and Information Integrity)
+#//Objective: Detect creation of scheduled tasks for persistence
+#//Threat scenario: Attacker creates scheduled task to maintain persistent access
+#//Data sources: Windows Security 4698, Linux cron job modifications
+#//ECS fields used: event.code, event.action, file.path, process.command_line
+#//Field validation: Verify all ECS fields exist in your indices before enabling
+#//Tuning notes: Allowlist known deployment tools, baseline scheduled maintenance tasks
+
+name: "Suspicious Scheduled Task Creation"
+description: |
+  Detects creation of new scheduled tasks or cron jobs with suspicious characteristics.
+  Tasks executing scripts from temp directories, PowerShell commands, or unusual schedules flagged.
+  Common persistence mechanism for malware and APT groups.
+  False positives: Software installations, legitimate automation, system maintenance.
+  Triage: Review task action (what command executes?), check task creator account,
+  verify schedule frequency, analyze executed binary/script legitimacy.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 10 minutes
+    AND (
+      (event.code == "4698")
+      OR (winlog.channel == "Microsoft-Windows-TaskScheduler/Operational" AND event.code == "106")
+    )
+  | EVAL task_name = COALESCE(winlog.event_data.TaskName, "")
+  | EVAL suspicious_task = CASE(
+      TO_LOWER(task_name) RLIKE ".*(temp|appdata|powershell|wscript|cscript|mshta|rundll32).*", true,
+      TO_LOWER(task_name) RLIKE ".*(http|ftp|download|invoke-webrequest|curl|wget).*", true,
+      false
+    )
+  | EVAL hour_of_day = DATE_EXTRACT("hour_of_day", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 6 OR hour_of_day > 22, true, false)
+  | STATS
+      task_creations = COUNT(*),
+      after_hours_count = SUM(CASE(is_after_hours == true, 1, 0))
+    BY agent_id, host.name, bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE task_creations >= 1
+  | EVAL risk_score = task_creations * 30 + after_hours_count * 25
+  | WHERE risk_score >= 30
+  | KEEP agent_id, bucket, host.name, task_creations, after_hours_count, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - nist_800_53
+  - control_CM-6
+  - control_SI-4
+  - family_CM
+  - family_SI
+  - persistence
+  - privilege_escalation
+severity: high
+risk_score: 76
+references:
+  - "NIST SP 800-53 Rev.5 CM-6: Configuration Settings"
+  - "MITRE ATT&CK T1053: Scheduled Task/Job"
+nist: ["CM-6", "SI-4"]
+gdpr: []
+pci_dss: []
+mitre_attack:
+  TA0003:
+    T1053: []

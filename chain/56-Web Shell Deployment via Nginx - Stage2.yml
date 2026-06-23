@@ -1,0 +1,48 @@
+rule_id: 7300077d-2c29-45d1-a777-675b70ac8882
+name: "Chain: Web Shell Deployment via Nginx — Stage 2: Web Shell Command Execution"
+description: |
+  Web Shell Deployment via Nginx zanjiri — 2-bosqich (2 dan).
+  Web Shell Command Execution.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-nginx.access-*
+query_language: esql
+query: |
+  FROM logs-nginx.access-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE url.path RLIKE ".*[.](php|jsp|jspx|aspx|asp|cfm).*" | WHERE url.query IS NOT NULL | WHERE TO_LOWER(url.query) RLIKE ".*(cmd=|exec=|shell|whoami|passwd|ipconfig|command=|system=|eval|phpinfo|base64_decode).*" OR TO_LOWER(url.original) RLIKE ".*(cmd=|exec=|whoami|ipconfig|/bin/|system[( ]|phpinfo).*" | KEEP source.ip, url.path, url.original, url.query, http.request.method, http.response.status_code, @timestamp | LIMIT 500
+tags:
+  - attack.execution
+  - attack.persistence
+  - chain
+  - correlation
+  - nginx
+  - web-shell
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - source.ip
+    - url.path
+    - url.query
+    - http.response.status_code
+  timeframe_sec: 3600
+  dedup_fields:
+    - url.path
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 9db0b872-374b-463e-b32d-60783d5f07b3
+  timeframe_sec: 3600
+  correlate_by:
+    - source.ip
+mitre_attack:
+  TA0002:
+    T1505: ["T1505.003"]
+    T1059: ["T1059.007"]

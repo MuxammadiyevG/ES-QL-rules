@@ -1,0 +1,49 @@
+rule_id: 6639d274-6c41-497c-9b19-2a5d71be9873
+name: "Chain: Windows WMI Persistence — Stage 2: Suspicious Process Execution After WMI Activity"
+description: |
+  Windows WMI Persistence zanjiri — 2-bosqich (2 dan).
+  Suspicious Process Execution After WMI Activity.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" | WHERE event.code == "1" | EVAL host.name = winlog.computer_name | EVAL process_image = winlog.event_data.Image | EVAL process_cmd_line = winlog.event_data.CommandLine | EVAL process_parent_image = winlog.event_data.ParentImage | EVAL user_name = winlog.event_data.User | EVAL img_lower = TO_LOWER(COALESCE(winlog.event_data.Image, "")) | EVAL parent_lower = TO_LOWER(COALESCE(winlog.event_data.ParentImage, "")) | WHERE img_lower RLIKE ".*(powershell|wscript|cscript|mshta|rundll32|regsvr32|certutil|bitsadmin|wmic|msiexec|regasm|regsvcs|installutil|msbuild|forfiles|scrcons).*" OR parent_lower RLIKE ".*(wmiprvse|wmiapsrv|scrcons|mofcomp|winmgmt).*" | KEEP @timestamp, event.code, winlog.channel, `host.name`, process_image, process_cmd_line, process_parent_image, user_name, agent_id | LIMIT 500
+tags:
+  - attack.execution
+  - attack.persistence
+  - attack.t1059
+  - attack.t1546.003
+  - chain
+  - correlation
+  - windows
+  - winlog
+severity: critical
+risk_score: 90
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - winlog.channel
+  timeframe_sec: 3600
+  dedup_fields:
+    - host.name
+    - user_name
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - bc238fff-37c4-45ee-96f5-77075dadb26e
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0002:
+    T1546: ["T1546.003"]
+    T1059: ["T1059.001"]

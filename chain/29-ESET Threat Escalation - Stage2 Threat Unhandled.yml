@@ -1,0 +1,54 @@
+rule_id: 6e53406c-30e2-423c-b807-9745ced6420a
+name: "Chain: ESET Threat Not Remediated"
+description: |
+  ESET tahdid zanjiri — 2-bosqich.
+  Aniqlangan tahdid tozalanmagan/bartaraf etilmagan (threat_handled == false) — faol infeksiya xavfi.
+  1-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-eset.protect-*
+query_language: esql
+query: |
+  FROM logs-eset.protect-*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | WHERE event.category == "Threat_Event" AND eset_protect.threat_handled == false
+  | EVAL host.name = host.name
+  | KEEP @timestamp, host.name, eset_protect.threat_type, eset_protect.threat_handled, eset_protect.action_taken, eset_protect.object_uri
+  | LIMIT 500
+tags:
+  - attack.execution
+  - attack.t1204
+  - eset
+  - malware-active
+  - correlation
+  - chain
+severity: critical
+risk_score: 92
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - eset_protect.threat_type
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 6fb103c8-dfaa-41c0-a0ca-34457ea4a5f7
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1204/"
+nist: ["SI-3", "IR-4"]
+pci_dss: ["5.1", "5.2"]
+mitre_attack:
+  TA0002:
+    T1204: []

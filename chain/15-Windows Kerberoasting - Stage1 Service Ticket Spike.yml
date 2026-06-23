@@ -1,0 +1,55 @@
+rule_id: 65b0b2bd-176f-42fd-9efd-2d7d08a96759
+name: "Chain: Kerberos Service Ticket Spike — Kerberoasting (4769)"
+description: |
+  Kerberoasting zanjiri — 1-bosqich.
+  Bitta hisob qisqa vaqtda ko'p turli SPN uchun service ticket so'rasa (4769) — Kerberoasting belgisi.
+  Korrelyatsiya: same_fields user.name, different_field ServiceName.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security" AND event.code == "4769"
+  | EVAL user.name = winlog.event_data.TargetUserName, host.name = winlog.computer_name, service = winlog.event_data.ServiceName
+  | WHERE user.name IS NOT NULL AND NOT user.name LIKE "*$"
+  | KEEP @timestamp, agent_id, user.name, service, host.name, event.code
+  | LIMIT 1000
+tags:
+  - attack.credential-access
+  - attack.t1558.003
+  - windows
+  - kerberoasting
+  - correlation
+  - chain
+severity: high
+risk_score: 80
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - user.name
+  different_field: service
+  frequency: 10
+  timeframe_sec: 300
+  dedup_fields:
+    - user.name
+    - service
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - user.name
+references:
+  - "https://attack.mitre.org/techniques/T1558/003/"
+nist: ["AC-7", "SI-4"]
+pci_dss: ["8.3", "10.2.4"]
+mitre_attack:
+  TA0006:
+    T1558: ["T1558.003"]

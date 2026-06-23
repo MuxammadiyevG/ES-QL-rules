@@ -1,0 +1,78 @@
+rule_id: 221d1387-706c-41e0-828c-f3c3f79cde65
+name: NTLM Authentication Where Kerberos Expected
+description: |
+  Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `NTLM Authentication Where Kerberos Expected` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
+  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
+  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
+  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
+  | WHERE event.code IN ("4624", "4776")
+  | EVAL 
+      target_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName, "Unknown"),
+      source_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress, winlog.event_data.Workstation, "Unknown"),
+      auth_package = COALESCE(winlog.event_data.AuthenticationPackageName, winlog.event_data.PackageName, "Unknown"),
+      logon_type = COALESCE(winlog.event_data.LogonType, "Unknown"),
+      logon_process = COALESCE(winlog.event_data.LogonProcessName, "Unknown")
+  /* Filter for NTLM authentication */
+  | WHERE TO_LOWER(auth_package) RLIKE "ntlm"
+    AND logon_type IN ("3", "9", "10")
+  /* Exclude computer accounts and system accounts */
+  | WHERE NOT (TO_LOWER(target_user) RLIKE "(\\$$|system|anonymous)")
+  /* Exclude events where username was not resolved (NTLM pass-through artefact) */
+  | WHERE target_user != "-" AND target_user != "Unknown"
+  | STATS 
+      ntlm_auth_count = COUNT(*),
+      unique_sources = COUNT_DISTINCT(source_ip),
+      source_ips = VALUES(source_ip),
+      logon_types = VALUES(logon_type),
+      logon_processes = VALUES(logon_process),
+      first_auth = MIN(@timestamp),
+      last_auth = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, target_user, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE ntlm_auth_count >= 5
+  | EVAL 
+      risk_level = CASE(
+        unique_sources >= 10, "High - Multiple Sources Using NTLM",
+        ntlm_auth_count >= 20, "Medium - Repeated NTLM Usage",
+        "Low - Limited NTLM Activity"
+      )
+  | KEEP agent_id, bucket, winlog.computer_name, target_user, ntlm_auth_count, unique_sources,
+      source_ips, logon_types, risk_level, first_auth, last_auth
+  | SORT ntlm_auth_count DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - attack.lateral-movement
+  - attack.credential-access
+  - attack.t1550.002
+  - detection.anomaly
+severity: high
+risk_score: 75
+mitre_attack:
+  TA0008:
+    T1550: ["T1550.002"]
+  TA0006:
+    T1003: []
+nist: ["AC-17", "AU-2", "AU-12", "SI-4"]
+pci_dss: ["10.2.5", "8.1.6"]
+gdpr: ["32.1.a"]

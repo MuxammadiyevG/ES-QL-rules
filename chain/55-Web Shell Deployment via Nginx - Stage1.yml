@@ -1,0 +1,44 @@
+rule_id: 9db0b872-374b-463e-b32d-60783d5f07b3
+name: "Chain: Web Shell Deployment via Nginx — Stage 1: Script Upload Attempt"
+description: |
+  Web Shell Deployment via Nginx zanjiri — 1-bosqich (2 dan).
+  Script Upload Attempt.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-nginx.access-*
+query_language: esql
+query: |
+  FROM logs-nginx.access-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE http.request.method == "POST" | WHERE url.path RLIKE ".*[.](php|jsp|jspx|aspx|asp|cfm)$" OR TO_LOWER(url.path) RLIKE ".*(upload|webshell|shell|cmd|exec).*" | KEEP source.ip, url.path, url.original, http.request.method, http.response.status_code, @timestamp | LIMIT 500
+tags:
+  - attack.initial-access
+  - attack.persistence
+  - chain
+  - correlation
+  - nginx
+  - web-shell
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - source.ip
+    - http.request.method
+    - url.path
+    - http.response.status_code
+  timeframe_sec: 3600
+  dedup_fields:
+    - url.path
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - source.ip
+mitre_attack:
+  TA0001:
+    T1190: []
+    T1505: ["T1505.003"]

@@ -1,0 +1,57 @@
+rule_id: aa995425-5134-41fd-bbf4-609486c519de
+name: "Chain: Suspicious Process After Defender Tampering (Sysmon 1)"
+description: |
+  Defender evasion zanjiri — 2-bosqich.
+  Himoya o'chirilgandan keyin o'sha host'da shubhali jarayon (Sysmon EventID 1): encoded PowerShell, /temp dan, LOLBin.
+  1-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "1"
+  | EVAL host.name = winlog.computer_name, user.name = winlog.event_data.User, cmd = TO_LOWER(winlog.event_data.CommandLine), img = TO_LOWER(winlog.event_data.Image)
+  | WHERE cmd LIKE "*-enc*" OR cmd LIKE "*-encodedcommand*" OR cmd LIKE "*frombase64*" OR cmd LIKE "*downloadstring*" OR cmd LIKE "*temp*" OR img LIKE "*temp*" OR img LIKE "*users public*" OR img LIKE "*mshta*" OR img LIKE "*rundll32*" OR img LIKE "*regsvr32*"
+  | KEEP @timestamp, agent_id, host.name, user.name, winlog.event_data.Image, winlog.event_data.CommandLine
+  | LIMIT 500
+tags:
+  - attack.execution
+  - attack.t1059.001
+  - windows
+  - sysmon
+  - post-evasion
+  - correlation
+  - chain
+severity: high
+risk_score: 85
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - user.name
+  check_diff: true
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - c88f5da2-dc40-47b3-844f-2a7bae54d509
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1059/001/"
+nist: ["SI-4"]
+pci_dss: ["5.1"]
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.001"]

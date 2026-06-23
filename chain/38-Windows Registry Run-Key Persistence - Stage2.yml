@@ -1,0 +1,43 @@
+rule_id: 9b0bd51e-4b5c-45b9-8484-3c9b39505995
+name: "Chain: Windows Registry Run-Key Persistence — Stage 2: Process Execution from Persistence Path"
+description: |
+  Windows Registry Run-Key Persistence zanjiri — 2-bosqich (2 dan).
+  Process Execution from Persistence Path.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "1" | EVAL image_lower = TO_LOWER(winlog.event_data.Image) | WHERE image_lower RLIKE ".*appdata.*" OR image_lower RLIKE ".*temp.*" OR image_lower RLIKE ".*public.*" | EVAL `host.name` = winlog.computer_name, `process.executable` = winlog.event_data.Image, `process.command_line` = winlog.event_data.CommandLine, `process.parent.executable` = winlog.event_data.ParentImage | KEEP @timestamp, `host.name`, `process.executable`, `process.command_line`, `process.parent.executable` | LIMIT 500
+tags:
+  - attack.execution
+  - attack.persistence
+  - chain
+  - correlation
+  - sysmon
+  - windows
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 7200
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - ca178d79-2212-496c-a612-e5cc49adc3ba
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0002:
+    T1547: ["T1547.001"]
+    T1059: []

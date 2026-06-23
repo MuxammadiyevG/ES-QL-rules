@@ -1,0 +1,32 @@
+rule_id: b18ac8af-9892-4873-afb8-be7dfc4dc8fd
+name: "Switch Syslog: Parse qilinmagan log aniqlandi"
+description: |
+  Logstash filter parse qila olmagan syslog xabari keldi.
+  Bu yangi log format yoki konfiguratsiya xatosi belgisi bo'lishi mumkin.
+  Parse qilinmagan loglar SIEM da ko'rinmaydi — e'tibor bering.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-switch.syslog-*
+query_language: esql
+query: |
+  FROM logs-switch.syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE observer.hostname IS NULL
+  | STATS
+      fail_count = COUNT(*),
+      hosts      = VALUES(host.name),
+      samples    = VALUES(message),
+      last_seen  = MAX(@timestamp),
+      first_seen = MIN(@timestamp)
+    BY host.name
+  | WHERE fail_count >= 1
+  | KEEP host.name, fail_count, samples, last_seen, first_seen
+  | SORT fail_count DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.parse-error
+severity: low
+risk_score: 10

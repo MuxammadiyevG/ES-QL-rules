@@ -1,0 +1,56 @@
+rule_id: 09486d9d-c41a-4582-bfd8-26c77eaf5353
+name: ESET Protect - Multiple Device Shutdown or Reboot Tasks
+description: |
+  Ushbu qoida ESET device management orqali bir nechta device'larga shutdown/reboot task'larni aniqlaydi.
+  Bu unauthorized management action yoki insider threat belgisi bo'lishi mumkin (T1529).
+  Qonuniy holatlar: scheduled maintenance, patch deployment, legitimate administrative tasks.
+  SOC triage bosqichlari:
+  - Task creator identity va authorization'ni verify qiling
+  - Target device list va business impact'ni baholang
+  - Task description va trigger time'ni review qiling
+  - Change management approval borligini tekshiring
+  - Unauthorized access yoki credential compromise belgilari
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+- logs-eset.protect-*
+query_language: esql
+query: |
+  // Detects bulk shutdown/reboot task assignments via ESET Protect client triggers.
+  // Each "Assign" event in domain "Client trigger" represents one device being targeted.
+  // host.name is always the ESET management server (ESMC), not the target device.
+  // Target devices are identified via COUNT_DISTINCT(eset_protect.detail) on Assign events.
+  FROM logs-eset.protect-*
+  | WHERE @timestamp >= NOW() - 45 minutes
+  | WHERE event.category == "Audit_Event"
+  | WHERE event.action == "Assign"
+      AND eset_protect.domain == "Client trigger"
+  | WHERE TO_LOWER(COALESCE(eset_protect.detail, "")) RLIKE ".*(shutdown|reboot|restart).*"
+  | STATS
+      event_count = COUNT(*),
+      target_count = COUNT_DISTINCT(eset_protect.detail),
+      users = VALUES(eset_protect.user),
+      details = VALUES(eset_protect.detail)
+    BY bucket = DATE_TRUNC(15 minutes, @timestamp)
+  | WHERE target_count >= 2
+  | KEEP bucket, event_count, target_count, users, details
+  | SORT target_count DESC, event_count DESC
+  | LIMIT 100
+enabled: true
+tags:
+- attack.impact
+- attack.t1529
+- eset
+- device-management
+- availability
+severity: medium
+risk_score: 60
+references:
+- "https://attack.mitre.org/techniques/T1529/"
+nist: ["AC-2", "AC-6"]
+pci_dss: ["7.1", "10.2.2"]
+gdpr: ["35.7.d"]
+mitre_attack:
+  TA0040:
+    T1529: []

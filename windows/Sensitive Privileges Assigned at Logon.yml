@@ -1,0 +1,68 @@
+rule_id: e7463af7-9ae7-42f6-bbec-9945b5eb52f0
+name: Sensitive Privileges Assigned at Logon
+description: |
+  Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `Sensitive Privileges Assigned at Logon` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
+  Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `actor` va `target_user` (yoki target obyekt) ni aniq identifikatsiya qiling.
+  - O'zgarish/kirish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
+  - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
+  - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | EVAL hostn = winlog.computer_name
+  | EVAL actor = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName)
+  | EVAL target_user = COALESCE(winlog.event_data.TargetUserName, winlog.event_data.SamAccountName)
+  | EVAL src_ip = COALESCE(winlog.event_data.IpAddress, winlog.event_data.IpAddress)
+  // host-filtri olib tashlandi - barcha hostlarda ishlaydi (DC-only kerak bolsa qolda yoqing)
+  | WHERE NOT actor LIKE "*$"
+  | WHERE event.code == "4672"
+  | EVAL 
+      target_user = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.SubjectUserName, "Unknown"),
+      target_domain = COALESCE(winlog.event_data.SubjectDomainName, winlog.event_data.SubjectDomainName, "Unknown"),
+      logon_id = COALESCE(winlog.event_data.SubjectLogonId, "Unknown"),
+      privileges_raw = COALESCE(winlog.event_data.PrivilegeList, "Unknown")
+  /* Filter for sensitive privileges */
+  | WHERE TO_LOWER(privileges_raw) RLIKE ".*(sedebugprivilege|setcbprivilege|sebackupprivilege|serestoreprivilege|secreatetokenprivilege|seassignprimarytokenprivilege|seloaddriverprivilege|seimpersonateprivilege|setakeownershipprivilege).*"
+  /* Exclude system accounts */
+  | WHERE NOT (TO_LOWER(target_user) RLIKE ".*(system|local service|network service|\\$).*")
+  | STATS 
+      privilege_grants = COUNT(*),
+      privileges_list = VALUES(privileges_raw),
+      logon_ids = VALUES(logon_id),
+      first_grant = MIN(@timestamp),
+      last_grant = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, target_user, target_domain, bucket = DATE_TRUNC(30 minutes, @timestamp)
+  | WHERE privilege_grants >= 1
+  | KEEP agent_id, bucket, winlog.computer_name, target_user, target_domain, privilege_grants,
+      privileges_list, logon_ids, first_grant, last_grant
+  | SORT privilege_grants DESC
+  | LIMIT 200
+enabled: false
+tags:
+  - attack.privilege-escalation
+  - attack.defense-evasion
+  - attack.t1134
+  - attack.t1548
+  - detection.critical
+severity: high
+risk_score: 75
+mitre_attack:
+  TA0004:
+    T1134: []
+    T1548: []
+  TA0005:
+    T1134: []
+nist: ["AU-6", "AU-9", "SI-4"]
+pci_dss: ["10.2.7", "10.5"]
+gdpr: ["32.1.a", "32.2"]

@@ -1,0 +1,48 @@
+rule_id: 9ec69022-932d-4b47-bff9-aead59a24c79
+name: "Chain: Linux Kernel Module Rootkit Load — Stage 2: Post-Load Defense Evasion"
+description: |
+  Linux Kernel Module Rootkit Load zanjiri — 2-bosqich (2 dan).
+  Post-Load Defense Evasion.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE (event.module == "file_integrity" AND event.type == "creation" AND file.path LIKE "*/.*") OR (auditd.message_type == "avc" AND event.action == "violated-apparmor-policy") OR (auditd.message_type == "bpf" AND process.name IS NOT NULL) | EVAL host.name = host.hostname | KEEP @timestamp, host.name, event.action, auditd.message_type, file.path, process.name, process.executable, user.name | LIMIT 500
+tags:
+  - attack.defense-evasion
+  - chain
+  - correlation
+  - linux-auditd
+  - rootkit
+severity: critical
+risk_score: 90
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - event.action
+    - auditd.message_type
+    - file.path
+    - process.name
+    - process.executable
+    - user.name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 6f028455-6ea6-4f5c-a8b8-ca992b7319c5
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0005:
+    T1014: []
+    T1564: ["T1564.001"]

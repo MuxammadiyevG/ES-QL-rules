@@ -1,0 +1,42 @@
+rule_id: bc238fff-37c4-45ee-96f5-77075dadb26e
+name: "Chain: Windows WMI Persistence — Stage 1: WMI Permanent Event Subscription Activity"
+description: |
+  Windows WMI Persistence zanjiri — 1-bosqich (2 dan).
+  WMI Permanent Event Subscription Activity.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-WMI-Activity/Operational" | WHERE event.code IN ("5857", "5858", "5859", "5860", "5861") | EVAL host.name = winlog.computer_name | EVAL wmi_operation = COALESCE(winlog.user_data.Operation, "-") | EVAL wmi_user = COALESCE(winlog.user_data.User, "-") | EVAL wmi_consumer = COALESCE(winlog.user_data.CONSUMER, "-") | EVAL wmi_namespace = COALESCE(winlog.user_data.Namespace, "-") | EVAL wmi_query = COALESCE(winlog.user_data.PossibleCause, winlog.user_data.Query, "-") | KEEP @timestamp, event.code, winlog.channel, `host.name`, wmi_operation, wmi_user, wmi_consumer, wmi_namespace, wmi_query, agent_id | LIMIT 500
+tags:
+  - attack.execution
+  - attack.persistence
+  - attack.t1546.003
+  - chain
+  - correlation
+  - windows
+  - winlog
+severity: high
+risk_score: 72
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - winlog.channel
+  timeframe_sec: 3600
+  dedup_fields:
+    - host.name
+    - event.code
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0003:
+    T1546: ["T1546.003"]

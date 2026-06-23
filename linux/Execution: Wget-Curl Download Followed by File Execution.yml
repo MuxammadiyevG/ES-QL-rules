@@ -1,0 +1,151 @@
+rule_id: 95e0dc67-5df3-41b7-8418-ceb584c43548
+name: "Execution: Wget/Curl Download Followed by File Execution"
+description: |
+  Ushbu qoida Linux tizimida wget yoki curl orqali fayl yuklab olinib,
+  keyin qisqa vaqt ichida yuklab olingan fayl yoki vaqtinchalik katalogdagi
+  fayl ishga tushirilishini aniqlaydi.
+
+type: esql
+params: "{}"
+schedule_interval: 10m
+
+index:
+  - logs-updive.audit-*
+
+query_language: esql
+
+query: |
+  FROM logs-updive.audit-*
+   | WHERE @timestamp >= NOW() - 10 minute
+   | WHERE service.type == "auditd"
+     AND auditd.message_type == "syscall"
+     AND auditd.data.syscall == "execve"
+     AND event.action == "executed"
+     AND event.category == "process"
+     AND event.type == "start"
+
+   | EVAL
+       process_name = to_lower(process.name),
+       command_line = to_lower(process.title),
+       actor_user = user.name,
+       actor_primary = auditd.summary.actor.primary,
+       actor_secondary = auditd.summary.actor.secondary,
+       process_path = process.executable,
+       host_name = host.hostname,
+       session_id = auditd.session,
+       parent_pid = process.parent.pid
+
+   | WHERE process_name IN (
+       "wget", "curl", "bash", "sh", "python", "python3",
+       "perl", "php", "ruby", "node", "chmod"
+     )
+     OR command_line RLIKE ".*(wget|curl).*(http|https).*"
+     OR command_line RLIKE ".*(/tmp|/var/tmp|/dev/shm|/run/user|/home/.*/Downloads)/.*"
+
+   // Exclude known-benign infrastructure patterns
+   | WHERE NOT (
+       // System/agent connectivity health checks using wget (not file downloads)
+       command_line RLIKE ".*wget --timeout [0-9]+ -u wget/.*"
+       // Container/service health probes to localhost only
+       OR command_line RLIKE ".*(curl|wget).*-f.*(http://localhost|http://127[.]0[.]0[.]1).*"
+       // GCC/compiler assembler writing temp object/asm files to /tmp (cc*.s, cc*.o)
+       OR command_line RLIKE ".*/bin/as .* /tmp/cc[a-zA-Z0-9]+[.](s|o)$"
+     )
+
+   | EVAL
+       stage = CASE(
+         process_name IN ("wget", "curl")
+           OR command_line RLIKE ".*(wget|curl).*(http|https).*",
+           "download",
+
+         process_name == "chmod"
+           AND command_line RLIKE ".*([+]x|755|777).*",
+           "permission_change",
+
+         command_line RLIKE ".*(/tmp|/var/tmp|/dev/shm|/run/user|/home/.*/Downloads)/[^ ]+.*",
+           "execute",
+
+         process_name IN ("bash", "sh", "python", "python3", "perl", "php", "ruby", "node")
+           AND command_line RLIKE ".*(http|/tmp|/var/tmp|/dev/shm|/run/user).*",
+           "script_execute",
+
+         "other"
+       )
+
+   | WHERE stage != "other"
+
+   | STATS
+       stages = VALUES(stage),
+       commands = VALUES(command_line),
+       processes = VALUES(process_name),
+       process_paths = VALUES(process_path),
+       first_seen = MIN(@timestamp),
+       last_seen = MAX(@timestamp),
+       event_count = COUNT()
+     BY agent_id, host_name, actor_user, actor_primary, actor_secondary, session_id, parent_pid
+
+   | WHERE MV_CONTAINS(stages, "download")
+     AND (
+       MV_CONTAINS(stages, "execute")
+       OR MV_CONTAINS(stages, "script_execute")
+       OR MV_CONTAINS(stages, "permission_change")
+     )
+
+   | EVAL
+       detection_reason = "wget/curl download followed by execution or permission change from suspicious location"
+
+   | KEEP
+       first_seen,
+       agent_id,
+       last_seen,
+       host_name,
+       actor_user,
+       actor_primary,
+       actor_secondary,
+       session_id,
+       parent_pid,
+       stages,
+       processes,
+       process_paths,
+       commands,
+       event_count,
+       detection_reason
+
+   | SORT last_seen DESC
+
+enabled: true
+
+tags:
+  - attack.command-and-control
+  - attack.t1105
+  - attack.execution
+  - attack.t1059
+  - attack.defense-evasion
+  - attack.t1027
+  - linux
+  - auditd
+  - wget
+  - curl
+  - downloader
+  - malware
+  - post-exploitation
+
+severity: high
+risk_score: 85
+
+references:
+  - "https://attack.mitre.org/techniques/T1105/"
+  - "https://attack.mitre.org/techniques/T1059/"
+  - "https://attack.mitre.org/techniques/T1204/002/"
+
+nist: ["AU-2", "AU-6", "AU-12", "SI-4", "SI-7"]
+
+pci_dss: ["10.2.1", "10.4.1"]
+
+gdpr: ["32.1.b", "32.1.c", "32.1.d"]
+
+mitre_attack:
+  TA0011:
+    T1105: [] # Ingress Tool Transfer
+  TA0002:
+    T1059: [] # Command and Scripting Interpreter

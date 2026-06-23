@@ -1,0 +1,56 @@
+rule_id: 7c9e4d39-0139-4379-9286-c3c07f21780d
+name: "Chain: Windows Failed Logon Burst (4625)"
+description: |
+  Windows kirish zanjiri — 1-bosqich.
+  Bitta hisob (user.name) bo'yicha qisqa vaqtda ko'p muvaffaqiyatsiz kirish (4625).
+  Korrelyatsiya dvigateli hisob bo'yicha chastotani hisoblaydi (brute / password guessing).
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE winlog.channel == "Security" AND event.code == "4625"
+  | EVAL source.ip = winlog.event_data.IpAddress, user.name = winlog.event_data.TargetUserName, host.name = winlog.computer_name
+  | WHERE user.name IS NOT NULL AND NOT user.name LIKE "*$"
+  | KEEP @timestamp, agent_id, source.ip, user.name, host.name, event.code, winlog.event_data.LogonType, winlog.event_data.SubStatus
+  | LIMIT 500
+tags:
+  - attack.credential-access
+  - attack.t1110
+  - windows
+  - brute-force
+  - correlation
+  - chain
+severity: medium
+risk_score: 70
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - user.name
+  frequency: 6
+  timeframe_sec: 300
+  dedup_fields:
+    - user.name
+    - source.ip
+    - host.name
+  ignore_sec: 60
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - user.name
+references:
+  - "https://attack.mitre.org/techniques/T1110/"
+nist: ["AC-7", "SI-4"]
+pci_dss: ["8.1.6", "10.2.4", "10.2.5"]
+mitre_attack:
+  TA0006:
+    T1110: []

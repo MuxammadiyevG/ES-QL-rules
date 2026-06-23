@@ -1,0 +1,44 @@
+rule_id: 8ba7a6b5-968e-4677-a715-ced7c2e7cad8
+name: "Chain: Windows Account Lockout Storm — Stage 2: Unlock or Logon After Lockout Storm"
+description: |
+  Windows Account Lockout Storm zanjiri — 2-bosqich (2 dan).
+  Unlock or Logon After Lockout Storm.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND event.code IN ("4767", "4624") | EVAL host.name = winlog.computer_name, user.name = winlog.event_data.TargetUserName, logon_type = winlog.event_data.LogonType, source_ip = winlog.event_data.IpAddress | WHERE NOT user.name LIKE "*$" | KEEP @timestamp, host.name, user.name, logon_type, source_ip, event.code | LIMIT 1000
+tags:
+  - attack.credential-access
+  - attack.initial-access
+  - chain
+  - correlation
+  - windows
+  - winlog
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - user.name
+  timeframe_sec: 3600
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - aa11bd02-6a3a-4111-bae6-471b91c00082
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0001:
+    T1078: []
+    T1110: ["T1110.001"]

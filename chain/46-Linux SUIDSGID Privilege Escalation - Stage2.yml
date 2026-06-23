@@ -1,0 +1,47 @@
+rule_id: e94635c3-913f-47c1-b4a3-696ac313be87
+name: "Chain: Linux SUID/SGID Privilege Escalation — Stage 2: Unusual SUID Binary Executed"
+description: |
+  Linux SUID/SGID Privilege Escalation zanjiri — 2-bosqich (2 dan).
+  Unusual SUID Binary Executed.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.action == "executed" | WHERE process.executable IN ("/usr/lib/polkit-1/polkit-agent-helper-1", "/usr/bin/ssh-agent", "/usr/bin/find", "/usr/bin/python3", "/usr/bin/python", "/usr/bin/perl", "/usr/bin/vim", "/usr/bin/vim.basic", "/usr/bin/nmap", "/usr/bin/tee", "/bin/dd", "/usr/bin/pkexec") AND user.name IS NOT NULL AND user.name NOT IN ("root", "daemon", "nobody", "_apt", "dnsmasq") | EVAL host_name = host.hostname, args_str = MV_CONCAT(process.args, " ") | KEEP process.name, process.executable, args_str, host_name, user.name, @timestamp | LIMIT 500
+tags:
+  - attack.execution
+  - attack.privilege-escalation
+  - chain
+  - correlation
+  - gtfobins
+  - linux-auditd
+  - suid
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+  timeframe_sec: 3600
+  dedup_fields:
+    - process.executable
+    - user.name
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 9778f73b-6d49-4f63-a3b0-acd593ca1b03
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0004:
+    T1548: ["T1548.001"]
+    T1059: ["T1059.004"]

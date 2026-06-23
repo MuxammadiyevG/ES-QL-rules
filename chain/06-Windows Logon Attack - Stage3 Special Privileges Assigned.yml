@@ -1,0 +1,56 @@
+rule_id: ba004630-5014-4150-98fe-5e51d24b080e
+name: "Chain: Windows Special Privileges Assigned After Logon (4672)"
+description: |
+  Windows kirish zanjiri — 3-bosqich.
+  Kirishdan keyin o'sha hisobga maxsus imtiyozlar berilishi (4672) — imtiyoz oshishi / admin sessiya.
+  2-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE winlog.channel == "Security" AND event.code == "4672"
+  | EVAL user.name = winlog.event_data.SubjectUserName, host.name = winlog.computer_name
+  | WHERE user.name IS NOT NULL AND NOT user.name LIKE "*$"
+      AND NOT TO_LOWER(user.name) IN ("system","local service","network service")
+  | KEEP @timestamp, agent_id, user.name, host.name, event.code, winlog.event_data.PrivilegeList
+  | LIMIT 500
+tags:
+  - attack.privilege-escalation
+  - attack.t1078
+  - windows
+  - privileged-logon
+  - correlation
+  - chain
+severity: high
+risk_score: 85
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - user.name
+  timeframe_sec: 300
+  dedup_fields:
+    - user.name
+    - host.name
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 3
+  depends_on_rule_ids:
+    - 1ecf04a6-379e-4f2b-9dd0-137403dd461d
+  timeframe_sec: 3600
+  correlate_by:
+    - user.name
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+nist: ["AC-6", "AU-2"]
+pci_dss: ["10.2.2", "10.2.5"]
+mitre_attack:
+  TA0004:
+    T1078: []

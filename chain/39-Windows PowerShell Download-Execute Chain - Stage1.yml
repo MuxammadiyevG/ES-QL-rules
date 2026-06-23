@@ -1,0 +1,41 @@
+rule_id: fcd48fa5-658c-4d60-a75d-b5a49025c3cb
+name: "Chain: Windows PowerShell Download-Execute Chain — Stage 1: Suspicious PowerShell ScriptBlock"
+description: |
+  Windows PowerShell Download-Execute Chain zanjiri — 1-bosqich (2 dan).
+  Suspicious PowerShell ScriptBlock.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.code == "4104" | WHERE TO_LOWER(message) RLIKE ".*downloadstring.*" OR TO_LOWER(message) RLIKE ".*frombase64string.*" OR TO_LOWER(message) RLIKE ".*invoke-webrequest.*" OR TO_LOWER(message) RLIKE ".*webclient.*" | EVAL host.name = winlog.computer_name, script_block_text = winlog.event_data.ScriptBlockText, script_block_id = winlog.event_data.ScriptBlockId | KEEP @timestamp, host.name, script_block_text, script_block_id, agent_id | LIMIT 500
+tags:
+  - attack.execution
+  - chain
+  - correlation
+  - powershell
+  - scriptblock
+  - windows
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 900
+  dedup_fields:
+    - script_block_id
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.001"]
+    T1140: []

@@ -1,0 +1,52 @@
+rule_id: 6fb103c8-dfaa-41c0-a0ca-34457ea4a5f7
+name: "Chain: ESET Malware Threat Detected"
+description: |
+  ESET tahdid zanjiri — 1-bosqich.
+  ESET endpoint'da zararli dastur/tahdid aniqlanishi (Threat_Event).
+  Korrelyatsiya host bo'yicha.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-eset.protect-*
+query_language: esql
+query: |
+  FROM logs-eset.protect-*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | WHERE event.category == "Threat_Event"
+  | EVAL host.name = host.name
+  | KEEP @timestamp, host.name, eset_protect.threat_type, eset_protect.threat_handled, eset_protect.action_taken, eset_protect.object_uri, event.category
+  | LIMIT 500
+tags:
+  - attack.execution
+  - attack.t1204
+  - eset
+  - malware
+  - correlation
+  - chain
+severity: high
+risk_score: 78
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - eset_protect.threat_type
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1204/"
+nist: ["SI-3", "SI-4"]
+pci_dss: ["5.1", "5.2"]
+mitre_attack:
+  TA0002:
+    T1204: []

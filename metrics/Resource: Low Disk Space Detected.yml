@@ -1,0 +1,87 @@
+rule_id: e1856a62-56f3-4f64-9a60-2e4cf97dbb1f
+name: "Resource: Low Disk Space Detected"
+description: |
+  Ushbu qoida Linux yoki Windows hostda filesystem/disk ishlatilishi
+  90% dan yuqori bo‘lishini aniqlaydi. Bu holatda diskda 10% dan kam
+  bo‘sh joy qolgan bo‘ladi.
+
+  Metricbeat orqali system.filesystem.used.pct fieldi tahlil qilinadi.
+  Temporary va virtual filesystem turlari false positive kamaytirish uchun
+  chiqarib tashlanadi.
+
+type: esql
+params: "{}"
+schedule_interval: 1m
+
+index:
+  - metricbeat-*
+
+query_language: esql
+
+query: |
+  FROM metrics-updive*
+     | WHERE @timestamp >= NOW() - 5 minute
+     | WHERE system.filesystem.used.bytes IS NOT NULL
+     | WHERE system.filesystem.total IS NOT NULL
+     | WHERE system.filesystem.total > 0
+     | WHERE NOT (system.filesystem.type IN ("udf", "iso9660", "squashfs", "tmpfs", "devtmpfs", "sysfs", "proc", "cgroup", "cgroup2", "pstore", "debugfs", "tracefs", "bpf", "hugetlbfs", "mqueue", "fusectl", "fuse.lxcfs"))
+     | EVAL
+         host_name = COALESCE(host.name, host.hostname),
+         mount_point = system.filesystem.mount_point,
+         device_name = system.filesystem.device_name,
+         filesystem_type = system.filesystem.type,
+         disk_used_pct = TO_DOUBLE(system.filesystem.used.bytes) / TO_DOUBLE(system.filesystem.total)
+     | STATS
+         avg_disk_used_pct = AVG(disk_used_pct),
+         max_disk_used_pct = MAX(disk_used_pct),
+         event_count = COUNT(),
+         first_seen = MIN(@timestamp),
+         last_seen = MAX(@timestamp)
+       BY host_name, mount_point, device_name, filesystem_type
+     | WHERE avg_disk_used_pct >= 0.90
+     | EVAL
+         avg_disk_used_percent = ROUND(avg_disk_used_pct * 100, 2),
+         max_disk_used_percent = ROUND(max_disk_used_pct * 100, 2),
+         free_disk_percent = ROUND(100 - avg_disk_used_percent, 2),
+         detection_reason = "Disk usage is above 90 percent threshold"
+     | KEEP
+         host_name,
+         mount_point,
+         device_name,
+         filesystem_type,
+         avg_disk_used_percent,
+         max_disk_used_percent,
+         free_disk_percent,
+         event_count,
+         first_seen,
+         last_seen,
+         detection_reason
+     | SORT avg_disk_used_percent DESC
+enabled: true
+tags:
+  - resource
+  - performance
+  - disk
+  - filesystem
+  - low-disk-space
+  - high-utilization
+  - linux
+  - windows
+  - metricbeat
+  - availability
+
+severity: high
+risk_score: 70
+
+references:
+  - "https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-system.html"
+
+nist: ["AU-6", "SI-4", "CP-10", "SC-5"]
+
+pci_dss: ["10.2.1", "10.4.1", "12.10.5"]
+
+gdpr: ["32.1.b", "32.1.c", "32.1.d"]
+
+mitre_attack:
+  TA0040:
+    T1499: [] # Endpoint Denial of Service

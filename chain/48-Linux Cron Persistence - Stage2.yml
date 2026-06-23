@@ -1,0 +1,49 @@
+rule_id: be8ff407-c299-4da1-b047-cf6e04c1b33e
+name: "Chain: Linux Cron Persistence — Stage 2: Suspicious Process Executed"
+description: |
+  Linux Cron Persistence zanjiri — 2-bosqich (2 dan).
+  Suspicious Process Executed.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" | WHERE process.name IN ("wget", "curl", "nc", "ncat", "netcat", "nmap", "python", "python3", "perl", "ruby", "bash", "socat", "whoami", "id", "uname") | EVAL host.name = host.hostname, cmd = MV_CONCAT(process.args, " ") | KEEP @timestamp, host.name, process.name, process.executable, cmd, user.name | LIMIT 500
+tags:
+  - attack.command-and-control
+  - attack.discovery
+  - attack.execution
+  - auditd
+  - chain
+  - correlation
+  - linux
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - process.name
+    - process.executable
+  timeframe_sec: 3600
+  dedup_fields:
+    - process.name
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 5618a5c7-90f8-42c3-8fd6-41f5c3044d1c
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.004"]
+    T1105: []
+    T1046: []

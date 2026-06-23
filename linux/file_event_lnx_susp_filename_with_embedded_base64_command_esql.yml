@@ -1,0 +1,43 @@
+rule_id: 230af9ee-51b3-4605-b77f-4a37a8190b61
+name: "Suspicious Filename with Embedded Base64 Commands"
+description: |
+  Detects creation of files with filenames containing embedded bash/base64 payloads.
+  Seen in VShell malware to trigger execution via shell expansion quirks.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  /* file creation events */
+  | WHERE event.category == "file" AND event.type == "creation"
+  /* selection: suspicious patterns in filename */
+  | WHERE file.name RLIKE ".*[{]echo.*" OR file.name RLIKE ".*[{]base64,-d[}].*"
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      file_paths = VALUES(file.path),
+      hosts = VALUES(host.name)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, file_paths, hosts
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.execution
+  - attack.t1059.004
+  - attack.t1027
+severity: high
+risk_score: 80
+references:
+  - "https://www.trellix.com/blogs/research/the-silent-fileless-threat-of-vshell/"
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.004"]

@@ -1,0 +1,52 @@
+rule_id: a5c8653e-7c6e-4c13-af51-d5c78fa62385
+name: "Chain: Linux User Account Created"
+description: |
+  Linux yangi-foydalanuvchi backdoor zanjiri — 1-bosqich.
+  Yangi Linux hisob yaratilishi (auditd added-user-account).
+  Korrelyatsiya host bo'yicha.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.action == "added-user-account"
+  | EVAL host.name = host.hostname, cmdline = MV_CONCAT(process.args, " ")
+  | KEEP @timestamp, agent_id, host.name, user.name, auditd.data.acct, process.name, cmdline
+  | LIMIT 500
+tags:
+  - attack.persistence
+  - attack.t1136.001
+  - linux
+  - account-creation
+  - correlation
+  - chain
+severity: medium
+risk_score: 65
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - auditd.data.acct
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1136/001/"
+nist: ["AC-2"]
+pci_dss: ["8.1.1", "10.2.5"]
+mitre_attack:
+  TA0003:
+    T1136: ["T1136.001"]

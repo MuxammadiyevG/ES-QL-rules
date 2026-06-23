@@ -1,0 +1,41 @@
+rule_id: ac72d119-6878-48fa-9fa8-eb5e4877a025
+name: "Chain: Linux PAM Backdoor — Stage 1: PAM Config File Modified"
+description: |
+  Linux PAM Backdoor zanjiri — 1-bosqich (2 dan).
+  PAM Config File Modified.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.module == "file_integrity" AND event.type == "change" | WHERE file.path LIKE "/etc/pam.d/*" OR file.path LIKE "/etc/security/*" OR TO_LOWER(file.path) RLIKE ".*pam_[a-z0-9_]+[.]so.*" | EVAL host.name = host.hostname, file_path = file.path, event_action = event.action | KEEP host.name, file_path, event_action, event.module, event.type, agent_id | LIMIT 500
+tags:
+  - attack.defense_evasion
+  - attack.persistence
+  - auditd
+  - chain
+  - correlation
+  - file_integrity
+  - linux
+severity: high
+risk_score: 55
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 900
+  dedup_fields:
+    - file_path
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0003:
+    T1556: ["T1556.003"]

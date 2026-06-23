@@ -1,0 +1,44 @@
+rule_id: fdff3c09-a358-4c93-9d8f-acd2709b6fa0
+name: "Chain: Windows LOLBin Download and Execute — Stage 1: LOLBin Download via URL"
+description: |
+  Windows LOLBin Download and Execute zanjiri — 1-bosqich (2 dan).
+  LOLBin Download via URL.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" | WHERE event.code == "1" | EVAL img = TO_LOWER(COALESCE(winlog.event_data.Image, "-")) | EVAL cmd = TO_LOWER(COALESCE(winlog.event_data.CommandLine, "-")) | EVAL host_name = winlog.computer_name | EVAL user_name = COALESCE(winlog.event_data.User, "-") | WHERE img RLIKE ".*(certutil|bitsadmin|mshta|regsvr32|curl|wget)[.]exe.*" | WHERE cmd RLIKE ".*(urlcache|/transfer|http[s]?[:]|ftp[:]|/i[:]http).*" | KEEP host_name, img, cmd, user_name, @timestamp | LIMIT 500
+tags:
+  - attack.command-and-control
+  - attack.defense-evasion
+  - attack.t1105
+  - attack.t1218
+  - chain
+  - correlation
+  - sysmon
+  - windows
+severity: high
+risk_score: 72
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+    - img
+    - cmd
+    - user_name
+  timeframe_sec: 900
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0011:
+    T1105: []
+    T1218: []

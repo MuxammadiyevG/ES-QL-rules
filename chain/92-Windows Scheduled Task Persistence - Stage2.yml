@@ -1,0 +1,52 @@
+rule_id: d655801d-853f-4977-af3d-ca387fc4dd17
+name: "Chain: Windows Scheduled Task Persistence — Stage 2: Process Execution via Task Scheduler"
+description: |
+  Windows Scheduled Task Persistence zanjiri — 2-bosqich (2 dan).
+  Process Execution via Task Scheduler.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "1" | EVAL parent_lower = TO_LOWER(winlog.event_data.ParentImage), img_lower = TO_LOWER(winlog.event_data.Image), host.name = winlog.computer_name, process.image = winlog.event_data.Image, process.command_line = winlog.event_data.CommandLine, process.user = winlog.event_data.User | WHERE parent_lower RLIKE ".*taskhostw[.]exe" OR parent_lower RLIKE ".*taskeng[.]exe" OR (parent_lower RLIKE ".*svchost[.]exe" AND (img_lower RLIKE ".*powershell[.]exe" OR img_lower RLIKE ".*cmd[.]exe" OR img_lower RLIKE ".*wscript[.]exe" OR img_lower RLIKE ".*cscript[.]exe" OR img_lower RLIKE ".*mshta[.]exe" OR img_lower RLIKE ".*regsvr32[.]exe")) | KEEP @timestamp, host.name, process.image, process.command_line, process.user, parent_lower | LIMIT 500
+tags:
+  - attack.execution
+  - attack.persistence
+  - chain
+  - correlation
+  - scheduled-task
+  - sysmon
+  - windows
+  - winlog
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - process.image
+    - process.command_line
+    - process.user
+    - parent_lower
+  timeframe_sec: 3600
+  dedup_fields:
+    - process.image
+    - host.name
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - a4d5f034-7ecc-4b18-af07-25d2fb197072
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0002:
+    T1053: ["T1053.005"]
+    T1059: ["T1059.001"]

@@ -1,0 +1,64 @@
+rule_id: 33d8b942-638b-43f4-85ec-107cd2b39e1d
+name: Scheduled Task Created Through AD/GPO
+description: |
+  Ushbu qoida scheduled task yaratish/o'zgartirishni aniqlaydi (4698 yaratildi, 4702
+  yangilandi, 4699 o'chirildi — "Security" kanali). Task nomi `TaskName`, mazmuni
+  `TaskContent` (XML) da bo'ladi. Shubhali harakat (powershell/cmd/encoded/temp yo'l)
+  yoki SYSTEM huquqida ishga tushish persistence belgisidir.
+  SOC triage:
+  - `task_names` va `suspicious_hits` — task ichida qanday buyruq?
+  - `creator` kim, bu rejalashtirilgan ishmi?
+  - Tasdiqlanmasa: taskni o'chiring (schtasks /delete), hostni tekshiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+- logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security"
+  | WHERE event.code IN ("4698", "4699", "4702")
+  | EVAL creator   = COALESCE(winlog.event_data.SubjectUserName, "-")
+  | EVAL task_name = COALESCE(winlog.event_data.TaskName, "-")
+  | EVAL task_content = COALESCE(winlog.event_data.TaskContent, winlog.event_data.TaskContentNew, "-")
+  | EVAL event_type = CASE(
+      event.code == "4698", "Task Created",
+      event.code == "4699", "Task Deleted",
+      event.code == "4702", "Task Updated",
+      "Unknown")
+  | EVAL suspicious = CASE(
+      TO_LOWER(task_content) RLIKE ".*(powershell|cmd.exe|wscript|cscript|mshta|rundll32|regsvr32|encodedcommand|frombase64|-enc|.temp.|.appdata.|.programdata.|.public.).*", 1, 0)
+  | WHERE creator IS NOT NULL
+  | STATS
+      task_operations = COUNT(*),
+      unique_tasks = COUNT_DISTINCT(task_name),
+      task_names   = VALUES(task_name),
+      event_types  = VALUES(event_type),
+      suspicious_hits = SUM(suspicious),
+      first_operation = MIN(@timestamp),
+      last_operation  = MAX(@timestamp)
+    BY agent_id, winlog.computer_name, creator, bucket = DATE_TRUNC(1 hour, @timestamp)
+  | WHERE task_operations >= 1
+  | EVAL dyn_risk = CASE(suspicious_hits >= 1, 88, 72)
+  | KEEP agent_id, bucket, winlog.computer_name, creator, task_operations, unique_tasks,
+      task_names, event_types, suspicious_hits, dyn_risk, first_operation, last_operation
+  | SORT dyn_risk DESC, task_operations DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1053.005
+  - detection.emerging-threats
+severity: high
+risk_score: 75
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.005"]
+  TA0002:
+    T1053: ["T1053.005"]
+nist: ["SI-4", "AU-12", "CM-7"]
+pci_dss: ["10.2.7", "11.4"]
+gdpr: ["32.1.a"]

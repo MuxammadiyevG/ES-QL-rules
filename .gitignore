@@ -2,3 +2,17 @@
 venv
 .venv
 __pycache__
+# transient test/reorg artifacts
+test_run.log
+test_parse.log
+test_parse2.log
+test_report.json
+inscope_broken.json
+workflow_lists.json
+test_*.log
+test_report*.json
+silent_rules.json
+timeout_rules.json
+waves.json
+wave2b.json
+test_efficacy*.log

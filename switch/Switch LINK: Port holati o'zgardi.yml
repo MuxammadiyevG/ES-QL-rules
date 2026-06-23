@@ -1,0 +1,25 @@
+rule_id: 8182f81f-f6e9-4aa6-9cd8-e823163bc14a
+name: "Switch LINK: Port holati o'zgardi"
+description: |
+  Switch porti holati o'zgardi, lekin Up yoki Down aniq emas.
+  Ba'zi switch modellarida format farq qilishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-switch.syslog-*
+query_language: esql
+query: |
+  FROM logs-switch.syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | MV_EXPAND log.syslog.facility.name
+  | WHERE log.syslog.facility.name == "LINK"
+  | WHERE event.type == "change"
+  | KEEP @timestamp, host.name, network.interface.name, event.type, event.original
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.link
+severity: low
+risk_score: 5

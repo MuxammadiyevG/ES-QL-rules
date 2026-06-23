@@ -1,0 +1,86 @@
+rule_id: 1cb6d002-3774-488f-87e5-a3eff83800f0
+name: "Database Server Disk Latency Critical"
+description: |
+  Ushbu qoida database server disk I/O kechikishi kritik darajaga (50 ms dan yuqori) yetganligini aniqlaydi.
+  10 daqiqalik oraliqda ketma-ket 2 ta o'lchov asosida disk read yoki write latency 50 ms dan oshsa alert ishga tushadi.
+  Bu turdagi hodisa database server ning disk I/O muammolari, storage tizimidagi bottleneck yoki disk xatoliklari natijasida yuzaga kelishi mumkin bo'lib, database ishlashiga jiddiy ta'sir ko'rsatishi mumkin.
+  Qonuniy holatlar sifatida rejalashtirilgan backup operatsiyalari, disk defragmentatsiya yoki yuqori yuklanish davrlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Ta'sirlangan `host.hostname` va disk nomini (`system.diskio.name`) aniq identifikatsiya qiling.
+  - Disk read va write latency qiymatlarini (`avg_read_latency_ms`, `avg_write_latency_ms`) tekshiring.
+  - Delta read/write vaqt va operatsiyalar sonini solishtiring.
+  - `/boot` disk partitsiyasi istisno qilingan.
+  - Storage tizimi, RAID konfiguratsiyasi va disk holatini tekshiring.
+  - Clear condition: 20 daqiqa ichida rule qayta ishga tushmasa alert avtomatik tozalanadi.
+  - Kerak bo'lsa resurslarni ko'paytiring yoki storage tizimini optimallashtiring.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - metrics-updive.metric-*
+query_language: esql
+query: |
+  FROM metrics-updive.metric-*
+  | WHERE @timestamp >= NOW() - 600 seconds
+  | WHERE metricset.name == "diskio"
+  | WHERE system.diskio.name IS NOT NULL
+  | WHERE host.os.family == "windows"
+  // /boot partitsiyasi istisno
+  | WHERE NOT system.diskio.name RLIKE ".*/boot.*"
+
+  // Delta-based latency: kumulyativ counterlar orasidagi farqdan hisoblash
+  | STATS
+      max_read_time   = MAX(system.diskio.read.time),
+      min_read_time   = MIN(system.diskio.read.time),
+      max_read_count  = MAX(system.diskio.read.count),
+      min_read_count  = MIN(system.diskio.read.count),
+      max_write_time  = MAX(system.diskio.write.time),
+      min_write_time  = MIN(system.diskio.write.time),
+      max_write_count = MAX(system.diskio.write.count),
+      min_write_count = MIN(system.diskio.write.count),
+      sample_count    = COUNT(*),
+      last_seen       = MAX(@timestamp),
+      first_seen      = MIN(@timestamp)
+    BY agent_id, host.hostname, system.diskio.name
+
+  | EVAL delta_read_time    = max_read_time  - min_read_time
+  | EVAL delta_read_count   = max_read_count - min_read_count
+  | EVAL delta_write_time   = max_write_time  - min_write_time
+  | EVAL delta_write_count  = max_write_count - min_write_count
+
+  // ms/op hisoblash (nol bo'linishdan himoya)
+  | EVAL avg_read_latency_ms  = CASE(delta_read_count  > 0,
+        TO_DOUBLE(delta_read_time)  / TO_DOUBLE(delta_read_count),
+        0.0)
+  | EVAL avg_write_latency_ms = CASE(delta_write_count > 0,
+        TO_DOUBLE(delta_write_time) / TO_DOUBLE(delta_write_count),
+        0.0)
+
+  // 50ms threshold va kamida 2 ta o'lchov
+  | WHERE sample_count >= 2
+  | WHERE avg_read_latency_ms >= 50
+     OR avg_write_latency_ms >= 50
+
+  | KEEP
+      agent_id,
+      host.hostname,
+      system.diskio.name,
+      avg_read_latency_ms,
+      avg_write_latency_ms,
+      sample_count,
+      last_seen,
+      first_seen
+  | SORT avg_read_latency_ms DESC
+enabled: true
+tags:
+  - availability.monitoring
+  - performance.monitoring
+  - detection.system-health
+severity: medium
+risk_score: 70
+references:
+  - "https://docs.microsoft.com/en-us/windows-server/administration/performance-tuning/subsystem/storage-spaces"
+nist: ["CP-10", "SI-4", "AU-6"]
+pci_dss: ["10.6.1", "12.10.1"]
+gdpr: ["32.1.b"]
+mitre_attack: []

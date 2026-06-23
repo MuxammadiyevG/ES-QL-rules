@@ -1,0 +1,33 @@
+rule_id: 7ef6f13d-2922-440e-aeba-9b693adfdf2a
+name: Nginx - Unusual HTTP Method Usage
+description: |
+  Kutilmagan HTTP metodlari (PUT, DELETE, TRACK, DEBUG) orqali yuborilgan so'rovlarni aniqlaydi.
+  Bu API abuse yoki server konfiguratsiyasini tekshirish belgisi.
+type: esql
+params: '{}'
+schedule_interval: 15m
+index:
+ - "logs-nginx.access-*"
+query_language: esql
+query: |
+  FROM logs-nginx.access-*
+  | WHERE @timestamp >= NOW() - 30 minutes
+  | WHERE http.request.method IN ("PUT", "DELETE", "TRACK", "DEBUG", "CONNECT")
+  | STATS
+      method_count = COUNT(*)
+    BY agent_id, source.ip, http.request.method
+  | WHERE method_count >= 5
+  | KEEP agent_id, source.ip, http.request.method, method_count
+enabled: true
+tags:
+ - "nginx"
+ - "anomaly"
+ - "verb-tampering"
+severity: medium
+risk_score: 50
+nist: ["SC-7", "SI-4"]
+pci_dss: ["10.6.1"]
+gdpr: ["35.7.d"]
+mitre_attack:
+  TA0001:
+    T1190: []

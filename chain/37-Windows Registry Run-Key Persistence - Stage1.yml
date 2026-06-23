@@ -1,0 +1,37 @@
+rule_id: ca178d79-2212-496c-a612-e5cc49adc3ba
+name: "Chain: Windows Registry Run-Key Persistence — Stage 1: Run Key Registry Set"
+description: |
+  Windows Registry Run-Key Persistence zanjiri — 1-bosqich (2 dan).
+  Run Key Registry Set.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "13" | EVAL target_lower = TO_LOWER(winlog.event_data.TargetObject) | WHERE target_lower RLIKE ".*currentversion.*run.*" | EVAL `host.name` = winlog.computer_name, registry_key = winlog.event_data.TargetObject, registry_value = winlog.event_data.Details | KEEP @timestamp, `host.name`, registry_key, registry_value | LIMIT 500
+tags:
+  - attack.persistence
+  - chain
+  - correlation
+  - sysmon
+  - windows
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 3600
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0003:
+    T1547: ["T1547.001"]

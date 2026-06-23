@@ -1,0 +1,43 @@
+rule_id: 5304dff4-8cf3-4f54-bd77-4d2d092dfcc8
+name: "Chain: Windows PowerShell Download-Execute Chain — Stage 2: PowerShell Outbound Network Connection"
+description: |
+  Windows PowerShell Download-Execute Chain zanjiri — 2-bosqich (2 dan).
+  PowerShell Outbound Network Connection.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.code == "3" | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" | WHERE winlog.event_data.Initiated == "true" | WHERE TO_LOWER(winlog.event_data.Image) RLIKE ".*powershell.*" | WHERE NOT winlog.event_data.DestinationIp LIKE "127.*" | WHERE NOT winlog.event_data.DestinationIp LIKE "10.*" | WHERE NOT winlog.event_data.DestinationIp LIKE "192.168.*" | EVAL host.name = winlog.computer_name, dest_ip = winlog.event_data.DestinationIp, dest_port = winlog.event_data.DestinationPort, process_image = winlog.event_data.Image | KEEP @timestamp, host.name, dest_ip, dest_port, process_image, agent_id | LIMIT 500
+tags:
+  - attack.command-and-control
+  - chain
+  - correlation
+  - network
+  - sysmon
+  - windows
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - fcd48fa5-658c-4d60-a75d-b5a49025c3cb
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0011:
+    T1105: []
+    T1071: ["T1071.001"]

@@ -1,0 +1,27 @@
+rule_id: 3ef583bc-5dc3-429a-bc9c-5383b1924331
+name: "Switch SYSLOG: Yangi syslog server qo'shildi (NEWSYSLOGSERVER)"
+description: |
+  Switch ga yangi remote syslog server manzili qo'shildi.
+  Noma'lum server qo'shilsa loglar boshqa joyga yuborilishi mumkin —
+  bu defense evasion belgisi bo'lishi mumkin.
+  SOC triage: Server IP korporativ SIEM serveri ekanligini tasdiqlang.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-switch.syslog-*
+query_language: esql
+query: |
+  FROM logs-switch.syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | MV_EXPAND log.syslog.facility.name
+  | WHERE log.syslog.facility.name == "SYSLOG"
+  | WHERE event.action == "NEWSYSLOGSERVER"
+  | KEEP @timestamp, host.name, event.action, event.original
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.config
+severity: low
+risk_score: 20

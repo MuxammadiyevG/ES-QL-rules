@@ -1,0 +1,41 @@
+rule_id: aa11bd02-6a3a-4111-bae6-471b91c00082
+name: "Chain: Windows Account Lockout Storm — Stage 1: Account Lockout Burst"
+description: |
+  Windows Account Lockout Storm zanjiri — 1-bosqich (2 dan).
+  Account Lockout Burst.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND event.code == "4740" | EVAL host.name = winlog.computer_name, user.name = winlog.event_data.TargetUserName, locked_by_host = winlog.event_data.TargetDomainName | WHERE NOT user.name LIKE "*$" | KEEP @timestamp, host.name, user.name, locked_by_host, event.code | LIMIT 1000
+tags:
+  - attack.credential-access
+  - chain
+  - correlation
+  - windows
+  - winlog
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  different_field: user.name
+  frequency: 3
+  timeframe_sec: 300
+  dedup_fields:
+    - user.name
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0006:
+    T1110: ["T1110.001", "T1110.003"]

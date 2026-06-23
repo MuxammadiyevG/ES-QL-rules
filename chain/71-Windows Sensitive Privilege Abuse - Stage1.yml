@@ -1,0 +1,40 @@
+rule_id: 841fedcc-77d0-43a6-8825-fb7519b95c6a
+name: "Chain: Windows Sensitive Privilege Abuse — Stage 1: Special Privileges Assigned at Logon"
+description: |
+  Windows Sensitive Privilege Abuse zanjiri — 1-bosqich (2 dan).
+  Special Privileges Assigned at Logon.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes AND winlog.channel == "Security" AND event.code == "4672" AND winlog.event_data.SubjectUserSid != "S-1-5-18" AND NOT winlog.event_data.SubjectUserName LIKE "*$" | EVAL user.name = winlog.event_data.SubjectUserName, host.name = winlog.computer_name, privilege_list = winlog.event_data.PrivilegeList | KEEP @timestamp, `user.name`, `host.name`, privilege_list | LIMIT 500
+tags:
+  - attack.privilege-escalation
+  - chain
+  - correlation
+  - security-4672
+  - windows
+  - winlog
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - user.name
+    - host.name
+    - privilege_list
+  timeframe_sec: 3600
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - user.name
+mitre_attack:
+  TA0004:
+    T1134: []

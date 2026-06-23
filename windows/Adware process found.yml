@@ -1,0 +1,75 @@
+rule_id: 06964e19-f55e-499a-92e1-d975955a3ed5
+name: Adware process found
+description: |
+  Ushbu qoida endpoint monitoring texnikalariga bog'liq bo'lib, `Adware process found` kontekstida hostda shubhali adware jarayonining aniqlanishini kuzatadi.
+  Bu turdagi hodisa hostda ruxsatsiz reklama dasturi ishlab turganligini ko'rsatishi mumkin bo'lib, ma'lumot o'g'irlash, brauzer session hijacking yoki boshqa zararli faoliyat uchun dastlabki qadam bo'lishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida administrator tomonidan o'rnatilgan test dasturlari, noto'g'ri klassifikatsiyalangan legitimate software yoki AV false positive holatlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `host.name` va `process.name` ni aniq identifikatsiya qiling.
+  - Jarayonning qaysi foydalanuvchi tomonidan ishga tushirilganini tekshiring.
+  - Jarayonning hash, path va digital signature ni tekshiring.
+  - Hostda boshqa shubhali jarayonlar yoki tarmoq ulanishlari borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: jarayonni to'xtating, hostni izolyatsiya qiling va to'liq malware scan bajaring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE winlog.channel IN ("Security", "System", "Microsoft-Windows-Sysmon/Operational")
+  | WHERE winlog.event_id IN ("4688", "1")
+  | EVAL proc_name  = COALESCE(winlog.event_data.NewProcessName, winlog.event_data.Image, winlog.event_data.ProcessName)
+  | EVAL host_name  = winlog.computer_name
+  | EVAL src_ip     = winlog.event_data.IpAddress
+  | EVAL actor      = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName)
+  | WHERE TO_LOWER(proc_name) RLIKE """(adware|adload|adrozek|superfish|vonteera|shopperz|wajam|crossrider|conduit|babylon|delta|searchprotect|sweetpacks|sweetpage|iminent|webssearches|istartsurf|omiga|dosearches|qvo6|trovi|nation|linkey|torch|rocket|browser.*hijack|savings.*bull|coupon.*server|deal.*ply|media.*viewer|savings.*ship|yontoo|appgraffiti|clickpotato|hotbar|zango|180solutions|gator|cydoor|comet|n-case|dashbar|netsetter|eztoolbar|exactsearch|seekseek|webhancer|offerbox|exact.*advertising)"""
+  | STATS
+      event_count   = COUNT(*),
+      proc_names    = VALUES(proc_name),
+      host_names    = VALUES(winlog.computer_name),
+      actors        = VALUES(winlog.event_data.SubjectUserName),
+      src_ips       = VALUES(winlog.event_data.IpAddress),
+      cmd_lines     = VALUES(winlog.event_data.CommandLine),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, winlog.computer_name, proc_name
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = winlog.computer_name,
+      process_name      = proc_name
+  | KEEP
+      agent_id,
+      host_name,
+      process_name,
+      event_count,
+      proc_names,
+      host_names,
+      actors,
+      src_ips,
+      cmd_lines,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.execution
+  - attack.persistence
+  - attack.t1543
+  - detection.threat-hunting
+  - malware.adware
+severity: medium
+risk_score: 65
+references:
+  - "https://attack.mitre.org/techniques/T1543/"
+  - "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4688"
+nist: ["SI-3", "SI-4", "CM-7"]
+pci_dss: ["5.1", "5.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1543: []
+  TA0002:
+    T1204: ["T1204.002"]

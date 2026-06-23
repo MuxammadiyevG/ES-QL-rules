@@ -1,0 +1,63 @@
+rule_id: 4b6f7d9a-7a4e-4c4a-9a77-0d5f5e4c0003
+name: "Chain: Post-Compromise Command After SSH Access (Linux)"
+description: |
+  Linux SSH zanjiri — 3-bosqich.
+  Muvaffaqiyatli SSH kirishdan keyin o'sha host'da shubhali buyruq (recon/download/shell yoki /tmp dan ishga tushirish).
+  2-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.category == "process" AND event.action == "executed"
+      AND (process.name IN ("whoami","id","uname","wget","curl","nc","ncat","python","python3","perl")
+           OR process.executable LIKE "*/tmp/*")
+  | EVAL host.name = host.hostname, cmdline = MV_CONCAT(process.args, " ")
+  | KEEP @timestamp, agent_id, source.ip, user.name, host.name, process.name, process.executable, cmdline
+  | LIMIT 500
+tags:
+  - attack.execution
+  - attack.discovery
+  - attack.t1059
+  - ssh
+  - post-exploitation
+  - auditd
+  - correlation
+  - chain
+severity: high
+risk_score: 85
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 300
+  dedup_fields:
+    - host.name
+    - user.name
+    - process.name
+  ignore_sec: 120
+  check_diff: true
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 3
+  depends_on_rule_ids:
+    - 7afac640-f586-4c10-a306-16070eea7bb5
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1059/"
+nist: ["SI-4", "IR-4"]
+pci_dss: ["10.2.4"]
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.004"]
+  TA0007:
+    T1082: []

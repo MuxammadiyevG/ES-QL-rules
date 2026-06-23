@@ -1,0 +1,91 @@
+rule_id: 1f66ed1f-bbfa-4a51-a30f-11f27bbf8286
+name: "Suspicious Crontab Modification"
+description: |
+  Detects suspicious modification of crontab files on Linux systems.
+  Adversaries may modify crontab to establish persistence or execute malicious payloads.
+  Monitors auditd events indicating crontab replacement or modification.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  /* auditd events only */
+  /* crontab file modification */
+  | WHERE (
+      /* direct REPLACE action from cron service */
+      auditd.message_type == "REPLACE"
+      OR
+      /* user ran crontab command (user_cmd events) */
+      (
+        auditd.message_type == "user_cmd"
+        AND (
+          TO_LOWER(COALESCE(auditd.data.cmd, "")) RLIKE ".*crontab.*"
+          OR
+          TO_LOWER(COALESCE(auditd.data.cmd, "")) RLIKE ".*/etc/crontab.*"
+          OR
+          TO_LOWER(COALESCE(auditd.data.cmd, "")) RLIKE ".*/var/spool/cron.*"
+        )
+      )
+      OR
+      /* syscall writes to crontab locations via crontab binary */
+      (
+        auditd.message_type == "syscall"
+        AND auditd.summary.how == "/usr/bin/crontab"
+      )
+      OR
+      /* syscall with file path in crontab locations */
+      (
+        auditd.message_type == "syscall"
+        AND (
+          TO_LOWER(COALESCE(auditd.summary.object.primary, "")) RLIKE ".*/etc/crontab.*"
+          OR
+          TO_LOWER(COALESCE(auditd.summary.object.primary, "")) RLIKE ".*/var/spool/cron.*"
+          OR
+          TO_LOWER(COALESCE(auditd.data.name, "")) RLIKE ".*/etc/crontab.*"
+          OR
+          TO_LOWER(COALESCE(auditd.data.name, "")) RLIKE ".*/var/spool/cron.*"
+        )
+      )
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(auditd.summary.how),
+      executables = VALUES(auditd.summary.how),
+      command_lines = VALUES(auditd.data.cmd),
+      files = VALUES(auditd.summary.object.primary),
+      hosts = VALUES(host.hostname),
+      raw_samples = VALUES(event.action)
+    BY agent_id, host.hostname, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP
+      agent_id, bucket,
+      host.hostname,
+      user.name,
+      event_count,
+      users,
+      processes,
+      executables,
+      command_lines,
+      files,
+      raw_samples
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.privilege-escalation
+  - attack.execution
+  - attack.persistence
+  - attack.t1053.003
+severity: medium
+risk_score: 55
+references:
+  - "https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1053.003/T1053.003.md"
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.003"]

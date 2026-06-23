@@ -1,0 +1,46 @@
+rule_id: e259873c-5c77-4644-a99c-cdd5a3169c0f
+name: "Chain: Windows Admin Share Access Recon — Stage 2: Process Execution After Share Access"
+description: |
+  Windows Admin Share Access Recon zanjiri — 2-bosqich (2 dan).
+  Process Execution After Share Access.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "1" | EVAL host.name = winlog.computer_name, user.name = winlog.event_data.User, process.executable = winlog.event_data.Image, process.command_line = winlog.event_data.CommandLine, process.parent.executable = winlog.event_data.ParentImage | KEEP host.name, user.name, process.executable, process.command_line, process.parent.executable, @timestamp | LIMIT 500
+tags:
+  - attack.execution
+  - chain
+  - correlation
+  - lateral-movement
+  - sysmon
+  - windows
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  different_field: process.executable
+  timeframe_sec: 600
+  dedup_fields:
+    - process.executable
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 64d28de7-af7e-4529-a433-030e56f013db
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0002:
+    T1021: ["T1021.002"]
+    T1059: []

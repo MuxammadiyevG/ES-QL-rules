@@ -1,0 +1,45 @@
+rule_id: a8a31517-f910-433b-9cf3-a1e8d74d87dd
+name: "Chain: Linux Shell RC Persistence — Stage 2: Interactive Login After RC Modification"
+description: |
+  Linux Shell RC Persistence zanjiri — 2-bosqich (2 dan).
+  Interactive Login After RC Modification.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND (auditd.message_type == "user_start" OR auditd.message_type == "user_login") AND auditd.result == "success" | EVAL host_name = COALESCE(host.name, host.hostname), user_account = COALESCE(auditd.data.acct, user.name) | KEEP @timestamp, host_name, user_account, auditd.message_type, auditd.result, auditd.data.terminal | LIMIT 500
+tags:
+  - attack.execution
+  - attack.persistence
+  - auditd
+  - chain
+  - correlation
+  - execution
+  - linux
+  - persistence
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 8b41f751-1c2a-4a84-b1da-1d2e8c573af6
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0002:
+    T1546: ["T1546.004"]
+    T1059: ["T1059.004"]

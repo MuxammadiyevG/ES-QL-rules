@@ -1,0 +1,44 @@
+rule_id: 0b6dc3bc-30db-462f-aa81-a990b6b04402
+name: "Chain: Windows Lateral Movement via Service — Stage 1: Inbound Network Logon"
+description: |
+  Windows Lateral Movement via Service zanjiri — 1-bosqich (3 dan).
+  Inbound Network Logon.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND event.code == "4624" AND winlog.event_data.LogonType == "3" | WHERE winlog.event_data.IpAddress IS NOT NULL AND winlog.event_data.IpAddress != "-" AND winlog.event_data.IpAddress != "127.0.0.1" AND winlog.event_data.IpAddress != "::1" | WHERE NOT winlog.event_data.TargetUserName LIKE "*$" | EVAL host.name = winlog.computer_name, source.ip = winlog.event_data.IpAddress, user.name = winlog.event_data.TargetUserName, logon.type = winlog.event_data.LogonType | KEEP host.name, source.ip, user.name, logon.type, @timestamp | LIMIT 500
+tags:
+  - attack.lateral_movement
+  - chain
+  - correlation
+  - security-4624
+  - windows
+severity: low
+risk_score: 25
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - source.ip
+    - user.name
+    - logon.type
+  timeframe_sec: 3600
+  dedup_fields:
+    - host.name
+    - source.ip
+    - user.name
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0008:
+    T1021: ["T1021.002"]

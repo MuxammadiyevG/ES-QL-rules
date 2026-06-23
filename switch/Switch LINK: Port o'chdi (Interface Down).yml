@@ -1,0 +1,25 @@
+rule_id: 115e214d-c336-42b4-8cd6-cb1d928939f3
+name: "Switch LINK: Port o'chdi (Interface Down)"
+description: |
+  Switch portidan qurilma uzildi yoki port o'chirildi.
+  Qaysi switchda, qaysi portda yuz berganini qayd etadi.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-switch.syslog-*
+query_language: esql
+query: |
+  FROM logs-switch.syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | MV_EXPAND log.syslog.facility.name
+  | WHERE log.syslog.facility.name == "LINK"
+  | WHERE event.type == "end"
+  | KEEP @timestamp, host.name, network.interface.name, event.type, event.outcome
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.link
+severity: low
+risk_score: 5

@@ -1,0 +1,50 @@
+rule_id: 4e99a134-bf24-470d-905a-f07032e07bcc
+name: "Chain: Windows Lateral Movement via Service — Stage 3: Process Execution via Installed Service"
+description: |
+  Windows Lateral Movement via Service zanjiri — 3-bosqich (3 dan).
+  Process Execution via Installed Service.
+  Oldingi bosqichga (stage 2) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "1" | WHERE winlog.event_data.ParentImage IS NOT NULL | WHERE TO_LOWER(winlog.event_data.ParentImage) LIKE "*services.exe*" | EVAL host.name = winlog.computer_name, process.executable = winlog.event_data.Image, process.command_line = winlog.event_data.CommandLine, process.parent.executable = winlog.event_data.ParentImage, user.name = winlog.event_data.User | KEEP host.name, process.executable, process.command_line, process.parent.executable, user.name, @timestamp | LIMIT 500
+tags:
+  - attack.execution
+  - attack.lateral_movement
+  - chain
+  - correlation
+  - sysmon-1
+  - windows
+severity: high
+risk_score: 80
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - process.executable
+    - process.command_line
+    - process.parent.executable
+    - user.name
+  timeframe_sec: 3600
+  dedup_fields:
+    - host.name
+    - process.executable
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 3
+  depends_on_rule_ids:
+    - 66d2461f-42e1-45f5-805c-1032cec1cd6b
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0002:
+    T1543: ["T1543.003"]
+    T1569: ["T1569.002"]

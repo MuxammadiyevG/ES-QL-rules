@@ -1,0 +1,26 @@
+rule_id: 52444a44-5623-4957-bd6c-a36c378e5378
+name: "Switch SYSLOG: Log aggregation holati o'zgardi (AGGREGATION)"
+description: |
+  Switch log aggregation rejimi o'zgardi.
+  Aggregation o'chirilsa ayrim loglar yo'qolishi mumkin.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-switch.syslog-*
+query_language: esql
+query: |
+  FROM logs-switch.syslog-*
+  | MV_EXPAND log.syslog.facility.name
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE log.syslog.facility.name == "GCLI"
+  | WHERE event.action == "CMD-EXEC"
+  | WHERE event.original RLIKE ".*cmd:logging aggregation.*"
+  | KEEP @timestamp, host.name, event.action, event.original
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.config
+severity: low
+risk_score: 10

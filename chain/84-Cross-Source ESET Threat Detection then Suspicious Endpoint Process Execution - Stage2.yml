@@ -1,0 +1,53 @@
+rule_id: de1963d9-7b68-4aa8-bd3e-fe2f465f29bd
+name: "Chain: Cross-Source: ESET Threat Detection then Suspicious Endpoint Process Execution — Stage 2: Suspicious Process Execution Post-Threat"
+description: |
+  Cross-Source: ESET Threat Detection then Suspicious Endpoint Process Execution zanjiri — 2-bosqich (2 dan).
+  Suspicious Process Execution Post-Threat.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*,logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-winlog*, logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | EVAL host.name = COALESCE(winlog.computer_name, host.hostname) | EVAL process_exe = COALESCE(winlog.event_data.Image, process.executable) | EVAL process_cmd = COALESCE(winlog.event_data.CommandLine, MV_CONCAT(process.args, " ")) | EVAL proc_user = COALESCE(winlog.event_data.User, user.name) | EVAL img_lower = TO_LOWER(process_exe) | WHERE (winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "1" AND (img_lower RLIKE ".*(\\\\appdata\\\\local\\\\temp\\\\|\\\\downloads\\\\|\\\\temp\\\\).*" OR img_lower RLIKE ".*(mimikatz|meterpreter|procdump|rubeus|bloodhound|vssadmin|wce\\.exe|crackmapexec|pwdump|lazagne|cobalt).*")) OR (event.action == "executed" AND (process_exe RLIKE ".*/tmp/.*" OR img_lower RLIKE ".*(nmap|masscan|nikto|hydra|hashcat|sqlmap|linpeas|pspy|chisel|mimikatz|lazagne).*")) | KEEP @timestamp, host.name, process_exe, process_cmd, proc_user | LIMIT 500
+tags:
+  - attack.defense-evasion
+  - attack.execution
+  - chain
+  - correlation
+  - eset
+  - linux
+  - windows
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - process_exe
+    - process_cmd
+    - proc_user
+  frequency: 1
+  timeframe_sec: 3600
+  dedup_fields:
+    - host.name
+    - process_exe
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 4622144c-dfaf-4c0b-804a-8da6651c5d82
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0002:
+    T1059: []
+    T1036: ["T1036.005"]
+    T1055: []
+    T1003: ["T1003.001"]

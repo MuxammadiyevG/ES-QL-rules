@@ -1,0 +1,39 @@
+rule_id: 6fa58b80-bb25-4cdc-8f56-e0bc4775348c
+name: "Chain: Linux Container Privileged Escape — Stage 1: Dangerous Container Invocation"
+description: |
+  Linux Container Privileged Escape zanjiri — 1-bosqich (2 dan).
+  Dangerous Container Invocation.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" | WHERE process.name IN ("docker", "podman", "runc", "ctr") | EVAL cmdline = MV_CONCAT(process.args, " ") | WHERE cmdline LIKE "*--privileged*" OR cmdline LIKE "*--pid=host*" OR cmdline LIKE "*--net=host*" OR cmdline LIKE "*--cap-add*" OR cmdline LIKE "*/:/*" OR (cmdline LIKE "* exec *" AND (cmdline LIKE "*-it*bash*" OR cmdline LIKE "*-it*sh*")) | EVAL host_name = host.hostname | KEEP process.name, cmdline, host_name, user.name, @timestamp | LIMIT 500
+tags:
+  - attack.T1611
+  - attack.privilege_escalation
+  - auditd
+  - chain
+  - container
+  - correlation
+  - linux
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+  timeframe_sec: 900
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0004:
+    T1611: []

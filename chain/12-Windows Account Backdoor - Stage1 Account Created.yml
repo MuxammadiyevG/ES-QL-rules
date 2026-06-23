@@ -1,0 +1,52 @@
+rule_id: 3dd91314-3c3c-41e6-a7e7-982507baaa91
+name: "Chain: Windows Account Created (4720)"
+description: |
+  Windows hisob backdoor zanjiri — 1-bosqich.
+  Yangi foydalanuvchi hisobi yaratilishi (4720). Korrelyatsiya host bo'yicha.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security" AND event.code == "4720"
+  | EVAL user.name = winlog.event_data.TargetUserName, host.name = winlog.computer_name, actor = winlog.event_data.SubjectUserName
+  | KEEP @timestamp, agent_id, user.name, actor, host.name, event.code
+  | LIMIT 500
+tags:
+  - attack.persistence
+  - attack.t1136.001
+  - windows
+  - account-creation
+  - correlation
+  - chain
+severity: medium
+risk_score: 65
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - user.name
+  ignore_sec: 120
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1136/001/"
+nist: ["AC-2", "AU-2"]
+pci_dss: ["8.1.1", "10.2.5"]
+mitre_attack:
+  TA0003:
+    T1136: ["T1136.001"]

@@ -1,0 +1,24 @@
+rule_id: 1b61f60d-4a82-4d65-8248-79a357efbe5c
+name: "Switch STP: STP holat o'zgarishi (barcha)"
+description: |
+  Switch portida Spanning Tree holati o'zgardi.
+  Forwarding, Blocking, Listening, Learning — istalgan holat.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-switch.syslog-*
+query_language: esql
+query: |
+  FROM logs-switch.syslog-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | MV_EXPAND log.syslog.facility.name
+  | WHERE log.syslog.facility.name == "STP"
+  | KEEP @timestamp, host.name, network.interface.name, network.stp.status, event.original
+  | SORT @timestamp DESC
+enabled: true
+tags:
+  - event.activity
+  - switch.stp
+severity: low
+risk_score: 5

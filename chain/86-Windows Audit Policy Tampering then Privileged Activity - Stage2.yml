@@ -1,0 +1,47 @@
+rule_id: 359bb8d7-5758-4bb6-8c21-3d6b7cd0eeb5
+name: "Chain: Windows Audit Policy Tampering then Privileged Activity — Stage 2: Privileged Activity After Audit Evasion"
+description: |
+  Windows Audit Policy Tampering then Privileged Activity zanjiri — 2-bosqich (2 dan).
+  Privileged Activity After Audit Evasion.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE (winlog.channel == "Security" AND event.code == "4672") OR (winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "1") | EVAL host_name = winlog.computer_name, user_name = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.User), privilege_list = winlog.event_data.PrivilegeList, process_image = winlog.event_data.Image, cmd_line = winlog.event_data.CommandLine | WHERE (event.code == "4672" AND NOT user_name LIKE "*$" AND privilege_list LIKE "*SeSecurityPrivilege*") OR (event.code == "1" AND (TO_LOWER(cmd_line) LIKE "*auditpol*" OR TO_LOWER(cmd_line) LIKE "*wevtutil*")) | KEEP @timestamp, event.code, host_name, user_name, privilege_list, process_image, cmd_line, winlog.channel | LIMIT 500
+tags:
+  - attack.defense-evasion
+  - attack.privilege-escalation
+  - audit-policy-tampering
+  - chain
+  - correlation
+  - windows
+  - winlog
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+  timeframe_sec: 3600
+  dedup_fields:
+    - host_name
+    - user_name
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 088454aa-9c78-462a-b3d1-e8bdda0d1dee
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0004:
+    T1078: ["T1078.002"]
+    T1562: ["T1562.002"]

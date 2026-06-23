@@ -1,0 +1,57 @@
+rule_id: c7683cc7-c4d3-4f67-9d1b-96ab7385fa35
+name: "Chain: SSH Brute Force — Auth Failure Burst (Linux)"
+description: |
+  Linux SSH zanjiri — 1-bosqich.
+  Bitta source.ip dan qisqa vaqtda ko'p SSH login failure (auditd user_login fail, terminal=sshd).
+  Korrelyatsiya dvigateli source.ip bo'yicha chastotani hisoblaydi; zanjirning kirish nuqtasi.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE auditd.message_type == "user_login" AND auditd.result == "fail"
+      AND auditd.data.terminal == "sshd" AND source.ip IS NOT NULL
+  | EVAL host.name = host.hostname, user.name = auditd.data.acct
+  | KEEP @timestamp, agent_id, source.ip, user.name, host.name, auditd.message_type, auditd.result
+  | LIMIT 500
+tags:
+  - attack.credential-access
+  - attack.t1110.001
+  - ssh
+  - brute-force
+  - auditd
+  - correlation
+  - chain
+severity: medium
+risk_score: 70
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - source.ip
+  frequency: 6
+  timeframe_sec: 120
+  dedup_fields:
+    - source.ip
+    - user.name
+    - host.name
+  ignore_sec: 60
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - source.ip
+references:
+  - "https://attack.mitre.org/techniques/T1110/001/"
+nist: ["AC-7", "SI-4", "IR-4"]
+pci_dss: ["8.1.6", "10.2.4"]
+mitre_attack:
+  TA0006:
+    T1110: ["T1110.001"]

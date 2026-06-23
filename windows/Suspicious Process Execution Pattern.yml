@@ -1,0 +1,90 @@
+rule_id: 8c7dd623-ed35-4148-91ab-543908b2e32a
+#//RULE-NIST-16 — Malicious Process Execution (NIST SI-3, SI-4)
+#//Control Family: SI (System and Information Integrity)
+#//Objective: Detect execution of processes with malicious characteristics
+#//Threat scenario: Malware execution, living-off-the-land attacks, fileless malware
+#//Data sources: Windows Sysmon EventID 1 (ProcessCreate)
+#//ECS fields used: winlog.event_data.CommandLine, winlog.event_data.Image, winlog.event_data.ParentImage
+#//Field validation: Verify all ECS fields exist in your indices before enabling
+#//Tuning notes: Baseline normal administrative activity, adjust command-line pattern matching
+
+name: "Suspicious Process Execution Pattern"
+description: |
+  Detects execution of processes with suspicious command-line arguments or parent-child relationships.
+  Common attack patterns: PowerShell download cradles, wscript/cscript execution, unusual parent processes.
+  Living-off-the-land binaries (LOLBins) abuse captured: certutil, bitsadmin, regsvr32, rundll32.
+  False positives: Legitimate administrative scripts, software deployment, automation tools.
+  Triage: Review full command line for malicious intent, check process signature,
+  investigate parent process legitimacy, correlate with network connections.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational"
+    AND event.code == "1"
+    AND @timestamp > NOW() - 5 minutes
+  | EVAL cmd_lower = TO_LOWER(winlog.event_data.CommandLine),
+         image_lower = TO_LOWER(winlog.event_data.Image),
+         parent_lower = TO_LOWER(winlog.event_data.ParentImage)
+  | WHERE (
+        // High-confidence PowerShell abuse: encoded commands or download cradles
+        cmd_lower RLIKE ".*(invoke-webrequest|downloadstring|downloadfile|encodedcommand).*"
+        // iex as a standalone token (not embedded in words like -Embedding)
+        OR cmd_lower RLIKE ".*[^a-z]iex[^a-z].*"
+        OR cmd_lower RLIKE "^iex[^a-z].*"
+        // bypass only when paired with download/execution indicators (not standalone -File scripts)
+        OR (cmd_lower RLIKE ".*bypass.*" AND cmd_lower RLIKE ".*(invoke-expression|downloadstring|downloadfile|invoke-webrequest|http|ftp|encodedcommand|-nop|-noni).*")
+        // -windowstyle hidden / -w hidden — meaningful PS stealth, not git --exclude-hidden
+        OR cmd_lower RLIKE ".*(-windowstyle\\s+hidden|-w\\s+hidden).*"
+      )
+      OR (image_lower RLIKE ".*(certutil|bitsadmin|regsvr32|rundll32|mshta|wscript|cscript).*"
+          AND cmd_lower RLIKE ".*(http|ftp|download|url).*")
+      OR (image_lower RLIKE ".*(powershell|cmd|bash).*"
+          AND parent_lower RLIKE ".*(winword|excel|outlook|acrobat).*")
+  | EVAL attack_pattern = CASE(
+      cmd_lower RLIKE ".*encodedcommand.*", "PowerShell-Encoded",
+      cmd_lower RLIKE ".*(invoke-webrequest|downloadstring).*", "Download-Cradle",
+      image_lower RLIKE ".*(certutil|bitsadmin).*", "LOLBin-Download",
+      parent_lower RLIKE ".*(winword|excel).*", "Office-Spawned-Shell",
+      "Suspicious-Execution"
+    )
+  | STATS
+      execution_count = COUNT(*),
+      unique_commands = COUNT_DISTINCT(winlog.event_data.CommandLine),
+      command_lines = VALUES(winlog.event_data.CommandLine),
+      processes = VALUES(winlog.event_data.Image),
+      parent_processes = VALUES(winlog.event_data.ParentImage)
+    BY agent_id, host.name, winlog.event_data.User, attack_pattern
+    , bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE execution_count >= 1
+  | EVAL risk_score = CASE(
+      attack_pattern == "PowerShell-Encoded", execution_count * 40,
+      attack_pattern == "Download-Cradle", execution_count * 45,
+      attack_pattern == "Office-Spawned-Shell", execution_count * 50,
+      execution_count * 30
+    )
+  | KEEP agent_id, bucket, host.name, winlog.event_data.User, attack_pattern, execution_count, command_lines, processes, parent_processes, risk_score
+  | SORT risk_score DESC
+enabled: false
+tags:
+  - nist_800_53
+  - control_SI-3
+  - control_SI-4
+  - family_SI
+  - execution
+  - command_and_control
+  - defense_evasion
+severity: critical
+risk_score: 85
+references:
+  - "NIST SP 800-53 Rev.5 SI-4: System Monitoring"
+  - "MITRE ATT&CK T1059: Command and Scripting Interpreter"
+nist: ["SI-3", "SI-4"]
+pci_dss: ["10.2"]
+mitre_attack:
+  TA0002:
+    T1059: []

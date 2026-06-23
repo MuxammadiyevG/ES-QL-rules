@@ -1,0 +1,41 @@
+rule_id: ca24ab9d-fd65-4d77-a270-3f28a580237a
+name: "Chain: Windows Ransomware Behavior — Stage 1: Mass File Modification Burst"
+description: |
+  Windows Ransomware Behavior zanjiri — 1-bosqich (2 dan).
+  Mass File Modification Burst.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" | WHERE event.code == "11" | EVAL host.name = winlog.computer_name | EVAL process.executable = winlog.event_data.Image | EVAL file.path = winlog.event_data.TargetFilename | KEEP @timestamp, `host.name`, `process.executable`, `file.path` | LIMIT 500
+tags:
+  - attack.impact
+  - chain
+  - correlation
+  - ransomware
+  - sysmon
+  - windows
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  frequency: 50
+  timeframe_sec: 300
+  dedup_fields:
+    - file.path
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0040:
+    T1486: []

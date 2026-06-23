@@ -1,0 +1,45 @@
+rule_id: 20cf4e48-10b2-42e8-b57d-cf8c2d0a1176
+name: "Chain: Linux Defense Evasion: Log Clearing Followed by Firewall Flush — Stage 2: Firewall Rules Flushed"
+description: |
+  Linux Defense Evasion: Log Clearing Followed by Firewall Flush zanjiri — 2-bosqich (2 dan).
+  Firewall Rules Flushed.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" | WHERE process.name IN ("iptables", "ip6tables", "nft", "ufw", "firewall-cmd") | WHERE MV_CONTAINS(process.args, "-F") OR MV_CONTAINS(process.args, "--flush") OR MV_CONTAINS(process.args, "stop") OR MV_CONTAINS(process.args, "flush") | EVAL host.name = host.hostname, fw_args = MV_CONCAT(process.args, " ") | KEEP host.name, process.name, fw_args, user.name, @timestamp | LIMIT 500
+tags:
+  - attack.defense_evasion
+  - auditd
+  - chain
+  - correlation
+  - defense-evasion
+  - linux
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - process.name
+    - fw_args
+    - user.name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 1c53e95b-fdf1-4ecd-ad0d-1f5fb3408ba3
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.004"]

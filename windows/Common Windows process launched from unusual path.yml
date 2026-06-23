@@ -1,0 +1,117 @@
+rule_id: 1a4f18a7-173c-4572-97c6-1656669f3625
+name: "Common Windows process launched from unusual path"
+description: |
+  Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib, `Common Windows process launched from unusual path` kontekstida taniqli Windows jarayonlarining odatiy yo'lidan boshqa joydan ishga tushirilganligini aniqlaydi.
+  Kuzatiladigan jarayonlar: conhost.exe, csrss.exe, explorer.exe, dllhost.exe, lsass.exe, services.exe, smss.exe, svchost.exe, wininit.exe, winlogon.exe, wmiprvse.exe.
+  Bu turdagi hodisa hujumchi legitimli jarayon nomini nusxalab boshqa joydan ishga tushirish orqali masquerading yoki process hijacking amalga oshirayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida ba'zi tizim yangilanishlari yoki maxsus korporativ muhitlar uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `winlog.computer_name`, `winlog.event_data.NewProcessName` va fayl yo'lini aniq identifikatsiya qiling.
+  - Jarayonning digital signature va hash qiymatini tekshiring.
+  - Jarayonning command line argumentlarini tekshiring.
+  - Hostda boshqa shubhali hodisalar borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: jarayonni to'xtating, hostni izolyatsiya qiling va to'liq forensic tahlil bajaring.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE winlog.channel == "Security"
+  | WHERE winlog.event_id == "4688"
+  | EVAL proc_lower = TO_LOWER(winlog.event_data.NewProcessName)
+  | EVAL proc_path = winlog.event_data.NewProcessName
+  | EVAL host_name = winlog.computer_name
+  | EVAL actor     = COALESCE(winlog.event_data.SubjectUserName, winlog.event_data.TargetUserName)
+  | EVAL cmd_line  = winlog.event_data.CommandLine
+  | EVAL parent    = winlog.event_data.ParentProcessName
+
+  // Kuzatiladigan jarayonlar noodatiy yo'lda ishlayotgan bo'lsa
+  | WHERE (
+      proc_lower RLIKE ".*conhost[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]conhost[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*csrss[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]csrss[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*explorer[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]explorer[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*dllhost[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]dllhost[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*lsass[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]lsass[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*services[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]services[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*smss[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]smss[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*svchost[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]svchost[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*wininit[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]wininit[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*winlogon[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]winlogon[.]exe"
+    ) OR (
+      proc_lower RLIKE ".*wmiprvse[.]exe"
+      AND NOT proc_lower RLIKE ".*[\\\\]windows[\\\\]system32[\\\\]wbem[\\\\]wmiprvse[.]exe"
+    )
+  | WHERE NOT TO_LOWER(actor) RLIKE ".*\\$"
+  | STATS
+      event_count   = COUNT(*),
+      host_names    = VALUES(winlog.computer_name),
+      actors        = VALUES(winlog.event_data.SubjectUserName),
+      proc_paths    = VALUES(winlog.event_data.NewProcessName),
+      parent_procs  = VALUES(winlog.event_data.ParentProcessName),
+      cmd_lines     = VALUES(winlog.event_data.CommandLine),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, winlog.computer_name, winlog.event_data.NewProcessName
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = winlog.computer_name,
+      process_name      = winlog.event_data.NewProcessName
+  | KEEP
+      agent_id,
+      host_name,
+      process_name,
+      event_count,
+      host_names,
+      actors,
+      proc_paths,
+      parent_procs,
+      cmd_lines,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+  | LIMIT 200
+enabled: true
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.defense-evasion
+  - attack.t1037.001
+  - attack.t1036.005
+  - detection.threat-hunting
+severity: medium
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1037/001/"
+  - "https://attack.mitre.org/techniques/T1036/005/"
+  - "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4688"
+nist: ["SI-4" ,"CM-7", "AU-6"]
+pci_dss: ["10.6.1", "11.5", "6.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1037: ["T1037.001"]
+  TA0005:
+    T1036: ["T1036.005"]

@@ -1,0 +1,53 @@
+rule_id: 8eff2893-099f-4a11-ad40-1f191bbed652
+name: "Persistence via Cron Files"
+description: |
+  Detects creation of cron files in cron directories.
+  Adversaries may create cron jobs to establish persistence.
+  Monitors /etc/cron.d, /etc/cron.daily, etc.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  /* file creation events */
+  | WHERE event.category == "file" AND event.type == "creation"
+  /* selection: cron directories */
+  | WHERE (
+      TO_LOWER(file.path) RLIKE "/etc/cron\\.d/.*"
+      OR TO_LOWER(file.path) RLIKE "/etc/cron\\.daily/.*"
+      OR TO_LOWER(file.path) RLIKE "/etc/cron\\.hourly/.*"
+      OR TO_LOWER(file.path) RLIKE "/etc/cron\\.monthly/.*"
+      OR TO_LOWER(file.path) RLIKE "/etc/cron\\.weekly/.*"
+      OR TO_LOWER(file.path) RLIKE "/var/spool/cron/crontabs/.*"
+      OR file.path IN ("/etc/cron.allow", "/etc/cron.deny", "/etc/crontab")
+    )
+  /* Filter: exclude OS package managers and updates */
+  | WHERE process.name IS NULL OR NOT (process.name IN ("dpkg", "yum", "dnf", "apt", "dockerd", "ansible-playbook"))
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      file_paths = VALUES(file.path),
+      hosts = VALUES(host.name)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, file_paths, hosts
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1053.003
+severity: medium
+risk_score: 60
+references:
+  - "https://attack.mitre.org/techniques/T1053/003/"
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.003"]

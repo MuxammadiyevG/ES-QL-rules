@@ -1,0 +1,43 @@
+rule_id: 44e284e1-91a3-44d1-9f7d-fcd2b06e3929
+name: "Chain: Windows DCSync Replication Attack — Stage 1: DS Replication Rights by Non-Machine Account"
+description: |
+  Windows DCSync Replication Attack zanjiri — 1-bosqich (2 dan).
+  DS Replication Rights by Non-Machine Account.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND event.code == "4662" | EVAL properties_lower = TO_LOWER(winlog.event_data.Properties) | WHERE properties_lower RLIKE ".*1131f6aa.*" OR properties_lower RLIKE ".*1131f6ad.*" OR properties_lower RLIKE ".*89e95b76.*" | EVAL user_name = winlog.event_data.SubjectUserName, host_name = winlog.computer_name, access_mask = winlog.event_data.AccessMask, ds_properties = winlog.event_data.Properties | WHERE NOT user_name LIKE "*$" | KEEP user_name, host_name, access_mask, ds_properties | LIMIT 500
+tags:
+  - active-directory
+  - attack.credential-access
+  - chain
+  - correlation
+  - dcsync
+  - windows
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - event.code
+    - winlog.channel
+  frequency: 1
+  timeframe_sec: 300
+  dedup_fields:
+    - user_name
+    - host_name
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0006:
+    T1003: ["T1003.006"]

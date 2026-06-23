@@ -1,0 +1,44 @@
+rule_id: a4d5f034-7ecc-4b18-af07-25d2fb197072
+name: "Chain: Windows Scheduled Task Persistence — Stage 1: Scheduled Task Created or Updated"
+description: |
+  Windows Scheduled Task Persistence zanjiri — 1-bosqich (2 dan).
+  Scheduled Task Created or Updated.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND (event.code == "4698" OR event.code == "4702") | EVAL task.name = winlog.event_data.TaskName, actor.name = winlog.event_data.SubjectUserName, host.name = winlog.computer_name | WHERE actor.name IS NOT NULL AND NOT actor.name LIKE "*$" | KEEP @timestamp, event.code, task.name, actor.name, host.name | LIMIT 500
+tags:
+  - attack.persistence
+  - chain
+  - correlation
+  - scheduled-task
+  - windows
+  - winlog
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - task.name
+    - actor.name
+    - event.code
+  timeframe_sec: 300
+  dedup_fields:
+    - task.name
+    - host.name
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0003:
+    T1053: ["T1053.005"]

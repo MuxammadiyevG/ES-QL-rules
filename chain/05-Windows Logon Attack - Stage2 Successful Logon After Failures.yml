@@ -1,0 +1,57 @@
+rule_id: 1ecf04a6-379e-4f2b-9dd0-137403dd461d
+name: "Chain: Windows Successful Logon After Failures (4624)"
+description: |
+  Windows kirish zanjiri — 2-bosqich.
+  Muvaffaqiyatsiz urinishlardan keyin o'sha hisob bo'yicha muvaffaqiyatli kirish (4624, LogonType 2/3/10).
+  1-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE winlog.channel == "Security" AND event.code == "4624"
+      AND winlog.event_data.LogonType IN ("2","3","10")
+  | EVAL source.ip = winlog.event_data.IpAddress, user.name = winlog.event_data.TargetUserName, host.name = winlog.computer_name
+  | WHERE user.name IS NOT NULL AND NOT user.name LIKE "*$"
+  | KEEP @timestamp, agent_id, source.ip, user.name, host.name, event.code, winlog.event_data.LogonType
+  | LIMIT 500
+tags:
+  - attack.lateral-movement
+  - attack.t1078
+  - windows
+  - logon-success
+  - correlation
+  - chain
+severity: high
+risk_score: 80
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - user.name
+  timeframe_sec: 300
+  dedup_fields:
+    - user.name
+    - host.name
+  ignore_sec: 120
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 7c9e4d39-0139-4379-9286-c3c07f21780d
+  timeframe_sec: 3600
+  correlate_by:
+    - user.name
+references:
+  - "https://attack.mitre.org/techniques/T1078/"
+nist: ["AC-7", "AC-17"]
+pci_dss: ["8.1.6", "10.2.5"]
+mitre_attack:
+  TA0001:
+    T1078: []

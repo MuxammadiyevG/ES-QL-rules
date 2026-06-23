@@ -1,0 +1,44 @@
+rule_id: f5bf6474-b656-4a87-bb21-526f2a85e2f6
+name: "Chain: Windows Ransomware Behavior — Stage 2: Shadow Copy and Recovery Tampering"
+description: |
+  Windows Ransomware Behavior zanjiri — 2-bosqich (2 dan).
+  Shadow Copy and Recovery Tampering.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" | WHERE event.code == "1" | WHERE TO_LOWER(winlog.event_data.CommandLine) RLIKE ".*(vssadmin|wbadmin|bcdedit|wmic.*shadowcopy).*" OR TO_LOWER(winlog.event_data.Image) RLIKE ".*(vssadmin|wbadmin|bcdedit).*" | EVAL host.name = winlog.computer_name | EVAL process.executable = winlog.event_data.Image | EVAL process.command_line = winlog.event_data.CommandLine | EVAL process.parent.executable = winlog.event_data.ParentImage | KEEP @timestamp, `host.name`, `process.executable`, `process.command_line`, `process.parent.executable` | LIMIT 500
+tags:
+  - attack.defense-evasion
+  - attack.impact
+  - chain
+  - correlation
+  - ransomware
+  - sysmon
+  - windows
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - ca24ab9d-fd65-4d77-a270-3f28a580237a
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0040:
+    T1490: []
+    T1562: ["T1562.001"]

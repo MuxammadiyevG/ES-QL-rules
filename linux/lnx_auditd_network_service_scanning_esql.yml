@@ -1,0 +1,45 @@
+rule_id: ee2dd13f-9f21-48d1-b1c9-be97b64ea005
+name: "Network Service Scanning Tools Detection"
+description: |
+  Detects execution of network scanning tools (nmap, netcat, telnet).
+  Adversaries may use these tools for discovery and lateral movement.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  /* auditd SYSCALL events */
+  /* selection: scanning tools execution */
+  | WHERE process.name IN ("nmap", "netcat", "nc", "ncat", "telnet", "nc.openbsd")
+    OR TO_LOWER(process.executable) RLIKE ".*(/nmap|/netcat|/nc|/ncat|/telnet|/nc\\.openbsd)"
+  /* exclude high-frequency automated localhost health-check: nc 127.0.0.1 <port> via busybox */
+  | WHERE NOT (process.executable == "/bin/busybox" AND TO_LOWER(process.title) RLIKE "nc 127\\.0\\.0\\.1 .*")
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      command_lines = VALUES(process.title),
+      hosts = VALUES(host.name),
+      raw_samples = VALUES(event.original)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, command_lines, hosts, raw_samples
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.discovery
+  - attack.t1046
+severity: low
+risk_score: 30
+references:
+  - "https://attack.mitre.org/techniques/T1046/"
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2", "11.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0007:
+    T1046: []

@@ -1,0 +1,41 @@
+rule_id: e6cb85d0-8d0c-44e6-ba87-fdc4a8b9034f
+name: "Chain: Windows RDP Lateral Movement — Stage 1: RDP Interactive Logon from Remote IP"
+description: |
+  Windows RDP Lateral Movement zanjiri — 1-bosqich (2 dan).
+  RDP Interactive Logon from Remote IP.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND (event.code == "4624" OR event.code == "4778") | EVAL src_ip = CASE(event.code == "4624", winlog.event_data.IpAddress, winlog.event_data.ClientAddress), logon_type = winlog.event_data.LogonType, user_name = CASE(event.code == "4624", winlog.event_data.TargetUserName, winlog.event_data.AccountName), host_name = winlog.computer_name | WHERE (event.code == "4624" AND logon_type == "10" AND src_ip IS NOT NULL AND src_ip != "-" AND src_ip != "127.0.0.1") OR (event.code == "4778" AND src_ip IS NOT NULL AND src_ip != "-") | WHERE NOT user_name LIKE "*$" | EVAL `source.ip` = src_ip, `user.name` = user_name, `host.name` = host_name | KEEP `host.name`, `source.ip`, `user.name`, event.code, logon_type, @timestamp | LIMIT 500
+tags:
+  - attack.lateral_movement
+  - chain
+  - correlation
+  - rdp
+  - windows
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 3600
+  dedup_fields:
+    - source.ip
+    - user.name
+  ignore_sec: 300
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0008:
+    T1021: ["T1021.001"]

@@ -1,0 +1,47 @@
+rule_id: 4622144c-dfaf-4c0b-804a-8da6651c5d82
+name: "Chain: Cross-Source: ESET Threat Detection then Suspicious Endpoint Process Execution — Stage 1: ESET Malware/Threat Detection"
+description: |
+  Cross-Source: ESET Threat Detection then Suspicious Endpoint Process Execution zanjiri — 1-bosqich (2 dan).
+  ESET Malware/Threat Detection.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-eset.protect-*
+query_language: esql
+query: |
+  FROM logs-eset.protect-* | WHERE @timestamp >= NOW() - 15 minutes AND event.category == "Threat_Event" | EVAL threat_type = eset_protect.threat_type, object_uri = eset_protect.object_uri, threat_severity = eset_protect.severity, threat_handled = eset_protect.threat_handled, threat_rule = rule.name | KEEP @timestamp, host.name, threat_type, object_uri, threat_severity, threat_handled, threat_rule | LIMIT 500
+tags:
+  - attack.defense-evasion
+  - attack.initial-access
+  - chain
+  - correlation
+  - eset
+severity: medium
+risk_score: 40
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - threat_type
+    - object_uri
+    - threat_severity
+    - threat_handled
+    - threat_rule
+  frequency: 1
+  timeframe_sec: 3600
+  dedup_fields:
+    - host.name
+    - threat_rule
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0001:
+    T1566: []
+    T1204: ["T1204.002"]

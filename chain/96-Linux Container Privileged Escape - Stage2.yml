@@ -1,0 +1,47 @@
+rule_id: 9b26cc92-ad72-4c79-badb-1c9fcf05111a
+name: "Chain: Linux Container Privileged Escape — Stage 2: Host-Level Suspicious Process Post-Escape"
+description: |
+  Linux Container Privileged Escape zanjiri — 2-bosqich (2 dan).
+  Host-Level Suspicious Process Post-Escape.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" | WHERE process.executable LIKE "/tmp/*" OR process.executable LIKE "/dev/shm/*" OR process.name IN ("nmap", "whoami", "useradd", "ncat", "socat", "masscan") OR (process.name == "nc" AND NOT process.executable == "/bin/busybox") | EVAL host_name = host.hostname | EVAL cmdline = MV_CONCAT(process.args, " ") | KEEP process.name, process.executable, cmdline, host_name, user.name, @timestamp | LIMIT 500
+tags:
+  - attack.T1082
+  - attack.T1611
+  - attack.discovery
+  - attack.privilege_escalation
+  - auditd
+  - chain
+  - container
+  - correlation
+  - linux
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 6fa58b80-bb25-4cdc-8f56-e0bc4775348c
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0007:
+    T1611: []
+    T1082: []
+    T1059: ["T1059.004"]

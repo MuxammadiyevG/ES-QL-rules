@@ -1,0 +1,48 @@
+rule_id: 3e5f0e1d-8bf6-4ad7-8505-fe4d215f239a
+name: "Chain: Linux Shared-Library Preload Hijack — Stage 2: Process Executed After Preload Change"
+description: |
+  Linux Shared-Library Preload Hijack zanjiri — 2-bosqich (2 dan).
+  Process Executed After Preload Change.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.action == "executed" | EVAL host.name = host.hostname, user.name = COALESCE(user.name, auditd.data.acct), process.command_line = MV_CONCAT(process.args, " ") | KEEP @timestamp, host.name, process.name, process.executable, process.command_line, user.name | LIMIT 500
+tags:
+  - attack.defense-evasion
+  - attack.execution
+  - attack.persistence
+  - auditd
+  - chain
+  - correlation
+  - linux
+severity: critical
+risk_score: 87
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - process.name
+    - process.executable
+    - process.command_line
+    - user.name
+  timeframe_sec: 3600
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 2435637a-ef31-4edd-af99-e823683bf467
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0002:
+    T1574: ["T1574.006"]
+    T1059: ["T1059.004"]

@@ -1,0 +1,54 @@
+rule_id: a21b529a-b380-49eb-8354-e88ad98deaeb
+name: "Chain: Login by New Linux Account"
+description: |
+  Linux yangi-foydalanuvchi backdoor zanjiri — 3-bosqich.
+  Yangi yaratilgan hisob bilan o'sha host'ga kirish (user_start success).
+  2-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE auditd.message_type == "user_start" AND auditd.result == "success"
+  | EVAL host.name = host.hostname, user.name = auditd.data.acct
+  | KEEP @timestamp, agent_id, host.name, user.name, source.ip, auditd.result
+  | LIMIT 500
+tags:
+  - attack.persistence
+  - attack.t1078.003
+  - linux
+  - logon
+  - correlation
+  - chain
+severity: high
+risk_score: 82
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - user.name
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 3
+  depends_on_rule_ids:
+    - cd82f399-d441-42ec-be61-c19cc80d5c82
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1078/003/"
+nist: ["AC-2"]
+pci_dss: ["10.2.5"]
+mitre_attack:
+  TA0003:
+    T1078: ["T1078.003"]

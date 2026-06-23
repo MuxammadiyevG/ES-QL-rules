@@ -1,0 +1,48 @@
+rule_id: 92570c6c-2890-4ec3-abda-19eed8a571b9
+name: "Chain: Windows RDP Lateral Movement — Stage 2: Privileged Action After RDP Session"
+description: |
+  Windows RDP Lateral Movement zanjiri — 2-bosqich (2 dan).
+  Privileged Action After RDP Session.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE (winlog.channel == "Security" AND event.code == "4672") OR (winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "1") | EVAL user_name = CASE(event.code == "4672", winlog.event_data.SubjectUserName, winlog.event_data.User), host_name = winlog.computer_name, process_image = winlog.event_data.Image, privilege_list = winlog.event_data.PrivilegeList | WHERE NOT user_name LIKE "*$" | EVAL `user.name` = user_name, `host.name` = host_name, `process.executable` = process_image | KEEP `host.name`, `user.name`, `process.executable`, event.code, privilege_list, @timestamp | LIMIT 500
+tags:
+  - attack.lateral_movement
+  - attack.privilege_escalation
+  - chain
+  - correlation
+  - rdp
+  - windows
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - user.name
+  frequency: 1
+  timeframe_sec: 3600
+  dedup_fields:
+    - user.name
+    - process.executable
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - e6cb85d0-8d0c-44e6-ba87-fdc4a8b9034f
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0004:
+    T1078: ["T1078.002"]
+    T1021: ["T1021.001"]

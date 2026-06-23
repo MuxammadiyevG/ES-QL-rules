@@ -1,0 +1,40 @@
+rule_id: 8b41f751-1c2a-4a84-b1da-1d2e8c573af6
+name: "Chain: Linux Shell RC Persistence — Stage 1: Shell RC File Modified"
+description: |
+  Linux Shell RC Persistence zanjiri — 1-bosqich (2 dan).
+  Shell RC File Modified.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.module == "file_integrity" AND event.type == "change" AND (file.path RLIKE ".*/[.]bashrc" OR file.path RLIKE ".*/[.]bash_profile" OR file.path RLIKE ".*/[.]profile" OR file.path RLIKE ".*/[.]zshrc" OR file.path RLIKE ".*/[.]bash_logout" OR file.path RLIKE ".*/etc/profile[.]d/.*") | EVAL host_name = COALESCE(host.name, host.hostname), user_account = COALESCE(user.name, auditd.data.acct) | KEEP @timestamp, host_name, user_account, file.path, event.type, event.action | LIMIT 500
+tags:
+  - attack.persistence
+  - auditd
+  - chain
+  - correlation
+  - linux
+  - persistence
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+  timeframe_sec: 3600
+  dedup_fields:
+    - file.path
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0003:
+    T1546: ["T1546.004"]

@@ -1,0 +1,47 @@
+rule_id: 66d2461f-42e1-45f5-805c-1032cec1cd6b
+name: "Chain: Windows Lateral Movement via Service — Stage 2: Service Installed on Host"
+description: |
+  Windows Lateral Movement via Service zanjiri — 2-bosqich (3 dan).
+  Service Installed on Host.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "System" AND event.code == "7045" | EVAL host.name = winlog.computer_name, service.name = winlog.event_data.ServiceName, process.executable = winlog.event_data.ImagePath | KEEP host.name, service.name, process.executable, @timestamp | LIMIT 500
+tags:
+  - attack.lateral_movement
+  - attack.persistence
+  - chain
+  - correlation
+  - system-7045
+  - windows
+severity: medium
+risk_score: 50
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - service.name
+    - process.executable
+  timeframe_sec: 3600
+  dedup_fields:
+    - host.name
+    - service.name
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 0b6dc3bc-30db-462f-aa81-a990b6b04402
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0003:
+    T1543: ["T1543.003"]

@@ -1,0 +1,43 @@
+rule_id: f6165715-779b-44b7-99d9-f879e16896fe
+name: "Chain: Windows Process Injection — Stage 2: Suspicious Process Post-Injection"
+description: |
+  Windows Process Injection zanjiri — 2-bosqich (2 dan).
+  Suspicious Process Post-Injection.
+  Oldingi bosqichga (stage 1) bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes AND winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "1" | EVAL img_lower = TO_LOWER(winlog.event_data.Image), host_name = winlog.computer_name, proc_image = winlog.event_data.Image, proc_cmdline = winlog.event_data.CommandLine, parent_image = winlog.event_data.ParentImage | WHERE img_lower RLIKE ".*powershell.*" OR img_lower RLIKE ".*cmd[.]exe.*" OR img_lower RLIKE ".*wscript[.]exe.*" OR img_lower RLIKE ".*cscript[.]exe.*" OR img_lower RLIKE ".*mshta[.]exe.*" OR img_lower RLIKE ".*rundll32[.]exe.*" OR img_lower RLIKE ".*regsvr32[.]exe.*" OR img_lower RLIKE ".*net[.]exe.*" OR img_lower RLIKE ".*whoami[.]exe.*" OR img_lower RLIKE ".*nltest[.]exe.*" | KEEP host_name, proc_image, proc_cmdline, parent_image, @timestamp | LIMIT 500
+tags:
+  - attack.defense_evasion
+  - attack.execution
+  - chain
+  - correlation
+  - sysmon
+  - windows
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+  timeframe_sec: 1800
+  escalate_severity: critical
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 6acdfa77-44de-447b-9d10-128500013d95
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0002:
+    T1055: []
+    T1059: ["T1059.001", "T1059.003"]

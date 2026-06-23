@@ -1,0 +1,43 @@
+rule_id: b5073576-a7f0-439a-837b-719f5884cfd3
+name: "Chain: Linux Reverse Shell — Stage 1: Reverse Shell Command Executed"
+description: |
+  Linux Reverse Shell zanjiri — 1-bosqich (2 dan).
+  Reverse Shell Command Executed.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" | EVAL cmd_line = MV_CONCAT(process.args, " ") | EVAL cmd_low = TO_LOWER(cmd_line) | WHERE cmd_low RLIKE ".*bash -i.*" OR cmd_low RLIKE ".*sh -i.*" OR cmd_low RLIKE ".*/dev/tcp/[0-9].*" OR (process.name IN ("nc", "ncat", "netcat") AND cmd_low RLIKE ".*-e.*(bash|sh).*") OR (process.name IN ("python", "python3", "python2") AND cmd_low RLIKE ".*-c.*import socket.*") OR (process.name == "socat" AND cmd_low RLIKE ".*exec.*") | EVAL host_name = host.hostname | KEEP @timestamp, event.action, process.name, process.executable, cmd_line, host_name, user.name | LIMIT 500
+tags:
+  - attack.execution
+  - attack.t1059.004
+  - auditd
+  - chain
+  - correlation
+  - linux
+severity: high
+risk_score: 73
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - event.action
+    - process.name
+    - cmd_line
+    - host_name
+  timeframe_sec: 300
+  dedup_fields:
+    - cmd_line
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0002:
+    T1059: ["T1059.004", "T1059.006"]

@@ -1,0 +1,108 @@
+rule_id: e21b4c9d-5a41-4b65-8a59-41820845454d
+name: "Audited file or directory content modified in SVN"
+description: |
+  Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Audited file or directory content modified in SVN` kontekstida FortiSIEM agentless fayl monitoringi orqali SSH ulanishi yordamida SVN repozitoriyasidagi fayl yoki directory mazmunining o'zgartirilganligini aniqlaydi.
+  Bu turdagi hodisa hujumchi source code, konfiguratsiya fayllari yoki muhim loyiha fayllarini ruxsatsiz o'zgartirish orqali supply chain hujumi, backdoor kiritish yoki ma'lumot manipulyatsiyasi maqsadida faoliyat yuritayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
+  Qonuniy holatlar sifatida rejalashtirilgan kod o'zgarishlari, tasdiqlangan commit operatsiyalari yoki deployment jarayonlari uchrashi mumkin.
+  SOC triage bosqichlari:
+  - Hodisadagi `host.hostname`, `user.name` va o'zgartirilgan `auditd.paths.name` ni aniq identifikatsiya qiling.
+  - Qo'shilgan (`added_item`) va o'chirilgan (`deleted_item`) elementlarni ko'rib chiqing.
+  - SVN versiya raqamlarini (`old_svn_version`, `new_svn_version`) tekshiring.
+  - O'zgarishni amalga oshirgan foydalanuvchining SVN commit huquqlari borligini tasdiqlang.
+  - O'zgarish uchun tasdiqlangan change ticket yoki code review yozuvi borligini tekshiring.
+  - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: SVN commitni revert qiling, foydalanuvchi SSH sessiyasini to'xtating va hostni izolyatsiya qiling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE auditd.message_type IN ("syscall", "path")
+  | WHERE auditd.data.syscall IN ("write", "truncate", "ftruncate", "rename", "renameat", "renameat2", "open", "openat")
+  | WHERE auditd.paths.name RLIKE ".*svn.*"
+     OR auditd.paths.name RLIKE ".*wc[.]db.*"
+     OR auditd.paths.name RLIKE ".*svn-commit.*"
+     OR auditd.paths.name RLIKE ".*svn-base.*"
+     OR auditd.paths.name RLIKE ".*pristine.*"
+     OR auditd.paths.name RLIKE ".*svnrepos.*"
+  | WHERE auditd.paths.name IS NOT NULL
+  | EVAL host_name    = host.hostname
+  | EVAL actor        = COALESCE(auditd.data.subj_user, auditd.data.uid)
+  | EVAL file_path    = auditd.paths.name
+  | EVAL file_inode   = auditd.paths.inode
+  | EVAL file_mode    = auditd.paths.mode
+  | EVAL hash_code    = auditd.paths.cap_fp
+  | EVAL added_item   = auditd.paths.cap_fi
+  | EVAL deleted_item = auditd.paths.cap_fver
+  | EVAL syscall      = auditd.data.syscall
+  | EVAL tty          = auditd.data.tty
+  | EVAL is_critical_svn = CASE(
+      auditd.paths.name RLIKE ".*wc[.]db.*",       "YES - SVN metadata",
+      auditd.paths.name RLIKE ".*pristine.*",      "YES - SVN revision store",
+      auditd.paths.name RLIKE ".*svn-commit.*",    "YES - SVN commit file",
+      auditd.paths.name RLIKE ".*[.]svn.*",        "YES - SVN working copy",
+      "NO"
+    )
+  | STATS
+      event_count        = COUNT(*),
+      host_names         = VALUES(host.hostname),
+      actors             = VALUES(auditd.data.subj_user),
+      file_paths         = VALUES(auditd.paths.name),
+      file_modes         = VALUES(auditd.paths.mode),
+      hash_codes         = VALUES(auditd.paths.cap_fp),
+      added_items        = VALUES(auditd.paths.cap_fi),
+      deleted_items      = VALUES(auditd.paths.cap_fver),
+      syscalls           = VALUES(auditd.data.syscall),
+      ttys               = VALUES(auditd.data.tty),
+      critical_svn_paths = VALUES(is_critical_svn),
+      last_seen          = MAX(@timestamp),
+      first_seen         = MIN(@timestamp)
+    BY agent_id, host.hostname, auditd.paths.name, auditd.data.subj_user
+  | WHERE event_count >= 1
+  | EVAL
+      host_name         = host.hostname,
+      file_name         = auditd.paths.name,
+      user              = auditd.data.subj_user
+  | KEEP
+      agent_id,
+      host_name,
+      file_name,
+      user,
+      event_count,
+      host_names,
+      actors,
+      file_paths,
+      file_modes,
+      hash_codes,
+      added_items,
+      deleted_items,
+      syscalls,
+      ttys,
+      critical_svn_paths,
+      last_seen,
+      first_seen
+  | SORT event_count DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.impact
+  - attack.t1070.004
+  - attack.t1565.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1070/004/"
+  - "https://attack.mitre.org/techniques/T1565/001/"
+  - "https://subversion.apache.org/security/"
+nist: ["SI-7", "AU-9", "CM-3", "SA-10"]
+pci_dss: ["10.5.1", "11.5", "6.3.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.004"]
+  TA0040:
+    T1565: ["T1565.001"]

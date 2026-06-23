@@ -1,0 +1,56 @@
+rule_id: 097764a7-491e-4e78-a500-64b44d146f03
+name: "Chain: Sudo Success After Failures (Linux)"
+description: |
+  Linux sudo privesc zanjiri — 2-bosqich.
+  Muvaffaqiyatsiz urinishlardan keyin o'sha foydalanuvchi sudo'dan muvaffaqiyatli o'tishi.
+  1-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE auditd.result == "success"
+      AND (auditd.message_type == "user_cmd" OR (auditd.message_type == "user_auth" AND TO_LOWER(auditd.summary.how) RLIKE ".*(sudo|/su).*"))
+  | EVAL host.name = host.hostname, user.name = auditd.data.acct
+  | KEEP @timestamp, agent_id, user.name, host.name, auditd.message_type, auditd.result
+  | LIMIT 500
+tags:
+  - attack.privilege-escalation
+  - attack.t1548.003
+  - linux
+  - sudo-success
+  - correlation
+  - chain
+severity: high
+risk_score: 80
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - user.name
+  timeframe_sec: 300
+  dedup_fields:
+    - user.name
+    - host.name
+  ignore_sec: 120
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - f9a07fb9-e24f-43b8-b295-3fc8659b9d0d
+  timeframe_sec: 3600
+  correlate_by:
+    - user.name
+references:
+  - "https://attack.mitre.org/techniques/T1548/003/"
+nist: ["AC-6"]
+pci_dss: ["10.2.2"]
+mitre_attack:
+  TA0004:
+    T1548: ["T1548.003"]

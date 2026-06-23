@@ -1,0 +1,54 @@
+rule_id: c9dbc828-a998-4263-a3fc-a9ef78dc90dc
+name: "Chain: Account Added to Privileged Group (4728/4732/4756)"
+description: |
+  Windows hisob backdoor zanjiri — 2-bosqich.
+  Hisob imtiyozli guruhga qo'shilishi (4728/4732/4756). 1-bosqichga bog'langan.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE winlog.channel == "Security" AND event.code IN ("4728", "4732", "4756")
+  | EVAL group_name = winlog.event_data.TargetUserName, member = winlog.event_data.MemberName, host.name = winlog.computer_name, actor = winlog.event_data.SubjectUserName
+  | KEEP @timestamp, agent_id, group_name, member, actor, host.name, event.code
+  | LIMIT 500
+tags:
+  - attack.privilege-escalation
+  - attack.t1098
+  - windows
+  - group-membership
+  - correlation
+  - chain
+severity: high
+risk_score: 80
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+  timeframe_sec: 600
+  dedup_fields:
+    - host.name
+    - group_name
+    - member
+  escalate_severity: high
+chain:
+  enabled: true
+  stage: 2
+  depends_on_rule_ids:
+    - 3dd91314-3c3c-41e6-a7e7-982507baaa91
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+references:
+  - "https://attack.mitre.org/techniques/T1098/"
+nist: ["AC-2", "AC-6"]
+pci_dss: ["7.1", "10.2.5"]
+mitre_attack:
+  TA0004:
+    T1098: []

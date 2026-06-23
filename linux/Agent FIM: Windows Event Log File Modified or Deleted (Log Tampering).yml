@@ -1,0 +1,55 @@
+rule_id: d098e695-2b6c-40cc-aa09-87fc97348a5c
+name: "Agent FIM: Windows Event Log File Modified or Deleted (Log Tampering)"
+description: |
+  Ushbu qoida Defense Evasion texnikasiga bog'liq bo'lib, Windows Event Log fayllarining
+  o'zgartirilishi yoki o'chirilishini aniqlaydi. Hujumchi o'z izlarini yashirish maqsadida
+  .evtx log fayllarini o'chirishi yoki o'zgartirishi mumkin.
+  Qonuniy holatlar: log rotation, Windows log management tizimi.
+  SOC triage bosqichlari:
+  - `file.name` — Security.evtx, System.evtx, Application.evtx kritik fayllar.
+  - `event.action` — deleted bo'lsa darhol javob bering.
+  - `file.size` kutilganidan kichik bo'lsa — log cleared bo'lishi mumkin.
+  - Windows Event ID 1102 (Security log cleared) va 104 (System log cleared) bilan korrelatsiya.
+  - Noqonuniy bo'lsa: backup dan tiklang, incident oching, forensic dump oling.
+type: esql
+params: '{}'
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog*
+  | WHERE @timestamp >= NOW() - 300 seconds
+  | WHERE (event.code == "1102" AND winlog.channel == "Security")
+      OR (event.code == "104" AND winlog.channel == "System")
+  | STATS
+      event_count   = COUNT(*),
+      computer_names = VALUES(winlog.computer_name),
+      user_names    = VALUES(winlog.event_data.SubjectUserName),
+      channels      = VALUES(winlog.channel),
+      event_codes   = VALUES(event.code),
+      last_seen     = MAX(@timestamp),
+      first_seen    = MIN(@timestamp)
+    BY agent_id, winlog.computer_name, event.code
+  | WHERE event_count >= 1
+  | EVAL computer_name = winlog.computer_name
+  | KEEP
+      agent_id, computer_name, event_count,
+      computer_names, user_names, channels, event_codes,
+      last_seen, first_seen
+  | SORT last_seen DESC
+enabled: true
+tags:
+  - attack.defense-evasion
+  - attack.t1070.001
+  - detection.threat-hunting
+severity: critical
+risk_score: 90
+references:
+  - "https://attack.mitre.org/techniques/T1070/001/"
+nist: ["AU-9", "SI-7", "IR-4", "AU-12"]
+pci_dss: ["10.5.1", "10.5.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1070: ["T1070.001"]

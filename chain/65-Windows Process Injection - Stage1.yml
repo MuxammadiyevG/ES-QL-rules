@@ -1,0 +1,38 @@
+rule_id: 6acdfa77-44de-447b-9d10-128500013d95
+name: "Chain: Windows Process Injection — Stage 1: CreateRemoteThread Detected"
+description: |
+  Windows Process Injection zanjiri — 1-bosqich (2 dan).
+  CreateRemoteThread Detected.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-winlog*
+query_language: esql
+query: |
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes AND winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "8" | EVAL host_name = winlog.computer_name, source_image = winlog.event_data.SourceImage, target_image = winlog.event_data.TargetImage, new_thread_id = winlog.event_data.NewThreadId | KEEP host_name, source_image, target_image, new_thread_id, @timestamp | LIMIT 500
+tags:
+  - attack.defense_evasion
+  - attack.privilege_escalation
+  - chain
+  - correlation
+  - sysmon
+  - windows
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host_name
+  timeframe_sec: 1800
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host_name
+mitre_attack:
+  TA0005:
+    T1055: ["T1055.003"]

@@ -1,0 +1,52 @@
+{
+  "fix": [
+    "linux/PCI DSS 10.2.2 - Privileged User Actions (Linux sudo-su).yml",
+    "windows/Agent FIM: Active Directory Ownership or Permission Changed.yml",
+    "windows/Audit Policy Modification Detection.yml",
+    "windows/Critical Configuration File Modification.yml",
+    "windows/Critical System File Tampering.yml",
+    "windows/Firewall Policy Modification.yml",
+    "windows/GDPR Art.32(1)(c) - Personal Data Processing System Availability Loss.yml",
+    "windows/GDPR Art.33(1) - Personal Data Breach Detection Trigger (72h Notification Clock).yml",
+    "windows/GDPR Art.33(2) - Third-Party Vendor or Processor Account Anomaly.yml",
+    "windows/GDPR Art.34(1) - High-Risk Breach Indicators Requiring Data Subject Notification.yml",
+    "windows/PCI DSS 8.1.6 - Brute Force Login Attempt (Windows).yml",
+    "windows/PCI DSS 8.1.8 - Long-Running Idle Interactive Sessions (Windows).yml",
+    "windows/PCI DSS 8.3 - Remote Access Without MFA - Single-Factor Auth (Windows).yml",
+    "windows/Remote Access Brute Force Detection.yml",
+    "windows/Suspicious Outbound Connection.yml",
+    "windows/Suspicious Process Execution Pattern.yml",
+    "windows/Suspicious Scheduled Task Creation.yml",
+    "windows/Unauthorized Software Installation.yml"
+  ],
+  "review": [
+    "linux/PCI DSS 11.5 - Critical File Modification Detected (Linux).yml",
+    "linux/PCI DSS 8.1.6 - Brute Force Login Attempt (Linux Auditd).yml",
+    "nginx/Dangerous HTTP Method Usage.yml",
+    "windows/Audit System Failure or Attack.yml",
+    "windows/Excessive Failed Privileged Access.yml",
+    "windows/GDPR Art.25(1) - Data Protection by Design Controls Failure.yml",
+    "windows/GDPR Art.30(1)(g) - Security Measures Record Completeness Failure.yml",
+    "windows/GDPR Art.32(1)(b) - Confidentiality and Integrity of Processing Systems Compromised.yml",
+    "windows/GDPR Art.32(1)(d) - Security Controls Effectiveness Degradation.yml",
+    "windows/GDPR Art.33(5) - Audit Trail Completeness Gap (Breach Documentation Impaired).yml",
+    "windows/GDPR Art.5(1)(f) - Unauthorized Access to Personal Data Systems.yml",
+    "windows/PCI DSS 10.2.2 - Privileged User Actions (Windows Admin).yml",
+    "windows/PCI DSS 10.2.4 - Invalid Logical Access Attempts Spike.yml",
+    "windows/PCI DSS 10.2.5 - User Account Privilege Changes and New Admin Accounts (Windows).yml",
+    "windows/PCI DSS 10.2.6 - Audit Log Service Stopped or Paused (Windows).yml",
+    "windows/Security Software Disabled.yml",
+    "windows/Shared Account Concurrent Usage.yml",
+    "windows/Unauthorized Service Installation.yml"
+  ],
+  "skip_auth": [
+    "linux/Linux Auth - Multiple Failed sudo Attempts.yml",
+    "linux/Linux Auth - SSH Brute Force.yml",
+    "linux/Sysmon Linux - Monitoring Configuration Tampering Detected.yml",
+    "linux/Sysmon Linux - SSH Login Activity Detected.yml",
+    "linux/Sysmon Linux - Suspicious File Creation via Privileged User.yml",
+    "linux/Sysmon Linux - Suspicious File Deletion Detected.yml",
+    "linux/Sysmon Linux - Suspicious Outbound Network Connection.yml",
+    "linux/Sysmon Linux - Suspicious Process Creation Detected.yml"
+  ]
+}

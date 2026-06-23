@@ -1,0 +1,41 @@
+rule_id: 6f028455-6ea6-4f5c-a8b8-ca992b7319c5
+name: "Chain: Linux Kernel Module Rootkit Load — Stage 1: Kernel Module Load"
+description: |
+  Linux Kernel Module Rootkit Load zanjiri — 1-bosqich (2 dan).
+  Kernel Module Load.
+type: esql
+enabled: true
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" AND process.name IN ("insmod", "modprobe", "rmmod") | EVAL host.name = host.hostname, module_args = MV_CONCAT(process.args, " ") | KEEP @timestamp, host.name, user.name, process.name, process.executable, module_args, auditd.data.syscall | LIMIT 500
+tags:
+  - attack.persistence
+  - chain
+  - correlation
+  - linux-auditd
+  - rootkit
+severity: medium
+risk_score: 47
+max_signals: 100
+correlation:
+  enabled: true
+  same_fields:
+    - host.name
+    - user.name
+    - process.name
+    - process.executable
+    - module_args
+  timeframe_sec: 3600
+chain:
+  enabled: true
+  stage: 1
+  timeframe_sec: 3600
+  correlate_by:
+    - host.name
+mitre_attack:
+  TA0003:
+    T1547: ["T1547.006"]

@@ -1,0 +1,81 @@
+rule_id: 4dea56d0-2f44-4972-a8f4-064c42e28d20
+
+name: "Firewall Policy Modification"
+description: |
+  Detects changes to Windows Firewall or Linux firewall rules (iptables, ufw, firewalld).
+  Adding permissive inbound rules or disabling firewall entirely weakens boundary protection.
+  Event IDs 4946/4947/4950 (rule add/change), 4950 (settings change) captured for Windows.
+  False positives: Legitimate administrative changes, software installations requiring port opening.
+  Triage: Review rule specifics (ports, protocols, scope), verify change authorization,
+  check if rule enables known-malicious traffic patterns.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE (
+      process.executable RLIKE ".*/sbin/(iptables|ip6tables|xtables-nft-multi|nft|firewalld|ufw).*"
+      OR process.executable RLIKE ".*/bin/(ufw|firewalld).*"
+      OR process.title RLIKE ".*(iptables|ip6tables|ufw|firewalld).*"
+      OR process.title RLIKE "(nft |nft$|.*/nft ).*"
+      OR (
+        event.action == "loaded-firewall-rule-to"
+        AND process.executable RLIKE ".*/sbin/(iptables|ip6tables|xtables-nft-multi|nft|firewalld|ufw).*"
+      )
+    )
+  | WHERE NOT (
+      process.title RLIKE ".*(DOCKER|docker|br-[0-9a-f]+|docker0|DOCKER_OUTPUT|DOCKER_POSTROUTING).*"
+    )
+  | WHERE NOT process.title RLIKE ".*172\\.(1[6-9]|2[0-9]|3[01])\\.[0-9]+\\.[0-9]+.*"
+  | WHERE NOT process.title RLIKE ".*(f2b-|fail2ban).*"
+  | WHERE NOT process.title RLIKE ".*(ufw-caps-test|ufw6-caps-test).*"
+  | WHERE NOT (
+      process.title RLIKE ".*iptables.*-C .*"
+      OR process.title RLIKE ".*ip6tables.*-C .*"
+    )
+  | EVAL change_type = CASE(
+      process.title RLIKE ".*(iptables|ip6tables).*-A .*", "Rule-Added",
+      process.title RLIKE ".*(iptables|ip6tables).*-D .*", "Rule-Deleted",
+      process.title RLIKE ".*(iptables|ip6tables).*-F .*", "Chain-Flushed",
+      process.title RLIKE ".*(iptables|ip6tables).*-X .*", "Chain-Deleted",
+      process.title RLIKE ".*(iptables|ip6tables).*-N .*", "Chain-Created",
+      "Firewall-Change"
+    )
+  | EVAL hour_of_day = DATE_EXTRACT("hour_of_day", @timestamp)
+  | EVAL is_after_hours = CASE(hour_of_day < 7 OR hour_of_day > 20, true, false)
+  | STATS
+      rule_changes = COUNT(*),
+      unique_rules = COUNT_DISTINCT(event.original),
+      changed_rules = VALUES(process.title),
+      modifiers = VALUES(user.name),
+      after_hours_changes = SUM(CASE(is_after_hours == true, 1, 0))
+    BY agent_id, host.name, change_type
+    , bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | WHERE rule_changes >= 1
+  | EVAL risk_score = rule_changes * 25 + after_hours_changes * 20
+  | WHERE risk_score >= 25
+  | KEEP agent_id, bucket, host.name, change_type, rule_changes, unique_rules, changed_rules, modifiers, after_hours_changes, risk_score
+  | SORT risk_score DESC
+enabled: true
+tags:
+  - nist_800_53
+  - control_SC-7
+  - control_CM-6
+  - family_SC
+  - family_CM
+  - defense_evasion
+  - persistence
+severity: high
+risk_score: 74
+references:
+  - "NIST SP 800-53 Rev.5 SC-7: Boundary Protection"
+  - "MITRE ATT&CK T1562.004: Disable or Modify System Firewall"
+nist: ["SC-7", "CM-6"]
+pci_dss: ["1.1.6"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.004"]
