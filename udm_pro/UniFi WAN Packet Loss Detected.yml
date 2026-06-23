@@ -1,0 +1,31 @@
+rule_id: 6d9a455b-4c24-4c90-b30c-2fa1bfc06ddd
+name: UniFi WAN Packet Loss Detected
+description: |
+  Ushbu qoida WAN interfeysida packet loss aniqlanishini kuzatadi.
+  ISP, uplink, routing, interface errors yoki DoS holatlari tekshirilishi kerak.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Packet Loss Detected"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|113\\|Packet Loss Detected\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIdeviceMac=%{MAC:device_mac} UNIFIdeviceName=%{DATA:device_name} UNIFIdeviceModel=%{DATA:device_model} UNIFIdeviceVersion=%{DATA:device_version} UNIFIwanName=%{DATA:wan_name} UNIFIwanId=%{DATA:wan_id} UNIFIwanSubnet=%{DATA:wan_subnet} UNIFIwanSla=%{DATA:wan_sla} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = 75
+  | KEEP @timestamp, event_time, device_name, device_mac, device_model, device_version, wan_name, wan_id, wan_subnet, wan_sla, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, WAN, Packet Loss, Availability]
+severity: high
+risk_score: 75
+references: []
+mitre_attack:
+  TA0040:
+    T1498: []
+nist: ["SC-5", "SI-4", "CP-8", "AU-12"]
+pci_dss: ["10.2", "11.5", "12.10"]
+gdpr: ["32.1.b", "32.1.c"]

@@ -1,0 +1,32 @@
+rule_id: 00cec6ef-aec1-4cb1-ac1b-be2bfca8931c
+name: UniFi Device Updated
+description: |
+  Ushbu qoida UniFi qurilmasi firmware yangilanishini kuzatadi.
+  Oldingi/yangi versiya va update trigger change ticket bilan tekshiriladi.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Device Updated"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|510\\|Device Updated\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIdeviceMac=%{MAC:device_mac} UNIFIdeviceName=%{DATA:device_name} UNIFIdeviceModel=%{DATA:device_model} UNIFIdeviceVersion=%{DATA:new_version} UNIFIdevicePriorVersion=%{DATA:old_version} UNIFIupdateTrigger=%{DATA:update_trigger} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = CASE(update_trigger == "Unknown", 70, 50)
+  | KEEP @timestamp, event_time, device_name, device_mac, device_model, old_version, new_version, update_trigger, message, dyn_risk
+  | SORT dyn_risk DESC, @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, Firmware Update, Change Monitoring]
+severity: medium
+risk_score: 50
+references: []
+mitre_attack:
+  TA0003:
+    T1542:
+      - T1542.001
+nist: ["CM-3", "CM-5", "SI-7", "AU-12"]
+pci_dss: ["6.3", "10.2"]
+gdpr: ["32.1.b"]

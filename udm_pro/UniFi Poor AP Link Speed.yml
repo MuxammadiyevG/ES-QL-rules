@@ -1,0 +1,31 @@
+rule_id: 79e151a9-135d-4812-a468-3b0a723b52c9
+name: UniFi Poor AP Link Speed
+description: |
+  Ushbu qoida AP uplink tezligi kutilganidan past bo'lganini aniqlaydi.
+  Kabel, port negotiation, PoE, duplex yoki switch port muammolarini tekshirish kerak.
+type: esql
+params: "{}"
+schedule_interval: 10m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 15 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Poor AP Link Speed"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|563\\|Poor AP Link Speed\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIdeviceMac=%{MAC:ap_mac} UNIFIdeviceName=%{DATA:ap_name} UNIFIdeviceModel=%{DATA:ap_model} UNIFIdeviceIp=%{IP:ap_ip} UNIFIdeviceVersion=%{DATA:ap_version} UNIFIconnectedToDeviceName=%{DATA:switch_name} UNIFIconnectedToDevicePort=%{NUMBER:switch_port} UNIFIconnectedToDeviceIp=%{IP:switch_ip} UNIFIconnectedToDeviceMac=%{MAC:switch_mac} UNIFIconnectedToDeviceModel=%{DATA:switch_model} UNIFIconnectedToDeviceVersion=%{DATA:switch_version} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = 70
+  | KEEP @timestamp, event_time, ap_name, ap_ip, ap_mac, ap_model, ap_version, switch_name, switch_port, switch_ip, switch_mac, switch_model, switch_version, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, AP, Link Speed, Availability]
+severity: high
+risk_score: 70
+references: []
+mitre_attack:
+  TA0040:
+    T1499: []
+nist: ["SI-4", "CM-8", "AU-12"]
+pci_dss: ["10.2", "11.5"]
+gdpr: ["32.1.b", "32.1.c"]

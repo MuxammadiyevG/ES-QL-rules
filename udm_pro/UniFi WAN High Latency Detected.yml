@@ -1,0 +1,31 @@
+rule_id: 304dc9a4-2d11-4d0d-b335-0ae97cab36fb
+name: UniFi WAN High Latency Detected
+description: |
+  Ushbu qoida WAN latency yuqori bo'lganini aniqlaydi.
+  ISP, routing, congestion, interface va DoS belgilarini tekshiring.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.module == "udmpro" AND event.action == "High Latency Detected"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|112\\|High Latency Detected\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIdeviceMac=%{MAC:device_mac} UNIFIdeviceName=%{DATA:device_name} UNIFIdeviceModel=%{DATA:device_model} UNIFIdeviceIp=%{IP:device_ip} UNIFIdeviceVersion=%{DATA:device_version} UNIFIwanName=%{DATA:wan_name} UNIFIwanId=%{DATA:wan_id} UNIFIwanPort=%{NUMBER:wan_port} UNIFIwanIsp=%{DATA:wan_isp} UNIFIwanSubnet=%{DATA:wan_subnet} UNIFIwanSla=%{DATA:wan_sla} UNIFIwanLatency=%{NUMBER:wan_latency} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = CASE(TO_INTEGER(wan_latency) >= 500, 90, TO_INTEGER(wan_latency) >= 200, 75, 60)
+  | KEEP @timestamp, event_time, device_name, device_ip, device_mac, wan_name, wan_id, wan_port, wan_isp, wan_subnet, wan_sla, wan_latency, message, dyn_risk
+  | SORT dyn_risk DESC, @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, WAN, Latency, Availability]
+severity: high
+risk_score: 60
+references: []
+mitre_attack:
+  TA0040:
+    T1498: []
+nist: ["SC-5", "SI-4", "CP-8", "AU-12"]
+pci_dss: ["10.2", "11.5"]
+gdpr: ["32.1.b", "32.1.c"]

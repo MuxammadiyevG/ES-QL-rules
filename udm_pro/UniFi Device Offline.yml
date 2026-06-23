@@ -1,0 +1,31 @@
+rule_id: 98bfa125-e044-45cf-974f-1e0d75c1e319
+name: UniFi Device Offline
+description: |
+  Ushbu qoida UniFi AP yoki switch offline bo'lganini aniqlaydi.
+  Qurilma, IP, MAC, model, firmware, uplink switch va port alertga chiqariladi.
+type: esql
+params: "{}"
+schedule_interval: 5m
+index:
+  - logs-udmpro-default
+query_language: esql
+query: |
+  FROM logs-udmpro-default
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.module == "udmpro" AND event.action == "Device Offline"
+  | GROK event.original "%{GREEDYDATA:cef_prefix}\\|512\\|Device Offline\\|%{NUMBER:cef_severity}\\|UNIFIcategory=%{DATA:unifi_category} UNIFIhost=%{DATA:unifi_host} UNIFIdeviceMac=%{MAC:device_mac} UNIFIdeviceName=%{DATA:device_name} UNIFIdeviceModel=%{DATA:device_model} UNIFIdeviceIp=%{IP:device_ip} UNIFIdeviceVersion=%{DATA:device_version} UNIFIconnectedToDeviceName=%{DATA:uplink_name} UNIFIconnectedToDevicePort=%{NUMBER:uplink_port} UNIFIconnectedToDeviceIp=%{IP:uplink_ip} UNIFIconnectedToDeviceMac=%{MAC:uplink_mac} UNIFIconnectedToDeviceModel=%{DATA:uplink_model} UNIFIconnectedToDeviceVersion=%{DATA:uplink_version} UNIFIreference=%{DATA:reference} UNIFIutcTime=%{TIMESTAMP_ISO8601:event_time} msg=%{GREEDYDATA:message}"
+  | EVAL dyn_risk = 82
+  | KEEP @timestamp, event_time, device_name, device_ip, device_mac, device_model, device_version, uplink_name, uplink_port, uplink_ip, uplink_mac, reference, message, dyn_risk
+  | SORT @timestamp DESC
+  | LIMIT 100
+enabled: false
+tags: [UniFi, Device Offline, Availability]
+severity: high
+risk_score: 82
+references: []
+mitre_attack:
+  TA0040:
+    T1499: []
+nist: ["SI-4", "CP-8", "AU-12", "IR-4"]
+pci_dss: ["10.2", "11.5", "12.10"]
+gdpr: ["32.1.b", "32.1.c"]
