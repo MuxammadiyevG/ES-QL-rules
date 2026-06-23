@@ -44,8 +44,9 @@ chain:
   correlate_by:
     - host_name
 mitre_attack:
-  TA0007:
-    T1057: []
-    T1033: []
-    T1082: []
+  TA0003:
     T1136: ["T1136.001"]
+  TA0007:
+    T1033: []
+    T1057: []
+    T1082: []

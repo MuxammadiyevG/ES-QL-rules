@@ -42,5 +42,6 @@ chain:
     - host.name
 mitre_attack:
   TA0002:
-    T1021: ["T1021.002"]
     T1059: []
+  TA0008:
+    T1021: ["T1021.002"]

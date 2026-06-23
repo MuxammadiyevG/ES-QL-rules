@@ -44,4 +44,5 @@ chain:
 mitre_attack:
   TA0001:
     T1566: []
+  TA0002:
     T1204: ["T1204.002"]

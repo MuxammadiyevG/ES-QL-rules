@@ -41,4 +41,5 @@ chain:
 mitre_attack:
   TA0001:
     T1078: []
+  TA0006:
     T1110: ["T1110.001"]
