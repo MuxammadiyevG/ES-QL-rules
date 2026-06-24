@@ -11,7 +11,7 @@ index:
   - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" | WHERE process.name IN ("docker", "podman", "runc", "ctr") | EVAL cmdline = MV_CONCAT(process.args, " ") | WHERE cmdline LIKE "*--privileged*" OR cmdline LIKE "*--pid=host*" OR cmdline LIKE "*--net=host*" OR cmdline LIKE "*--cap-add*" OR cmdline LIKE "*/:/*" OR (cmdline LIKE "* exec *" AND (cmdline LIKE "*-it*bash*" OR cmdline LIKE "*-it*sh*")) | EVAL host_name = host.hostname | KEEP process.name, cmdline, host_name, user.name, @timestamp | LIMIT 500
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" | WHERE process.name IN ("docker", "podman", "runc", "ctr") | EVAL cmdline = MV_CONCAT(process.args, " ") | WHERE cmdline LIKE "*--privileged*" OR cmdline LIKE "*--pid=host*" OR cmdline LIKE "*--net=host*" OR cmdline LIKE "*--cap-add*" OR cmdline LIKE "*/:/*" OR cmdline LIKE "*/var/run/docker.sock*" | EVAL host_name = host.hostname | KEEP process.name, cmdline, host_name, user.name, @timestamp | LIMIT 500
 tags:
   - attack.T1611
   - attack.privilege_escalation

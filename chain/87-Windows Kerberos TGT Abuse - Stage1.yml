@@ -2,7 +2,8 @@ rule_id: cc65a0a9-d67a-4a4c-bc34-edf5cbff51e0
 name: "Chain: Windows Kerberos TGT Abuse — Stage 1: Kerberos TGT Enumeration Burst"
 description: |
   Windows Kerberos TGT Abuse zanjiri — 1-bosqich (2 dan).
-  Kerberos TGT Enumeration Burst.
+  Kerberos TGT Enumeration Burst — kuchsiz shifrlash (RC4/DES) bilan.
+  FP kamaytirish: normal AD AES (0x12) ishlatadi; faqat downgrade (RC4 0x17 / DES) TGT so'rovlari olinadi, bu kerberoast/overpass-the-hash signali.
 type: esql
 enabled: true
 params: "{}"
@@ -11,7 +12,7 @@ index:
   - logs-winlog*
 query_language: esql
 query: |
-  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" | WHERE event.code == "4768" | WHERE winlog.event_data.IpAddress IS NOT NULL | WHERE NOT winlog.event_data.IpAddress == "::1" | WHERE NOT winlog.event_data.TargetUserName LIKE "*$" | EVAL host.name = winlog.computer_name, user.name = winlog.event_data.TargetUserName, src.ip = winlog.event_data.IpAddress, ticket_enc_type = winlog.event_data.TicketEncryptionType | KEEP @timestamp, `host.name`, `user.name`, `src.ip`, ticket_enc_type | LIMIT 1000
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" | WHERE event.code == "4768" | WHERE winlog.event_data.IpAddress IS NOT NULL | WHERE NOT winlog.event_data.IpAddress == "::1" | WHERE NOT winlog.event_data.TargetUserName LIKE "*$" | EVAL host.name = winlog.computer_name, user.name = winlog.event_data.TargetUserName, src.ip = winlog.event_data.IpAddress, ticket_enc_type = winlog.event_data.TicketEncryptionType | WHERE ticket_enc_type IN ("0x17", "0x18", "0x1", "0x3") | KEEP @timestamp, `host.name`, `user.name`, `src.ip`, ticket_enc_type | LIMIT 1000
 tags:
   - attack.credential_access
   - attack.discovery

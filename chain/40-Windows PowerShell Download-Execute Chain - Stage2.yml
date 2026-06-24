@@ -12,7 +12,7 @@ index:
   - logs-winlog*
 query_language: esql
 query: |
-  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.code == "3" | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" | WHERE winlog.event_data.Initiated == "true" | WHERE TO_LOWER(winlog.event_data.Image) RLIKE ".*powershell.*" | WHERE NOT winlog.event_data.DestinationIp LIKE "127.*" | WHERE NOT winlog.event_data.DestinationIp LIKE "10.*" | WHERE NOT winlog.event_data.DestinationIp LIKE "192.168.*" | EVAL host.name = winlog.computer_name, dest_ip = winlog.event_data.DestinationIp, dest_port = winlog.event_data.DestinationPort, process_image = winlog.event_data.Image | KEEP @timestamp, host.name, dest_ip, dest_port, process_image, agent_id | LIMIT 500
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.code == "3" | WHERE winlog.channel == "Microsoft-Windows-Sysmon/Operational" | WHERE winlog.event_data.Initiated == "true" | WHERE TO_LOWER(winlog.event_data.Image) RLIKE ".*powershell.*" | WHERE NOT winlog.event_data.DestinationIp LIKE "127.*" | WHERE NOT winlog.event_data.DestinationIp LIKE "10.*" | WHERE NOT winlog.event_data.DestinationIp LIKE "192.168.*" | WHERE winlog.event_data.DestinationIp != "::1" | WHERE winlog.event_data.DestinationIp != "0:0:0:0:0:0:0:1" | EVAL host.name = winlog.computer_name, dest_ip = winlog.event_data.DestinationIp, dest_port = winlog.event_data.DestinationPort, process_image = winlog.event_data.Image | KEEP @timestamp, host.name, dest_ip, dest_port, process_image, agent_id | LIMIT 500
 tags:
   - attack.command-and-control
   - chain

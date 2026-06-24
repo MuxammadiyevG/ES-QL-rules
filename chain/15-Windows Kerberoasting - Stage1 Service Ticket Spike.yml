@@ -2,8 +2,9 @@ rule_id: 65b0b2bd-176f-42fd-9efd-2d7d08a96759
 name: "Chain: Kerberos Service Ticket Spike — Kerberoasting (4769)"
 description: |
   Kerberoasting zanjiri — 1-bosqich.
-  Bitta hisob qisqa vaqtda ko'p turli SPN uchun service ticket so'rasa (4769) — Kerberoasting belgisi.
+  Bitta hisob qisqa vaqtda ko'p turli SPN uchun KUCHSIZ shifrlash (RC4/DES) bilan service ticket so'rasa (4769) — Kerberoasting belgisi.
   Korrelyatsiya: same_fields user.name, different_field ServiceName.
+  FP kamaytirish: normal AD AES (0x12) ishlatadi; faqat RC4 (0x17)/DES service ticket so'rovlari olinadi — bu kerberoasting'ning klassik imzosi.
 type: esql
 enabled: true
 params: "{}"
@@ -15,9 +16,10 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Security" AND event.code == "4769"
-  | EVAL user.name = winlog.event_data.TargetUserName, host.name = winlog.computer_name, service = winlog.event_data.ServiceName
+  | EVAL user.name = winlog.event_data.TargetUserName, host.name = winlog.computer_name, service = winlog.event_data.ServiceName, enc = winlog.event_data.TicketEncryptionType
   | WHERE user.name IS NOT NULL AND NOT user.name LIKE "*$"
-  | KEEP @timestamp, agent_id, user.name, service, host.name, event.code
+  | WHERE enc IN ("0x17", "0x18", "0x1", "0x3")
+  | KEEP @timestamp, agent_id, user.name, service, enc, host.name, event.code
   | LIMIT 1000
 tags:
   - attack.credential-access

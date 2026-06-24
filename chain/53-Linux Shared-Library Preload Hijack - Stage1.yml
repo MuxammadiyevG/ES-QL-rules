@@ -11,7 +11,7 @@ index:
   - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.module == "file_integrity" AND event.type == "change" AND (file.path LIKE "/etc/ld.so.preload" OR file.path LIKE "/etc/ld.so.conf*" OR file.path LIKE "/etc/ld.so.cache*") | EVAL host.name = host.hostname | KEEP @timestamp, file.path, host.name | LIMIT 500
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.module == "file_integrity" AND event.type == "change" AND (file.path LIKE "/etc/ld.so.preload" OR file.path LIKE "/etc/ld.so.conf*") | EVAL host.name = host.hostname | KEEP @timestamp, file.path, host.name | LIMIT 500
 tags:
   - attack.defense-evasion
   - attack.persistence

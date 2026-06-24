@@ -26,7 +26,7 @@ correlation:
   enabled: true
   same_fields:
     - host.name
-  frequency: 50
+  frequency: 150
   timeframe_sec: 300
   dedup_fields:
     - file.path

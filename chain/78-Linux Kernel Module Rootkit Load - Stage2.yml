@@ -12,7 +12,7 @@ index:
   - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE (event.module == "file_integrity" AND event.type == "creation" AND file.path LIKE "*/.*") OR (auditd.message_type == "avc" AND event.action == "violated-apparmor-policy") OR (auditd.message_type == "bpf" AND process.name IS NOT NULL) | EVAL host.name = host.hostname | KEEP @timestamp, host.name, event.action, auditd.message_type, file.path, process.name, process.executable, user.name | LIMIT 500
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE (event.module == "file_integrity" AND event.type == "creation" AND file.path LIKE "*/.*" AND NOT file.path LIKE "*.swp") OR (auditd.message_type == "avc" AND event.action == "violated-apparmor-policy" AND process.name NOT IN ("python3", "apparmor_parser")) OR (auditd.message_type == "bpf" AND process.name IS NOT NULL AND process.name NOT IN ("runc", "containerd", "dockerd")) | EVAL host.name = host.hostname | KEEP @timestamp, host.name, event.action, auditd.message_type, file.path, process.name, process.executable, user.name | LIMIT 500
 tags:
   - attack.defense-evasion
   - chain

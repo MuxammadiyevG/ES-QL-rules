@@ -11,7 +11,7 @@ index:
   - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" | WHERE process.name IN ("rm", "truncate", "shred") | EVAL args_str = MV_CONCAT(process.args, " ") | WHERE args_str RLIKE ".*var/log.*" OR args_str RLIKE ".*bash_history.*" | EVAL host.name = host.hostname, cmd_args = args_str | KEEP host.name, process.name, cmd_args, user.name, @timestamp | LIMIT 500
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.action == "executed" | WHERE process.name IN ("rm", "truncate", "shred") | EVAL args_str = MV_CONCAT(process.args, " ") | WHERE (args_str RLIKE ".*var/log.*" OR args_str RLIKE ".*bash_history.*") AND NOT args_str LIKE "*/var/log/sysstat/*" | EVAL host.name = host.hostname, cmd_args = args_str | KEEP host.name, process.name, cmd_args, user.name, @timestamp | LIMIT 500
 tags:
   - attack.defense_evasion
   - auditd

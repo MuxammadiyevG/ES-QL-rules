@@ -2,7 +2,8 @@ rule_id: 64d28de7-af7e-4529-a433-030e56f013db
 name: "Chain: Windows Admin Share Access Recon — Stage 1: Admin Share Access Burst"
 description: |
   Windows Admin Share Access Recon zanjiri — 1-bosqich (2 dan).
-  Admin Share Access Burst.
+  Admin Share Access Burst (C$/ADMIN$).
+  FP kamaytirish: IPC$ chiqarib tashlandi — u har bir normal SMB sessiyada (named pipe) ochiladi, recon signali emas.
 type: esql
 enabled: true
 params: "{}"
@@ -11,7 +12,7 @@ index:
   - logs-winlog*
 query_language: esql
 query: |
-  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND event.code == "5140" | EVAL share_name = winlog.event_data.ShareName | WHERE share_name RLIKE ".*C[$]" OR share_name RLIKE ".*ADMIN[$]" OR share_name RLIKE ".*IPC[$]" | EVAL host.name = winlog.computer_name, source.ip = winlog.event_data.IpAddress, user.name = winlog.event_data.SubjectUserName | KEEP host.name, source.ip, user.name, share_name, @timestamp | LIMIT 500
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND event.code == "5140" | EVAL share_name = winlog.event_data.ShareName | WHERE (share_name RLIKE ".*C[$]" OR share_name RLIKE ".*ADMIN[$]") AND NOT share_name RLIKE ".*IPC[$]" | EVAL host.name = winlog.computer_name, source.ip = winlog.event_data.IpAddress, user.name = winlog.event_data.SubjectUserName | KEEP host.name, source.ip, user.name, share_name, @timestamp | LIMIT 500
 tags:
   - SMB
   - admin-share

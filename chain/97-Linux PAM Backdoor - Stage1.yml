@@ -11,7 +11,7 @@ index:
   - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.module == "file_integrity" AND event.type == "change" | WHERE file.path LIKE "/etc/pam.d/*" OR file.path LIKE "/etc/security/*" OR TO_LOWER(file.path) RLIKE ".*pam_[a-z0-9_]+[.]so.*" | EVAL host.name = host.hostname, file_path = file.path, event_action = event.action | KEEP host.name, file_path, event_action, event.module, event.type, agent_id | LIMIT 500
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes | WHERE event.module == "file_integrity" AND event.type == "change" | WHERE (file.path LIKE "/etc/pam.d/*" OR file.path LIKE "/etc/security/*" OR TO_LOWER(file.path) RLIKE ".*pam_[a-z0-9_]+[.]so.*") AND NOT file.path LIKE "*.dpkg-new" AND NOT file.path LIKE "*.dpkg-dist" AND NOT file.path LIKE "*.dpkg-old" AND NOT file.path LIKE "*.pam-new" | EVAL host.name = host.hostname, file_path = file.path, event_action = event.action | KEEP host.name, file_path, event_action, event.module, event.type, agent_id | LIMIT 500
 tags:
   - attack.defense_evasion
   - attack.persistence

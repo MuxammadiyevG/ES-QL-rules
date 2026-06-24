@@ -34,7 +34,7 @@ correlation:
   enabled: true
   same_fields:
     - source.ip
-  frequency: 8
+  frequency: 6
   timeframe_sec: 120
   dedup_fields:
     - source.ip

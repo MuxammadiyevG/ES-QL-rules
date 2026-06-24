@@ -11,7 +11,7 @@ index:
   - logs-winlog*
 query_language: esql
 query: |
-  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes AND winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "8" | EVAL host_name = winlog.computer_name, source_image = winlog.event_data.SourceImage, target_image = winlog.event_data.TargetImage, new_thread_id = winlog.event_data.NewThreadId | KEEP host_name, source_image, target_image, new_thread_id, @timestamp | LIMIT 500
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes AND winlog.channel == "Microsoft-Windows-Sysmon/Operational" AND event.code == "8" | EVAL host_name = winlog.computer_name, source_image = winlog.event_data.SourceImage, target_image = winlog.event_data.TargetImage, new_thread_id = winlog.event_data.NewThreadId, si_l = TO_LOWER(COALESCE(winlog.event_data.SourceImage, "-")), ti_l = TO_LOWER(COALESCE(winlog.event_data.TargetImage, "-")) | WHERE NOT (si_l RLIKE ".*dwm[.]exe" AND ti_l RLIKE ".*csrss[.]exe") | KEEP host_name, source_image, target_image, new_thread_id, @timestamp | LIMIT 500
 tags:
   - attack.defense_evasion
   - attack.privilege_escalation
