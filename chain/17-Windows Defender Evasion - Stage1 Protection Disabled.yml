@@ -2,8 +2,9 @@ rule_id: c88f5da2-dc40-47b3-844f-2a7bae54d509
 name: "Chain: Defender Protection Disabled or Exclusion Added (5001/5007)"
 description: |
   Defender evasion zanjiri — 1-bosqich.
-  Windows Defender real-time himoyasi o'chirilishi (5001) yoki konfiguratsiya/exclusion o'zgartirilishi (5007).
+  Windows Defender real-time himoyasi o'chirilishi (5001) yoki himoyani o'chiruvchi/exclusion qo'shuvchi konfiguratsiya o'zgarishi (5007).
   Korrelyatsiya host bo'yicha.
+  FP kamaytirish: 5007 ko'p benign hodisa beradi (signature update, service lifecycle, tamperprotection=0x1 yoqilishi, spynetreportinglocation telemetriya URL). Faqat himoya feature O'CHIRILAYOTGAN bo'lsa olinadi: disable* kalitlar, yoki tamperprotection/spynetreporting/submitsamplesconsent/realtimeprotection = 0x0, yoki Exclusions path qo'shilishi.
 type: esql
 enabled: true
 params: "{}"
@@ -15,8 +16,14 @@ query: |
   FROM logs-winlog*
   | WHERE @timestamp >= NOW() - 15 minutes
   | WHERE winlog.channel == "Microsoft-Windows-Windows Defender/Operational" AND event.code IN ("5001", "5007")
-  | EVAL host.name = winlog.computer_name
-  | KEEP @timestamp, agent_id, host.name, event.code
+  | EVAL host.name = winlog.computer_name, newval = TO_LOWER(COALESCE(`winlog.event_data.New Value`, ""))
+  | WHERE event.code == "5001"
+      OR (event.code == "5007" AND (
+            newval RLIKE ".*(disableantispyware|disableantivirus|disablerealtimemonitoring|disablebehaviormonitoring|disableonaccessprotection|disablescanonrealtimeenable|disableioavprotection|disableblockatfirstseen).*"
+            OR (newval RLIKE ".*(tamperprotection|spynetreporting|submitsamplesconsent|realtimeprotection).*" AND newval RLIKE ".*= 0x0.*")
+            OR newval RLIKE ".*[\\\\]exclusions[\\\\].*"
+         ))
+  | KEEP @timestamp, agent_id, host.name, event.code, `winlog.event_data.New Value`
   | LIMIT 500
 tags:
   - attack.defense-evasion

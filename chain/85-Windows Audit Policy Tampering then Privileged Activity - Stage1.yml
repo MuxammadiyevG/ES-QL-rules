@@ -11,7 +11,7 @@ index:
   - logs-winlog*
 query_language: esql
 query: |
-  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND event.code IN ("4719", "4904", "4905") | EVAL host_name = winlog.computer_name, user_name = winlog.event_data.SubjectUserName, event_action = event.code | KEEP @timestamp, event.code, event_action, host_name, user_name, winlog.channel | LIMIT 500
+  FROM logs-winlog* | WHERE @timestamp >= NOW() - 15 minutes | WHERE winlog.channel == "Security" AND event.code IN ("4719", "4904", "4905") | EVAL host_name = winlog.computer_name, user_name = winlog.event_data.SubjectUserName, event_action = event.code | WHERE user_name IS NULL OR NOT user_name LIKE "*$" | KEEP @timestamp, event.code, event_action, host_name, user_name, winlog.channel | LIMIT 500
 tags:
   - attack.defense-evasion
   - audit-policy-tampering

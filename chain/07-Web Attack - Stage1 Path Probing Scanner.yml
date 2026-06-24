@@ -2,8 +2,9 @@ rule_id: 1dea38dd-09b2-48db-9709-7448009fc1fc
 name: "Chain: Web Path Probing / Scanner (Nginx)"
 description: |
   Veb hujum zanjiri — 1-bosqich.
-  Bitta source.ip qisqa vaqtda ko'p turli url.path so'rasa (scanner/recon).
+  Bitta source.ip qisqa vaqtda ko'p turli url.path ga XATO (4xx) javob olsa (scanner/recon path enumeration).
   Korrelyatsiya dvigateli source.ip bo'yicha url.path noyobligini hisoblaydi (different_field).
+  FP kamaytirish: status_code >= 400 sharti normal browsing'ni (200/30x) chiqarib tashlaydi; faqat probing qoladi.
 type: esql
 enabled: true
 params: "{}"
@@ -15,6 +16,7 @@ query: |
   FROM logs-nginx.access-*
   | WHERE @timestamp >= NOW() - 10 minutes
   | WHERE source.ip IS NOT NULL AND url.path IS NOT NULL
+  | WHERE http.response.status_code >= 400 AND http.response.status_code <= 451
   | KEEP @timestamp, source.ip, url.path, http.request.method, http.response.status_code, user_agent.original
   | LIMIT 1000
 tags:

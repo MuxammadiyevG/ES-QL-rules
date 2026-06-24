@@ -11,7 +11,7 @@ index:
   - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.action == "executed" | WHERE process.name IN ("tar", "gzip", "gunzip", "zip", "unzip", "7z", "7za", "bzip2", "xz", "zstd") | EVAL host.name = host.hostname, cmd_args = MV_CONCAT(process.args, " ") | KEEP @timestamp, host.name, user.name, process.name, process.executable, cmd_args | LIMIT 500
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.action == "executed" | WHERE process.name IN ("tar", "gzip", "zip", "7z", "7za", "bzip2", "xz", "zstd") | EVAL host.name = host.hostname, cmd_args = MV_CONCAT(process.args, " ") | WHERE process.name != "tar" OR ((cmd_args RLIKE ".*( |^)-?c[a-z]*f?( |$).*" OR cmd_args RLIKE ".*( |^)--create( |$).*") AND NOT cmd_args RLIKE ".*( |^)-?[a-z]*x[a-z]*f?( |$).*") | KEEP @timestamp, host.name, user.name, process.name, process.executable, cmd_args | LIMIT 500
 tags:
   - attack.collection
   - attack.t1560

@@ -12,7 +12,7 @@ index:
   - logs-updive.audit-*
 query_language: esql
 query: |
-  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.action == "executed" | WHERE process.name IN ("curl", "wget", "scp", "nc", "rsync", "sftp", "ftp", "ssh") | EVAL host.name = host.hostname, cmd_args = MV_CONCAT(process.args, " ") | WHERE cmd_args IS NOT NULL | EVAL args_lower = TO_LOWER(cmd_args) | WHERE args_lower RLIKE ".*(https?://).*" AND NOT args_lower RLIKE ".*(localhost|127[.]0[.]0[.]1|motd[.]ubuntu[.]com).*" | KEEP @timestamp, host.name, user.name, process.name, process.executable, cmd_args | LIMIT 500
+  FROM logs-updive.audit-* | WHERE @timestamp >= NOW() - 15 minutes AND event.action == "executed" | WHERE process.name IN ("curl", "wget", "scp", "nc", "rsync", "sftp", "ftp", "ssh") | EVAL host.name = host.hostname, cmd_args = MV_CONCAT(process.args, " ") | WHERE cmd_args IS NOT NULL | EVAL args_lower = TO_LOWER(cmd_args) | WHERE args_lower RLIKE ".*(https?://).*" AND NOT args_lower RLIKE ".*(localhost|127[.]0[.]0[.]1|motd[.]ubuntu[.]com|//10[.]|//192[.]168[.]|//172[.](1[6-9]|2[0-9]|3[01])[.]|//169[.]254[.]).*" | KEEP @timestamp, host.name, user.name, process.name, process.executable, cmd_args | LIMIT 500
 tags:
   - attack.exfiltration
   - attack.t1048

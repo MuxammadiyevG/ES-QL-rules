@@ -34,7 +34,7 @@ correlation:
   enabled: true
   same_fields:
     - user.name
-  frequency: 3
+  frequency: 4
   timeframe_sec: 120
   dedup_fields:
     - user.name

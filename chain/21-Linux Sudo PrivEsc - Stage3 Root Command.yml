@@ -14,9 +14,9 @@ query_language: esql
 query: |
   FROM logs-updive.audit-*
   | WHERE @timestamp >= NOW() - 10 minutes
-  | WHERE event.action == "executed" AND auditd.data.uid == "0"
+  | WHERE event.action == "executed" AND user.id == "0"
   | EVAL host.name = host.hostname, cmdline = MV_CONCAT(process.args, " ")
-  | KEEP @timestamp, agent_id, host.name, user.name, process.name, process.executable, cmdline
+  | KEEP @timestamp, agent_id, host.name, user.name, user.id, process.name, process.executable, cmdline
   | LIMIT 500
 tags:
   - attack.execution

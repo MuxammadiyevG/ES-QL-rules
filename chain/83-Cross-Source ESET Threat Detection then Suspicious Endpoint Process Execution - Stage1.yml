@@ -1,8 +1,10 @@
 rule_id: 4622144c-dfaf-4c0b-804a-8da6651c5d82
 name: "Chain: Cross-Source: ESET Threat Detection then Suspicious Endpoint Process Execution — Stage 1: ESET Malware/Threat Detection"
 description: |
-  Cross-Source: ESET Threat Detection then Suspicious Endpoint Process Execution zanjiri — 1-bosqich (2 dan).
-  ESET Malware/Threat Detection.
+  ESET Malware/Threat Detection (standalone).
+  IZOH: avval bu cross-source zanjirning 1-bosqichi edi, lekin 2-bosqich (endpoint process, R84) decouple qilindi —
+  ESET monitoring hostlari Windows/auditd hostlaridan ajralgan, shuning uchun cross-source korrelyatsiya mumkin emas edi.
+  Endi mustaqil ESET threat detektori (R28 bilan o'xshash — kerak bo'lsa bittasini o'chirish mumkin).
 type: esql
 enabled: true
 params: "{}"
