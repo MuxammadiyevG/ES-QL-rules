@@ -1,6 +1,8 @@
 rule_id: 894f95f5-3eb8-4a2a-84e7-06c72118f14a
-name: Tomcat - OutOfMemory / Exception Spike (DoS Indicator)
-description: |
+name_uz: "Tomcat - OutOfMemory / Exception keskin o'sishi (DoS belgisi)"
+name_ru: "Tomcat - всплеск OutOfMemory / исключений (признак DoS)"
+name_en: "Tomcat - OutOfMemory / Exception Spike (DoS Indicator)"
+description_uz: |
   Ushbu qoida qisqa vaqt ichida ko'p sonli HTTP 500 server xatoliklari
   yoki exception (OutOfMemoryError, StackOverflowError, NullPointerException
   va h.k.) ko'rinishidagi to'satdan ko'tarilishni aniqlaydi. Bu resource
@@ -14,6 +16,34 @@ description: |
   - Bir vaqtda deploy yoki maintenance bo'lganligini tekshiring
   - JVM heap/GC metrikalarini va catalina.out loglarini tekshiring
   - Manba IP majmuini tekshiring — bitta IP DoS yaratayaptimi?
+description_ru: |
+  Это правило обнаруживает внезапный всплеск большого числа серверных ошибок
+  HTTP 500 или исключений (OutOfMemoryError, StackOverflowError, NullPointerException
+  и т.д.) за короткий промежуток времени. Это может быть признаком исчерпания
+  ресурсов (resource exhaustion), DoS на уровне приложения или неудачной попытки эксплуатации
+  (T1499).
+  Легитимные случаи: обновление при развёртывании, сбой БД/бэкенда, нехватка
+  памяти (memory pressure), всплеск трафика.
+  Шаги SOC-триажа:
+  - Определите время начала и длительность всплеска
+  - Проверьте, приходятся ли ошибки на один endpoint или носят массовый характер
+  - Проверьте, не проводилось ли в это же время развёртывание или обслуживание
+  - Проверьте метрики JVM heap/GC и логи catalina.out
+  - Проверьте совокупность исходных IP — не создаёт ли DoS один IP?
+description_en: |
+  This rule detects a sudden surge of numerous HTTP 500 server errors
+  or exceptions (OutOfMemoryError, StackOverflowError, NullPointerException
+  etc.) within a short period of time. This may indicate resource
+  exhaustion, an application-layer DoS or a failed exploit attempt
+  (T1499).
+  Legitimate cases: a deployment update, DB/backend failure, memory
+  pressure, traffic spike.
+  SOC triage steps:
+  - Determine the start time and the duration of the spike
+  - Check whether the errors hit a single endpoint or are widespread
+  - Check whether a deployment or maintenance took place at the same time
+  - Check the JVM heap/GC metrics and the catalina.out logs
+  - Check the set of source IPs — is a single IP causing the DoS?
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,14 @@
 rule_id: 25c6b486-8a5b-4275-85ae-800b6bf88433
-name: "History File Operations Detection"
-description: |
+name_uz: "History fayllari bilan amallarni aniqlash"
+name_ru: "Обнаружение операций с файлами истории"
+name_en: "History File Operations Detection"
+description_uz: |
+  Shell history fayllari ustidagi shubhali amallarni aniqlaydi.
+  Tajovuzkorlar izlarini yashirish uchun history'ni tozalashi mumkin.
+description_ru: |
+  Обнаруживает подозрительные операции с файлами истории shell.
+  Злоумышленники могут очищать историю, чтобы скрыть свои следы.
+description_en: |
   Detects suspicious operations on shell history files.
   Adversaries may clear history to hide their tracks.
 type: esql

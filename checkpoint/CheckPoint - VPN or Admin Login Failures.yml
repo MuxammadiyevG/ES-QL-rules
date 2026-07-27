@@ -1,6 +1,8 @@
 rule_id: 58ae92cd-0032-4ef4-8f6c-0512c7e77c33
-name: CheckPoint - VPN or Admin Login Failures
-description: |
+name_uz: "CheckPoint - VPN yoki admin login xatoliklari"
+name_ru: "CheckPoint - Неудачные входы VPN или администратора"
+name_en: "CheckPoint - VPN or Admin Login Failures"
+description_uz: |
   Ushbu qoida CheckPoint Authorize (login) failure hodisalarini aniqlaydi.
   Bu brute force, credential stuffing yoki unauthorized access urinishi belgisi.
   Qonuniy holatlar: user parol xatosi, expired credentials, MFA issues.
@@ -10,6 +12,26 @@ description: |
   - Login attempt time pattern'ini tahlil qiling
   - Muvaffaqiyatli login bo'lganmi keyinroq tekshiring
   - Account lockout yoki containment zarurligini baholang
+description_ru: |
+  Это правило выявляет события неудачной авторизации CheckPoint Authorize (login).
+  Это признак перебора паролей (brute force), credential stuffing или попытки несанкционированного доступа.
+  Легитимные ситуации: ошибка пользователя в пароле, истёкшие учётные данные, проблемы с MFA.
+  Этапы SOC-триажа:
+  - Идентифицируйте учётную запись и тип входа
+  - Проверьте геолокацию и репутацию source IP
+  - Проанализируйте временной шаблон попыток входа
+  - Проверьте, был ли позже успешный вход
+  - Оцените необходимость блокировки учётной записи или сдерживания
+description_en: |
+  This rule detects CheckPoint Authorize (login) failure events.
+  This is a sign of brute force, credential stuffing or an unauthorized access attempt.
+  Legitimate cases: user password typo, expired credentials, MFA issues.
+  SOC triage steps:
+  - Identify the user account and login type
+  - Check the source IP geo-location and reputation
+  - Analyze the time pattern of the login attempts
+  - Check whether a successful login followed later
+  - Assess the need for account lockout or containment
 type: esql
 params: '{}'
 schedule_interval: 10m

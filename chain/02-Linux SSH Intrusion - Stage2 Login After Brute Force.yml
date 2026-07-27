@@ -1,9 +1,19 @@
 rule_id: 7afac640-f586-4c10-a306-16070eea7bb5
-name: "Chain: SSH Successful Login After Brute Force (Linux)"
-description: |
+name_uz: "Zanjir: Brute force'dan keyin muvaffaqiyatli SSH login (Linux)"
+name_ru: "Цепочка: Успешный вход по SSH после brute force (Linux)"
+name_en: "Chain: SSH Successful Login After Brute Force (Linux)"
+description_uz: |
   Linux SSH zanjiri — 2-bosqich.
   Brute-force failurelaridan keyin o'sha source.ip dan muvaffaqiyatli SSH login (auditd user_start success).
   1-bosqichga bog'langan — kompromitatsiya belgisidir.
+description_ru: |
+  Цепочка Linux SSH — этап 2.
+  После неудач brute-force успешный SSH-вход с того же source.ip (auditd user_start success).
+  Связан с этапом 1 — признак компрометации.
+description_en: |
+  Linux SSH chain — stage 2.
+  After brute-force failures, a successful SSH login from the same source.ip (auditd user_start success).
+  Linked to stage 1 — an indicator of compromise.
 type: esql
 enabled: true
 params: "{}"

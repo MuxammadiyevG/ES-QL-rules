@@ -1,6 +1,8 @@
 rule_id: 9331a866-2ea2-4cd3-892e-86fc5e59d1d9
-name: "PAN-OS: Log Forwarding or Syslog Profile Changed"
-description: |
+name_uz: "PAN-OS: log forwarding yoki syslog profili o'zgartirildi"
+name_ru: "PAN-OS: изменён профиль log forwarding или syslog"
+name_en: "PAN-OS: Log Forwarding or Syslog Profile Changed"
+description_uz: |
   Ushbu qoida Palo Alto konfiguratsiyasida log-forwarding yoki syslog
   profillariga tegadigan o'zgarishlarni kuzatadi (panw.config dataset).
   Log forwarding yoki syslog konfiguratsiyasini o'chirish/o'zgartirish —
@@ -13,6 +15,32 @@ description: |
   - Change management ticket mavjudligini tasdiqlang.
   - O'zgarishdan keyin SIEM'ga loglar kelishi to'xtamaganligini tekshiring.
   - Kutilmagan bo'lsa: darhol incident oching, konfiguratsiyani tiklang.
+description_ru: |
+  Это правило отслеживает изменения в конфигурации Palo Alto, затрагивающие профили
+  log-forwarding или syslog (dataset panw.config).
+  Отключение/изменение конфигурации log forwarding или syslog —
+  может быть попыткой атакующего скрыть свои следы или прекратить отправку логов
+  в SIEM (T1562.001 - Disable or Modify Tools / Indicator Blocking).
+  Легитимные случаи: переход на новый коллектор SIEM, плановое изменение лог-инфраструктуры.
+  Этапы SOC-триажа:
+  - Определите, кто внёс изменение (администратор) и на каком устройстве.
+  - Проверьте, было ли отключено log forwarding или изменён destination.
+  - Подтвердите наличие тикета change management.
+  - Проверьте, что после изменения логи не перестали поступать в SIEM.
+  - Если изменение неожиданное: немедленно откройте инцидент, восстановите конфигурацию.
+description_en: |
+  This rule monitors changes in the Palo Alto configuration that touch log-forwarding
+  or syslog profiles (panw.config dataset).
+  Disabling/modifying the log forwarding or syslog configuration —
+  may be an attempt by an attacker to hide their traces or stop sending logs
+  to the SIEM (T1562.001 - Disable or Modify Tools / Indicator Blocking).
+  Legitimate cases: migration to a new SIEM collector, planned log infrastructure change.
+  SOC triage steps:
+  - Identify who made the change (admin) and on which device.
+  - Check whether log forwarding was disabled or the destination was changed.
+  - Confirm that a change management ticket exists.
+  - Check that logs did not stop arriving in the SIEM after the change.
+  - If unexpected: open an incident immediately and restore the configuration.
 type: esql
 params: '{}'
 schedule_interval: 5m

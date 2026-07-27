@@ -1,8 +1,16 @@
 rule_id: 1b61f60d-4a82-4d65-8248-79a357efbe5c
-name: "Switch STP: STP holat o'zgarishi (barcha)"
-description: |
+name_uz: "Switch STP: STP holat o'zgarishi (barcha)"
+name_ru: "Switch STP: Изменение состояния STP (все)"
+name_en: "Switch STP: STP State Change (All)"
+description_uz: |
   Switch portida Spanning Tree holati o'zgardi.
   Forwarding, Blocking, Listening, Learning — istalgan holat.
+description_ru: |
+  На порту switch изменилось состояние Spanning Tree.
+  Forwarding, Blocking, Listening, Learning — любое состояние.
+description_en: |
+  The Spanning Tree state changed on a switch port.
+  Forwarding, Blocking, Listening, Learning — any state.
 type: esql
 params: '{}'
 schedule_interval: 5m

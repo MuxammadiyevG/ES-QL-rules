@@ -1,6 +1,8 @@
 rule_id: d720b459-f746-4c6b-a712-a88530fd984a
-name: "PAN-OS: Aged-Out Sessions Detected - Possible Stealthy Long-Running Connection"
-description: |
+name_uz: "PAN-OS: Aged-out sessiyalar aniqlandi - yashirin uzoq muddatli ulanish ehtimoli"
+name_ru: "PAN-OS: Обнаружены aged-out сессии - возможное скрытое долгоживущее соединение"
+name_en: "PAN-OS: Aged-Out Sessions Detected - Possible Stealthy Long-Running Connection"
+description_uz: |
   Ushbu qoida firewall tomonidan "aged-out" (vaqt tugashi sababli yopilgan) deb belgilangan sessiyalarni kuzatadi.
   "aged-out" sessiyalar — normal TCP FIN/RST bilan yopilmagan, balki firewall timeout tufayli tugagan ulanishlar.
   Bu holat uzoq muddatli C2 beacon ulanishlari, yashirin tunnel yoki "keep-alive" urinishlarini ko'rsatishi mumkin.
@@ -10,6 +12,26 @@ description: |
   - Aged-out sessiyalardagi ma'lumot hajmi qancha?
   - Manba va maqsad IP'lar ma'lummi?
   - Bir xil juft IP'dan takroriy aged-out — anomal signal.
+description_ru: |
+  Данное правило отслеживает сессии, помеченные firewall как "aged-out" (закрытые из-за истечения времени).
+  "aged-out" сессии — это соединения, завершившиеся не нормальным TCP FIN/RST, а из-за таймаута firewall.
+  Это может указывать на долгоживущие C2 beacon-соединения, скрытый туннель или попытки "keep-alive".
+  Легитимные случаи: простаивающие соединения, NAT timeout, постоянные соединения CDN.
+  Этапы SOC-триажа:
+  - Сколько времени длилась сессия? (event.duration)
+  - Каков объём данных в aged-out сессиях?
+  - Известны ли IP источника и назначения?
+  - Повторяющиеся aged-out от одной и той же пары IP — аномальный сигнал.
+description_en: |
+  This rule monitors sessions marked by the firewall as "aged-out" (closed due to timeout).
+  "aged-out" sessions are connections that ended not with a normal TCP FIN/RST but because of a firewall timeout.
+  This can indicate long-running C2 beacon connections, a covert tunnel or "keep-alive" attempts.
+  Legitimate cases: idle connections, NAT timeout, CDN persistent connections.
+  SOC triage steps:
+  - How long did the session last? (event.duration)
+  - What is the data volume in the aged-out sessions?
+  - Are the source and destination IPs known?
+  - Repeated aged-out from the same IP pair is an anomalous signal.
 type: esql
 params: '{}'
 schedule_interval: 5m

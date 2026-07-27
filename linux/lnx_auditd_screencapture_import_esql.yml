@@ -1,6 +1,12 @@
 rule_id: ea92cb39-9791-48d2-b3f5-1a34be120d9b
-name: "Screen Capture with Import Command"
-description: |
+name_uz: "import buyrug'i orqali ekranni suratga olish"
+name_ru: "Захват экрана с помощью команды import"
+name_en: "Screen Capture with Import Command"
+description_uz: |
+  ImageMagick import buyrug'i yordamida ekranni suratga olishni aniqlaydi.
+description_ru: |
+  Обнаруживает захват экрана с помощью команды import из ImageMagick.
+description_en: |
   Detects screen capture using ImageMagick import command.
 type: esql
 params: '{}'

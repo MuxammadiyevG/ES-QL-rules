@@ -1,9 +1,19 @@
 rule_id: 14d77ecc-ba0e-4c1b-8457-d49aec964ac9
-name: Privileged Access Workstation (PAW) Activity
-description: |
+name_uz: "Privileged Access Workstation (PAW) faolligi"
+name_ru: "Активность Privileged Access Workstation (PAW)"
+name_en: "Privileged Access Workstation (PAW) Activity"
+description_uz: |
   Baseline/compliance qoidasi: PAW (Privileged Access Workstation) yoki admin ish-stansiyalaridan
   interaktiv/RDP logon (4624, LogonType 2/10) hodisalarini yig'adi. PAW nomlash konvensiyangizni
   quyidagi regex'ga moslang. Tier-0 admin faoliyatini kuzatish uchun (alert emas).
+description_ru: |
+  Baseline/compliance-правило: собирает события интерактивного/RDP входа (4624, LogonType 2/10) с
+  PAW (Privileged Access Workstation) или административных рабочих станций. Приведите свою конвенцию
+  именования PAW к приведённому ниже regex. Для наблюдения за активностью Tier-0 админов (не алерт).
+description_en: |
+  Baseline/compliance rule: aggregates interactive/RDP logon events (4624, LogonType 2/10) from
+  PAW (Privileged Access Workstation) or admin workstations. Adapt your PAW naming convention
+  to the regex below. For monitoring Tier-0 admin activity (not an alert).
 type: esql
 params: '{}'
 schedule_interval: 10m

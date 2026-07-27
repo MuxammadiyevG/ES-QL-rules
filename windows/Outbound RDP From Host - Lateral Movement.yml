@@ -1,12 +1,28 @@
 rule_id: 6492db2f-3c8f-49df-a5b6-e3625b399440
-name: Outbound RDP From Host - Lateral Movement
-description: |
+name_uz: "Hostdan chiquvchi RDP - lateral harakat"
+name_ru: "Исходящий RDP с хоста - горизонтальное перемещение"
+name_en: "Outbound RDP From Host - Lateral Movement"
+description_uz: |
   Ushbu qoida hostdan CHIQUVCHI RDP ulanishini (WFP 5156, Direction=Outbound, DestPort=3389)
   aniqlaydi. Server yoki ish-stansiyaning boshqa hostga RDP qilishi lateral movement / pivot
   belgisi bo'lishi mumkin (ayniqsa server-dan).
   SOC triage:
   - `application` qaysi jarayon (mstsc.exe normal; boshqa = shubhali), `dest_addresses` qayerga?
   - Manba host odatda RDP klient sifatida ishlatiladimi?
+description_ru: |
+  Это правило обнаруживает ИСХОДЯЩИЕ RDP-подключения с хоста (WFP 5156, Direction=Outbound, DestPort=3389).
+  RDP с сервера или рабочей станции на другой хост может быть признаком горизонтального перемещения / pivot
+  (особенно с сервера).
+  SOC triage:
+  - Какой процесс в `application` (mstsc.exe — норма; иное = подозрительно), куда ведут `dest_addresses`?
+  - Используется ли исходный хост обычно как RDP-клиент?
+description_en: |
+  This rule detects OUTBOUND RDP connections from a host (WFP 5156, Direction=Outbound, DestPort=3389).
+  A server or workstation RDP-ing to another host may be a sign of lateral movement / pivot
+  (especially from a server).
+  SOC triage:
+  - Which process is `application` (mstsc.exe is normal; anything else = suspicious), where do `dest_addresses` point?
+  - Is the source host normally used as an RDP client?
 type: esql
 params: '{}'
 schedule_interval: 10m

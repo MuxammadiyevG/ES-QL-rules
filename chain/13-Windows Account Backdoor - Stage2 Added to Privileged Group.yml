@@ -1,8 +1,16 @@
 rule_id: c9dbc828-a998-4263-a3fc-a9ef78dc90dc
-name: "Chain: Account Added to Privileged Group (4728/4732/4756)"
-description: |
+name_uz: "Zanjir: Hisob imtiyozli guruhga qo'shildi (4728/4732/4756)"
+name_ru: "Цепочка: Учётная запись добавлена в привилегированную группу (4728/4732/4756)"
+name_en: "Chain: Account Added to Privileged Group (4728/4732/4756)"
+description_uz: |
   Windows hisob backdoor zanjiri — 2-bosqich.
   Hisob imtiyozli guruhga qo'shilishi (4728/4732/4756). 1-bosqichga bog'langan.
+description_ru: |
+  Цепочка backdoor учётной записи Windows — этап 2.
+  Добавление учётной записи в привилегированную группу (4728/4732/4756). Связан с этапом 1.
+description_en: |
+  Windows account backdoor chain — stage 2.
+  Addition of the account to a privileged group (4728/4732/4756). Linked to stage 1.
 type: esql
 enabled: true
 params: "{}"

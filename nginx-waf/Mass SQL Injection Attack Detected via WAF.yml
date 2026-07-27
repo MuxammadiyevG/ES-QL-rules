@@ -1,6 +1,8 @@
 rule_id: 8c582ad0-f98c-44d7-ac82-3d827bd20adb
-name: Mass SQL Injection Attack Detected via WAF
-description: |
+name_uz: "WAF orqali ommaviy SQL Injection hujumi aniqlandi"
+name_ru: "Массовая атака SQL Injection обнаружена через WAF"
+name_en: "Mass SQL Injection Attack Detected via WAF"
+description_uz: |
   Ushbu qoida OWASP CRS tomonidan aniqlangan SQL Injection hujumlarini kuzatadi.
   Qisqa vaqt ichida bir nechta turli IP manzillardan bir xil SQLi payload (`1' or 1=1`) yuborilishi
   maqsadli mass scan yoki botnet hujumini ko'rsatadi.
@@ -12,6 +14,30 @@ description: |
   - Bir xil vaqt oralig'ida boshqa attack kategoriyalari (LFI, RCE) borligini tekshiring.
   - WAF bloklagan so'rovlar backend ga yetib bormagan bo'lsa ham, pattern ni o'rganib proaktiv bloklang.
   - Agar hujum muvaffaqiyatli bo'lsa (`event.outcome: success`), darhol DB auditini boshlang.
+description_ru: |
+  Это правило отслеживает атаки SQL Injection, обнаруженные OWASP CRS.
+  Отправка одного и того же SQLi payload (`1' or 1=1`) с нескольких разных IP-адресов за короткое время
+  указывает на целенаправленный массовый скан или атаку ботнета.
+  Событие такого типа может использоваться для несанкционированного доступа к базе данных, кражи данных или
+  обхода аутентификации.
+  Этапы SOC-триажа:
+  - Сопоставьте адреса `source.ip` с threat intelligence.
+  - Определите `url.domain` и endpoint, на который направлена атака.
+  - Проверьте, есть ли в том же временном интервале другие категории атак (LFI, RCE).
+  - Даже если заблокированные WAF запросы не дошли до backend, изучите паттерн и заблокируйте проактивно.
+  - Если атака успешна (`event.outcome: success`), немедленно начните аудит БД.
+description_en: |
+  This rule tracks SQL Injection attacks detected by OWASP CRS.
+  The same SQLi payload (`1' or 1=1`) being sent from several different IP addresses within a short time
+  indicates a targeted mass scan or botnet attack.
+  This type of event may be used for unauthorized database access, data theft or
+  authentication bypass.
+  SOC triage steps:
+  - Compare the `source.ip` addresses against threat intelligence.
+  - Identify the `url.domain` and the endpoint the attack is aimed at.
+  - Check whether other attack categories (LFI, RCE) are present in the same time window.
+  - Even if the WAF-blocked requests never reached the backend, study the pattern and block proactively.
+  - If the attack succeeded (`event.outcome: success`), start a DB audit immediately.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,11 +1,25 @@
 rule_id: e2628057-5ac7-44eb-9772-2a909151e876
-name: Process Execution From Suspicious Path
-description: |
+name_uz: "Shubhali yo'ldan jarayon ishga tushishi"
+name_ru: "Запуск процесса из подозрительного пути"
+name_en: "Process Execution From Suspicious Path"
+description_uz: |
   Ushbu qoida shubhali joydan (Temp/AppData/ProgramData/Public/Recycle) ishga tushgan
   jarayonni aniqlaydi — malware/dropper ko'pincha shu joylardan ishlaydi (T1204).
   Sysmon 1 (Image).
   SOC triage:
   - `image` qayerda, `command_line`/`parent` nima? Hash'ni (`hashes`) reputatsiyada tekshiring.
+description_ru: |
+  Это правило выявляет процесс, запущенный из подозрительного места
+  (Temp/AppData/ProgramData/Public/Recycle) — malware/dropper часто работают именно оттуда (T1204).
+  Sysmon 1 (Image).
+  SOC triage:
+  - Где находится `image`, что в `command_line`/`parent`? Проверьте хэш (`hashes`) по репутации.
+description_en: |
+  This rule detects a process launched from a suspicious location
+  (Temp/AppData/ProgramData/Public/Recycle) — malware/droppers often run from these places (T1204).
+  Sysmon 1 (Image).
+  SOC triage:
+  - Where is `image`, what is `command_line`/`parent`? Check the hash (`hashes`) against reputation.
 type: esql
 params: '{}'
 schedule_interval: 10m

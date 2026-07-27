@@ -1,9 +1,19 @@
 rule_id: c0b049f2-4604-4d4e-9d57-c99f1559c3a7
-name: "Agent ESET: Alert Detected"
-description: |
+name_uz: "Agent ESET: alert aniqlandi"
+name_ru: "Agent ESET: обнаружено оповещение"
+name_en: "Agent ESET: Alert Detected"
+description_uz: |
   ESET Protect dan kelgan barcha alertlarni SIEM ga uzatadi.
   Severity, threat name, event tavsifi va barcha ma'lumotlar
   to'liq ESET logi ichidan olinadi.
+description_ru: |
+  Передаёт в SIEM все оповещения, поступающие из ESET Protect.
+  Severity, threat name, описание события и все данные
+  берутся полностью из лога ESET.
+description_en: |
+  Forwards all alerts coming from ESET Protect to the SIEM.
+  Severity, threat name, event description and all data
+  are taken entirely from the ESET log.
 type: esql
 params: '{}'
 schedule_interval: 5m

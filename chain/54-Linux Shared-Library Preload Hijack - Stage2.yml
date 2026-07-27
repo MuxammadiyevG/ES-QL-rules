@@ -1,9 +1,19 @@
 rule_id: 3e5f0e1d-8bf6-4ad7-8505-fe4d215f239a
-name: "Chain: Linux Shared-Library Preload Hijack — Stage 2: Process Executed After Preload Change"
-description: |
+name_uz: "Zanjir: Linux Shared-Library Preload Hijack — 2-bosqich: Preload o'zgargandan keyin jarayon bajarilishi"
+name_ru: "Цепочка: Linux Shared-Library Preload Hijack — Этап 2: Запуск процесса после изменения preload"
+name_en: "Chain: Linux Shared-Library Preload Hijack — Stage 2: Process Executed After Preload Change"
+description_uz: |
   Linux Shared-Library Preload Hijack zanjiri — 2-bosqich (2 dan).
   Process Executed After Preload Change.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Linux Shared-Library Preload Hijack — этап 2 (из 2).
+  Запуск процесса после изменения preload.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Linux Shared-Library Preload Hijack chain — stage 2 (of 2).
+  Process Executed After Preload Change.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

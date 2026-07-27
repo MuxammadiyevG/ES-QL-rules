@@ -1,8 +1,16 @@
 rule_id: 31ab3b2a-1796-4d46-811c-db769d93ca4b
-name: Kerberos Ticket Renewal - Normal Operations
-description: |
+name_uz: "Kerberos tiketini yangilash - Normal operatsiyalar"
+name_ru: "Обновление билетов Kerberos - Нормальные операции"
+name_en: "Kerberos Ticket Renewal - Normal Operations"
+description_uz: |
   Baseline/monitoring qoidasi: TGS renewal (4770) hodisalarini foydalanuvchi va servis
   bo'yicha yig'adi. Ticket lifecycle'ning normal darajasini kuzatish uchun (alert emas).
+description_ru: |
+  Baseline/мониторинговое правило: агрегирует события TGS renewal (4770) по пользователю
+  и сервису. Служит для наблюдения нормального уровня ticket lifecycle (не алерт).
+description_en: |
+  Baseline/monitoring rule: aggregates TGS renewal (4770) events by user and
+  service. Used to observe the normal level of the ticket lifecycle (not an alert).
 type: esql
 params: '{}'
 schedule_interval: 10m

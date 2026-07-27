@@ -1,8 +1,16 @@
 rule_id: f2d7406a-7496-43be-8f69-4bd793d5b2b7
-name: UniFi WiFi Client Disconnected
-description: |
+name_uz: "UniFi WiFi klienti uzildi"
+name_ru: "WiFi-клиент UniFi отключился"
+name_en: "UniFi WiFi Client Disconnected"
+description_uz: |
   Ushbu qoida WiFi klient uzilishini, ulanish davomiyligi, sarflangan trafik va oxirgi RSSI bilan kuzatadi.
   Qisqa ulanishlar yoki takroriy uzilishlar connection flapping, interferensiya yoki deauthentication holatini ko'rsatishi mumkin.
+description_ru: |
+  Это правило отслеживает отключение WiFi-клиента вместе с длительностью подключения, израсходованным трафиком и последним RSSI.
+  Короткие подключения или повторяющиеся отключения могут указывать на connection flapping, помехи или deauthentication.
+description_en: |
+  This rule tracks WiFi client disconnections together with the connection duration, consumed traffic and the last RSSI.
+  Short connections or repeated disconnections may indicate connection flapping, interference or deauthentication.
 type: esql
 params: "{}"
 schedule_interval: 10m

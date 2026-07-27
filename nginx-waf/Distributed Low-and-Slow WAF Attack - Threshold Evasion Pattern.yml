@@ -1,6 +1,8 @@
 rule_id: efffaaf2-90d8-494c-8cd5-a8966be62b93
-name: Distributed Low-and-Slow WAF Attack - Threshold Evasion Pattern
-description: |
+name_uz: "Taqsimlangan Low-and-Slow WAF hujumi - chegaradan qochish patterni"
+name_ru: "Распределённая атака Low-and-Slow на WAF - шаблон обхода порога"
+name_en: "Distributed Low-and-Slow WAF Attack - Threshold Evasion Pattern"
+description_uz: |
   Ko'p sonli turli IP manzillardan har biridan ozgina (1-2 ta) so'rov yuborib,
   WAF rate limiting chegarasidan qochishga urinish aniqlandi.
   Bu "low-and-slow" yoki "distributed brute force" texnikasi bo'lib,
@@ -12,6 +14,30 @@ description: |
   - Hujum payload laridagi (`match_data`) umumiy pattern ni aniqlang — bir xil payload turli IP lardan kelayotgan bo'lishi mumkin.
   - CAPTCHA yoki rate limiting ni IP darajasidan session/fingerprint darajasiga ko'tiring.
   - CDN yoki DDoS protection xizmatiga eskalyatsiya qilishni ko'rib chiqing.
+description_ru: |
+  С большого числа различных IP-адресов, с каждого из которых отправляется
+  лишь несколько (1-2) запросов, обнаружена попытка обойти порог rate limiting WAF.
+  Это техника "low-and-slow" или "distributed brute force",
+  которая реализуется через координацию ботнета.
+  Даже если заблокировать каждый отдельный IP, общая атака продолжается.
+  Этапы SOC-триажа:
+  - Если число `unique_sources` высокое, а `avg_hits_per_ip` с каждого IP низкое — это классический low-and-slow паттерн.
+  - Создайте threat feed или динамический blocklist, чтобы заблокировать все атакующие IP одновременно.
+  - Определите общий паттерн в payload'ах атаки (`match_data`) — один и тот же payload может приходить с разных IP.
+  - Поднимите CAPTCHA или rate limiting с уровня IP на уровень сессии/fingerprint.
+  - Рассмотрите эскалацию в службу CDN или DDoS protection.
+description_en: |
+  An attempt to evade the WAF rate limiting threshold was detected by sending only a few
+  (1-2) requests from each of a large number of different IP addresses.
+  This is a "low-and-slow" or "distributed brute force" technique,
+  carried out through botnet coordination.
+  Even if each individual IP is blocked, the overall attack continues.
+  SOC triage steps:
+  - If `unique_sources` is high but `avg_hits_per_ip` per IP is low — this is the classic low-and-slow pattern.
+  - Create a threat feed or dynamic blocklist to block all attacking IPs at once.
+  - Identify the common pattern in the attack payloads (`match_data`) — the same payload may be coming from different IPs.
+  - Raise CAPTCHA or rate limiting from the IP level to the session/fingerprint level.
+  - Consider escalating to a CDN or DDoS protection service.
 type: esql
 params: '{}'
 schedule_interval: 10m

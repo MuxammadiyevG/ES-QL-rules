@@ -1,6 +1,8 @@
 rule_id: 077c82a9-9fbe-4c17-818f-ff8d6f2322a4
-name: "Kerio: Non-Standard High Port Outbound Connection Allowed"
-description: |
+name_uz: "Kerio: Standart bo'lmagan yuqori portga chiquvchi ulanishga ruxsat berildi"
+name_ru: "Kerio: Разрешено исходящее подключение на нестандартный высокий порт"
+name_en: "Kerio: Non-Standard High Port Outbound Connection Allowed"
+description_uz: |
   Ushbu qoida ichki hostlardan 1024 dan yuqori, standart bo'lmagan portlarga
   ruxsat berilgan TCP ulanishlarini aniqlaydi. C2 frameworklar ko'pincha
   8886, 4444, 8888 kabi portlardan foydalanadi.
@@ -8,6 +10,22 @@ description: |
   - destination.ip va destination.port ni threat intel bilan solishtiring.
   - source.ip host qaysi dastur ishlatayotganini aniqlang.
   - Bir xil dst IP ga takroriy ulanishlar shubhali.
+description_ru: |
+  Это правило выявляет разрешённые TCP-подключения с внутренних хостов на нестандартные
+  порты выше 1024. C2-фреймворки часто используют
+  порты вроде 8886, 4444, 8888.
+  Этапы SOC-триажа:
+  - Сопоставьте destination.ip и destination.port с threat intel.
+  - Определите, какое приложение использует хост source.ip.
+  - Повторяющиеся подключения к одному и тому же dst IP подозрительны.
+description_en: |
+  This rule detects allowed TCP connections from internal hosts to non-standard
+  ports above 1024. C2 frameworks often use
+  ports such as 8886, 4444, 8888.
+  SOC triage steps:
+  - Compare destination.ip and destination.port against threat intel.
+  - Determine which application the source.ip host is running.
+  - Repeated connections to the same dst IP are suspicious.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,8 @@
 rule_id: 5bddab61-be85-4403-bbbc-1cf9e9eab0a9
-name: "Agent FIM: Windows Domain Controller Critical File Modified (NTDS, SYSVOL)"
-description: |
+name_uz: "Agent FIM: Windows Domain Controller kritik fayli o'zgartirildi (NTDS, SYSVOL)"
+name_ru: "Agent FIM: изменение критичного файла Windows Domain Controller (NTDS, SYSVOL)"
+name_en: "Agent FIM: Windows Domain Controller Critical File Modified (NTDS, SYSVOL)"
+description_uz: |
   Ushbu qoida Credential Access va Impact texnikalariga bog'liq bo'lib, Active Directory
   Domain Controller tizimidagi kritik fayllarning (NTDS.dit, SYSVOL, NETLOGON) o'zgarishini
   aniqlaydi. NTDS.dit fayliga kirish barcha domain credentialslarini ochib beradi.
@@ -11,6 +13,28 @@ description: |
   - `file.mtime` — rejalashtirilmagan vaqtda o'zgarish shubhali.
   - Volume Shadow Copy orqali NTDS.dit copy qilinganligini tekshiring.
   - Noqonuniy bo'lsa: DC ni izolyatsiya qiling, AD credentialslarni reset qiling.
+description_ru: |
+  Данное правило связано с техниками Credential Access и Impact и обнаруживает изменение
+  критичных файлов (NTDS.dit, SYSVOL, NETLOGON) в системе Active Directory
+  Domain Controller. Доступ к файлу NTDS.dit раскрывает все доменные учётные данные.
+  Легитимные случаи: процессы резервного копирования AD, DC promotion/demotion.
+  Этапы SOC-триажа:
+  - Если `file.name` — NTDS.dit, немедленно откройте критичный инцидент.
+  - `file.owner` — если владелец не SYSTEM, возможна атака DCSync.
+  - `file.mtime` — изменение во внеплановое время подозрительно.
+  - Проверьте, не был ли NTDS.dit скопирован через Volume Shadow Copy.
+  - Если нелегитимно: изолируйте DC, сбросьте учётные данные AD.
+description_en: |
+  This rule is related to Credential Access and Impact techniques and detects modification
+  of critical files (NTDS.dit, SYSVOL, NETLOGON) on an Active Directory
+  Domain Controller. Access to the NTDS.dit file exposes all domain credentials.
+  Legitimate cases: AD backup processes, DC promotion/demotion.
+  SOC triage steps:
+  - If `file.name` is NTDS.dit — open a critical incident immediately.
+  - `file.owner` — if the owner is not SYSTEM, this may be a DCSync attack.
+  - `file.mtime` — a change at an unscheduled time is suspicious.
+  - Check whether NTDS.dit was copied via Volume Shadow Copy.
+  - If illegitimate: isolate the DC, reset AD credentials.
 type: esql
 params: '{}'
 schedule_interval: 5m

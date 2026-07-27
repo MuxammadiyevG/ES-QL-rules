@@ -1,11 +1,25 @@
 rule_id: eb67c32f-d123-4f26-a6e0-ad8348faafee
-name: Microsoft Defender Protection Disabled / Tampered
-description: |
+name_uz: "Microsoft Defender himoyasi o'chirilgan / buzilgan"
+name_ru: "Защита Microsoft Defender отключена / подделана"
+name_en: "Microsoft Defender Protection Disabled / Tampered"
+description_uz: |
   Ushbu qoida Defender himoyasini o'chirish/buzishni aniqlaydi: real-time protection off (5001),
   yoki 5007 orqali DisableRealtimeMonitoring / DisableAntiSpyware / DisableBehaviorMonitoring /
   TamperProtection o'chirilishi (T1562.001).
   SOC triage:
   - Kim/nima o'chirgan? Ruxsatsiz bo'lsa — host komprometatsiya ehtimoli yuqori.
+description_ru: |
+  Это правило выявляет отключение/подделку защиты Defender: real-time protection off (5001),
+  или отключение DisableRealtimeMonitoring / DisableAntiSpyware / DisableBehaviorMonitoring /
+  TamperProtection через 5007 (T1562.001).
+  SOC triage:
+  - Кто/что отключил? Если несанкционированно — высока вероятность компрометации хоста.
+description_en: |
+  This rule detects disabling/tampering with Defender protection: real-time protection off (5001),
+  or disabling of DisableRealtimeMonitoring / DisableAntiSpyware / DisableBehaviorMonitoring /
+  TamperProtection via 5007 (T1562.001).
+  SOC triage:
+  - Who/what disabled it? If unauthorized — the likelihood of host compromise is high.
 type: esql
 params: '{}'
 schedule_interval: 10m

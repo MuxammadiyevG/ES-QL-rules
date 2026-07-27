@@ -1,11 +1,25 @@
 rule_id: abfaad15-442e-456a-bb9d-169bb99b727a
-name: Concurrent Logon From Multiple Source IPs
-description: |
+name_uz: "Bir nechta manba IP'dan bir vaqtda kirish"
+name_ru: "Одновременный вход с нескольких исходных IP"
+name_en: "Concurrent Logon From Multiple Source IPs"
+description_uz: |
   Ushbu qoida bitta akkauntning qisqa vaqtda BIR NECHTA xil manba IP'dan muvaffaqiyatli
   kirishini aniqlaydi (4624) — "impossible travel" / o'g'irlangan credential bilan parallel
   sessiyalar belgisidir (T1078).
   SOC triage:
   - `source_ips` haqiqatan turli joylardanmi? `target_user` egasimi? VPN/NAT emasmi?
+description_ru: |
+  Это правило выявляет успешные входы одной учётной записи за короткое время с НЕСКОЛЬКИХ разных
+  исходных IP (4624) — это признак "impossible travel" / параллельных сессий с украденными
+  учётными данными (T1078).
+  Триаж SOC:
+  - Действительно ли `source_ips` из разных мест? Является ли `target_user` владельцем? Не VPN/NAT ли это?
+description_en: |
+  This rule detects a single account logging on successfully from SEVERAL different source IPs
+  within a short time (4624) — this is a sign of "impossible travel" / parallel sessions with
+  stolen credentials (T1078).
+  SOC triage:
+  - Are the `source_ips` really from different locations? Is `target_user` the owner? Is it not VPN/NAT?
 type: esql
 params: '{}'
 schedule_interval: 10m

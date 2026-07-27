@@ -1,6 +1,18 @@
 rule_id: 9407d2b1-fe0c-43fa-aadb-c161d53cbc48
-name: "Data Compression Detection - Linux"
-description: |
+name_uz: "Ma'lumotlarni siqishni aniqlash - Linux"
+name_ru: "Обнаружение сжатия данных - Linux"
+name_en: "Data Compression Detection - Linux"
+description_uz: |
+  Linux tizimlarida ma'lumotlar siqilayotganini aniqlaydi.
+  Tajovuzkorlar aniqlashni qiyinlashtirish yoki yuboriladigan ma'lumot hajmini kamaytirish uchun eksfiltratsiyadan oldin ma'lumotlarni siqishi mumkin.
+  gzip, bzip2, siqish bilan tar va zip kabi keng tarqalgan siqish vositalari kuzatiladi.
+  Eslatma: qonuniy tizim operatsiyalari ham siqishdan foydalanadi. Boshqa shubhali faoliyat bilan korrelyatsiya qiling.
+description_ru: |
+  Обнаруживает сжатие данных в системах Linux.
+  Злоумышленники могут сжимать данные перед эксфильтрацией, чтобы затруднить обнаружение или уменьшить объём передаваемых данных.
+  Отслеживаются распространённые инструменты сжатия: gzip, bzip2, tar со сжатием и zip.
+  Примечание: легитимные системные операции также используют сжатие. Соотносите с другой подозрительной активностью.
+description_en: |
   Detects data being compressed on Linux systems.
   Adversaries may compress data before exfiltration to make it harder to detect or to reduce the amount of data sent.
   Common compression tools like gzip, bzip2, tar with compression, and zip are monitored.

@@ -1,8 +1,16 @@
 rule_id: e1d4dca7-4d5b-4878-9121-c2f8c3aab6b0
-name: "Chain: Logon After Account Backdoor Setup (4624)"
-description: |
+name_uz: "Zanjir: Hisob backdoor'i o'rnatilgandan keyin kirish (4624)"
+name_ru: "Цепочка: Вход после настройки backdoor учётной записи (4624)"
+name_en: "Chain: Logon After Account Backdoor Setup (4624)"
+description_uz: |
   Windows hisob backdoor zanjiri — 3-bosqich.
   Yangi/imtiyozli qilingan hisob bilan kirish (4624). 2-bosqichga bog'langan — backdoor ishlatilishi.
+description_ru: |
+  Цепочка backdoor учётной записи Windows — этап 3.
+  Вход под новой/привилегированной учётной записью (4624). Связан с этапом 2 — использование backdoor.
+description_en: |
+  Windows account backdoor chain — stage 3.
+  Logon with the new/privileged account (4624). Linked to stage 2 — use of the backdoor.
 type: esql
 enabled: true
 params: "{}"

@@ -1,11 +1,25 @@
 rule_id: 5e9cfdab-e5fe-4797-afd1-cca32d6240cb
-name: Script Interpreter / LOLBin DNS Query
-description: |
+name_uz: "Skript interpretatori / LOLBin DNS so'rovi"
+name_ru: "DNS-запрос интерпретатора скриптов / LOLBin"
+name_en: "Script Interpreter / LOLBin DNS Query"
+description_uz: |
   Ushbu qoida skript interpretatori yoki LOLBin (powershell, mshta, rundll32, regsvr32,
   certutil, wscript, cscript, bitsadmin) tashqi domenga DNS so'rashini aniqlaydi (Sysmon 22)
   — C2 yoki tool yuklash belgisi. Ichki/Microsoft domenlari chiqarilgan.
   SOC triage:
   - `image` + `domains` — qaysi jarayon qayerga? Qonuniy skriptmi?
+description_ru: |
+  Это правило выявляет DNS-запрос к внешнему домену от интерпретатора скриптов или LOLBin
+  (powershell, mshta, rundll32, regsvr32, certutil, wscript, cscript, bitsadmin) (Sysmon 22)
+  — признак C2 или загрузки инструмента. Внутренние/Microsoft домены исключены.
+  SOC triage:
+  - `image` + `domains` — какой процесс и куда? Легитимный ли это скрипт?
+description_en: |
+  This rule detects a script interpreter or LOLBin (powershell, mshta, rundll32, regsvr32,
+  certutil, wscript, cscript, bitsadmin) making a DNS query to an external domain (Sysmon 22)
+  — a sign of C2 or tool download. Internal/Microsoft domains are excluded.
+  SOC triage:
+  - `image` + `domains` — which process, to where? Is it a legitimate script?
 type: esql
 params: '{}'
 schedule_interval: 10m

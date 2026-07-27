@@ -1,8 +1,16 @@
 rule_id: 4ccd50b1-2c54-4857-ae66-db012ab77f9a
-name: "Privilege Escalation: Root Session Close via sudo/su"
-description: |
+name_uz: "Privilege Escalation: sudo/su orqali root session yopilishi"
+name_ru: "Privilege Escalation: закрытие root-сессии через sudo/su"
+name_en: "Privilege Escalation: Root Session Close via sudo/su"
+description_uz: |
   Ushbu qoida auditd loglarida sudo yoki su orqali ochilgan root session
   yopilganini aniqlaydi.
+description_ru: |
+  Данное правило выявляет в логах auditd закрытие root session, открытой
+  через sudo или su.
+description_en: |
+  This rule detects in auditd logs the closing of a root session that was
+  opened via sudo or su.
 type: esql
 params: "{}"
 schedule_interval: 10m

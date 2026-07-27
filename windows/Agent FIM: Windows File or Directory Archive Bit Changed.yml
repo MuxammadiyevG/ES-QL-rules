@@ -1,6 +1,8 @@
 rule_id: 47e2675d-c46d-4468-9bcb-702ed8d4ce60
-name: "Agent FIM: Windows File or Directory Archive Bit Changed"
-description: |
+name_uz: "Agent FIM: Windows fayl yoki katalogning archive biti o'zgartirildi"
+name_ru: "Agent FIM: изменён archive bit файла или каталога Windows"
+name_en: "Agent FIM: Windows File or Directory Archive Bit Changed"
+description_uz: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File or Directory Archive Bit Changed` kontekstida FortiSIEM Windows Agent FIM tomonidan fayl yoki directory archive bitining o'zgarganligini aniqlaydi.
   Archive bit (A attributi) Windows da faylning backup qilinishi kerakligini belgilovchi flag bo'lib, hujumchi bu bitni o'zgartirish orqali backup tizimlarini chalg'itish, forensic tahlilni qiyinlashtirish yoki fayl o'zgarishlarini yashirish maqsadida foydalanishi mumkin.
   Qonuniy holatlar sifatida rejalashtirilgan backup operatsiyalari, Windows robocopy/xcopy jarayonlari, dastur o'rnatish yoki administrator tomonidan bajarilgan fayl operatsiyalari uchrashi mumkin.
@@ -11,6 +13,28 @@ description: |
   - O'zgarishni amalga oshirgan foydalanuvchining roli va huquqlarini tekshiring.
   - Tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: fayl atributlarini tiklang, processni tekshiring va hostni izolyatsiya qiling.
+description_ru: |
+  Это правило относится к техникам Defense Evasion и Impact и в контексте `Agent FIM: Windows File or Directory Archive Bit Changed` обнаруживает изменение archive bit файла или directory, зафиксированное FortiSIEM Windows Agent FIM.
+  Archive bit (атрибут A) в Windows — это флаг, обозначающий необходимость резервного копирования файла, и злоумышленник может изменять этот бит, чтобы ввести в заблуждение системы резервного копирования, затруднить forensic-анализ или скрыть изменения файлов.
+  Легитимными случаями могут быть плановые операции backup, процессы Windows robocopy/xcopy, установка программ или файловые операции, выполненные администратором.
+  Шаги SOC triage:
+  - Точно идентифицируйте `winlog.computer_name`, `winlog.event_data.SubjectUserName` и изменённый `winlog.event_data.ObjectName` в событии.
+  - Проверьте `winlog.event_data.ProcessName`, выполнивший изменение archive bit.
+  - Убедитесь, что изменение не связано с процессом backup.
+  - Проверьте роль и полномочия пользователя, выполнившего изменение.
+  - Проверьте, есть ли утверждённый change ticket или запись о deployment.
+  - При подтверждении вредоносной активности выполните немедленный containment: восстановите атрибуты файла, проверьте process и изолируйте хост.
+description_en: |
+  This rule relates to Defense Evasion and Impact techniques and, in the context of `Agent FIM: Windows File or Directory Archive Bit Changed`, detects that the archive bit of a file or directory has changed as reported by FortiSIEM Windows Agent FIM.
+  The archive bit (the A attribute) is a flag in Windows that marks whether a file needs to be backed up, and an attacker may change this bit in order to mislead backup systems, complicate forensic analysis or hide file changes.
+  Legitimate cases may include scheduled backup operations, Windows robocopy/xcopy processes, software installation or file operations performed by an administrator.
+  SOC triage steps:
+  - Precisely identify `winlog.computer_name`, `winlog.event_data.SubjectUserName` and the changed `winlog.event_data.ObjectName` in the event.
+  - Check the `winlog.event_data.ProcessName` that changed the archive bit.
+  - Confirm that the change is not related to a backup process.
+  - Check the role and privileges of the user who made the change.
+  - Check whether there is an approved change ticket or deployment record.
+  - If malicious activity is confirmed, perform immediate containment: restore the file attributes, inspect the process and isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

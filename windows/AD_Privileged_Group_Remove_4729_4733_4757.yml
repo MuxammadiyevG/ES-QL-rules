@@ -1,6 +1,8 @@
 rule_id: 6cb46679-df2c-4a3d-9417-58a36db441f7
-name: AD Privileged Group Membership Removed (4729/4733/4757)
-description: |
+name_uz: "AD imtiyozli guruhdan a'zo olib tashlandi (4729/4733/4757)"
+name_ru: "Удаление участника из привилегированной группы AD (4729/4733/4757)"
+name_en: "AD Privileged Group Membership Removed (4729/4733/4757)"
+description_uz: |
   Ushbu qoida privilege escalation va defense evasion bilan bog'liq bo'lib, imtiyozli guruhlardan a'zoni olib tashlash hodisasini nazorat qiladi.
   Hujumchi boshqa adminlarni guruhdan chiqarib yuborib nazoratni monopolizatsiya qilishi yoki izlarni yashirish uchun a'zolikni tezda rollback qilishi mumkin.
   Qonuniy holatlar: rejalashtirilgan access review, vaqtinchalik rol muddati tugashi, IAM governance jarayonlari.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manbasi va ish stansiya kontekstini tekshiring.
   - Ta'sirlangan foydalanuvchi/guruhning qolgan a'zoliklarini tekshirib, privilege chain buzilishini baholang.
   - Noqonuniy bo'lsa a'zolikni tiklang, aktor huquqlarini cheklang va zarur containmentni bajaring.
+description_ru: |
+  Данное правило связано с повышением привилегий и defense evasion и контролирует событие удаления участника из привилегированных групп.
+  Атакующий может монополизировать контроль, исключив из группы других администраторов, либо быстро откатить членство, чтобы скрыть следы.
+  Легитимные случаи: запланированный access review, истечение срока временной роли, процессы IAM governance.
+  Этапы SOC triage:
+  - Определите `actor`, удалённого `target_user` и `group_name`.
+  - Подтвердите наличие change ticket/разрешения на развёртывание для этого изменения.
+  - Проверьте источник `src_ip` и контекст рабочей станции.
+  - Проверьте оставшиеся членства затронутого пользователя/группы и оцените нарушение privilege chain.
+  - Если действие нелегитимно, восстановите членство, ограничьте права актора и выполните необходимый containment.
+description_en: |
+  This rule is related to privilege escalation and defense evasion and monitors the removal of a member from privileged groups.
+  An attacker may monopolize control by removing other admins from the group, or quickly roll back a membership in order to hide traces.
+  Legitimate cases: a planned access review, expiry of a temporary role, IAM governance processes.
+  SOC triage steps:
+  - Identify the `actor`, the removed `target_user` and the `group_name`.
+  - Confirm that a change ticket/deployment authorization exists for the change.
+  - Check the `src_ip` source and the workstation context.
+  - Check the remaining memberships of the affected user/group and assess the break in the privilege chain.
+  - If illegitimate, restore the membership, restrict the actor's rights and perform the necessary containment.
 type: esql
 params: '{}'
 schedule_interval: 10m

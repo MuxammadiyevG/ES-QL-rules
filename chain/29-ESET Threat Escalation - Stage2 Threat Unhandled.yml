@@ -1,9 +1,19 @@
 rule_id: 6e53406c-30e2-423c-b807-9745ced6420a
-name: "Chain: ESET Threat Not Remediated"
-description: |
+name_uz: "Zanjir: ESET tahdidi bartaraf etilmadi"
+name_ru: "Цепочка: Угроза ESET не устранена"
+name_en: "Chain: ESET Threat Not Remediated"
+description_uz: |
   ESET tahdid zanjiri — 2-bosqich.
   Aniqlangan tahdid tozalanmagan/bartaraf etilmagan (threat_handled == false) — faol infeksiya xavfi.
   1-bosqichga bog'langan.
+description_ru: |
+  Цепочка угроз ESET — этап 2.
+  Обнаруженная угроза не вылечена/не устранена (threat_handled == false) — риск активного заражения.
+  Связано с этапом 1.
+description_en: |
+  ESET threat chain — stage 2.
+  The detected threat was not cleaned/remediated (threat_handled == false) — risk of an active infection.
+  Linked to stage 1.
 type: esql
 enabled: true
 params: "{}"

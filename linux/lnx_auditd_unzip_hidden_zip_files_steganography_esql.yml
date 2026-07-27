@@ -1,6 +1,12 @@
 rule_id: 8a53fec0-9b94-4096-8721-f7361050f007
-name: "Unzip Hidden ZIP Steganography"
-description: |
+name_uz: "Yashirin ZIP steganografiyasini ochish"
+name_ru: "Извлечение скрытого ZIP (стеганография)"
+name_en: "Unzip Hidden ZIP Steganography"
+description_uz: |
+  Rasmlar ichidan ZIP fayllarni chiqarishni (steganografiya) aniqlaydi.
+description_ru: |
+  Обнаруживает извлечение ZIP-архивов из изображений (стеганография).
+description_en: |
   Detects extraction of ZIP files from images (steganography).
 type: esql
 params: '{}'

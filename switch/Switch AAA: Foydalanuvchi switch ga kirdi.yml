@@ -1,6 +1,8 @@
 rule_id: 029de32c-609a-4318-b4a7-2dfacc4ef211
-name: "Switch AAA: Foydalanuvchi switch ga kirdi"
-description: |
+name_uz: "Switch AAA: Foydalanuvchi switch ga kirdi"
+name_ru: "Switch AAA: пользователь вошёл в коммутатор"
+name_en: "Switch AAA: User logged in to the switch"
+description_uz: |
   SSH yoki Telnet orqali switch ga muvaffaqiyatli ulanish qayd etildi.
   Kim, qayerdan, qaysi switch ga, qachon kirganini ko'rsatadi.
   SOC triage:
@@ -8,6 +10,22 @@ description: |
   - Kirish vaqti ish soatlariga mos kelishini tekshiring.
   - Manba IP korporativ tarmoqdan tashqari bo'lsa ustuvor ko'ring.
   - Keyingi GCLI loglari orqali nima qilganini kuzating.
+description_ru: |
+  Зафиксировано успешное подключение к коммутатору по SSH или Telnet.
+  Показывает, кто, откуда, к какому коммутатору и когда вошёл.
+  SOC triage:
+  - Проверьте, есть ли пользователь в списке разрешённых.
+  - Проверьте, соответствует ли время входа рабочим часам.
+  - Если исходный IP вне корпоративной сети, рассмотрите его в приоритетном порядке.
+  - Отследите по последующим логам GCLI, что он делал.
+description_en: |
+  A successful connection to the switch via SSH or Telnet was recorded.
+  Shows who logged in, from where, to which switch and when.
+  SOC triage:
+  - Check that the user is on the allow list.
+  - Check that the login time matches working hours.
+  - Prioritize it if the source IP is outside the corporate network.
+  - Track what they did through the subsequent GCLI logs.
 type: esql
 params: '{}'
 schedule_interval: 5m

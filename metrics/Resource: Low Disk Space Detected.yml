@@ -1,6 +1,8 @@
 rule_id: e1856a62-56f3-4f64-9a60-2e4cf97dbb1f
-name: "Resource: Low Disk Space Detected"
-description: |
+name_uz: "Resurs: Diskda bo'sh joy kamligi aniqlandi"
+name_ru: "Ресурсы: обнаружен недостаток места на диске"
+name_en: "Resource: Low Disk Space Detected"
+description_uz: |
   Ushbu qoida Linux yoki Windows hostda filesystem/disk ishlatilishi
   90% dan yuqori bo‘lishini aniqlaydi. Bu holatda diskda 10% dan kam
   bo‘sh joy qolgan bo‘ladi.
@@ -8,7 +10,22 @@ description: |
   Metricbeat orqali system.filesystem.used.pct fieldi tahlil qilinadi.
   Temporary va virtual filesystem turlari false positive kamaytirish uchun
   chiqarib tashlanadi.
+description_ru: |
+  Это правило выявляет, что использование файловой системы/диска на хосте Linux
+  или Windows превышает 90%. В этом состоянии на диске остаётся менее 10%
+  свободного места.
 
+  С помощью Metricbeat анализируется поле system.filesystem.used.pct.
+  Временные и виртуальные типы файловых систем исключаются для снижения
+  числа ложных срабатываний.
+description_en: |
+  This rule detects that filesystem/disk usage on a Linux or Windows host
+  exceeds 90%. In this state, less than 10% of free space remains
+  on the disk.
+
+  The system.filesystem.used.pct field is analyzed via Metricbeat.
+  Temporary and virtual filesystem types are excluded to reduce
+  false positives.
 type: esql
 params: "{}"
 schedule_interval: 1m

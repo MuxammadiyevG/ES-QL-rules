@@ -1,9 +1,19 @@
 rule_id: 985e7df6-b288-486c-95b5-02b7282319de
-name: "Chain: Linux Reverse Shell — Stage 2: Post-Exploitation Activity on Same Host"
-description: |
+name_uz: "Zanjir: Linux Reverse Shell — 2-bosqich: O'sha host'da ekspluatatsiyadan keyingi faoliyat"
+name_ru: "Цепочка: Linux Reverse Shell — Этап 2: Постэксплуатационная активность на том же host"
+name_en: "Chain: Linux Reverse Shell — Stage 2: Post-Exploitation Activity on Same Host"
+description_uz: |
   Linux Reverse Shell zanjiri — 2-bosqich (2 dan).
   Post-Exploitation Activity on Same Host.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Linux Reverse Shell — этап 2 (из 2).
+  Постэксплуатационная активность на том же host.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Linux Reverse Shell chain — stage 2 (of 2).
+  Post-Exploitation Activity on Same Host.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

@@ -1,15 +1,37 @@
 rule_id: 794c41d6-cc2d-4ccd-8af8-53bc06d7f54a
-name: "PAN-OS: External IP Direct Access to DMZ Server (PassProxy-IN Inbound)"
-description: |
-  Ushbu qoida tashqi IP manzillarning bevosita DMZ serverga  kirishi va "government" URL kategoriyasi ostida sessiya yaratishini aniqlaydi.
+name_uz: "PAN-OS: tashqi IP'dan DMZ serverga bevosita kirish (PassProxy-IN kiruvchi)"
+name_ru: "PAN-OS: прямой доступ внешнего IP к серверу DMZ (PassProxy-IN, входящий)"
+name_en: "PAN-OS: External IP Direct Access to DMZ Server (PassProxy-IN Inbound)"
+description_uz: |
+  Ushbu qoida tashqi IP manzillarning bevosita DMZ serverga kirishi va "government" URL kategoriyasi ostida sessiya yaratishini aniqlaydi.
   Bu holat DMZ serverga DDoS, scanning, brute-force yoki noqonuniy kirish urinishlarini bildirishi mumkin.
   Qonuniy holatlar: tashqi foydalanuvchilar tomonidan hukumat portaliga murojaat, rejalashtirilgan sinxronizatsiya.
   SOC triage bosqichlari:
   - Tashqi IP'larni (92.63.205.x, 185.139.138.x, 185.213.229.x, 95.214.210.x) threat intel bilan tekshiring.
-  - DMZ serverga kirish chastotasi va bajmini baseline bilan solishtiring.
+  - DMZ serverga kirish chastotasi va hajmini baseline bilan solishtiring.
   - Sessiya davomiyligi va paketlar sonini tekshiring — 1850 paket anomal.
   - tcp-rst-from-client — client tomonidan to'xtatilgan, sababi nima?
   - Noqonuniy bo'lsa: IP'ni bloklang, DMZ qoidalarini qattiqlashtiring.
+description_ru: |
+  Это правило выявляет прямой доступ внешних IP-адресов к серверу DMZ и создание сессий в URL-категории "government".
+  Это может означать DDoS, scanning, перебор паролей (brute force) или попытки несанкционированного доступа к серверу DMZ.
+  Легитимные случаи: обращение внешних пользователей к государственному порталу, плановая синхронизация.
+  Этапы SOC-триажа:
+  - Проверьте внешние IP (92.63.205.x, 185.139.138.x, 185.213.229.x, 95.214.210.x) по threat intel.
+  - Сравните частоту и объём обращений к серверу DMZ с baseline.
+  - Проверьте длительность сессии и количество пакетов — 1850 пакетов аномально.
+  - tcp-rst-from-client — прервано клиентом, в чём причина?
+  - Если нелегитимно: заблокируйте IP, ужесточите правила DMZ.
+description_en: |
+  This rule detects direct access of external IP addresses to the DMZ server and session creation under the "government" URL category.
+  This may indicate DDoS, scanning, brute-force or unauthorized access attempts against the DMZ server.
+  Legitimate cases: external users accessing the government portal, scheduled synchronization.
+  SOC triage steps:
+  - Check the external IPs (92.63.205.x, 185.139.138.x, 185.213.229.x, 95.214.210.x) against threat intel.
+  - Compare the frequency and volume of access to the DMZ server with the baseline.
+  - Check the session duration and packet count — 1850 packets is anomalous.
+  - tcp-rst-from-client — terminated by the client, what is the reason?
+  - If illegitimate: block the IP, harden the DMZ rules.
 type: esql
 params: '{}'
 schedule_interval: 5m

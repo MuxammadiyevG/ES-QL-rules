@@ -1,6 +1,8 @@
 rule_id: 2d54faa8-6dd6-4bf5-a1fa-d6566f9c17d4
-name: Account Locked FortiSIEM
-description: |
+name_uz: "FortiSIEM akkaunti bloklandi"
+name_ru: "Учётная запись FortiSIEM заблокирована"
+name_en: "Account Locked FortiSIEM"
+description_uz: |
   Ushbu qoida Credential Access texnikalariga bog'liq bo'lib, `Account Locked: FortiSIEM` kontekstida haddan tashqari noto'g'ri kirish urinishlari natijasida FortiSIEM tizim akkauntining bloklanishini aniqlaydi.
   Bu turdagi hodisa hujumchi brute force yoki password spraying orqali FortiSIEM tizimiga ruxsatsiz kirish huquqini egallashga urinayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida foydalanuvchi parolini unutganligi, boshqa tizimda keshlangan eski credential yoki avtomatik monitoring skriptlardagi noto'g'ri konfiguratsiya uchrashi mumkin.
@@ -11,6 +13,28 @@ description: |
   - Manba hostda boshqa shubhali hodisalar (malware, lateral movement) borligini tekshiring.
   - Manba host ichki tarmoqda bo'lsa, zaifliklar borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, credentiallarni yangilang va FortiSIEM ga kirish cheklovlarini kuchaytiring.
+description_ru: |
+  Данное правило связано с техниками Credential Access и в контексте `Account Locked: FortiSIEM` выявляет блокировку системной учётной записи FortiSIEM в результате чрезмерного количества неудачных попыток входа.
+  Событие такого типа считается опасным, поскольку может указывать на то, что злоумышленник пытается получить несанкционированный доступ к системе FortiSIEM с помощью brute force или password spraying.
+  В качестве легитимных случаев могут встречаться забытый пользователем пароль, старые учётные данные, закэшированные в другой системе, или некорректная конфигурация в автоматических скриптах мониторинга.
+  Этапы SOC triage:
+  - Точно идентифицируйте в событии `user.name` (заблокированный пользователь) и `source.ip` (IP источника).
+  - Если FortiSIEM доступен из Интернета, проверьте ограничения доступа через firewall или ACL.
+  - Проверьте, есть ли у пользователя закэшированные учётные данные в других системах.
+  - Проверьте, есть ли на хосте-источнике другие подозрительные события (malware, lateral movement).
+  - Если хост-источник находится во внутренней сети, проверьте наличие уязвимостей.
+  - При подтверждении вредоносной активности выполните оперативный containment: заблокируйте IP источника, обновите учётные данные и усильте ограничения доступа к FortiSIEM.
+description_en: |
+  This rule is related to Credential Access techniques and, in the context of `Account Locked: FortiSIEM`, detects the lockout of a FortiSIEM system account caused by an excessive number of failed logon attempts.
+  This type of event is considered dangerous because it may indicate that an attacker is trying to gain unauthorized access to the FortiSIEM system through brute force or password spraying.
+  Legitimate cases may include a user forgetting their password, old credentials cached on another system, or a misconfiguration in automated monitoring scripts.
+  SOC triage steps:
+  - Precisely identify `user.name` (the locked account) and `source.ip` (source IP) in the event.
+  - If FortiSIEM is exposed to the Internet, check the access restrictions enforced by firewall or ACL.
+  - Check whether the user has cached credentials on other systems.
+  - Check whether there are other suspicious events (malware, lateral movement) on the source host.
+  - If the source host is on the internal network, check it for vulnerabilities.
+  - If malicious activity is confirmed, perform rapid containment: block the source IP, rotate the credentials and tighten access restrictions to FortiSIEM.
 type: esql
 params: '{}'
 schedule_interval: 10m

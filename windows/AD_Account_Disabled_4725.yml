@@ -1,6 +1,8 @@
 rule_id: ca1f673f-4499-4f7c-b45a-94db1ea877fb
-name: AD User Account Disabled Burst on Domain Controller (4725)
-description: |
+name_uz: "Domain Controller'da AD Akkauntlarini Ommaviy Disable Qilish (4725)"
+name_ru: "Всплеск отключения учётных записей AD на контроллере домена (4725)"
+name_en: "AD User Account Disabled Burst on Domain Controller (4725)"
+description_uz: |
   Ushbu qoida privilege escalation va defense evasion kontekstida akkauntlarni ommaviy disable qilish urinishlarini aniqlaydi.
   Hujumchi xavfsizlik yoki admin akkauntlarini disable qilib monitoringni susaytirishi, javob choralarini kechiktirishi va AD boshqaruvini qo'lga olishi mumkin.
   Qonuniy holatlar: mass offboarding, reorganizatsiya, skript orqali deprovisioning yoki audit tozalash ishlari.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manzili va hostning admin jump-server ekanini tekshiring.
   - Disable qilingan akkauntlarning guruh a'zoligini (Domain Admins va boshqalar) tekshiring.
   - Noqonuniy bo'lsa o'zgarishni rollback qiling, huquqlarni cheklang va aktorni izolyatsiya qiling.
+description_ru: |
+  Это правило обнаруживает попытки массового отключения учётных записей в контексте повышения привилегий и обхода защиты.
+  Атакующий может отключить учётные записи безопасности или администраторов, ослабив мониторинг, задержав меры реагирования и захватив управление AD.
+  Легитимные случаи: массовый offboarding, реорганизация, скриптовый deprovisioning или работы по очистке аудита.
+  Шаги SOC triage:
+  - Определите, кто является `actor` и какие `target_user` были затронуты.
+  - Подтвердите по change ticket/deployment, что отключения были запланированы.
+  - Проверьте адрес `src_ip` и является ли хост административным jump-server.
+  - Проверьте членство отключённых учётных записей в группах (Domain Admins и другие).
+  - Если действие нелегитимно, откатите изменение, ограничьте права и изолируйте актора.
+description_en: |
+  This rule detects mass account disable attempts in the context of privilege escalation and defense evasion.
+  An attacker may disable security or admin accounts to weaken monitoring, delay response actions and take over AD administration.
+  Legitimate cases: mass offboarding, reorganization, scripted deprovisioning or audit cleanup work.
+  SOC triage steps:
+  - Identify who the `actor` is and which `target_user` accounts were affected.
+  - Confirm via change ticket/deployment that the disable actions were planned.
+  - Check the `src_ip` address and whether the host is an admin jump-server.
+  - Review the group membership of the disabled accounts (Domain Admins and others).
+  - If illegitimate, roll back the change, restrict the rights and isolate the actor.
 type: esql
 params: '{}'
 schedule_interval: 10m

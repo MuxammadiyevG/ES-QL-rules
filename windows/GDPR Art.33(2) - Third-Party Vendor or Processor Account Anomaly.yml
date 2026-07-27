@@ -1,6 +1,40 @@
 rule_id: 278de698-eb83-4a77-9a93-b103ccbe74e6
-name: "GDPR Art.33(2) - Third-Party Vendor or Processor Account Anomaly"
-description: |
+name_uz: "GDPR Art.33(2) - Uchinchi tomon yetkazib beruvchi yoki processor akkaunti anomaliyasi"
+name_ru: "GDPR Art.33(2) - Аномалия учётной записи стороннего поставщика или обработчика"
+name_en: "GDPR Art.33(2) - Third-Party Vendor or Processor Account Anomaly"
+description_uz: |
+  Uchinchi tomon yetkazib beruvchi yoki processor akkauntlarining anomal faoliyatini aniqlaydi — bu processor
+  darajasidagi buzilishdan darak berishi mumkin va GDPR 33(2)-moddasi bo'yicha processorlarning buzilish haqida
+  bilgach, kechiktirmasdan controllerlarni xabardor qilish majburiyatini keltirib chiqaradi.
+  Vendor/service akkauntlarining g'ayrioddiy soatlarda, kutilmagan joylashuvlardan kirishini,
+  odatda murojaat qilmaydigan tizimlarga kirishini yoki ommaviy operatsiyalar bajarishini kuzatadi.
+  Vendor akkauntining kompromatatsiyasi shaxsiy ma'lumotlar buzilishi uchun yuqori xavfli vektordir, chunki
+  processorlar ko'pincha controllerning ma'lumot tizimlariga keng kirish huquqiga ega bo'ladi.
+  Trigger: Vendor akkauntining bir nechta source IP'dan kirishi, yoki odatdagi kirish hajmidan >3x,
+  yoki vendorning odatdagi kirish shabloniga kirmagan tizimlarga murojaat.
+  False positive: Vendor xodimlarining almashishi, vendor IP diapazonining o'zgarishi, qonuniy incident response.
+  Triage: Kirishning qonuniyligini tasdiqlash uchun vendor/processor bilan darhol bog'laning,
+  vendor o'z tomonida biror xavfsizlik insidenti haqida xabar berganmi, tekshiring (Art.33(2) majburiyati),
+  tasdiqlanmasa vendor akkauntini to'xtating, kirish mumkin bo'lgan shaxsiy ma'lumotlar doirasini baholang.
+  ESLATMA: Katalogingizda vendor/processor akkauntlarini guruh yoki nomlash konvensiyasi bilan belgilang
+  va quyidagi user.name filtrini shunga mos yangilang (masalan, svc_vendor_*, ext_* va h.k.).
+description_ru: |
+  Обнаруживает аномальную активность учётных записей сторонних поставщиков или обработчиков, которая может указывать
+  на утечку на уровне обработчика, что влечёт обязанность по статье 33(2) GDPR для обработчиков
+  уведомлять контролёров без неоправданной задержки после того, как им стало известно об утечке.
+  Отслеживает входы vendor/service учётных записей в необычные часы, из неожиданных локаций,
+  с доступом к системам, к которым они обычно не обращаются, или с выполнением массовых операций.
+  Компрометация учётной записи поставщика — вектор высокого риска для утечек персональных данных, поскольку
+  обработчики часто имеют широкий доступ к системам данных контролёра.
+  Триггер: Вход учётной записи поставщика с нескольких source IP, или >3x от обычного объёма доступа,
+  или доступ к системам вне обычного шаблона доступа поставщика.
+  Ложные срабатывания: Смена персонала поставщика, изменение диапазона IP поставщика, легитимное реагирование на инциденты.
+  Разбор: Немедленно свяжитесь с поставщиком/обработчиком для подтверждения легитимности доступа,
+  проверьте, сообщал ли поставщик о каких-либо инцидентах безопасности на своей стороне (обязанность по Art.33(2)),
+  заблокируйте учётную запись поставщика, если доступ не подтверждён, оцените объём доступных персональных данных.
+  ПРИМЕЧАНИЕ: Отметьте учётные записи поставщиков/обработчиков в каталоге группой или соглашением об именовании
+  и обновите фильтр user.name ниже соответствующим образом (например, svc_vendor_*, ext_* и т.д.).
+description_en: |
   Detects anomalous activity from third-party vendor or processor accounts that may indicate
   a breach at the processor level, triggering GDPR Article 33(2) obligation for processors
   to notify controllers without undue delay after becoming aware of a breach.

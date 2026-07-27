@@ -1,8 +1,16 @@
 rule_id: ef51cb35-9234-4be2-8966-17055981d35e
-name: "Switch SYSLOG: Console logging darajasi o'zgardi (LOGGINGCNSL)"
-description: |
+name_uz: "Switch SYSLOG: Console logging darajasi o'zgardi (LOGGINGCNSL)"
+name_ru: "Switch SYSLOG: Изменён уровень console logging (LOGGINGCNSL)"
+name_en: "Switch SYSLOG: Console Logging Level Changed (LOGGINGCNSL)"
+description_uz: |
   Switch konsol logging severity darajasi o'zgartirildi.
   Daraja pasaytirilsa muhim xabarlar ko'rinmay qolishi mumkin.
+description_ru: |
+  Уровень severity консольного logging на switch был изменён.
+  При понижении уровня важные сообщения могут перестать отображаться.
+description_en: |
+  The switch console logging severity level was changed.
+  If the level is lowered, important messages may become invisible.
 type: esql
 params: '{}'
 schedule_interval: 5m

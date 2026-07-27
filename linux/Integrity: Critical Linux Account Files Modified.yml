@@ -1,12 +1,25 @@
 rule_id: c7f1e704-08fa-4506-8fba-61c8b8463301
-name: "Integrity: Critical Linux Account Files Modified"
-description: |
+name_uz: "Integrity: Linux'ning muhim akkaunt fayllari o'zgartirildi"
+name_ru: "Integrity: изменены критичные файлы учётных записей Linux"
+name_en: "Integrity: Critical Linux Account Files Modified"
+description_uz: |
   Ushbu qoida Linux tizimida muhim account management fayllari o‘zgarganini
   aniqlaydi: `/etc/passwd`, `/etc/shadow`, `/etc/group`.
 
   Bu foydalanuvchi yaratish/o‘chirish, parol o‘zgarishi, account lock/unlock
   yoki guruh a’zoliklari o‘zgarishi natijasi bo‘lishi mumkin.
+description_ru: |
+  Данное правило выявляет изменение важных файлов account management в системе
+  Linux: `/etc/passwd`, `/etc/shadow`, `/etc/group`.
 
+  Это может быть результатом создания/удаления пользователя, смены пароля,
+  account lock/unlock либо изменения членства в группах.
+description_en: |
+  This rule detects modification of critical account management files on a Linux
+  system: `/etc/passwd`, `/etc/shadow`, `/etc/group`.
+
+  This may be the result of user creation/deletion, a password change, account
+  lock/unlock or a change of group memberships.
 type: esql
 params: "{}"
 schedule_interval: 10m

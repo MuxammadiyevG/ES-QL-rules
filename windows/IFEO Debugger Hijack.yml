@@ -1,11 +1,25 @@
 rule_id: bffce80e-7420-4444-839a-746ae4f8cf64
-name: Image File Execution Options (IFEO) Debugger Hijack
-description: |
+name_uz: "Image File Execution Options (IFEO) Debugger hijack"
+name_ru: "Перехват отладчика через Image File Execution Options (IFEO)"
+name_en: "Image File Execution Options (IFEO) Debugger Hijack"
+description_uz: |
   Ushbu qoida IFEO "Debugger" yoki "GlobalFlag" kalitiga yozishni aniqlaydi (Sysmon 13).
   Hujumchi ma'lum dastur (yoki sethc/utilman) ishga tushganda o'z kodini ishga tushirish uchun
   ishlatadi (T1546.012 / accessibility-feature persistence).
   SOC triage:
   - `target_objects` qaysi dastur uchun, `details` qaysi debugger? Qonuniy emasligini tasdiqlang.
+description_ru: |
+  Это правило обнаруживает запись в ключ IFEO "Debugger" или "GlobalFlag" (Sysmon 13).
+  Атакующий использует это, чтобы запустить свой код при старте определённой программы
+  (или sethc/utilman) (T1546.012 / закрепление через accessibility-feature).
+  SOC triage:
+  - Для какой программы `target_objects`, какой debugger в `details`? Подтвердите нелегитимность.
+description_en: |
+  This rule detects writes to the IFEO "Debugger" or "GlobalFlag" key (Sysmon 13).
+  An attacker uses it to run their own code when a specific program (or sethc/utilman)
+  is launched (T1546.012 / accessibility-feature persistence).
+  SOC triage:
+  - Which program is `target_objects` for, which debugger is in `details`? Confirm that it is not legitimate.
 type: esql
 params: '{}'
 schedule_interval: 10m

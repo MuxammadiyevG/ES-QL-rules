@@ -1,6 +1,8 @@
 rule_id: 33d8b942-638b-43f4-85ec-107cd2b39e1d
-name: Scheduled Task Created Through AD/GPO
-description: |
+name_uz: "AD/GPO orqali Scheduled Task yaratilishi"
+name_ru: "Создание Scheduled Task через AD/GPO"
+name_en: "Scheduled Task Created Through AD/GPO"
+description_uz: |
   Ushbu qoida scheduled task yaratish/o'zgartirishni aniqlaydi (4698 yaratildi, 4702
   yangilandi, 4699 o'chirildi — "Security" kanali). Task nomi `TaskName`, mazmuni
   `TaskContent` (XML) da bo'ladi. Shubhali harakat (powershell/cmd/encoded/temp yo'l)
@@ -9,6 +11,24 @@ description: |
   - `task_names` va `suspicious_hits` — task ichida qanday buyruq?
   - `creator` kim, bu rejalashtirilgan ishmi?
   - Tasdiqlanmasa: taskni o'chiring (schtasks /delete), hostni tekshiring.
+description_ru: |
+  Это правило выявляет создание/изменение scheduled task (4698 создана, 4702
+  обновлена, 4699 удалена — канал "Security"). Имя задачи находится в `TaskName`, содержимое
+  — в `TaskContent` (XML). Подозрительное действие (powershell/cmd/encoded/временный путь)
+  или запуск с правами SYSTEM является признаком закрепления (persistence).
+  SOC triage:
+  - `task_names` и `suspicious_hits` — какая команда внутри задачи?
+  - Кто такой `creator`, это плановая работа?
+  - Если не подтверждено: удалите задачу (schtasks /delete), проверьте хост.
+description_en: |
+  This rule detects scheduled task creation/modification (4698 created, 4702
+  updated, 4699 deleted — the "Security" channel). The task name is in `TaskName`, its content
+  in `TaskContent` (XML). Suspicious activity (powershell/cmd/encoded/temp path)
+  or running with SYSTEM rights is a sign of persistence.
+  SOC triage:
+  - `task_names` and `suspicious_hits` — what command is inside the task?
+  - Who is the `creator`, is this planned work?
+  - If not confirmed: delete the task (schtasks /delete), check the host.
 type: esql
 params: '{}'
 schedule_interval: 10m

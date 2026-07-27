@@ -1,6 +1,8 @@
 rule_id: de1963d9-7b68-4aa8-bd3e-fe2f465f29bd
-name: "Endpoint: Offensive Security Tool / Malware Execution (standalone)"
-description: |
+name_uz: "Endpoint: offensive-security tool yoki malware ishga tushishi (standalone)"
+name_ru: "Endpoint: запуск offensive security tool / вредоносного ПО (standalone)"
+name_en: "Endpoint: Offensive Security Tool / Malware Execution (standalone)"
+description_uz: |
   Endpoint'da offensive-security tool yoki malware ishga tushishi
   (mimikatz, rubeus, bloodhound, crackmapexec, procdump, cobalt, pwdump, lazagne;
   nmap, masscan, nikto, hydra, hashcat, sqlmap, linpeas, pspy, chisel).
@@ -11,6 +13,28 @@ description: |
   ishlamasdi). Endi mustaqil yuqori-ishonchli detection sifatida ishlaydi.
   FP kamaytirish: keng "temp/downloads/tmp dan ishga tushish" catch-all va dual-use vssadmin olib tashlandi;
   faqat aniq offensive-tool imzolari qoldi.
+description_ru: |
+  Запуск offensive-security инструмента или вредоносного ПО на endpoint
+  (mimikatz, rubeus, bloodhound, crackmapexec, procdump, cobalt, pwdump, lazagne;
+  nmap, masscan, nikto, hydra, hashcat, sqlmap, linpeas, pspy, chisel).
+  СДЕЛАНО STANDALONE: раньше это был Этап 2 cross-source цепочки "ESET threat → endpoint process",
+  но хосты мониторинга ESET (ydenilyuk/badilov/aqoriyev/...) ПОЛНОСТЬЮ ОТДЕЛЕНЫ от хостов Windows+auditd
+  (WINDC22/DESKTOP-Q4KDUEJ/siem/vision) — endpoint-ы ESET не отправляют Sysmon/auditd
+  в этот кластер, поэтому цепочка никогда не могла коррелировать по host.name (она никогда
+  не работала). Теперь она работает как самостоятельная детекция с высокой достоверностью.
+  Снижение FP: убраны широкий catch-all "запуск из temp/downloads/tmp" и dual-use vssadmin;
+  остались только явные сигнатуры offensive-инструментов.
+description_en: |
+  Execution of an offensive-security tool or malware on an endpoint
+  (mimikatz, rubeus, bloodhound, crackmapexec, procdump, cobalt, pwdump, lazagne;
+  nmap, masscan, nikto, hydra, hashcat, sqlmap, linpeas, pspy, chisel).
+  MADE STANDALONE: this used to be Stage 2 of the "ESET threat → endpoint process" cross-source chain,
+  but the ESET monitoring hosts (ydenilyuk/badilov/aqoriyev/...) are COMPLETELY SEPARATE from the Windows+auditd hosts
+  (WINDC22/DESKTOP-Q4KDUEJ/siem/vision) — the ESET endpoints do not send Sysmon/auditd
+  to this cluster, so the chain could never correlate on host.name (it never
+  worked). Now it runs as a standalone high-confidence detection.
+  FP reduction: the broad "execution from temp/downloads/tmp" catch-all and dual-use vssadmin were removed;
+  only explicit offensive-tool signatures remain.
 type: esql
 enabled: true
 params: "{}"

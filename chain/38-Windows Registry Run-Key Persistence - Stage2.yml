@@ -1,9 +1,19 @@
 rule_id: 9b0bd51e-4b5c-45b9-8484-3c9b39505995
-name: "Chain: Windows Registry Run-Key Persistence — Stage 2: Process Execution from Persistence Path"
-description: |
+name_uz: "Zanjir: Windows Registry Run-Key Persistence — 2-bosqich: Mustahkamlanish (persistence) yo'lidan jarayon bajarilishi"
+name_ru: "Цепочка: Windows Registry Run-Key Persistence — Этап 2: Запуск процесса из пути закрепления"
+name_en: "Chain: Windows Registry Run-Key Persistence — Stage 2: Process Execution from Persistence Path"
+description_uz: |
   Windows Registry Run-Key Persistence zanjiri — 2-bosqich (2 dan).
   Process Execution from Persistence Path.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows Registry Run-Key Persistence — этап 2 (из 2).
+  Запуск процесса из пути закрепления.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows Registry Run-Key Persistence chain — stage 2 (of 2).
+  Process Execution from Persistence Path.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

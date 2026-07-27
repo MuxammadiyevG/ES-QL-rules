@@ -1,6 +1,14 @@
 rule_id: 84cedb2a-91ca-4c49-b989-41fc8a8dccc0
-name: "Clipboard Collection - Linux"
-description: |
+name_uz: "Clipboard ma'lumotlarini yig'ish - Linux"
+name_ru: "Сбор данных буфера обмена - Linux"
+name_en: "Clipboard Collection - Linux"
+description_uz: |
+  Clipboard ma'lumotlarini yig'ish uchun xclip vositasidan foydalanishni aniqlaydi.
+  Tajovuzkorlar foydalanuvchilar ma'lumot nusxalaganda clipboard da saqlangan ma'lumotlarni yig'ishi mumkin.
+description_ru: |
+  Обнаруживает использование инструмента xclip для сбора данных буфера обмена.
+  Злоумышленники могут собирать данные, сохранённые в буфере обмена при копировании информации пользователями.
+description_en: |
   Detects usage of xclip tool to collect clipboard data.
   Adversaries may collect data stored in the clipboard from users copying information.
 type: esql

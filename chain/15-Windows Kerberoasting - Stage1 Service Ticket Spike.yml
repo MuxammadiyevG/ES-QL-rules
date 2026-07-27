@@ -1,10 +1,22 @@
 rule_id: 65b0b2bd-176f-42fd-9efd-2d7d08a96759
-name: "Chain: Kerberos Service Ticket Spike — Kerberoasting (4769)"
-description: |
+name_uz: "Zanjir: Kerberos service ticket keskin o'sishi — Kerberoasting (4769)"
+name_ru: "Цепочка: Всплеск Kerberos service ticket — Kerberoasting (4769)"
+name_en: "Chain: Kerberos Service Ticket Spike — Kerberoasting (4769)"
+description_uz: |
   Kerberoasting zanjiri — 1-bosqich.
   Bitta hisob qisqa vaqtda ko'p turli SPN uchun KUCHSIZ shifrlash (RC4/DES) bilan service ticket so'rasa (4769) — Kerberoasting belgisi.
   Korrelyatsiya: same_fields user.name, different_field ServiceName.
   FP kamaytirish: normal AD AES (0x12) ishlatadi; faqat RC4 (0x17)/DES service ticket so'rovlari olinadi — bu kerberoasting'ning klassik imzosi.
+description_ru: |
+  Цепочка Kerberoasting — этап 1.
+  Если одна учётная запись за короткое время запрашивает service ticket для множества разных SPN со СЛАБЫМ шифрованием (RC4/DES) (4769) — признак Kerberoasting.
+  Корреляция: same_fields user.name, different_field ServiceName.
+  Снижение FP: нормальный AD использует AES (0x12); берутся только запросы service ticket с RC4 (0x17)/DES — это классическая сигнатура kerberoasting.
+description_en: |
+  Kerberoasting chain — stage 1.
+  When a single account requests service tickets for many different SPNs with WEAK encryption (RC4/DES) within a short time (4769) — an indicator of Kerberoasting.
+  Correlation: same_fields user.name, different_field ServiceName.
+  FP reduction: normal AD uses AES (0x12); only RC4 (0x17)/DES service ticket requests are taken — this is the classic kerberoasting signature.
 type: esql
 enabled: true
 params: "{}"

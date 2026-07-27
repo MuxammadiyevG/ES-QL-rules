@@ -1,6 +1,8 @@
 rule_id: 4dace9ad-a840-4c04-9b7b-545204a182aa
-name: AD NTLM Authentication Failure Spike (4776)
-description: |
+name_uz: "AD NTLM Autentikatsiya Xatolarining Keskin Oshishi (4776)"
+name_ru: "Всплеск ошибок аутентификации NTLM в AD (4776)"
+name_en: "AD NTLM Authentication Failure Spike (4776)"
+description_uz: |
   Ushbu qoida credential access faoliyatiga taalluqli bo'lib, NTLM autentikatsiya xatolarining spike holatini aniqlaydi.
   Ko'p sonli 4776 hodisalari password spray, credential stuffing yoki eski protokollar orqali AD hisoblarini buzishga urinishdan darak beradi.
   Qonuniy holatlar: legacy ilovalar, noto'g'ri saqlangan servis parollari, parol rotatsiyasidan keyingi kechikkan yangilanishlar.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manzilining reputatsiyasi va tarmoq segmentini tekshirib chiqing.
   - Nishon akkauntlarning guruh a'zoligi va imtiyoz darajasini tekshiring.
   - Tasdiqlansa manbani cheklang, parollarni yangilang va NTLM qisqartirish strategiyasini ishga tushiring.
+description_ru: |
+  Это правило относится к активности получения учётных данных и обнаруживает всплеск ошибок аутентификации NTLM.
+  Большое количество событий 4776 свидетельствует о password spray, credential stuffing или попытке взлома учётных записей AD через устаревшие протоколы.
+  Легитимные случаи: legacy-приложения, некорректно сохранённые пароли сервисов, запоздалые обновления после ротации паролей.
+  Шаги SOC triage:
+  - Определите `src_ip` как источник атаки и атакуемые `target_user`.
+  - Проверьте по change ticket/deployment, были ли изменения, связанные с NTLM.
+  - Изучите репутацию адреса `src_ip` и его сетевой сегмент.
+  - Проверьте членство атакуемых учётных записей в группах и уровень их привилегий.
+  - При подтверждении ограничьте источник, обновите пароли и запустите стратегию сокращения NTLM.
+description_en: |
+  This rule pertains to credential access activity and detects a spike in NTLM authentication failures.
+  A large number of 4776 events signals password spray, credential stuffing or an attempt to break into AD accounts through legacy protocols.
+  Legitimate cases: legacy applications, incorrectly stored service passwords, delayed updates after password rotation.
+  SOC triage steps:
+  - Identify the `src_ip` as the attack source and the targeted `target_user` accounts.
+  - Check whether there are NTLM-related changes in a change ticket/deployment.
+  - Review the reputation of the `src_ip` address and its network segment.
+  - Review the group membership and privilege level of the targeted accounts.
+  - If confirmed, restrict the source, update the passwords and launch an NTLM reduction strategy.
 type: esql
 params: '{}'
 schedule_interval: 10m

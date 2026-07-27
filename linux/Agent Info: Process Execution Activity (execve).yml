@@ -1,8 +1,16 @@
 rule_id: e06d3765-02b8-4dd6-bbd1-668cd023d0bc
-name: "Agent Info: Process Execution Activity (execve)"
-description: |
+name_uz: "Agent Info: Jarayon ishga tushirish faoliyati (execve)"
+name_ru: "Agent Info: Активность запуска процессов (execve)"
+name_en: "Agent Info: Process Execution Activity (execve)"
+description_uz: |
   Tizimda ishga tushirilgan barcha jarayonlarni qayd etadi.
   Threat hunting, baseline yaratish va anomaliya aniqlash uchun visibility beradi.
+description_ru: |
+  Фиксирует все процессы, запущенные в системе.
+  Обеспечивает видимость для threat hunting, создания baseline и обнаружения аномалий.
+description_en: |
+  Records all processes launched on the system.
+  Provides visibility for threat hunting, baseline creation and anomaly detection.
 type: esql
 params: '{}'
 schedule_interval: 5m

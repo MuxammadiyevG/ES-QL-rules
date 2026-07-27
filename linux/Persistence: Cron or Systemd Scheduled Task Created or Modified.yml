@@ -1,11 +1,22 @@
 rule_id: bf092d17-f73e-4f3e-944d-77d3d5fe5c44
-name: "Persistence: Cron  Scheduled Task Created or Modified"
-description: |
+name_uz: "Persistence: cron  scheduled task yaratildi yoki o'zgartirildi"
+name_ru: "Persistence: создано или изменено запланированное задание cron"
+name_en: "Persistence: Cron  Scheduled Task Created or Modified"
+description_uz: |
   Ushbu qoida Linux tizimida cron  timer orqali
   yangi scheduled task yaratish yoki o‘zgartirish holatini aniqlaydi.
 
   Bu persistence o‘rnatish uchun keng ishlatiladi.
+description_ru: |
+  Данное правило выявляет создание или изменение нового scheduled task
+  через cron  timer в системе Linux.
 
+  Это широко используется для закрепления.
+description_en: |
+  This rule detects the creation or modification of a new scheduled task
+  via cron  timer on a Linux system.
+
+  This is widely used to establish persistence.
 type: esql
 params: "{}"
 schedule_interval: 10m

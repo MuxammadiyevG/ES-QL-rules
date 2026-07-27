@@ -1,11 +1,25 @@
 rule_id: 0fee2705-23b0-4547-87df-b100181941ee
-name: PowerShell Module Logging - Suspicious Commands
-description: |
+name_uz: "PowerShell Module Logging - shubhali buyruqlar"
+name_ru: "PowerShell Module Logging - подозрительные команды"
+name_en: "PowerShell Module Logging - Suspicious Commands"
+description_uz: |
   Ushbu qoida PowerShell module logging (4103, Payload/ContextInfo) ichida shubhali
   buyruq/funksiyalarni aniqlaydi: download cradle, mimikatz, AMSI bypass, reflection/shellcode.
   ScriptBlock (4104) bilan to'ldiruvchi — ba'zi faoliyat faqat module log'da ko'rinadi.
   SOC triage:
   - `payloads` da qaysi buyruq? `user`/`host` — triage qiling.
+description_ru: |
+  Это правило обнаруживает подозрительные команды/функции внутри PowerShell module logging
+  (4103, Payload/ContextInfo): download cradle, mimikatz, обход AMSI, reflection/shellcode.
+  Дополняет ScriptBlock (4104) — часть активности видна только в module log.
+  SOC triage:
+  - Какая команда в `payloads`? Проведите триаж `user`/`host`.
+description_en: |
+  This rule detects suspicious commands/functions inside PowerShell module logging
+  (4103, Payload/ContextInfo): download cradle, mimikatz, AMSI bypass, reflection/shellcode.
+  Complements ScriptBlock (4104) — some activity is only visible in the module log.
+  SOC triage:
+  - Which command is in `payloads`? Triage the `user`/`host`.
 type: esql
 params: '{}'
 schedule_interval: 10m

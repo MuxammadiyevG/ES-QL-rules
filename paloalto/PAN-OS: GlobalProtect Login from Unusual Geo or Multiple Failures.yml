@@ -1,6 +1,8 @@
 rule_id: e5c2a1e3-bff1-4ee1-9812-e97c01439424
-name: "PAN-OS: GlobalProtect Login from Unusual Geo or Multiple Failures"
-description: |
+name_uz: "PAN-OS: GlobalProtect'ga g'ayrioddiy geolokatsiyadan kirish yoki ko'p muvaffaqiyatsiz urinishlar"
+name_ru: "PAN-OS: вход в GlobalProtect из необычной геолокации или множественные сбои"
+name_en: "PAN-OS: GlobalProtect Login from Unusual Geo or Multiple Failures"
+description_uz: |
   Ushbu qoida GlobalProtect gateway/portal orqali VPN autentifikatsiyasidagi
   ko'p sonli muvaffaqiyatsiz urinishlarni yoki geografik anomaliyalarni kuzatadi.
   Bir foydalanuvchi uchun bir nechta turli mamlakatlardan kelgan urinishlar yoki
@@ -13,6 +15,32 @@ description: |
   - Failure'lardan keyin muvaffaqiyatli ulanish bo'lganmi?
   - Foydalanuvchi bilan bog'lanib, urinish unga tegishli ekanligini tasdiqlang.
   - Kerak bo'lsa: hisobni vaqtincha o'chiring, MFA majburiy qiling, IP'ni bloklang.
+description_ru: |
+  Это правило отслеживает множественные неудачные попытки VPN-аутентификации
+  через GlobalProtect gateway/portal или географические аномалии.
+  Попытки для одного пользователя из нескольких разных стран или
+  повторяющиеся неудачные входы — могут указывать на credential stuffing, захват учётной записи или
+  попытку несанкционированного удалённого доступа (T1078 / T1110).
+  Легитимные случаи: командировка сотрудника, мобильная сеть, переподключение VPN.
+  Этапы SOC-триажа:
+  - Сравните геолокацию пользователя и IP-адреса источника с обычным местоположением.
+  - Проверьте наличие одновременных попыток из разных стран ("impossible travel").
+  - Было ли успешное подключение после неудачных попыток?
+  - Свяжитесь с пользователем и подтвердите, что попытки принадлежат ему.
+  - При необходимости: временно отключите учётную запись, включите обязательную MFA, заблокируйте IP.
+description_en: |
+  This rule monitors multiple failed VPN authentication attempts
+  or geographic anomalies through the GlobalProtect gateway/portal.
+  Attempts for a single user coming from several different countries or
+  repeated login failures — may indicate credential stuffing, account takeover or
+  an unauthorized remote access attempt (T1078 / T1110).
+  Legitimate cases: employee travel, mobile network, VPN reconnection.
+  SOC triage steps:
+  - Compare the user and the source IP geolocation with the usual location.
+  - Check for simultaneous attempts from different countries ("impossible travel").
+  - Was there a successful connection after the failures?
+  - Contact the user and confirm the attempts belong to them.
+  - If needed: temporarily disable the account, enforce MFA, block the IP.
 type: esql
 params: '{}'
 schedule_interval: 5m

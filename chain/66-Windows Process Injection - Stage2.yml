@@ -1,9 +1,19 @@
 rule_id: f6165715-779b-44b7-99d9-f879e16896fe
-name: "Chain: Windows Process Injection — Stage 2: Suspicious Process Post-Injection"
-description: |
+name_uz: "Zanjir: Windows Process Injection — 2-bosqich: In'ektsiyadan keyin shubhali jarayon"
+name_ru: "Цепочка: Windows Process Injection — Этап 2: Подозрительный процесс после инъекции"
+name_en: "Chain: Windows Process Injection — Stage 2: Suspicious Process Post-Injection"
+description_uz: |
   Windows Process Injection zanjiri — 2-bosqich (2 dan).
   Suspicious Process Post-Injection.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows Process Injection — этап 2 (из 2).
+  Подозрительный процесс после инъекции.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows Process Injection chain — stage 2 (of 2).
+  Suspicious Process Post-Injection.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

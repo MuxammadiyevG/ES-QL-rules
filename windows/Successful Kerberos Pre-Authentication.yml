@@ -1,9 +1,19 @@
 rule_id: 8f6222c8-7ed7-4042-b1ef-5f34164b2df7
-name: Successful Kerberos Pre-Authentication
-description: |
+name_uz: "Muvaffaqiyatli Kerberos pre-authentication"
+name_ru: "Успешная предварительная аутентификация Kerberos"
+name_en: "Successful Kerberos Pre-Authentication"
+description_uz: |
   Baseline/health qoidasi: preauth bilan muvaffaqiyatli TGT (4768, Status=0x0, PreAuthType!=0)
   hodisalarini yig'adi. Kerberos salomatligi va normal autentikatsiya darajasini kuzatish uchun
   (alert emas, kontekst). AS-REP roasting rule'i bilan to'ldiruvchi.
+description_ru: |
+  Baseline/health правило: собирает события успешного TGT с preauth (4768, Status=0x0, PreAuthType!=0).
+  Служит для наблюдения за состоянием Kerberos и нормальным уровнем аутентификации
+  (не алерт, а контекст). Дополняет правило AS-REP roasting.
+description_en: |
+  Baseline/health rule: collects successful TGT events with preauth (4768, Status=0x0, PreAuthType!=0).
+  Used to monitor Kerberos health and the normal authentication baseline
+  (not an alert, context). Complements the AS-REP roasting rule.
 type: esql
 params: '{}'
 schedule_interval: 10m

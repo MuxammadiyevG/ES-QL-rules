@@ -1,6 +1,8 @@
 rule_id: 06f19bdd-2f2e-46b7-ab8f-a662afd05667
-name: AD Account Lockout Spike on Domain Controller (4740)
-description: |
+name_uz: "Domain Controller'da AD Akkaunt Lockout'larining Keskin Oshishi (4740)"
+name_ru: "Всплеск блокировок учётных записей AD на контроллере домена (4740)"
+name_en: "AD Account Lockout Spike on Domain Controller (4740)"
+description_uz: |
   Ushbu qoida credential access va brute-force faoliyatiga oid bo'lib, lockout hodisalarining keskin oshishini aniqlaydi.
   Ko'p sonli lockout odatda password spray yoki noto'g'ri autentikatsiya kampaniyasini bildiradi; bu AD xizmatlarida uzilish va keyingi buzilish ehtimolini oshiradi.
   Qonuniy holatlar: noto'g'ri parol bilan ishlayotgan servislar, eskirgan scheduled task credentiallari yoki ommaviy parol almashinuvi.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` bo'yicha hujum manbasini, subnet va host kontekstini tekshiring.
   - Lockout bo'lgan akkauntlarning guruh a'zoligi, ayniqsa privileged rollarni tekshiring.
   - Hujum tasdiqlansa manba IP ni bloklash, vaqtinchalik conditional access qo'llash va ta'sirlangan akkauntlarni reset qilishni boshlang.
+description_ru: |
+  Это правило относится к получению учётных данных (credential access) и активности перебора паролей (brute force) и обнаруживает резкий рост событий блокировки.
+  Большое количество блокировок обычно означает password spray или кампанию с некорректной аутентификацией; это повышает вероятность сбоя сервисов AD и последующей компрометации.
+  Легитимные случаи: сервисы, работающие с неверным паролем, устаревшие учётные данные scheduled task или массовая смена паролей.
+  Шаги SOC triage:
+  - Определите сочетание `actor`/`target_user` и заблокированные учётные записи.
+  - Проверьте наличие соответствующего change ticket (например, ротация паролей).
+  - Проверьте источник атаки по `src_ip`, а также контекст подсети и хоста.
+  - Проверьте членство заблокированных учётных записей в группах, особенно привилегированные роли.
+  - При подтверждении атаки начните блокировку IP-адреса источника, применение временного conditional access и сброс затронутых учётных записей.
+description_en: |
+  This rule concerns credential access and brute-force activity and detects a sharp increase in lockout events.
+  A large number of lockouts usually indicates password spray or a faulty authentication campaign; this increases the likelihood of AD service disruption and subsequent compromise.
+  Legitimate cases: services running with a wrong password, stale scheduled task credentials or a mass password change.
+  SOC triage steps:
+  - Identify the `actor`/`target_user` combination and the locked out accounts.
+  - Check whether a relevant change ticket exists (for example, password rotation).
+  - Check the attack source by `src_ip`, along with the subnet and host context.
+  - Review the group membership of the locked out accounts, especially privileged roles.
+  - If the attack is confirmed, start blocking the source IP, applying temporary conditional access and resetting the affected accounts.
 type: esql
 params: '{}'
 schedule_interval: 10m

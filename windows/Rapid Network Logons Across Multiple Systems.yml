@@ -1,7 +1,9 @@
 rule_id: 2cf6a561-d74d-4ddb-bb91-ef0df9550c51
-name: Rapid Network Logons Across Multiple Systems
-description: |
-  Ushbu qoida lateral movement'ni aniqlaydi: bitta akkaunt (`source_user`) bitta manbadan
+name_uz: "Ko'p tizim bo'ylab tez tarmoq logonlari"
+name_ru: "Быстрые сетевые входы на множество систем"
+name_en: "Rapid Network Logons Across Multiple Systems"
+description_uz: |
+  Ushbu qoida lateral harakatni aniqlaydi: bitta akkaunt (`source_user`) bitta manbadan
   qisqa vaqtda KO'P xil hostga network logon (4624, LogonType 3) qilsa. Bu pass-the-hash,
   PsExec yoki credential bilan tarmoq bo'ylab tez tarqalish belgisidir.
   Eslatma: bu rule hostlar bo'ylab agregatsiya qiladi (agent_id bo'yicha bo'linmaydi).
@@ -9,6 +11,24 @@ description: |
   - `source_user`/`source_ip` va `target_hosts` — qaysi tizimlarga ketma-ket kirilgan?
   - `logon_rate` (host/min) odatiy emasmi?
   - Tasdiqlanmasa: akkauntni bloklang, manba hostni izolyatsiya qiling, IR.
+description_ru: |
+  Это правило обнаруживает горизонтальное перемещение: когда одна учётная запись (`source_user`) с одного
+  источника за короткое время выполняет сетевые входы (4624, LogonType 3) на МНОГО разных хостов. Это признак
+  pass-the-hash, PsExec или быстрого распространения по сети с использованием учётных данных.
+  Примечание: это правило агрегирует по всем хостам (не разбивается по agent_id).
+  SOC triage:
+  - `source_user`/`source_ip` и `target_hosts` — к каким системам были последовательные подключения?
+  - Не является ли `logon_rate` (хостов/мин) необычным?
+  - Если не подтверждено: заблокируйте учётную запись, изолируйте исходный хост, IR.
+description_en: |
+  This rule detects lateral movement: when one account (`source_user`) from a single source performs
+  network logons (4624, LogonType 3) to MANY different hosts in a short time. This is a sign of
+  pass-the-hash, PsExec or fast spreading across the network with a credential.
+  Note: this rule aggregates across hosts (it is not split by agent_id).
+  SOC triage:
+  - `source_user`/`source_ip` and `target_hosts` — which systems were accessed one after another?
+  - Is `logon_rate` (hosts/min) unusual?
+  - If not confirmed: block the account, isolate the source host, IR.
 type: esql
 params: '{}'
 schedule_interval: 10m

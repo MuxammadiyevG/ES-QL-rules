@@ -1,11 +1,25 @@
 rule_id: 13214b0c-9184-4f17-8f0d-598cc366904b
-name: New Scheduled Task Registered (Non-Microsoft)
-description: |
+name_uz: "Yangi scheduled task ro'yxatdan o'tdi (Non-Microsoft)"
+name_ru: "Зарегистрирована новая scheduled task (Non-Microsoft)"
+name_en: "New Scheduled Task Registered (Non-Microsoft)"
+description_uz: |
   Ushbu qoida yangi scheduled task ro'yxatdan o'tishini aniqlaydi (TaskScheduler/Operational
   106) — Microsoft\Windows ichidagi tizim tasklaridan tashqari. Persistence/execution uchun
   klassik (T1053.005). Security 4698 bilan to'ldiruvchi.
   SOC triage:
   - `task_names` qanday nom, `user_contexts` kim yaratgan? Tegishli task XML'ini tekshiring.
+description_ru: |
+  Это правило обнаруживает регистрацию новой scheduled task (TaskScheduler/Operational
+  106) — кроме системных задач внутри Microsoft\Windows. Классика для
+  закрепления/выполнения (T1053.005). Дополняет Security 4698.
+  SOC triage:
+  - Какое имя в `task_names`, кто создал согласно `user_contexts`? Проверьте XML соответствующей задачи.
+description_en: |
+  This rule detects the registration of a new scheduled task (TaskScheduler/Operational
+  106) — excluding system tasks under Microsoft\Windows. A classic for
+  persistence/execution (T1053.005). Complements Security 4698.
+  SOC triage:
+  - What name is in `task_names`, who created it per `user_contexts`? Review the corresponding task XML.
 type: esql
 params: '{}'
 schedule_interval: 10m

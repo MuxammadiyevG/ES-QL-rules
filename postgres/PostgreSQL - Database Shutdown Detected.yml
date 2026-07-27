@@ -1,6 +1,8 @@
 rule_id: 44cba288-0a6b-4822-8de3-fac9d706937b
-name: PostgreSQL - Database Shutdown Detected
-description: |
+name_uz: "PostgreSQL - Ma'lumotlar Bazasi To'xtatilishi Aniqlandi"
+name_ru: "PostgreSQL - обнаружено выключение базы данных"
+name_en: "PostgreSQL - Database Shutdown Detected"
+description_uz: |
   Ushbu qoida PostgreSQL da kutilmagan to'xtatilish va shutdown hodisalarini kuzatadi (Rule 50520, 50521).
   Servis mavjudligiga ta'sir etuvchi hodisalar T1529 (System Shutdown/Reboot) texnikasiga ishora qiladi.
   Qonuniy holatlar: rejalashtirilgan maintenance, versiya yangilash.
@@ -9,6 +11,24 @@ description: |
   - `actor` (user.name) va `process.pid` ni tekshiring.
   - `postgresql.log.message` tafsilotini o'qing — sababi nima.
   - Rejalashtirilmagan bo'lsa: darhol DBA va infra jamoasini xabardor qiling.
+description_ru: |
+  Данное правило отслеживает события неожиданной остановки и выключения PostgreSQL (Rule 50520, 50521).
+  События, влияющие на доступность сервиса, указывают на технику T1529 (System Shutdown/Reboot).
+  Легитимные случаи: плановое обслуживание, обновление версии.
+  Шаги SOC-триажа:
+  - Проверьте наличие change ticket или окна обслуживания.
+  - Проверьте `actor` (user.name) и `process.pid`.
+  - Прочитайте детали `postgresql.log.message` — какова причина.
+  - Если это незапланированно: немедленно оповестите DBA и команду инфраструктуры.
+description_en: |
+  This rule tracks unexpected stop and shutdown events in PostgreSQL (Rule 50520, 50521).
+  Events affecting service availability point to the T1529 (System Shutdown/Reboot) technique.
+  Legitimate cases: planned maintenance, version upgrade.
+  SOC triage steps:
+  - Check whether there is a change ticket or a maintenance window.
+  - Check `actor` (user.name) and `process.pid`.
+  - Read the `postgresql.log.message` details — what is the reason.
+  - If it was unplanned: immediately notify the DBA and the infra team.
 type: esql
 params: '{}'
 schedule_interval: 10m

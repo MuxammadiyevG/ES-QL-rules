@@ -1,6 +1,8 @@
 rule_id: 06d732bd-128c-4693-b7a4-86ebfe5d0857
-name: "NPM Access: Log4Shell JNDI Pattern in Request"
-description: |
+name_uz: "NPM Access: So'rovda Log4Shell JNDI Patterni"
+name_ru: "NPM Access: паттерн Log4Shell JNDI в запросе"
+name_en: "NPM Access: Log4Shell JNDI Pattern in Request"
+description_uz: |
   Ushbu qoida HTTP request (URL, header, user-agent) da Log4Shell (CVE-2021-44228)
   JNDI injection pattern'larini aniqlaydi: ${jndi:ldap://...}, ${jndi:rmi://...},
   ${jndi:dns://...} va obfuscatsiya qilingan variantlar (${lower:j}ndi).
@@ -11,6 +13,28 @@ description: |
   - Backend Java application Log4j ishlatadimi va patch qilinganmi tekshiring.
   - Outbound connection (callback server'ga) bo'lganmi network logda tekshiring.
   - Client IP ni darhol bloklang, incident oching, backend serverni izolyatsiya qiling.
+description_ru: |
+  Данное правило выявляет в HTTP-запросе (URL, header, user-agent) паттерны JNDI-инъекции
+  Log4Shell (CVE-2021-44228): ${jndi:ldap://...}, ${jndi:rmi://...},
+  ${jndi:dns://...} и обфусцированные варианты (${lower:j}ndi).
+  Это попытка эксплуатации RCE в Log4j (T1190 - Exploit Public-Facing Application).
+  Легитимные случаи: отсутствуют, данный паттерн всегда подозрителен.
+  Шаги SOC-триажа:
+  - event.original — сохраните полный payload и callback URL (LDAP/RMI/DNS).
+  - Проверьте, использует ли backend Java-приложение Log4j и установлен ли патч.
+  - Проверьте в сетевых логах, было ли исходящее соединение (к callback-серверу).
+  - Немедленно заблокируйте Client IP, откройте инцидент, изолируйте backend-сервер.
+description_en: |
+  This rule detects Log4Shell (CVE-2021-44228) JNDI injection patterns in the HTTP request
+  (URL, header, user-agent): ${jndi:ldap://...}, ${jndi:rmi://...},
+  ${jndi:dns://...} and obfuscated variants (${lower:j}ndi).
+  This is a Log4j RCE exploitation attempt (T1190 - Exploit Public-Facing Application).
+  Legitimate cases: none, this pattern is always suspicious.
+  SOC triage steps:
+  - event.original — preserve the full payload and the callback URL (LDAP/RMI/DNS).
+  - Check whether the backend Java application uses Log4j and whether it is patched.
+  - Check the network log for an outbound connection (to the callback server).
+  - Block the Client IP immediately, open an incident, isolate the backend server.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,8 @@
 rule_id: 72d8178c-5354-4b13-83cc-44a778435476
-name: "PAN-OS: Suspicious TCP Reset Storm from DMZ (Possible Scanning or DoS)"
-description: |
+name_uz: "PAN-OS: DMZ'dan shubhali TCP Reset shtormi (ehtimoliy skanerlash yoki DoS)"
+name_ru: "PAN-OS: подозрительный шторм TCP Reset из DMZ (возможное сканирование или DoS)"
+name_en: "PAN-OS: Suspicious TCP Reset Storm from DMZ (Possible Scanning or DoS)"
+description_uz: |
   Ushbu qoida DMZ zonasidan bir xil tashqi IP'ga qisqa vaqt ichida ko'p sonli TCP RST (Reset) bilan tugaydigan sessionlarning yuqori sonini aniqlaydi.
   TCP RST stormlar port scanning, connection flooding, yoki C2 beacon urinishlari bilan bog'liq bo'lishi mumkin.
   Qonuniy holatlar: tarmoq muammolari tufayli TCP timeout, yuk muvozanatlagich konfiguratsiyasi.
@@ -10,6 +12,26 @@ description: |
   - 10.25.255.6 DMZ serveri holati normal ekanligini tekshiring.
   - Firewall session limitlarini tekshiring.
   - Noqonuniy bo'lsa: manbani bloklang, DMZ serverini tekshiring.
+description_ru: |
+  Это правило выявляет большое количество сессий, завершающихся TCP RST (Reset), из зоны DMZ к одному и тому же внешнему IP за короткий промежуток времени.
+  Штормы TCP RST могут быть связаны с port scanning, connection flooding или попытками C2 beacon.
+  Легитимные случаи: TCP timeout из-за сетевых проблем, конфигурация балансировщика нагрузки.
+  Этапы SOC-триажа:
+  - Произошли ли RST одновременно или последовательно? (сравните timestamp)
+  - Проверьте IP 194.93.25.227 по threat intel.
+  - Проверьте, что состояние DMZ-сервера 10.25.255.6 в норме.
+  - Проверьте лимиты сессий firewall.
+  - Если нелегитимно: заблокируйте источник, проверьте DMZ-сервер.
+description_en: |
+  This rule detects a high number of sessions ending with TCP RST (Reset) from the DMZ zone toward the same external IP within a short time window.
+  TCP RST storms may be related to port scanning, connection flooding, or C2 beacon attempts.
+  Legitimate cases: TCP timeout caused by network issues, load balancer configuration.
+  SOC triage steps:
+  - Did the RSTs occur simultaneously or sequentially? (compare the timestamps)
+  - Check the IP 194.93.25.227 against threat intel.
+  - Verify that the state of the DMZ server 10.25.255.6 is normal.
+  - Check the firewall session limits.
+  - If illegitimate: block the source and inspect the DMZ server.
 type: esql
 params: '{}'
 schedule_interval: 5m

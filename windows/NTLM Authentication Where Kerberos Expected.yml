@@ -1,6 +1,8 @@
 rule_id: 221d1387-706c-41e0-828c-f3c3f79cde65
-name: NTLM Authentication Where Kerberos Expected
-description: |
+name_uz: "Kerberos kutilgan joyda NTLM autentifikatsiyasi"
+name_ru: "NTLM-аутентификация там, где ожидается Kerberos"
+name_en: "NTLM Authentication Where Kerberos Expected"
+description_uz: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, `NTLM Authentication Where Kerberos Expected` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
   Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
   - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+description_ru: |
+  Это правило связано с техниками credential access и горизонтального перемещения и обнаруживает подозрительную активность Active Directory в контексте `NTLM Authentication Where Kerberos Expected`.
+  Событие такого типа считается опасным, поскольку в среде AD оно может позволить атакующему закрепить несанкционированный доступ, захватить учётные записи или повысить административные права.
+  К легитимным случаям могут относиться плановые административные работы, процессы change/deployment, синхронизация IAM или обновления конфигурации сервисов.
+  Шаги SOC triage:
+  - Точно идентифицируйте `actor` и `target_user` (или целевой объект) в событии.
+  - Проверьте наличие утверждённого change ticket или записи о deployment для изменения/доступа.
+  - Проверьте легитимность адреса `src_ip`, исходного хоста и сегмента сети.
+  - Проверьте членство затронутой учётной записи или объекта в группах, особенно связь с привилегированными группами.
+  - При подтверждении нелегитимной активности выполните оперативный containment: ограничьте источник, обновите учётные данные и изолируйте зону воздействия.
+description_en: |
+  This rule relates to credential access and lateral movement techniques and detects suspicious Active Directory activity in the context of `NTLM Authentication Where Kerberos Expected`.
+  This type of event is considered dangerous because in an AD environment it can allow an attacker to consolidate unauthorized access, take over accounts or escalate administrative rights.
+  Legitimate cases may include planned administrative work, change/deployment processes, IAM synchronization or service configuration updates.
+  SOC triage steps:
+  - Precisely identify the `actor` and `target_user` (or the target object) in the event.
+  - Check whether an approved change ticket or deployment record exists for the change/access.
+  - Verify the legitimacy of the `src_ip` address, the source host and the network segment.
+  - Check the group membership of the affected account or object, especially any link to privileged groups.
+  - If illegitimate activity is confirmed, perform rapid containment: restrict the source, rotate the credentials and isolate the scope of impact.
 type: esql
 params: '{}'
 schedule_interval: 10m

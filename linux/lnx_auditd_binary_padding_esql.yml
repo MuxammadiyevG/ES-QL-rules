@@ -1,6 +1,14 @@
 rule_id: af8a60d3-09b8-4583-8476-5e34995d6b4c
-name: "Binary Padding Detection"
-description: |
+name_uz: "Binary padding aniqlash"
+name_ru: "Обнаружение binary padding"
+name_en: "Binary Padding Detection"
+description_uz: |
+  Tajovuzkorlar zararli dasturning diskdagi ko'rinishini o'zgartirish va keraksiz ma'lumot qo'shish uchun binary padding usulidan foydalanishi mumkin.
+  Bu hash asosidagi bloklash ro'yxatlari va statik antivirus imzolaridan qochish uchun ishlatilishi mumkin.
+description_ru: |
+  Злоумышленники могут использовать binary padding, чтобы добавить мусорные данные и изменить представление вредоносного ПО на диске.
+  Это может использоваться для обхода блок-листов на основе хешей и статических антивирусных сигнатур.
+description_en: |
   Adversaries may use binary padding to add junk data and change the on-disk representation of malware.
   This can be used to evade hash-based blocklisting and static anti-virus signatures.
 type: esql

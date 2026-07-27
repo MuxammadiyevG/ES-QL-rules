@@ -1,6 +1,8 @@
   rule_id: 888f23e2-a7b8-4869-900c-e83ffd3b9e49
-  name: "Switch AAA: Switch ga kirish rad etildi"
-  description: |
+  name_uz: "Switch AAA: Switch ga kirish rad etildi"
+  name_ru: "Switch AAA: вход в коммутатор отклонён"
+  name_en: "Switch AAA: Switch login denied"
+  description_uz: |
     SSH yoki Telnet orqali switch ga ulanishda autentifikatsiya rad etildi.
     Noto'g'ri parol yoki noma'lum foydalanuvchi nomi.
     Qisqa vaqtda ko'p urinish brute-force hujumini ko'rsatishi mumkin.
@@ -8,6 +10,22 @@
     - Manba IP dan nechta urinish bo'lganini tekshiring.
     - IP korporativ tarmoqdan tashqari bo'lsa darhol bloklang.
     - Boshqa switch larda ham xuddi shu IP dan urinish borligini tekshiring.
+  description_ru: |
+    При подключении к коммутатору по SSH или Telnet аутентификация была отклонена.
+    Неверный пароль или неизвестное имя пользователя.
+    Много попыток за короткое время может указывать на атаку brute-force.
+    SOC triage:
+    - Проверьте, сколько попыток было с исходного IP.
+    - Если IP вне корпоративной сети, немедленно заблокируйте его.
+    - Проверьте, есть ли попытки с этого же IP и на других коммутаторах.
+  description_en: |
+    Authentication was denied when connecting to the switch via SSH or Telnet.
+    Wrong password or unknown user name.
+    Many attempts in a short time may indicate a brute-force attack.
+    SOC triage:
+    - Check how many attempts came from the source IP.
+    - If the IP is outside the corporate network, block it immediately.
+    - Check whether there are attempts from the same IP on other switches as well.
   type: esql
   params: '{}'
   schedule_interval: 5m

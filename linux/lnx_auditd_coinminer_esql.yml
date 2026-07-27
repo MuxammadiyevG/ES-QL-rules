@@ -1,6 +1,18 @@
 rule_id: 6dd0211f-c8f7-4a83-930f-3889e74ee75b
-name: "Possible Coin Miner CPU Priority Detection"
-description: |
+name_uz: "Ehtimoliy coin miner CPU prioritetini aniqlash"
+name_ru: "Возможное обнаружение приоритета CPU коин-майнера"
+name_en: "Possible Coin Miner CPU Priority Detection"
+description_uz: |
+  Coin minerlar bilan juda tez-tez ishlatiladigan buyruq qatori parametrini aniqlaydi.
+  XMRig kabi kriptovalyuta minerlari CPU dan foydalanish va prioritetni boshqarish uchun --cpu-priority bayrog'idan foydalanadi.
+  Bu bayroq odatda cryptojacking va ruxsatsiz mayning faoliyatida uchraydi.
+  Eslatma: bu bayroqdan foydalanadigan jarayonlarni boshqa mayning indikatorlari bilan birgalikda kuzating.
+description_ru: |
+  Обнаруживает параметр командной строки, очень часто используемый коин-майнерами.
+  Криптовалютные майнеры вроде XMRig используют флаг --cpu-priority для управления загрузкой и приоритетом CPU.
+  Этот флаг обычно встречается при cryptojacking и несанкционированном майнинге.
+  Примечание: отслеживайте процессы с этим флагом в сочетании с другими индикаторами майнинга.
+description_en: |
   Detects command line parameter very often used with coin miners.
   Cryptocurrency miners like XMRig use the --cpu-priority flag to control CPU usage and priority.
   This flag is commonly seen in cryptojacking and unauthorized mining activities.

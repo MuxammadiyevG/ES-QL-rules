@@ -1,6 +1,8 @@
 rule_id: 234a7626-1db6-4001-bf98-62e8bf4e0628
-name: CheckPoint - Multiple Monitored Security Events
-description: |
+name_uz: "CheckPoint - Bir nechta monitored xavfsizlik hodisasi"
+name_ru: "CheckPoint - Множественные отслеживаемые события безопасности"
+name_en: "CheckPoint - Multiple Monitored Security Events"
+description_uz: |
   Ushbu qoida CheckPoint tomonidan monitored (but not blocked) security event'larni aniqlaydi.
   Monitored action detection mode'da ishlashni yoki policy gap'ni ko'rsatishi mumkin.
   Qonuniy holatlar: policy tuning, baseline establishment, detection validation.
@@ -10,6 +12,26 @@ description: |
   - Attack pattern va frequency'ni tahlil qiling
   - Policy adjustment zarurligini baholang
   - False positive yoki legitimate traffic ekanligini tekshiring
+description_ru: |
+  Это правило выявляет события безопасности, которые CheckPoint отслеживал (monitored), но не блокировал.
+  Действие monitored может указывать на работу в режиме обнаружения или на пробел в политике.
+  Легитимные ситуации: настройка политики, формирование базовой линии, проверка детектирования.
+  Этапы SOC-триажа:
+  - Определите, почему событие не было заблокировано (конфигурация политики)
+  - Проверьте, есть ли среди отслеженных событий реальная угроза
+  - Проанализируйте шаблон и частоту атаки
+  - Оцените необходимость корректировки политики
+  - Проверьте, является ли это ложным срабатыванием или легитимным трафиком
+description_en: |
+  This rule detects security events that were monitored (but not blocked) by CheckPoint.
+  The monitored action may indicate operation in detection mode or a policy gap.
+  Legitimate cases: policy tuning, baseline establishment, detection validation.
+  SOC triage steps:
+  - Determine why it was not blocked (policy configuration)
+  - Check whether there is an actual threat among the monitored events
+  - Analyze the attack pattern and frequency
+  - Assess the need for policy adjustment
+  - Check whether it is a false positive or legitimate traffic
 type: esql
 params: '{}'
 schedule_interval: 15m

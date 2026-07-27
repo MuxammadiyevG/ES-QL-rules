@@ -1,9 +1,19 @@
 rule_id: 8ba7a6b5-968e-4677-a715-ced7c2e7cad8
-name: "Chain: Windows Account Lockout Storm — Stage 2: Unlock or Logon After Lockout Storm"
-description: |
+name_uz: "Zanjir: Windows Account Lockout Storm — 2-bosqich: Bloklanish bo'ronidan keyin blokdan chiqarish yoki logon"
+name_ru: "Цепочка: Windows Account Lockout Storm — Этап 2: Разблокировка или вход после шторма блокировок"
+name_en: "Chain: Windows Account Lockout Storm — Stage 2: Unlock or Logon After Lockout Storm"
+description_uz: |
   Windows Account Lockout Storm zanjiri — 2-bosqich (2 dan).
   Unlock or Logon After Lockout Storm.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows Account Lockout Storm — этап 2 (из 2).
+  Разблокировка или вход после шторма блокировок.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows Account Lockout Storm chain — stage 2 (of 2).
+  Unlock or Logon After Lockout Storm.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

@@ -1,6 +1,8 @@
 rule_id: 9ae94f88-2e5a-4f4c-bdd4-b615d8325fef
-name: "Initial Access: After-Hours Successful Login — SSH or Local"
-description: |
+name_uz: "Initial Access: ish vaqtidan tashqari muvaffaqiyatli login — SSH yoki lokal"
+name_ru: "Initial Access: успешный вход вне рабочего времени — SSH или локально"
+name_en: "Initial Access: After-Hours Successful Login — SSH or Local"
+description_uz: |
   Ushbu qoida ish vaqtidan tashqari muvaffaqiyatli loginlarni aniqlaydi.
 
   Ish vaqti:
@@ -12,7 +14,30 @@ description: |
   - Lokal/sudo/su session open
   - Dam olish kunlari login
   - Ish vaqtidan tashqari login
+description_ru: |
+  Данное правило выявляет успешные входы вне рабочего времени.
 
+  Рабочее время:
+  - понедельник–пятница
+  - 08:00–17:00
+
+  Выявляемые случаи:
+  - успешный вход через SSH
+  - открытие локальной/sudo/su сессии
+  - вход в выходные дни
+  - вход вне рабочего времени
+description_en: |
+  This rule detects successful logins outside business hours.
+
+  Business hours:
+  - Monday–Friday
+  - 08:00–17:00
+
+  Cases detected:
+  - successful login via SSH
+  - local/sudo/su session open
+  - login on weekends
+  - login outside business hours
 type: esql
 params: "{}"
 schedule_interval: 5m

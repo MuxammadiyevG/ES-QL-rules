@@ -1,6 +1,8 @@
 rule_id: 8e5b301f-7db0-4287-89b8-a569fd28d623
-name: Nginx - Cross-Site Scripting (XSS) Attempts
-description: |
+name_uz: "Nginx - Cross-Site Scripting (XSS) urinishlari"
+name_ru: "Nginx - попытки Cross-Site Scripting (XSS)"
+name_en: "Nginx - Cross-Site Scripting (XSS) Attempts"
+description_uz: |
   Ushbu qoida Nginx access log'da XSS attack pattern'larni aniqlaydi.
   Bu client-side code injection urinishi belgisi (T1059).
   Qonuniy holatlar: false positive, legitimate HTML/JavaScript in parameters.
@@ -10,6 +12,26 @@ description: |
   - Application input validation'ni tekshiring
   - User session va cookie security'sini review qiling
   - Immediate patching yoki WAF rule update zarurligini baholang
+description_ru: |
+  Это правило обнаруживает шаблоны XSS-атак в access log Nginx.
+  Это признак попытки внедрения кода на стороне клиента (T1059).
+  Легитимные случаи: ложное срабатывание, легитимные HTML/JavaScript в параметрах.
+  Этапы SOC-триажа:
+  - Определите тип XSS-нагрузки (reflected, stored, DOM-based)
+  - Проанализируйте целевую страницу и параметры
+  - Проверьте валидацию входных данных приложения
+  - Проверьте безопасность пользовательских сессий и cookie
+  - Оцените необходимость немедленного патчинга или обновления правил WAF
+description_en: |
+  This rule detects XSS attack patterns in the Nginx access log.
+  This is a sign of a client-side code injection attempt (T1059).
+  Legitimate cases: false positive, legitimate HTML/JavaScript in parameters.
+  SOC triage steps:
+  - Identify the XSS payload type (reflected, stored, DOM-based)
+  - Analyze the target page and the parameters
+  - Check the application input validation
+  - Review user session and cookie security
+  - Assess whether immediate patching or a WAF rule update is needed
 type: esql
 params: '{}'
 schedule_interval: 10m

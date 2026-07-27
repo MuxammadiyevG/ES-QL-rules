@@ -1,11 +1,25 @@
 rule_id: b853ad08-098e-493c-a99e-c625623aba34
-name: DNS-over-HTTPS Provider Query
-description: |
+name_uz: "DoH (DNS-over-HTTPS) provayderiga so'rov"
+name_ru: "Запрос к провайдеру DNS-over-HTTPS"
+name_en: "DNS-over-HTTPS Provider Query"
+description_uz: |
   Ushbu qoida ma'lum DoH (DNS-over-HTTPS) provayderlariga so'rovni aniqlaydi (Sysmon 22):
   cloudflare-dns.com, dns.google, quad9, nextdns, adguard-dns. DoH korporativ DNS
   monitoringini chetlab o'tish uchun ishlatiladi (T1572/T1071.004).
   SOC triage:
   - Qaysi jarayon (`images`) DoH ishlatyapti? Korporativ siyosatga ziddmi?
+description_ru: |
+  Это правило выявляет запросы к известным провайдерам DoH (DNS-over-HTTPS) (Sysmon 22):
+  cloudflare-dns.com, dns.google, quad9, nextdns, adguard-dns. DoH используется для обхода
+  корпоративного мониторинга DNS (T1572/T1071.004).
+  Триаж SOC:
+  - Какой процесс (`images`) использует DoH? Противоречит ли это корпоративной политике?
+description_en: |
+  This rule detects queries to known DoH (DNS-over-HTTPS) providers (Sysmon 22):
+  cloudflare-dns.com, dns.google, quad9, nextdns, adguard-dns. DoH is used to bypass corporate DNS
+  monitoring (T1572/T1071.004).
+  SOC triage:
+  - Which process (`images`) is using DoH? Is it against corporate policy?
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,10 +1,22 @@
 rule_id: a5d9ca5d-1815-49d6-becf-7280db721c1a
-name: Startup Folder File Drop
-description: |
+name_uz: "Startup papkasiga fayl tashlash"
+name_ru: "Запись файла в папку Startup"
+name_en: "Startup Folder File Drop"
+description_uz: |
   Ushbu qoida Startup papkasiga fayl yozilishini aniqlaydi (Sysmon 11) — login paytida
   avtomatik ishga tushadigan persistence (T1547.001).
   SOC triage:
   - `files` qanday fayl, `images` kim yozdi? Qonuniy o'rnatishmi?
+description_ru: |
+  Это правило выявляет запись файла в папку Startup (Sysmon 11) — закрепление (persistence),
+  автоматически запускающееся при входе в систему (T1547.001).
+  SOC triage:
+  - `files` какой файл, `images` кто записал? Легитимная ли это установка?
+description_en: |
+  This rule detects a file written to the Startup folder (Sysmon 11) — persistence that runs
+  automatically at login (T1547.001).
+  SOC triage:
+  - `files` what file, `images` who wrote it? Is it a legitimate installation?
 type: esql
 params: '{}'
 schedule_interval: 10m

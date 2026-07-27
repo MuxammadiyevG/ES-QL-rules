@@ -1,6 +1,8 @@
 rule_id: 22cb5a38-531f-4976-b3a8-9dd0f005c60f
-name: "Code Injection Attack detected by NIPS"
-description: |
+name_uz: "Code Injection Attack detected by NIPS"
+name_ru: "Code Injection Attack detected by NIPS"
+name_en: "Code Injection Attack detected by NIPS"
+description_uz: |
   Ushbu qoida tarmoq IPS/IDS tizimlari tomonidan aniqlangan yuqori darajali Code Injection hujumlarini kuzatadi.
   Ichki tarmoqdan kelgan barcha hujumlar va tashqi tarmoqdan kelgan ruxsat etilgan (permitted) hujumlar alert qiladi.
   SQL Injection, Command Injection, LDAP Injection va boshqa kod kiritish hujumlari bu rule doirasiga kiradi.
@@ -13,6 +15,32 @@ description: |
   - Tashqi IP dan kelayotgan bo'lsa — internet hujumi yoki C2 bo'lishi mumkin.
   - Destination hostda web ilova yoki DB xizmati ishlayotganini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, destination hostni tekshiring va WAF qoidalarini yangilang.
+description_ru: |
+  Данное правило отслеживает атаки Code Injection высокого уровня, обнаруженные сетевыми системами IPS/IDS.
+  Алерт генерируют все атаки из внутренней сети и разрешённые (permitted) атаки из внешней сети.
+  SQL Injection, Command Injection, LDAP Injection и другие атаки внедрения кода входят в область действия этого rule.
+  Событие такого типа считается крайне опасным, поскольку может указывать на попытку злоумышленника выполнить вредоносный код через веб-приложение или систему.
+  В качестве легитимных случаев могут встречаться penetration testing, учения red team или false positive со стороны IPS.
+  Этапы SOC triage:
+  - Точно идентифицируйте в событии `source.ip` (внутренний или внешний) и `destination.ip`.
+  - Проверьте название атаки и signature ID.
+  - Если IP источника из внутренней сети — это может быть compromised host.
+  - Если трафик идёт с внешнего IP — это может быть атака из Интернета или C2.
+  - Проверьте, работают ли на хосте назначения веб-приложение или служба БД.
+  - При подтверждении вредоносной активности выполните оперативный containment: заблокируйте IP источника, проверьте хост назначения и обновите правила WAF.
+description_en: |
+  This rule tracks high-severity Code Injection attacks detected by network IPS/IDS systems.
+  All attacks originating from the internal network and permitted attacks originating from the external network raise an alert.
+  SQL Injection, Command Injection, LDAP Injection and other code injection attacks fall within the scope of this rule.
+  This type of event is considered very dangerous because it may indicate that an attacker is trying to execute malicious code through a web application or system.
+  Legitimate cases may include penetration testing, red team exercises or IPS false positives.
+  SOC triage steps:
+  - Precisely identify `source.ip` (internal or external) and `destination.ip` in the event.
+  - Check the attack name and signature ID.
+  - If the source IP comes from the internal network — it may be a compromised host.
+  - If it comes from an external IP — it may be an Internet attack or C2.
+  - Check whether a web application or DB service is running on the destination host.
+  - If malicious activity is confirmed, perform rapid containment: block the source IP, inspect the destination host and update the WAF rules.
 type: esql
 params: '{}'
 schedule_interval: 5m

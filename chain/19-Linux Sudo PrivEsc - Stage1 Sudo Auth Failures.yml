@@ -1,9 +1,19 @@
 rule_id: f9a07fb9-e24f-43b8-b295-3fc8659b9d0d
-name: "Chain: Sudo Authentication Failures (Linux)"
-description: |
+name_uz: "Zanjir: Sudo autentifikatsiya xatolari (Linux)"
+name_ru: "Цепочка: Ошибки аутентификации sudo (Linux)"
+name_en: "Chain: Sudo Authentication Failures (Linux)"
+description_uz: |
   Linux sudo privesc zanjiri — 1-bosqich.
   Bitta foydalanuvchi bo'yicha ko'p muvaffaqiyatsiz sudo autentifikatsiyasi (user_auth fail).
   Korrelyatsiya user.name bo'yicha.
+description_ru: |
+  Цепочка Linux sudo privesc — этап 1.
+  Множество неудачных аутентификаций sudo по одному пользователю (user_auth fail).
+  Корреляция по user.name.
+description_en: |
+  Linux sudo privesc chain — stage 1.
+  Many failed sudo authentications for a single user (user_auth fail).
+  Correlation by user.name.
 type: esql
 enabled: true
 params: "{}"

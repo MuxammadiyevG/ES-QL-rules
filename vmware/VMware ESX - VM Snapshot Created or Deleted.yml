@@ -1,6 +1,8 @@
 rule_id: ec4739e0-8eff-4c3d-9676-8ddf0d992a00
-name: VMware ESX - VM Snapshot Created or Deleted
-description: |
+name_uz: "VMware ESX - VM snapshot'i yaratildi yoki o'chirildi"
+name_ru: "VMware ESX - Создание или удаление снапшота ВМ"
+name_en: "VMware ESX - VM Snapshot Created or Deleted"
+description_uz: |
   VMware ESX muhitida virtual mashina snapshot'i yaratildi yoki o'chirildi.
   Snapshot yaratish ransomware operatorlari uchun, snapshot o'chirish esa
   qayta tiklash imkonini yo'q qilish (anti-forensics / recovery inhibition)
@@ -11,6 +13,28 @@ description: |
   - vmware.opid orqali operatsiyani to'liq kuzating
   - Snapshot o'chirish ketma-ket kelganligini va boshqa VM'larni qamraganini tekshiring
   - Change management ticketi mavjudligini aniqlang
+description_ru: |
+  В среде VMware ESX создан или удалён снапшот виртуальной машины.
+  Создание снапшота может использоваться операторами ransomware, а удаление снапшота —
+  для лишения возможности восстановления (anti-forensics / recovery inhibition)
+  (T1578.004).
+  Легитимные случаи: процесс резервного копирования, снапшот перед обновлением, плановое обслуживание (housekeeping).
+  Шаги SOC-триажа:
+  - Определите через vmware.originator, кто инициировал операцию со снапшотом
+  - Полностью отследите операцию через vmware.opid
+  - Проверьте, шли ли удаления снапшотов подряд и затрагивали ли они другие ВМ
+  - Выясните, есть ли тикет change management
+description_en: |
+  A virtual machine snapshot was created or deleted in a VMware ESX environment.
+  Snapshot creation can be used by ransomware operators, while snapshot deletion
+  can be used to eliminate the possibility of recovery (anti-forensics / recovery inhibition)
+  (T1578.004).
+  Legitimate cases: backup process, pre-update snapshot, planned housekeeping.
+  SOC triage steps:
+  - Identify via vmware.originator who initiated the snapshot operation
+  - Fully trace the operation via vmware.opid
+  - Check whether snapshot deletions occurred consecutively and covered other VMs
+  - Determine whether a change management ticket exists
 type: esql
 params: '{}'
 schedule_interval: 5m

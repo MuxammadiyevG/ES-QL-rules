@@ -1,6 +1,8 @@
 rule_id: 19407a0c-97bb-4605-87ef-218045acfd82
-name: VMware ESX - Failed Login Attempt Detected
-description: |
+name_uz: "VMware ESX - muvaffaqiyatsiz kirish urinishi aniqlandi"
+name_ru: "VMware ESX - обнаружена неудачная попытка входа"
+name_en: "VMware ESX - Failed Login Attempt Detected"
+description_uz: |
   VMware ESX tizimiga muvaffaqiyatsiz kirish urinishi qayd etildi.
   Takrorlanuvchi holatda bu brute force yoki credential stuffing belgisi (T1110).
   SOC triage bosqichlari:
@@ -8,6 +10,22 @@ description: |
   - Manba IP va geo-location tekshiring
   - Vaqt oralig'ida takrorlanish chastotasini kuzating
   - Keyingi muvaffaqiyatli loginlar bilan korrelyatsiya qiling
+description_ru: |
+  Зафиксирована неудачная попытка входа в систему VMware ESX.
+  При повторении это признак перебора паролей (brute force) или credential stuffing (T1110).
+  Шаги SOC-триажа:
+  - Определите имя пользователя, выполняющего неудачные входы
+  - Проверьте исходный IP и geo-location
+  - Отслеживайте частоту повторений за интервал времени
+  - Скоррелируйте с последующими успешными входами
+description_en: |
+  A failed login attempt to the VMware ESX system was recorded.
+  When repeated, this is a sign of brute force or credential stuffing (T1110).
+  SOC triage steps:
+  - Determine the user name performing the failed logins
+  - Check the source IP and geo-location
+  - Monitor the frequency of repetition over the time range
+  - Correlate with subsequent successful logins
 type: esql
 params: '{}'
 schedule_interval: 5m

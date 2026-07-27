@@ -1,17 +1,43 @@
 rule_id: cbcf8358-5d42-411d-b7d9-f37014fd298d
-name: "Agent FIM: Directory Ownership or Permission Changed"
-description: |
+name_uz: "Agent FIM: Katalog egasi yoki ruxsatlari o'zgartirildi"
+name_ru: "Agent FIM: изменён владелец или разрешения каталога"
+name_en: "Agent FIM: Directory Ownership or Permission Changed"
+description_uz: |
   Ushbu qoida Impact va Defense Evasion texnikalariga bog'liq bo'lib, `Agent FIM: Directory Ownership or Permission Changed` kontekstida FortiSIEM 
    Agent FIM tomonidan directory ownership yoki permission o'zgarishini aniqlaydi.
   Bu turdagi hodisa hujumchi privilege escalation, persistence yoki muhim tizim papkalariga ruxsatsiz kirish maqsadida fayl tizimi huquqlarini o'zgartirayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida rejalashtirilgan tizim yangilanishlari, administrativ konfiguratsiya o'zgarishlari, deployment jarayonlari yoki dastur o'rnatish uchrashi mumkin.
   SOC triage bosqichlari:
   - Hodisadagi `host.name`, `user.name` va o'zgartirilgan `file.path` (directory) ni aniq identifikatsiya qiling.
-  - O'zgarishni amalga oshirgan foydalanuvhining roli va huquqlarini tekshiring.
+  - O'zgarishni amalga oshirgan foydalanuvchining roli va huquqlarini tekshiring.
   - O'zgarish uchun tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
   - Yangi permission va ownership qiymatlari (`file.owner`, `user.group`) ning xavfliligini baholang (masalan, world-writable).
   - Hostda boshqa shubhali faoliyat (privilege escalation, lateral movement) borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: permissionlarni qaytaring, foydalanuvchi sessiyasini to'xtating va hostni tekshiring.
+description_ru: |
+  Это правило относится к техникам Impact и Defense Evasion и в контексте `Agent FIM: Directory Ownership or Permission Changed` FortiSIEM 
+   Agent FIM обнаруживает изменение directory ownership или permission.
+  Событие такого типа считается опасным, поскольку может указывать на то, что злоумышленник изменяет права файловой системы с целью privilege escalation, закрепления или несанкционированного доступа к важным системным каталогам.
+  Легитимными случаями могут быть плановые обновления системы, административные изменения конфигурации, процессы deployment или установка программ.
+  Шаги SOC triage:
+  - Точно идентифицируйте `host.name`, `user.name` и изменённый `file.path` (directory) в событии.
+  - Проверьте роль и полномочия пользователя, выполнившего изменение.
+  - Проверьте, есть ли для изменения утверждённый change ticket или запись о deployment.
+  - Оцените опасность новых значений permission и ownership (`file.owner`, `user.group`) (например, world-writable).
+  - Проверьте, есть ли на хосте другая подозрительная активность (privilege escalation, lateral movement).
+  - При подтверждении вредоносной активности выполните немедленный containment: верните permissions, завершите сессию пользователя и проверьте хост.
+description_en: |
+  This rule relates to Impact and Defense Evasion techniques and, in the context of `Agent FIM: Directory Ownership or Permission Changed`, FortiSIEM 
+   Agent FIM detects a change of directory ownership or permission.
+  This type of event is considered dangerous because it may indicate that an attacker is changing file system permissions for privilege escalation, persistence or unauthorized access to critical system folders.
+  Legitimate cases may include scheduled system updates, administrative configuration changes, deployment processes or software installation.
+  SOC triage steps:
+  - Precisely identify `host.name`, `user.name` and the changed `file.path` (directory) in the event.
+  - Check the role and privileges of the user who made the change.
+  - Check whether there is an approved change ticket or deployment record for the change.
+  - Assess how dangerous the new permission and ownership values (`file.owner`, `user.group`) are (for example, world-writable).
+  - Check whether there is other suspicious activity (privilege escalation, lateral movement) on the host.
+  - If malicious activity is confirmed, perform immediate containment: revert the permissions, stop the user session and inspect the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

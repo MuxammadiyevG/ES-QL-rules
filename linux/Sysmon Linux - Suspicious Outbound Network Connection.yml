@@ -1,6 +1,8 @@
 rule_id: 35c9f69c-c94d-4e36-b618-e5565954417c
-name: Linux Auth - SSH Connection from Many Distinct Sources
-description: |
+name_uz: "Linux Auth - ko'p turli manbalardan SSH ulanishi"
+name_ru: "Linux Auth - SSH-подключения с множества разных источников"
+name_en: "Linux Auth - SSH Connection from Many Distinct Sources"
+description_uz: |
   Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi sshd hodisalarini kuzatib,
   bitta host ko'p sonli turli `source.ip` manzillaridan SSH autentifikatsiya urinishlari
   qabul qilayotganini aniqlaydi. Bu password spray, scanning yoki distributed brute-force
@@ -12,6 +14,30 @@ description: |
   - Muvaffaqiyatsiz urinishlardan keyin muvaffaqiyatli kirish borligini ko'ring.
   - `source.geo` orqali noodatiy mamlakat/shaharlarni aniqlang.
   - Noqonuniy faoliyat tasdiqlansa: IP larni bloklang, fail2ban/firewall qo'llang.
+description_ru: |
+  Это правило отслеживает события sshd в Linux auth.log (logs-linux.auth-*) и выявляет,
+  что один хост получает попытки SSH-аутентификации с большого числа различных
+  адресов `source.ip`. Это может быть признаком password spray, сканирования или распределённого перебора паролей
+  (brute-force, T1110). auth.log не видит сетевых подключений — поэтому
+  правило опирается только на поля SSH-аутентификации.
+  Легитимные случаи: bastion/jump host, множество клиентов за NAT, агенты мониторинга.
+  Этапы SOC triage:
+  - Проверьте, на какой `host` приходят попытки с множества `source.ip`.
+  - Посмотрите, был ли успешный вход после неуспешных попыток.
+  - Определите необычные страны/города по `source.geo`.
+  - При подтверждении вредоносной активности: заблокируйте IP-адреса, примените fail2ban/firewall.
+description_en: |
+  This rule monitors sshd events in the Linux auth.log (logs-linux.auth-*) and detects
+  a single host receiving SSH authentication attempts from a large number of distinct
+  `source.ip` addresses. This may be a sign of password spray, scanning or distributed brute-force
+  (T1110). auth.log does not see network connections — for that reason
+  the rule relies only on SSH authentication fields.
+  Legitimate cases: bastion/jump host, many clients behind NAT, monitoring agents.
+  SOC triage steps:
+  - Check which `host` is receiving attempts from many `source.ip` addresses.
+  - See whether a successful login follows the failed attempts.
+  - Identify unusual countries/cities via `source.geo`.
+  - If malicious activity is confirmed: block the IPs, apply fail2ban/firewall.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: 9d8da384-a688-4329-94d6-df29b205cdfa
-name: "Agent FIM: Linux Cron or Systemd Service File Modified"
-description: |
+name_uz: "Agent FIM: Linux cron yoki systemd service fayli o'zgartirildi"
+name_ru: "Agent FIM: изменён файл cron или службы systemd в Linux"
+name_en: "Agent FIM: Linux Cron or Systemd Service File Modified"
+description_uz: |
   Ushbu qoida Persistence texnikasiga bog'liq bo'lib, cron joblari va systemd service
   fayllarining o'zgarishini aniqlaydi. Hujumchi crontab yoki yangi systemd service yaratib,
   tizim qayta ishga tushirilgandan keyin ham faol bo'ladigan persistence qilishi mumkin.
@@ -14,6 +16,34 @@ description: |
   - Yangi service fayl `ExecStart` buyrug'ini tekshiring.
   - O'sha paytda kim tizimga kirganini (`user_login`) tekshiring.
   - Noqonuniy bo'lsa: faylni o'chiring, `systemctl daemon-reload` va `crontab -r` ishlatib tozalang.
+description_ru: |
+  Это правило связано с техникой Persistence и выявляет изменения заданий cron и файлов
+  служб systemd. Злоумышленник может создать crontab или новую службу systemd и
+  закрепиться так, что активность сохранится даже после перезагрузки системы.
+  Легитимные случаи: установка запланированного задания системным администратором,
+  создание файла службы в процессе установки программы.
+  Шаги SOC-триажа:
+  - Проверьте `file.path` — это /etc/cron.d, /etc/crontab, /var/spool/cron или
+    каталог /etc/systemd/system.
+  - Если `file.owner` не root — подозрительно.
+  - Сравните `file.hash.sha1` с baseline.
+  - Проверьте команду `ExecStart` в новом файле службы.
+  - Проверьте, кто входил в систему в это время (`user_login`).
+  - Если активность нелегитимна: удалите файл, очистите с помощью `systemctl daemon-reload` и `crontab -r`.
+description_en: |
+  This rule is related to the Persistence technique and detects changes to cron jobs and systemd
+  service files. An attacker may create a crontab entry or a new systemd service and achieve
+  persistence that stays active even after the system is restarted.
+  Legitimate cases: installation of a scheduled job by a system administrator,
+  creation of a service file during software installation.
+  SOC triage steps:
+  - Check `file.path` — whether it is in /etc/cron.d, /etc/crontab, /var/spool/cron or
+    the /etc/systemd/system directory.
+  - If `file.owner` is not root — suspicious.
+  - Compare `file.hash.sha1` with the baseline.
+  - Check the `ExecStart` command of the new service file.
+  - Check who logged in to the system at that time (`user_login`).
+  - If illegitimate: delete the file, clean up using `systemctl daemon-reload` and `crontab -r`.
 type: esql
 params: '{}'
 schedule_interval: 5m

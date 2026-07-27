@@ -1,6 +1,14 @@
 rule_id: 12593ecd-ff60-48dd-a1b8-74066d0c7fe9
-name: "File/Folder Permission Modification"
-description: |
+name_uz: "Fayl/katalog ruxsatlarini o'zgartirish"
+name_ru: "Изменение прав доступа к файлам/каталогам"
+name_en: "File/Folder Permission Modification"
+description_uz: |
+  Fayl yoki katalog ruxsatlarini o'zgartiradigan chmod buyruqlarini aniqlaydi.
+  Imtiyozlarni oshirishga imkon berishi mumkin bo'lgan shubhali ruxsat o'zgarishlarini kuzating.
+description_ru: |
+  Обнаруживает команды chmod, изменяющие права доступа к файлам или каталогам.
+  Отслеживайте подозрительные изменения прав, которые могут позволить повышение привилегий.
+description_en: |
   Detects chmod commands that modify file or folder permissions.
   Monitor for suspicious permission changes that could enable privilege escalation.
 type: esql

@@ -1,6 +1,32 @@
 rule_id: b81f2f20-e0ba-4c45-91c9-dfb3caa07e16
-name: "GDPR Art.25(1) - Data Protection by agent_id, Design Controls Failure"
-description: |
+name_uz: "GDPR Art.25(1) - agent_id, dizayn orqali ma'lumotlar himoyasi nazoratlarining ishlamasligi"
+name_ru: "GDPR Art.25(1) - Сбой средств контроля защиты данных по agent_id, на этапе проектирования"
+name_en: "GDPR Art.25(1) - Data Protection by agent_id, Design Controls Failure"
+description_uz: |
+  agent_id, GDPR 25(1)-moddasi talab qiladigan texnik data-protection-by-design nazoratlarining
+  ishlamasligi yoki yo'qligini aniqlaydi; ushbu modda ishlov berishni loyihalash paytida ma'lumotlar himoyasi
+  tamoyillarini samarali amalga oshirish uchun tegishli texnik choralarni majburiy qiladi.
+  Aniqrog'i, quyidagilar monitoring qilinadi: (1) audit logging bo'shliqlari - 30 daqiqadan ortiq log yubormayotgan hostlar,
+  (2) nol hodisa generatsiya qilayotgan firewall/xavfsizlik nazoratlari (silent failure),
+  (3) kritik tizimlarda kutilgan autentifikatsiya hodisalarining yo'qligi.
+  Xavfsizlik hodisalarini yuborishni to'xtatgan hostda nazoratlar o'chirilgan yoki host komprometatsiya qilingan bo'lishi mumkin.
+  Trigger: 30+ daqiqalik oynada nol xavfsizlik hodisasiga ega bo'lgan har qanday monitoring qilinayotgan host.
+  False positive: host qayta yuklanishlari, agent yangilanishlari, rejalashtirilgan maintenance oynalari.
+  Triage: Fleet'da agent holatini tekshiring, host mavjudligini tekshiring, maintenance rejalashtirilganini
+  tasdiqlang, rejalashtirilmagan bo'lsa eskalatsiya qiling - hujumchi xavfsizlik nazoratlarini o'chirayotgan bo'lishi mumkin.
+description_ru: |
+  Выявляет сбои или отсутствие технических средств контроля data-protection-by-design, требуемых
+  agent_id, статьёй 25(1) GDPR, которая предписывает надлежащие технические меры для эффективной реализации
+  принципов защиты данных на этапе проектирования обработки.
+  Конкретно отслеживается: (1) пробелы в audit logging - хосты, не отправляющие логи более 30 мин,
+  (2) firewall/средства безопасности, генерирующие ноль событий (silent failure),
+  (3) отсутствие ожидаемых событий аутентификации на критичных системах.
+  У хоста, переставшего отправлять события безопасности, средства контроля могут быть отключены, либо он скомпрометирован.
+  Trigger: любой отслеживаемый хост с нулём событий безопасности в окне 30+ минут.
+  False positives: перезагрузки хостов, обновления агентов, плановые окна обслуживания.
+  Triage: проверьте состояние агента в Fleet, проверьте доступность хоста, подтвердите, было ли обслуживание
+  запланировано, эскалируйте при незапланированном - возможно, злоумышленник отключает средства безопасности.
+description_en: |
   Detects failures or absence of technical data-protection-by-design controls required
   by agent_id, GDPR Article 25(1), which mandates appropriate technical measures to implement
   data protection principles effectively at the time of processing design.

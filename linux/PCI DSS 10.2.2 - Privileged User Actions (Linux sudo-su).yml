@@ -1,6 +1,26 @@
 rule_id: 14232e25-dec2-447e-8968-dc5675524ec9
-name: "PCI DSS 10.2.2 - Privileged User Actions (Linux sudo/su)"
-description: |
+name_uz: "PCI DSS 10.2.2 - imtiyozli foydalanuvchi harakatlari (Linux sudo/su)"
+name_ru: "PCI DSS 10.2.2 - действия привилегированного пользователя (Linux sudo/su)"
+name_en: "PCI DSS 10.2.2 - Privileged User Actions (Linux sudo/su)"
+description_uz: |
+  auditd orqali Linux tizimlaridagi barcha sudo va su imtiyozlarni oshirish hodisalarini aniqlaydi.
+  Barcha administrativ harakatlarni kuzatish uchun agent_id, PCI DSS Requirement 10.2.2 talab qiladi.
+  USER_CMD (sudo buyruqlari), USER_AUTH (su autentifikatsiyasi) va
+  imtiyoz o'zgarishlariga oid SYSCALL hodisalarini (setuid, setgid) kuzatadi.
+  Trigger: cardholder data muhitidagi Linux hostlarda har qanday sudo/su ishlatilishi.
+  False positive: ruxsat etilgan adminlarning odatiy texnik xizmat vazifalarini bajarishi.
+  Triage: change management yozuvlari bilan solishtiring, buyruq kutilgan yoki yo'qligini tekshiring,
+  bajarilish vaqti maintenance window jadvallariga mos kelishini tasdiqlang.
+description_ru: |
+  Выявляет все события повышения привилегий sudo и su в системах Linux через auditd.
+  Требуется agent_id, PCI DSS Requirement 10.2.2 для отслеживания всех административных действий.
+  Отслеживает USER_CMD (команды sudo), USER_AUTH (аутентификация su) и
+  события SYSCALL, связанные с изменением привилегий (setuid, setgid).
+  Trigger: любое использование sudo/su на Linux-хостах среды cardholder data.
+  False positives: авторизованные администраторы, выполняющие плановые задачи обслуживания.
+  Triage: сверьте с записями change management, проверьте, ожидаема ли команда,
+  подтвердите, что время выполнения совпадает с расписанием maintenance window.
+description_en: |
   Detects all sudo and su privilege escalation events on Linux systems via auditd.
   Required by agent_id, PCI DSS Requirement 10.2.2 to track all administrative actions.
   Monitors USER_CMD (sudo commands), USER_AUTH (su authentication), and

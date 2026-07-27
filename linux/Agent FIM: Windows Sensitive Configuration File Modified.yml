@@ -1,6 +1,8 @@
 rule_id: 2c45b6f5-bc26-4529-8434-bad9676d8b1f
-name: "Agent FIM: Windows Sensitive Configuration File Modified"
-description: |
+name_uz: "Agent FIM: Windows muhim konfiguratsiya fayli o'zgartirildi"
+name_ru: "Agent FIM: изменение важного файла конфигурации Windows"
+name_en: "Agent FIM: Windows Sensitive Configuration File Modified"
+description_uz: |
   Ushbu qoida Defense Evasion va Persistence texnikalariga bog'liq bo'lib, Windows
   muhim konfiguratsiya fayllarining o'zgarishini aniqlaydi. Hujumchi hosts fayli,
   registry export, yoki boshqa konfiguratsiya fayllarini o'zgartirib tarmoq
@@ -11,7 +13,31 @@ description: |
   - `file.owner` SYSTEM yoki Administrator emas bo'lsa shubhali.
   - `file.mtime` — oxirgi o'zgarish vaqtini ish soatlari bilan solishtiring.
   - Faylning yangi mazmunini tekshiring — noto'g'ri DNS yozuvi bormi.
-  - Noqonuniy bo'lsa: faylni asl holatiga qaytaring, kimdir o'zgartirilganini aniqlang.
+  - Noqonuniy bo'lsa: faylni asl holatiga qaytaring, kim o'zgartirganini aniqlang.
+description_ru: |
+  Данное правило связано с техниками Defense Evasion и Persistence и обнаруживает изменение
+  важных файлов конфигурации Windows. Атакующий может изменить файл hosts,
+  registry export или иные файлы конфигурации и тем самым манипулировать сетевой
+  маршрутизацией либо обеспечить закрепление.
+  Легитимные случаи: изменения конфигурации системным администратором, установка программ.
+  Этапы SOC-триажа:
+  - Проверьте `file.path` — это файл hosts, lmhosts или services.
+  - Если `file.owner` не SYSTEM и не Administrator — подозрительно.
+  - `file.mtime` — сопоставьте время последнего изменения с рабочими часами.
+  - Проверьте новое содержимое файла — нет ли некорректной записи DNS.
+  - Если нелегитимно: верните файл в исходное состояние, установите, кто его изменил.
+description_en: |
+  This rule is related to Defense Evasion and Persistence techniques and detects modification
+  of sensitive Windows configuration files. An attacker may modify the hosts file,
+  a registry export, or other configuration files to manipulate network
+  routing or to establish persistence.
+  Legitimate cases: configuration changes by a system administrator, software installation.
+  SOC triage steps:
+  - Check `file.path` — is it the hosts, lmhosts, or services file.
+  - It is suspicious if `file.owner` is not SYSTEM or Administrator.
+  - `file.mtime` — compare the last modification time against business hours.
+  - Inspect the new content of the file — is there an incorrect DNS entry.
+  - If illegitimate: restore the file to its original state, determine who changed it.
 type: esql
 params: '{}'
 schedule_interval: 5m

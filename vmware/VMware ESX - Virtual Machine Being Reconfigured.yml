@@ -1,6 +1,8 @@
 rule_id: c8543525-3c94-4932-a103-6e42b3be4bf7
-name: VMware ESX - Virtual Machine Being Reconfigured
-description: |
+name_uz: "VMware ESX - Virtual mashina qayta sozlanmoqda"
+name_ru: "VMware ESX - Переконфигурирование виртуальной машины"
+name_en: "VMware ESX - Virtual Machine Being Reconfigured"
+description_uz: |
   VMware ESX muhitida virtual mashina qayta sozlanmoqda (VM_STATE_RECONFIGURING).
   Bu ruxsatsiz konfiguratsiya o'zgarishi, persistence o'rnatish yoki
   resurs manipulyatsiyasi belgisi bo'lishi mumkin (T1578).
@@ -10,6 +12,26 @@ description: |
   - vmware.sid sessiyasini solishtiring
   - Change management ticketi mavjudligini aniqlang
   - CPU/RAM/disk/network o'zgarishlari tafsirini tekshiring
+description_ru: |
+  В среде VMware ESX выполняется переконфигурирование виртуальной машины (VM_STATE_RECONFIGURING).
+  Это может быть признаком несанкционированного изменения конфигурации, установки
+  закрепления (persistence) или манипуляции ресурсами (T1578).
+  Шаги SOC-триажа:
+  - Определите через vmware.originator, кто инициировал операцию
+  - Полностью отследите операцию с помощью vmware.opid
+  - Сопоставьте сессию vmware.sid
+  - Выясните, есть ли тикет change management
+  - Проверьте детали изменений CPU/RAM/диска/сети
+description_en: |
+  A virtual machine is being reconfigured in a VMware ESX environment (VM_STATE_RECONFIGURING).
+  This may be a sign of an unauthorized configuration change, persistence setup or
+  resource manipulation (T1578).
+  SOC triage steps:
+  - Identify via vmware.originator who initiated it
+  - Fully trace the operation with vmware.opid
+  - Compare the vmware.sid session
+  - Determine whether a change management ticket exists
+  - Review the details of the CPU/RAM/disk/network changes
 type: esql
 params: '{}'
 schedule_interval: 5m

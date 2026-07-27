@@ -1,12 +1,28 @@
 rule_id: fc17dcde-6c1b-4023-8a69-7aeb76c3e411
-name: Pass-the-Hash - NTLM Network Logon
-description: |
+name_uz: "Pass-the-Hash - NTLM tarmoq logoni"
+name_ru: "Pass-the-Hash - сетевой вход по NTLM"
+name_en: "Pass-the-Hash - NTLM Network Logon"
+description_uz: |
   Ushbu qoida Pass-the-Hash belgilarini aniqlaydi: NTLM bilan tarmoq logon (4624 Type 3),
   LogonProcessName `NtLmSsp`, mashina bo'lmagan akkaunt. NTLM hash bilan autentifikatsiya
-  lateral movement uchun ishlatiladi (T1550.002). "NTLM Auth Where Kerberos Expected" bilan
+  lateral harakat uchun ishlatiladi (T1550.002). "NTLM Auth Where Kerberos Expected" bilan
   to'ldiruvchi.
   SOC triage:
   - `target_user`/`src_ip` — domen userimi, manba kutilganmi? Kerberos o'rniga NTLM nega?
+description_ru: |
+  Это правило обнаруживает признаки Pass-the-Hash: сетевой вход по NTLM (4624 Type 3),
+  LogonProcessName `NtLmSsp`, немашинная учётная запись. Аутентификация по NTLM-хешу
+  используется для горизонтального перемещения (T1550.002). Дополняет правило
+  "NTLM Auth Where Kerberos Expected".
+  SOC triage:
+  - `target_user`/`src_ip` — доменный ли это пользователь, ожидаем ли источник? Почему NTLM вместо Kerberos?
+description_en: |
+  This rule detects signs of Pass-the-Hash: network logon with NTLM (4624 Type 3),
+  LogonProcessName `NtLmSsp`, non-machine account. Authentication with an NTLM hash
+  is used for lateral movement (T1550.002). Complements "NTLM Auth Where Kerberos
+  Expected".
+  SOC triage:
+  - `target_user`/`src_ip` — is it a domain user, is the source expected? Why NTLM instead of Kerberos?
 type: esql
 params: '{}'
 schedule_interval: 10m

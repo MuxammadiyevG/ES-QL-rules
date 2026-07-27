@@ -1,9 +1,19 @@
 rule_id: 78be1990-8025-4c92-a216-38381b55acca
-name: Audit Policy Configuration - Current State
-description: |
+name_uz: "Audit siyosati konfiguratsiyasi - joriy holat"
+name_ru: "Конфигурация политики аудита - текущее состояние"
+name_en: "Audit Policy Configuration - Current State"
+description_uz: |
   Baseline/compliance qoidasi: audit policy o'zgarishlarini (4719) yig'adi va mavjud
   subkategoriya/o'zgarish maydonlarini ko'rsatadi. Audit konfiguratsiyasining holatini
   kuzatish uchun (alert emas; tahdid varianti "Audit Policy Disabled or Modified" rule'ida).
+description_ru: |
+  Правило baseline/compliance: собирает изменения audit policy (4719) и отображает доступные
+  поля подкатегории/изменения. Предназначено для наблюдения за состоянием конфигурации
+  аудита (не алерт; вариант для угроз — в правиле "Audit Policy Disabled or Modified").
+description_en: |
+  Baseline/compliance rule: collects audit policy changes (4719) and shows the available
+  subcategory/change fields. Intended for monitoring the state of the audit configuration
+  (not an alert; the threat variant is in the "Audit Policy Disabled or Modified" rule).
 type: esql
 params: '{}'
 schedule_interval: 10m

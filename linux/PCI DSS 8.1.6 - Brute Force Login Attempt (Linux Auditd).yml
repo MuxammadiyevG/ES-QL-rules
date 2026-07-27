@@ -1,6 +1,24 @@
 rule_id: 7cabc6eb-74dd-48b7-99b6-4e639000fdbe
-name: "PCI DSS 8.1.6 - Brute Force Login Attempt (Linux/Auditd)"
-description: |
+name_uz: "PCI DSS 8.1.6 - brute force login urinishi (Linux/Auditd)"
+name_ru: "PCI DSS 8.1.6 - попытка входа перебором паролей (brute force) (Linux/Auditd)"
+name_en: "PCI DSS 8.1.6 - Brute Force Login Attempt (Linux/Auditd)"
+description_uz: |
+  auditd loglari orqali Linux tizimlaridagi haddan ortiq muvaffaqiyatsiz autentifikatsiya urinishlarini aniqlaydi.
+  PCI DSS Req 8.1.6 ko'pi bilan 6 ta muvaffaqiyatsiz urinishdan keyin bloklashni talab qiladi.
+  Linux PAM/auditd dan USER_AUTH, USER_LOGIN muvaffaqiyatsizlik hodisalarini kuzatadi.
+  Trigger: 5 daqiqa ichida bitta hostga 6 va undan ortiq muvaffaqiyatsiz login hodisasi.
+  False positive: noto'g'ri sozlangan servislar, avtomatlashtirish paytida SSH kalitlarining mos kelmasligi.
+  Triage: manba IP geolokatsiyasini tekshiring, nishon akkaunt imtiyozlarini tasdiqlang,
+  qo'shimcha kontekst uchun /var/log/secure yoki /var/log/auth.log ni ko'rib chiqing.
+description_ru: |
+  Выявляет чрезмерное количество неуспешных попыток аутентификации в системах Linux по логам auditd.
+  PCI DSS Req 8.1.6 требует блокировки после не более чем 6 неуспешных попыток.
+  Отслеживает события отказа USER_AUTH, USER_LOGIN от Linux PAM/auditd.
+  Trigger: 6 и более неуспешных событий входа на один хост в течение 5 минут.
+  False positives: неверно настроенные службы, несоответствие SSH-ключей при автоматизации.
+  Triage: проверьте геолокацию исходного IP, уточните привилегии целевой учётной записи,
+  просмотрите /var/log/secure или /var/log/auth.log для дополнительного контекста.
+description_en: |
   Detects excessive failed authentication attempts on Linux systems via auditd logs.
   PCI DSS Req 8.1.6 requires lockout after no more than 6 failed attempts.
   Monitors USER_AUTH, USER_LOGIN failure events from Linux PAM/auditd.

@@ -1,11 +1,25 @@
 rule_id: 7b6dd98b-03a7-495b-9bd7-defef845e1ea
-name: Process Injection via CreateRemoteThread
-description: |
+name_uz: "CreateRemoteThread orqali process injection"
+name_ru: "Process Injection через CreateRemoteThread"
+name_en: "Process Injection via CreateRemoteThread"
+description_uz: |
   Ushbu qoida bir jarayonning boshqasiga remote thread yaratishini aniqlaydi (Sysmon 8) —
   ayniqsa sezgir nishonga (lsass/winlogon/explorer/services). Bu klassik process injection
   (T1055).
   SOC triage:
   - `source_images` (kim) → `target_images` (kimga)? `start_modules`/`start_functions` shubhalimi?
+description_ru: |
+  Это правило выявляет создание одним процессом remote thread в другом процессе (Sysmon 8) —
+  особенно в отношении чувствительных целей (lsass/winlogon/explorer/services). Это классическая process injection
+  (T1055).
+  Триаж SOC:
+  - `source_images` (кто) → `target_images` (в кого)? Подозрительны ли `start_modules`/`start_functions`?
+description_en: |
+  This rule detects one process creating a remote thread in another (Sysmon 8) —
+  especially against a sensitive target (lsass/winlogon/explorer/services). This is classic process injection
+  (T1055).
+  SOC triage:
+  - `source_images` (who) → `target_images` (into whom)? Are `start_modules`/`start_functions` suspicious?
 type: esql
 params: '{}'
 schedule_interval: 10m

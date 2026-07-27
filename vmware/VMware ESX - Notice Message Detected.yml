@@ -1,12 +1,28 @@
 rule_id: c82f2a25-0cd5-4255-a532-b71f71dda613
-name: VMware ESX - Notice Message Detected
-description: |
+name_uz: "VMware ESX - notice darajasidagi xabar aniqlandi"
+name_ru: "VMware ESX - обнаружено сообщение уровня notice"
+name_en: "VMware ESX - Notice Message Detected"
+description_uz: |
   VMware ESX tizimidan notice darajasidagi xabar qayd etildi.
   Bu informatsion xabar bo'lib, tizim holati haqida ma'lumot beradi.
   SOC triage bosqichlari:
   - Notice xabarlarini kuzatib boring
   - Kutilmagan notice xabarlari bor-yo'qligini tekshiring
   - Boshqa log darajalari bilan solishtiring
+description_ru: |
+  Зафиксировано сообщение уровня notice от системы VMware ESX.
+  Это информационное сообщение, дающее сведения о состоянии системы.
+  Шаги SOC-триажа:
+  - Отслеживайте сообщения notice
+  - Проверьте наличие неожиданных сообщений notice
+  - Сравните с другими уровнями логирования
+description_en: |
+  A message of notice level was recorded from the VMware ESX system.
+  This is an informational message that provides information about the system state.
+  SOC triage steps:
+  - Monitor the notice messages
+  - Check whether there are unexpected notice messages
+  - Compare with other log levels
 type: esql
 params: '{}'
 schedule_interval: 5m

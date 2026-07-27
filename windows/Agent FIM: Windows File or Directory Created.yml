@@ -1,6 +1,8 @@
 rule_id: d6f72336-2b04-44a4-bdde-f89220b6eff6
-name: "Agent FIM: Windows File or Directory Created"
-description: |
+name_uz: "Agent FIM: Windows fayl yoki katalog yaratildi"
+name_ru: "Agent FIM: создан файл или каталог Windows"
+name_en: "Agent FIM: Windows File or Directory Created"
+description_uz: |
   Ushbu qoida Impact va Collection texnikalariga bog'liq bo'lib, `Agent FIM: Windows File or Directory Created` kontekstida FortiSIEM Windows Agent FIM tomonidan yangi fayl yoki directory yaratilganligini aniqlaydi.
   Bu turdagi hodisa hujumchi tizimda yangi zararli fayl, backdoor, web shell yoki ma'lumot to'plash uchun saqlash joyi yaratayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida rejalashtirilgan dastur o'rnatish, administrator tomonidan bajarilgan konfiguratsiya o'zgarishlari yoki deployment jarayonlari uchrashi mumkin.
@@ -11,6 +13,28 @@ description: |
   - Fayl kengaytmasini tekshiring — `.exe`, `.ps1`, `.bat`, `.dll` kabi bajariladigan fayllar ayniqsa xavfli.
   - Tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: faylni o'chiring, processni to'xtating va hostni izolyatsiya qiling.
+description_ru: |
+  Это правило относится к техникам Impact и Collection и в контексте `Agent FIM: Windows File or Directory Created` обнаруживает создание нового файла или directory, зафиксированное FortiSIEM Windows Agent FIM.
+  Событие такого типа считается опасным, поскольку может указывать на то, что злоумышленник создаёт в системе новый вредоносный файл, backdoor, web shell или место хранения для собираемых данных.
+  Легитимными случаями могут быть плановая установка программ, изменения конфигурации, выполненные администратором, или процессы deployment.
+  Шаги SOC triage:
+  - Точно идентифицируйте `winlog.computer_name`, `winlog.event_data.SubjectUserName` и созданный `winlog.event_data.ObjectName` в событии.
+  - Если расположение созданного файла или directory опасно (`C:\Temp`, `C:\Windows\Temp`, `C:\Users\Public`), рассмотрите его в приоритетном порядке.
+  - Проверьте `winlog.event_data.ProcessName`, создавший файл — если это неизвестный или подозрительный process, рассмотрите его в приоритетном порядке.
+  - Проверьте расширение файла — исполняемые файлы, такие как `.exe`, `.ps1`, `.bat`, `.dll`, особенно опасны.
+  - Проверьте, есть ли утверждённый change ticket или запись о deployment.
+  - При подтверждении вредоносной активности выполните немедленный containment: удалите файл, остановите process и изолируйте хост.
+description_en: |
+  This rule relates to Impact and Collection techniques and, in the context of `Agent FIM: Windows File or Directory Created`, detects that a new file or directory has been created as reported by FortiSIEM Windows Agent FIM.
+  This type of event is considered dangerous because it may indicate that an attacker is creating a new malicious file, backdoor, web shell or a storage location for collected data on the system.
+  Legitimate cases may include scheduled software installation, configuration changes made by an administrator or deployment processes.
+  SOC triage steps:
+  - Precisely identify `winlog.computer_name`, `winlog.event_data.SubjectUserName` and the created `winlog.event_data.ObjectName` in the event.
+  - If the location of the created file or directory is dangerous (`C:\Temp`, `C:\Windows\Temp`, `C:\Users\Public`), review it as a priority.
+  - Check the `winlog.event_data.ProcessName` that created the file — if it is an unknown or suspicious process, review it as a priority.
+  - Check the file extension — executable files such as `.exe`, `.ps1`, `.bat`, `.dll` are especially dangerous.
+  - Check whether there is an approved change ticket or deployment record.
+  - If malicious activity is confirmed, perform immediate containment: delete the file, stop the process and isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

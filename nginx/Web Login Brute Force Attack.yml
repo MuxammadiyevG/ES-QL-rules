@@ -8,8 +8,24 @@ rule_id: d5a00ded-02be-4aaa-af72-478320f15707
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Adjust threshold per application login frequency, allowlist known IPs
 
-name: "Web Login Brute Force Attack"
-description: |
+name_uz: "Veb login brute force hujumi"
+name_ru: "Атака перебора паролей (brute force) на веб-логин"
+name_en: "Web Login Brute Force Attack"
+description_uz: |
+  Veb-ilovaning login endpoint'lariga qarshi bir nechta muvaffaqiyatsiz autentifikatsiya urinishlarini aniqlaydi.
+  /login, /signin, /auth URL'lariga 401/403 javobli takroriy POST so'rovlar credential stuffing'dan dalolat beradi.
+  Bitta IP dan yuqori hajm (10 daqiqada >10 muvaffaqiyatsizlik) yoki taqsimlangan hujum pattern'lari qamrab olinadi.
+  False positive: parolni unutgan foydalanuvchilar, mobil ilovaning qayta urinish mantig'i, qonuniy testlash.
+  Triage: manba IP VPN/proxy ekanligini tekshiring, muvaffaqiyatsizliklardan keyin muvaffaqiyatli login bo'lganini ko'rib chiqing,
+  nishonga olingan hisoblar mavjudligini tasdiqlang, rate limiting va hisobni bloklashni joriy qiling.
+description_ru: |
+  Обнаруживает множественные неудачные попытки аутентификации на endpoint входа веб-приложения.
+  Повторяющиеся POST-запросы к URL /login, /signin, /auth с ответами 401/403 указывают на credential stuffing.
+  Фиксируется большой объём с одного IP (>10 неудач за 10 минут) или паттерны распределённой атаки.
+  Ложные срабатывания: пользователи, забывшие пароль, логика повторов мобильного приложения, легитимное тестирование.
+  Triage: проверьте, не является ли IP-источник VPN/proxy, посмотрите, был ли успешный вход после неудач,
+  убедитесь, существуют ли атакуемые учётные записи, внедрите rate limiting и блокировку учётной записи.
+description_en: |
   Detects multiple failed authentication attempts against web application login endpoints.
   Repeated POST requests to /login, /signin, /auth URLs with 401/403 responses indicate credential stuffing.
   High volume from single IP (>10 failures in 10min) or distributed attack patterns captured.

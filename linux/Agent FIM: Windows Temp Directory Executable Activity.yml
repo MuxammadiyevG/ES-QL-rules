@@ -1,6 +1,8 @@
 rule_id: ecb69acd-b049-4d01-84ca-82a4a6e891cd
-name: "Agent FIM: Windows Temp Directory Executable Activity"
-description: |
+name_uz: "Agent FIM: Windows Temp katalogida bajariluvchi fayl faoliyati"
+name_ru: "Agent FIM: активность исполняемых файлов в каталоге Windows Temp"
+name_en: "Agent FIM: Windows Temp Directory Executable Activity"
+description_uz: |
   Ushbu qoida Execution va Defense Evasion texnikalariga bog'liq bo'lib, Windows
   Temp katalogida bajariladigan fayl turlarining yaratilishi yoki o'zgartirilishini
   aniqlaydi. Temp katalog ko'pincha zararli dasturlar tomonidan ishlatiladi — u
@@ -12,6 +14,30 @@ description: |
   - `file.owner` — kutilmagan foydalanuvchi.
   - Faylni AV/sandbox da tekshiring.
   - Noqonuniy bo'lsa: faylni karantinga oling, parent process ni aniqlang.
+description_ru: |
+  Данное правило связано с техниками Execution и Defense Evasion и обнаруживает создание
+  или изменение исполняемых типов файлов в каталоге Windows Temp.
+  Каталог Temp часто используется вредоносными программами — он
+  обычно открыт для записи и мониторится слабее.
+  Легитимные случаи: installer extraction, процессы обновления, build-инструменты.
+  Этапы SOC-триажа:
+  - `file.name` — файл со случайным именем (например, abc123.exe) подозрителен.
+  - `file.size` — очень маленький PE-файл может быть packed.
+  - `file.owner` — неожиданный пользователь.
+  - Проверьте файл в AV/sandbox.
+  - Если нелегитимно: поместите файл в карантин, определите parent process.
+description_en: |
+  This rule is related to Execution and Defense Evasion techniques and detects the creation
+  or modification of executable file types in the Windows Temp directory.
+  The Temp directory is often used by malware — it is
+  usually writable and less closely monitored.
+  Legitimate cases: installer extraction, update processes, build tools.
+  SOC triage steps:
+  - `file.name` — a file with a random name (for example, abc123.exe) is suspicious.
+  - `file.size` — a very small PE file may be packed.
+  - `file.owner` — an unexpected user.
+  - Check the file in AV/sandbox.
+  - If illegitimate: quarantine the file, identify the parent process.
 type: esql
 params: '{}'
 schedule_interval: 5m

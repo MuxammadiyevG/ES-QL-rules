@@ -1,6 +1,8 @@
 rule_id: f3e08559-bfd1-4091-a40f-21d692d7f94f
-name: ESET Protect - Multiple Blocked Malicious URLs
-description: |
+name_uz: "ESET Protect - bir nechta bloklangan zararli URL"
+name_ru: "ESET Protect - несколько заблокированных вредоносных URL"
+name_en: "ESET Protect - Multiple Blocked Malicious URLs"
+description_uz: |
   Ushbu qoida ESET web filtering tomonidan block qilingan ko'p malicious URL access urinishlarini aniqlaydi.
   Bu phishing, malware download yoki compromised browsing belgisi (T1566, T1189).
   Qonuniy holatlar: false positive, overly restrictive policy, legitimate blocked site.
@@ -10,6 +12,26 @@ description: |
   - URL pattern - phishing, malware distribution, C2 domain
   - Related email yoki document download bormi qidiring
   - User awareness training zarurligini baholang
+description_ru: |
+  Это правило выявляет множественные попытки доступа к вредоносным URL, заблокированные web filtering ESET.
+  Это признак фишинга, загрузки вредоносного ПО или скомпрометированного браузинга (T1566, T1189).
+  Легитимные случаи: false positive, чрезмерно строгая политика, легитимный заблокированный сайт.
+  Шаги SOC triage:
+  - Проверьте репутацию и категоризацию заблокированного URL
+  - Идентифицируйте пользователя и процесс
+  - Шаблон URL - фишинг, распространение вредоносного ПО, C2-домен
+  - Проверьте, есть ли связанное письмо или загрузка документа
+  - Оцените необходимость обучения пользователей (user awareness training)
+description_en: |
+  This rule detects multiple malicious URL access attempts blocked by ESET web filtering.
+  This is a sign of phishing, malware download or compromised browsing (T1566, T1189).
+  Legitimate cases: false positive, overly restrictive policy, legitimate blocked site.
+  SOC triage steps:
+  - Check the blocked URL reputation and categorization
+  - Identify the user and process identity
+  - URL pattern - phishing, malware distribution, C2 domain
+  - Look for a related email or document download
+  - Assess whether user awareness training is required
 type: esql
 params: '{}'
 schedule_interval: 15m

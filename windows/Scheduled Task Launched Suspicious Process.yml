@@ -1,11 +1,25 @@
 rule_id: 23db09f8-4ab8-4db6-87a3-6b0f8123f985
-name: Scheduled Task Launched Suspicious Process
-description: |
+name_uz: "Scheduled Task shubhali jarayonni ishga tushirdi"
+name_ru: "Scheduled Task запустила подозрительный процесс"
+name_en: "Scheduled Task Launched Suspicious Process"
+description_uz: |
   Ushbu qoida scheduled task tomonidan shubhali jarayon ishga tushirilishini aniqlaydi
   (TaskScheduler/Operational 129 — "created process", `Path`). Task orqali powershell/cmd/
   mshta yoki temp'dan ijro persistence/execution belgisidir (T1053.005).
   SOC triage:
   - `paths` qaysi bajariluvchi, qaysi `task_names`? Qonuniy avtomatlashtirish emasmi?
+description_ru: |
+  Это правило выявляет запуск подозрительного процесса задачей scheduled task
+  (TaskScheduler/Operational 129 — "created process", `Path`). Выполнение powershell/cmd/
+  mshta или запуск из temp через задачу — признак persistence/execution (T1053.005).
+  SOC triage:
+  - `paths` какой исполняемый файл, какие `task_names`? Не легитимная ли это автоматизация?
+description_en: |
+  This rule detects a suspicious process launched by a scheduled task
+  (TaskScheduler/Operational 129 — "created process", `Path`). Execution of powershell/cmd/
+  mshta or from temp via a task is a sign of persistence/execution (T1053.005).
+  SOC triage:
+  - `paths` which executable, which `task_names`? Isn't it legitimate automation?
 type: esql
 params: '{}'
 schedule_interval: 10m

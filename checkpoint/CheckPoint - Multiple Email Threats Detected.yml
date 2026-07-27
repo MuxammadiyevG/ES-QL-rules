@@ -1,6 +1,8 @@
 rule_id: c89a2f19-75eb-469c-8f11-fd1fab0a467f
-name: CheckPoint - Multiple Email Threats Detected
-description: |
+name_uz: "CheckPoint - Bir nechta email tahdidi aniqlandi"
+name_ru: "CheckPoint - Обнаружено несколько email-угроз"
+name_en: "CheckPoint - Multiple Email Threats Detected"
+description_uz: |
   Ushbu qoida CheckPoint email security blade tomonidan aniqlangan ko'p threat'larni monitoring qiladi.
   Email vector orqali malware, phishing yoki spam attack'lar.
   Qonuniy holatlar: false positive, legitimate attachments misclassified.
@@ -10,6 +12,26 @@ description: |
   - Email subject va content'ni tahlil qiling
   - Related IOC'lar va campaign indicator'larini qidiring
   - User awareness va remediation action'lar zarurligini baholang
+description_ru: |
+  Это правило отслеживает множественные угрозы, обнаруженные модулем CheckPoint email security blade.
+  Атаки через почтовый вектор: вредоносное ПО, фишинг или спам.
+  Легитимные ситуации: ложное срабатывание, легитимные вложения классифицированы неверно.
+  Этапы SOC-триажа:
+  - Идентифицируйте отправителя и получателей письма
+  - Проверьте тип вредоносного ПО, хеш и вердикт
+  - Проанализируйте тему и содержимое письма
+  - Найдите связанные IOC и индикаторы кампании
+  - Оцените необходимость обучения пользователей и мер по устранению
+description_en: |
+  This rule monitors multiple threats detected by the CheckPoint email security blade.
+  Malware, phishing or spam attacks delivered through the email vector.
+  Legitimate cases: false positive, legitimate attachments misclassified.
+  SOC triage steps:
+  - Identify the email sender and recipients
+  - Check the malware type, hash and verdict
+  - Analyze the email subject and content
+  - Search for related IOCs and campaign indicators
+  - Assess the need for user awareness and remediation actions
 type: esql
 params: '{}'
 schedule_interval: 15m

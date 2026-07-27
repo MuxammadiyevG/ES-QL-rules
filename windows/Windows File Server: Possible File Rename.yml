@@ -1,10 +1,22 @@
 rule_id: fec0e79b-19db-459f-b8ed-2c9a94f4d48d
-name: "Windows File Server: Possible File Rename"
-description: |
+name_uz: "Windows File Server: Ehtimoliy Fayl Nomini O'zgartirish"
+name_ru: "Windows File Server: возможное переименование файла"
+name_en: "Windows File Server: Possible File Rename"
+description_uz: |
   Ushbu qoida Windows File Server share ichida fayl nomi o‘zgartirilgan
   bo‘lishi mumkin bo‘lgan holatlarni aniqlaydi. Windows Security log rename
   amalini har doim alohida rename sifatida bermaydi; odatda qisqa vaqt ichida
   delete/delete-request va create/write ketma-ketligi ko‘rinadi.
+description_ru: |
+  Это правило выявляет случаи, когда имя файла, возможно, было изменено внутри
+  шары Windows File Server. Журнал Windows Security не всегда отражает операцию
+  rename как отдельный rename; обычно за короткое время наблюдается
+  последовательность delete/delete-request и create/write.
+description_en: |
+  This rule detects cases where a file name may have been changed inside a
+  Windows File Server share. The Windows Security log does not always report the rename
+  operation as a separate rename; usually a sequence of delete/delete-request and
+  create/write is seen within a short period of time.
 type: esql
 params: "{}"
 schedule_interval: 5m

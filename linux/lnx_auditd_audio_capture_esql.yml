@@ -1,6 +1,16 @@
 rule_id: b5710dff-9242-429f-a9e4-147035f5e1a4
-name: "Audio Capture Detection"
-description: |
+name_uz: "Audio yozib olishni aniqlash"
+name_ru: "Обнаружение записи аудио"
+name_en: "Audio Capture Detection"
+description_uz: |
+  arecord yoki ecasound utilitalari yordamida audio yozib olishga urinishlarni aniqlaydi.
+  Tajovuzkorlar josuslik maqsadida audio yozib olish uchun o'rnatilgan vositalardan foydalanishi mumkin.
+  arecord ning maxsus bayroqlar bilan ishga tushirilishini yoki agent_id, ecasound tomonidan memfd_create syscall ni kuzatadi.
+description_ru: |
+  Обнаруживает попытки записи аудио с помощью утилит arecord или ecasound.
+  Злоумышленники могут использовать встроенные инструменты для записи аудио в целях шпионажа.
+  Отслеживает запуск arecord с определёнными флагами или системный вызов memfd_create от agent_id, ecasound.
+description_en: |
   Detects attempts to record audio using arecord or ecasound utilities.
   Adversaries may use built-in tools to record audio for espionage.
   Monitors execution of arecord with specific flags or memfd_create syscall by agent_id, ecasound.

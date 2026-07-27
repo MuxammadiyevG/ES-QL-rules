@@ -1,9 +1,19 @@
 rule_id: b18ac8af-9892-4873-afb8-be7dfc4dc8fd
-name: "Switch Syslog: Parse qilinmagan log aniqlandi"
-description: |
+name_uz: "Switch Syslog: Parse qilinmagan log aniqlandi"
+name_ru: "Switch Syslog: Обнаружен неразобранный (unparsed) лог"
+name_en: "Switch Syslog: Unparsed Log Detected"
+description_uz: |
   Logstash filter parse qila olmagan syslog xabari keldi.
   Bu yangi log format yoki konfiguratsiya xatosi belgisi bo'lishi mumkin.
   Parse qilinmagan loglar SIEM da ko'rinmaydi — e'tibor bering.
+description_ru: |
+  Получено сообщение syslog, которое filter Logstash не смог разобрать (parse).
+  Это может быть признаком нового формата логов или ошибки конфигурации.
+  Неразобранные логи не видны в SIEM — обратите внимание.
+description_en: |
+  A syslog message arrived that the Logstash filter could not parse.
+  This may be a sign of a new log format or a configuration error.
+  Unparsed logs are not visible in the SIEM — pay attention.
 type: esql
 params: '{}'
 schedule_interval: 5m

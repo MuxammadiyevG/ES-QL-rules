@@ -1,6 +1,8 @@
 rule_id: bab7f6e7-2f0a-426c-96cd-d074cfa61ef0
-name: Potential DCSync Attack - Suspicious Replication
-description: |
+name_uz: "Ehtimoliy DCSync hujumi - shubhali replikatsiya"
+name_ru: "Возможная атака DCSync - подозрительная репликация"
+name_en: "Potential DCSync Attack - Suspicious Replication"
+description_uz: |
   Ushbu qoida DCSync replikatsiyasini aniqlaydi (AD_DCSync_Replication bilan to'ldiruvchi,
   obyekt darajasida tafsilot beradi): 4662 `Properties` ichida replikatsiya GUID'lari
   (1131f6aa / 1131f6ad / 89e95b76) yoki parol-hash atribut GUID'lari (unicodePwd
@@ -10,6 +12,26 @@ description: |
   - `accessing_user` DC emasmi? `objects_accessed`/`properties_list` da qaysi huquqlar?
   - Manba (`src_ips`) haqiqiy sync server bilan mosmi?
   - Tasdiqlanmasa: containment — akkauntni cheklang, krbtgt rotatsiya, IR.
+description_ru: |
+  Это правило обнаруживает репликацию DCSync (дополняет AD_DCSync_Replication, даёт
+  детализацию на уровне объектов): GUID репликации внутри 4662 `Properties`
+  (1131f6aa / 1131f6ad / 89e95b76) либо GUID атрибутов парольных хешей (unicodePwd
+  bf9679e1, supplementalCredentials, ntPwdHistory), если это выполняет НЕмашинная
+  учётная запись.
+  SOC triage:
+  - Не является ли `accessing_user` контроллером домена? Какие права в `objects_accessed`/`properties_list`?
+  - Совпадает ли источник (`src_ips`) с настоящим сервером синхронизации?
+  - Если не подтверждено: containment — ограничьте учётную запись, ротация krbtgt, IR.
+description_en: |
+  This rule detects DCSync replication (complements AD_DCSync_Replication, giving
+  object-level detail): replication GUIDs inside 4662 `Properties`
+  (1131f6aa / 1131f6ad / 89e95b76) or password-hash attribute GUIDs (unicodePwd
+  bf9679e1, supplementalCredentials, ntPwdHistory), when performed by a NON-machine
+  account.
+  SOC triage:
+  - Is `accessing_user` not a DC? Which rights are in `objects_accessed`/`properties_list`?
+  - Does the source (`src_ips`) match a genuine sync server?
+  - If not confirmed: containment — restrict the account, rotate krbtgt, IR.
 type: esql
 params: '{}'
 schedule_interval: 10m

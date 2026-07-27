@@ -1,6 +1,8 @@
 rule_id: 7ef28d01-ebb9-4c64-8911-eaff0090db52
-name: VMware ESX - Virtual Machine State Changed to ON
-description: |
+name_uz: "VMware ESX - Virtual mashina holati ON ga o'zgardi"
+name_ru: "VMware ESX - Состояние виртуальной машины изменено на ON"
+name_en: "VMware ESX - Virtual Machine State Changed to ON"
+description_uz: |
   VMware ESX muhitida virtual mashina holati VM_STATE_ON ga o'tdi.
   Mashina muvaffaqiyatli yoqildi. Noodatiy vaqtda yoki noma'lum
   mashina bo'lsa tekshirish tavsiya etiladi.
@@ -8,6 +10,22 @@ description: |
   - Qaysi VM yoqilganini host.hostname orqali aniqlang
   - vmware.originator kimligini tekshiring
   - Kutilmagan activatsiyalarni kuzating
+description_ru: |
+  В среде VMware ESX состояние виртуальной машины изменилось на VM_STATE_ON.
+  Машина успешно включена. При нетипичном времени или неизвестной
+  машине рекомендуется проверка.
+  Шаги SOC-триажа:
+  - Определите через host.hostname, какая ВМ была включена
+  - Проверьте, кем является vmware.originator
+  - Отслеживайте неожиданные активации
+description_en: |
+  In a VMware ESX environment a virtual machine transitioned to VM_STATE_ON.
+  The machine was powered on successfully. If it happens at an unusual time or involves an
+  unknown machine, review is recommended.
+  SOC triage steps:
+  - Identify via host.hostname which VM was powered on
+  - Check who the vmware.originator is
+  - Monitor unexpected activations
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,18 @@
 rule_id: aab9a793-fb45-482e-8102-04f48081929e
-name: "System Firewall Modification Detection"
-description: |
+name_uz: "Tizim firewall qoidalarining o'zgartirilishini aniqlash"
+name_ru: "Обнаружение изменения системного межсетевого экрана"
+name_en: "System Firewall Modification Detection"
+description_uz: |
+  Linux'da tizim firewall qoidalarining o'chirilishi yoki o'zgartirilishini aniqlaydi.
+  Tajovuzkorlar tarmoqdan foydalanish yoki kirishni cheklovchi nazorat vositalarini chetlab o'tish uchun faqat ayrim firewall qoidalarini o'chirishi yoki o'zgartirishi mumkin.
+  Faqat firewall'ni butunlay o'chirishga mos keladigan aniqlash qoidalari bu texnikani sezmay qoladi.
+  iptables, firewall-cmd, ufw va nft (nftables) firewall boshqaruv vositalarini qamrab oladi.
+description_ru: |
+  Обнаруживает удаление или изменение правил системного межсетевого экрана в Linux.
+  Злоумышленники могут удалять или изменять лишь отдельные правила межсетевого экрана, чтобы обойти механизмы контроля, ограничивающие использование сети или доступ к ней.
+  Правила обнаружения, срабатывающие только на полное отключение межсетевого экрана, пропустят эту технику.
+  Охватывает инструменты управления межсетевым экраном iptables, firewall-cmd, ufw и nft (nftables).
+description_en: |
   Detects the removal or modification of system firewall rules on Linux.
   Adversaries may only delete or modify specific system firewall rules to bypass controls limiting network usage or access.
   Detection rules that match only on the disabling of firewalls will miss this technique.

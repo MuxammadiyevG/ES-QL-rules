@@ -1,6 +1,8 @@
 rule_id: 629c16b3-ce88-4667-8639-68b3423d8a15
-name: Suspicious Service Installed for Persistence
-description: |
+name_uz: "Persistence uchun o'rnatilgan shubhali servis"
+name_ru: "Установка подозрительной службы для закрепления"
+name_en: "Suspicious Service Installed for Persistence"
+description_uz: |
   Ushbu qoida shubhali servis o'rnatilishini ikkala manbadan aniqlaydi: 4697 ("Security")
   va 7045 ("System"). Binar yo'li `ImagePath` da (7045 uchun to'liq, 4697 uchun mavjud
   bo'lsa). Shubhali yo'l/interpretator/encoded buyruq persistence belgisidir.
@@ -9,6 +11,24 @@ description: |
   SOC triage:
   - `service_path` — binar qayerda? `installer` kim?
   - Tasdiqlanmasa: servisni o'chiring, hostni izolyatsiya qiling, IR.
+description_ru: |
+  Данное правило выявляет установку подозрительной службы из обоих источников: 4697 ("Security")
+  и 7045 ("System"). Путь к бинарному файлу находится в `ImagePath` (для 7045 полностью, для 4697 при
+  наличии). Подозрительный путь/интерпретатор/encoded-команда являются признаком закрепления.
+  Примечание: в вашем индексе нет `ServiceFileName`/`ServiceAccount` — использованы `ImagePath`/
+  `AccountName`.
+  SOC triage:
+  - `service_path` — где находится бинарный файл? Кто такой `installer`?
+  - Если не подтверждено: удалите службу, изолируйте хост, IR.
+description_en: |
+  This rule detects suspicious service installation from both sources: 4697 ("Security")
+  and 7045 ("System"). The binary path is in `ImagePath` (complete for 7045, for 4697 if
+  available). A suspicious path/interpreter/encoded command is a sign of persistence.
+  Note: your index does not have `ServiceFileName`/`ServiceAccount` — `ImagePath`/
+  `AccountName` were used.
+  SOC triage:
+  - `service_path` — where is the binary? Who is the `installer`?
+  - If not confirmed: delete the service, isolate the host, IR.
 type: esql
 params: '{}'
 schedule_interval: 10m

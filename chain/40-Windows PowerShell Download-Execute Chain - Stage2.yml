@@ -1,9 +1,19 @@
 rule_id: 5304dff4-8cf3-4f54-bd77-4d2d092dfcc8
-name: "Chain: Windows PowerShell Download-Execute Chain — Stage 2: PowerShell Outbound Network Connection"
-description: |
+name_uz: "Zanjir: Windows PowerShell Download-Execute Chain — 2-bosqich: PowerShell'ning chiquvchi tarmoq ulanishi"
+name_ru: "Цепочка: Windows PowerShell Download-Execute Chain — Этап 2: Исходящее сетевое соединение PowerShell"
+name_en: "Chain: Windows PowerShell Download-Execute Chain — Stage 2: PowerShell Outbound Network Connection"
+description_uz: |
   Windows PowerShell Download-Execute Chain zanjiri — 2-bosqich (2 dan).
   PowerShell Outbound Network Connection.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows PowerShell Download-Execute Chain — этап 2 (из 2).
+  Исходящее сетевое соединение PowerShell.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows PowerShell Download-Execute Chain chain — stage 2 (of 2).
+  PowerShell Outbound Network Connection.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

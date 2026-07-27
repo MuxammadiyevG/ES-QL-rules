@@ -1,6 +1,8 @@
 rule_id: c3ca9c3e-42cd-4e89-bc4c-8141a9c92e65
-name: Suspicious Kerberos Delegation Activity
-description: |
+name_uz: "Shubhali Kerberos delegation faoliyati"
+name_ru: "Подозрительная активность Kerberos delegation"
+name_en: "Suspicious Kerberos Delegation Activity"
+description_uz: |
   Ushbu qoida Kerberos delegation (S4U2Self/S4U2Proxy) faoliyatini aniqlaydi: 4769 TGS
   so'rovida `TransmittedServices` to'ldirilgan bo'lsa — bu constrained/protocol-transition
   delegatsiya ishlatilganini bildiradi. Hujumchi buzilgan delegatsiya huquqi orqali boshqa
@@ -10,6 +12,26 @@ description: |
   - `requestor` delegatsiyaga ruxsat berilgan akkauntmi (msDS-AllowedToDelegateTo)?
   - `services` va `transmitted_list` — qaysi servisga, kim nomidan?
   - Tasdiqlanmasa: delegatsiya sozlamasini olib tashlang, akkauntni cheklang.
+description_ru: |
+  Данное правило выявляет активность Kerberos delegation (S4U2Self/S4U2Proxy): если в запросе
+  4769 TGS заполнено поле `TransmittedServices` — это означает, что использовалось
+  constrained/protocol-transition делегирование. Через скомпрометированное право делегирования
+  злоумышленник может обращаться к сервисам от имени другого пользователя (lateral movement).
+  Легитимные случаи: constrained delegation, настроенное для web/SQL front-end сервисов.
+  SOC triage:
+  - Является ли `requestor` учётной записью, которой разрешено делегирование (msDS-AllowedToDelegateTo)?
+  - `services` и `transmitted_list` — к какому сервису, от чьего имени?
+  - Если не подтверждено: снимите настройку делегирования, ограничьте учётную запись.
+description_en: |
+  This rule detects Kerberos delegation (S4U2Self/S4U2Proxy) activity: if `TransmittedServices` is
+  populated in a 4769 TGS request — this indicates that constrained/protocol-transition
+  delegation was used. Through abused delegation rights an attacker can access services on
+  behalf of another user (lateral movement).
+  Legitimate cases: constrained delegation configured for web/SQL front-end services.
+  SOC triage:
+  - Is `requestor` an account that is allowed to delegate (msDS-AllowedToDelegateTo)?
+  - `services` and `transmitted_list` — to which service, on whose behalf?
+  - If not confirmed: remove the delegation setting, restrict the account.
 type: esql
 params: '{}'
 schedule_interval: 10m

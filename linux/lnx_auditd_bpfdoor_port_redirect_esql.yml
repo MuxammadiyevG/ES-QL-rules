@@ -1,6 +1,18 @@
 rule_id: a1719539-ae26-488b-9522-c783c96f52a5
-name: "BPFDoor Port Redirection Detection"
-description: |
+name_uz: "BPFDoor port yo'naltirishini aniqlash"
+name_ru: "Обнаружение перенаправления портов BPFDoor"
+name_en: "BPFDoor Port Redirection Detection"
+description_uz: |
+  BPFDoor zararli dasturining iptables yordamida port yo'naltirish texnikasini aniqlaydi.
+  BPFDoor — bu tarmoq trafigini yashirish uchun BPF (Berkeley Packet Filter) dan foydalanadigan Linux backdoor.
+  Zararli dastur command and control uchun trafikni bir portdan boshqasiga yo'naltirishda iptables dan foydalanadi.
+  Bu BPFDoor faoliyatining o'ziga xos kompromis indikatoridir.
+description_ru: |
+  Обнаруживает технику перенаправления портов вредоносного ПО BPFDoor с помощью iptables.
+  BPFDoor — это Linux-бэкдор, использующий BPF (Berkeley Packet Filter) для сокрытия сетевого трафика.
+  Вредоносное ПО использует iptables для перенаправления трафика с одного порта на другой в целях command and control.
+  Это специфический индикатор компрометации активности BPFDoor.
+description_en: |
   Detects BPFDoor malware port redirection technique using iptables.
   BPFDoor is a Linux backdoor that uses BPF (Berkeley Packet Filter) to hide network traffic.
   The malware uses iptables to redirect traffic from one port to another for command and control.

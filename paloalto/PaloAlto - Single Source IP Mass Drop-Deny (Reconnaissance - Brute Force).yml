@@ -1,6 +1,8 @@
 rule_id: a42b0107-1519-408f-81dd-25b2a74853c3
-name: PaloAlto - Single Source IP Mass Drop-Deny (Reconnaissance / Brute Force)
-description: |
+name_uz: "PaloAlto - Bitta manba IP'dan ommaviy drop/deny (razvedka / brute force)"
+name_ru: "PaloAlto - массовые drop/deny с одного исходного IP (разведка / перебор паролей (brute force))"
+name_en: "PaloAlto - Single Source IP Mass Drop-Deny (Reconnaissance / Brute Force)"
+description_uz: |
   Bitta manba IP manzilidan qisqa vaqt ichida ko'p sonli drop/deny
   voqealari aniqlandi. Bu port skanerlash, brute force yoki automated
   exploit urinishining aniq belgisi (T1190, T1072).
@@ -11,6 +13,28 @@ description: |
   - Maqsad portlar ketma-ketligini solishtiring (sequential = scan)
   - Pentest jadvali va ruxsatnomalarini tekshiring
   - Kerak bo'lsa IP'ni vaqtincha bloklang
+description_ru: |
+  С одного исходного IP-адреса за короткий промежуток времени обнаружено большое количество
+  событий drop/deny. Это явный признак сканирования портов, перебора паролей (brute force) или
+  автоматизированной попытки эксплуатации (T1190, T1072).
+  Легитимные случаи: система мониторинга, pentest (согласованный заранее).
+  Этапы SOC-триажа:
+  - Проверьте исходный IP по threat intel (VirusTotal, AbuseIPDB)
+  - Определите, внутренний это IP или внешний
+  - Сопоставьте последовательность целевых портов (последовательные = сканирование)
+  - Проверьте график pentest и выданные разрешения
+  - При необходимости временно заблокируйте IP
+description_en: |
+  A large number of drop/deny events from a single source IP address was detected
+  within a short time window. This is a clear sign of port scanning, brute force or an automated
+  exploit attempt (T1190, T1072).
+  Legitimate cases: monitoring system, pentest (agreed in advance).
+  SOC triage steps:
+  - Check the source IP against threat intel (VirusTotal, AbuseIPDB)
+  - Determine whether the IP is internal or external
+  - Compare the sequence of target ports (sequential = scan)
+  - Check the pentest schedule and authorizations
+  - Temporarily block the IP if needed
 type: esql
 params: '{}'
 schedule_interval: 5m

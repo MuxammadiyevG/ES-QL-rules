@@ -1,6 +1,16 @@
 rule_id: a08ce517-bf65-4a5f-8f84-77b61c4c5670
-name: "Suspicious VSFTPD Error Messages"
-description: |
+name_uz: "Shubhali VSFTPD xato xabarlari"
+name_ru: "Подозрительные сообщения об ошибках VSFTPD"
+name_en: "Suspicious VSFTPD Error Messages"
+description_uz: |
+  Halokatli yoki g'ayritabiiy xatti-harakatdan darak beruvchi shubhali VSFTPD xato xabarlarini aniqlaydi.
+  Bunday xatolar ekspluatatsiya urinishlari, noto'g'ri sozlamalar yoki zararli mijozlar sabab yuzaga kelishi mumkin.
+  VSFTPD xato xabarlari logs-switch.syslog-* ga yig'iladigan syslog uslubidagi loglarda ko'rinadi.
+description_ru: |
+  Обнаруживает подозрительные сообщения об ошибках VSFTPD, указывающие на фатальное или аномальное поведение.
+  Такие ошибки могут быть вызваны попытками эксплуатации, ошибками конфигурации или вредоносными клиентами.
+  Сообщения об ошибках VSFTPD появляются в логах syslog-формата, попадающих в logs-switch.syslog-*.
+description_en: |
   Detects suspicious VSFTPD error messages that indicate fatal or abnormal behavior.
   Such errors may be caused by exploitation attempts, misconfigurations, or malicious clients.
   VSFTPD error messages appear in syslog-style logs ingested into logs-switch.syslog-*.

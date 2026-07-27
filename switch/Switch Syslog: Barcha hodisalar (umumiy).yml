@@ -1,8 +1,16 @@
 rule_id: 9348a282-86b8-4735-8ebf-2520ba976430
-name: "Switch Syslog: Barcha hodisalar (umumiy)"
-description: |
+name_uz: "Switch Syslog: Barcha hodisalar (umumiy)"
+name_ru: "Switch Syslog: Все события (общее)"
+name_en: "Switch Syslog: All Events (General)"
+description_uz: |
   Switchdan kelgan barcha syslog hodisalari.
   Facility, switch nomi, vaqt bo'yicha umumiy ko'rinish.
+description_ru: |
+  Все события syslog, полученные от switch.
+  Общий обзор по facility, имени switch и времени.
+description_en: |
+  All syslog events received from the switch.
+  A general overview by facility, switch name and time.
 type: esql
 params: '{}'
 schedule_interval: 5m

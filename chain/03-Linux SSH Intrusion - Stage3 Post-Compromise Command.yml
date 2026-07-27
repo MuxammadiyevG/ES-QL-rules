@@ -1,9 +1,19 @@
 rule_id: 4b6f7d9a-7a4e-4c4a-9a77-0d5f5e4c0003
-name: "Chain: Post-Compromise Command After SSH Access (Linux)"
-description: |
+name_uz: "Zanjir: SSH kirishdan keyingi post-kompromitatsiya buyrug'i (Linux)"
+name_ru: "Цепочка: Команда после компрометации через SSH-доступ (Linux)"
+name_en: "Chain: Post-Compromise Command After SSH Access (Linux)"
+description_uz: |
   Linux SSH zanjiri — 3-bosqich.
   Muvaffaqiyatli SSH kirishdan keyin o'sha host'da shubhali buyruq (recon/download/shell yoki /tmp dan ishga tushirish).
   2-bosqichga bog'langan.
+description_ru: |
+  Цепочка Linux SSH — этап 3.
+  После успешного SSH-входа подозрительная команда на том же host (recon/download/shell или запуск из /tmp).
+  Связан с этапом 2.
+description_en: |
+  Linux SSH chain — stage 3.
+  After a successful SSH login, a suspicious command on the same host (recon/download/shell or execution from /tmp).
+  Linked to stage 2.
 type: esql
 enabled: true
 params: "{}"

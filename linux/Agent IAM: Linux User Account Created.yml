@@ -1,6 +1,8 @@
 rule_id: 66e91d04-0398-4f7b-90f9-c0ae38c385f5
-name: "Agent IAM: Linux User Account Created"
-description: |
+name_uz: "Agent IAM: Linux foydalanuvchi akkaunti yaratildi"
+name_ru: "Agent IAM: Создана учётная запись пользователя Linux"
+name_en: "Agent IAM: Linux User Account Created"
+description_uz: |
   Ushbu qoida Persistence texnikasiga bog'liq bo'lib, tizimda yangi foydalanuvchi yaratilishini aniqlaydi.
   Hujumchi persistence ta'minlash yoki backdoor yaratish maqsadida yangi account ochayotgan bo'lishi mumkin.
   Qonuniy holatlar: IT onboarding jarayonlari, avtomatik provisioning skriptlari, Docker container yaratish.
@@ -10,6 +12,26 @@ description: |
   - Yaratish vaqtini (`@timestamp`) ish soatlari bilan solishtiring.
   - Tasdiqlangan HR yoki DevOps ticketi borligini tekshiring.
   - Noqonuniy bo'lsa: accountni o'chirib tashlang, sessiyani tugatib, incident oching.
+description_ru: |
+  Это правило связано с техникой Persistence и выявляет создание нового пользователя в системе.
+  Злоумышленник может создавать новую учётную запись с целью закрепления или создания backdoor.
+  Легитимные случаи: процессы IT-онбординга, скрипты автоматического provisioning, создание Docker container.
+  Шаги SOC-триажа:
+  - По `host.hostname` и `user.effective.name` определите, кем она была создана.
+  - Проверьте имя новой учётной записи (`auditd.summary.object.primary`) и GID.
+  - Сопоставьте время создания (`@timestamp`) с рабочими часами.
+  - Проверьте наличие согласованной заявки HR или DevOps.
+  - Если нелегитимно: удалите учётную запись, завершите сессию и заведите инцидент.
+description_en: |
+  This rule is related to the Persistence technique and detects the creation of a new user on the system.
+  An attacker may be creating a new account in order to establish persistence or to create a backdoor.
+  Legitimate cases: IT onboarding processes, automated provisioning scripts, Docker container creation.
+  SOC triage steps:
+  - Determine who created it via `host.hostname` and `user.effective.name`.
+  - Check the new account name (`auditd.summary.object.primary`) and the GID.
+  - Compare the creation time (`@timestamp`) with business hours.
+  - Check whether there is an approved HR or DevOps ticket.
+  - If illegitimate: delete the account, terminate the session and open an incident.
 type: esql
 params: '{}'
 schedule_interval: 5m

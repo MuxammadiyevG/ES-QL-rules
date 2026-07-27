@@ -1,6 +1,18 @@
 rule_id: 47d7c859-7340-48eb-80f9-716a67dca623
-name: "Credential Search in Files - Linux"
-description: |
+name_uz: "Fayllarda credential qidirish - Linux"
+name_ru: "Поиск учётных данных в файлах - Linux"
+name_en: "Credential Search in Files - Linux"
+description_uz: |
+  grep yordamida fayllardan parollarni ajratib olishga urinishlarni aniqlaydi.
+  Tajovuzkorlar parollar bo'lgan fayllarni topish uchun lokal fayl tizimlari va masofaviy fayl ulashmalarini (share) qidirishi mumkin.
+  Bu usul odatda credential/hisob ma'lumotlarini yig'ish va post-exploitation faoliyatida ishlatiladi.
+  Eslatma: qonuniy parolni tiklash yoki konfiguratsiya ishlari tufayli false positive yuzaga kelishi mumkin.
+description_ru: |
+  Обнаруживает попытки извлечения паролей из файлов с помощью grep.
+  Злоумышленники могут искать файлы с паролями в локальных файловых системах и на удалённых файловых ресурсах.
+  Этот приём обычно используется при сборе учётных данных и активности после эксплуатации (post-exploitation).
+  Примечание: возможны ложные срабатывания из-за легитимного сброса паролей или работ с конфигурацией.
+description_en: |
   Detects attempts to extract passwords from files using grep.
   Adversaries may search local file systems and remote file shares for files containing passwords.
   This pattern is commonly used in credential harvesting and post-exploitation activities.

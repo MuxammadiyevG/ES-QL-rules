@@ -1,6 +1,8 @@
 rule_id: ffb30f0c-9711-48e8-bb48-1a9d431992e9
-name: PowerShell Hosted in Unusual Process
-description: |
+name_uz: "PowerShell noodatiy jarayonda yuklangan"
+name_ru: "PowerShell размещён в необычном процессе"
+name_en: "PowerShell Hosted in Unusual Process"
+description_uz: |
   Ushbu qoida PowerShell engine'ning noodatiy jarayonda yuklanishini aniqlaydi (Windows
   PowerShell 400/600, HostApplication powershell/ISE emas) — bu unmanaged PowerShell /
   custom runspace (Cobalt Strike, injection) belgisidir (T1059.001).
@@ -8,6 +10,22 @@ description: |
   kengaytiring; shuning uchun dastlab enabled:false.
   SOC triage:
   - `details` da HostApplication nima? Ro'yxatdagi bo'lmasa — chuqur tekshiring.
+description_ru: |
+  Это правило обнаруживает загрузку движка PowerShell в необычном процессе (Windows
+  PowerShell 400/600, HostApplication не powershell/ISE) — это признак unmanaged PowerShell /
+  custom runspace (Cobalt Strike, injection) (T1059.001).
+  ПРИМЕЧАНИЕ: легитимных хостов много (sqlps, vscode...) — расширьте allowlist под своё
+  окружение; поэтому изначально enabled:false.
+  SOC triage:
+  - Что в `details` указано в HostApplication? Если его нет в списке — проверьте углублённо.
+description_en: |
+  This rule detects the PowerShell engine being loaded in an unusual process (Windows
+  PowerShell 400/600, HostApplication other than powershell/ISE) — a sign of unmanaged
+  PowerShell / a custom runspace (Cobalt Strike, injection) (T1059.001).
+  NOTE: there are many legitimate hosts (sqlps, vscode...) — extend the allowlist to fit
+  your own environment; that is why it is enabled:false initially.
+  SOC triage:
+  - What is HostApplication in `details`? If it is not on the list — investigate in depth.
 type: esql
 params: '{}'
 schedule_interval: 10m

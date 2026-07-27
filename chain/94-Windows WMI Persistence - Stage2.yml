@@ -1,9 +1,19 @@
 rule_id: 6639d274-6c41-497c-9b19-2a5d71be9873
-name: "Chain: Windows WMI Persistence — Stage 2: Suspicious Process Execution After WMI Activity"
-description: |
+name_uz: "Zanjir: Windows WMI orqali mustahkamlanish (persistence) — 2-bosqich: WMI faoliyatidan keyin shubhali jarayon ishga tushishi"
+name_ru: "Цепочка: закрепление через WMI в Windows — Этап 2: подозрительный запуск процесса после активности WMI"
+name_en: "Chain: Windows WMI Persistence — Stage 2: Suspicious Process Execution After WMI Activity"
+description_uz: |
   Windows WMI Persistence zanjiri — 2-bosqich (2 dan).
   Suspicious Process Execution After WMI Activity.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка закрепления через WMI в Windows — Этап 2 (из 2).
+  Подозрительный запуск процесса после активности WMI.
+  Связан с предыдущим этапом (stage 1).
+description_en: |
+  Windows WMI Persistence chain — Stage 2 (of 2).
+  Suspicious Process Execution After WMI Activity.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

@@ -1,6 +1,8 @@
 rule_id: 0e1af39f-7c4b-44ab-aea0-e35da22efbe7
-name: Fortigate - SSL VPN Multiple Failed Login Attempts
-description: |
+name_uz: "Fortigate - SSL VPN'da ko'p marta muvaffaqiyatsiz login urinishlari"
+name_ru: "Fortigate - Множественные неудачные попытки входа в SSL VPN"
+name_en: "Fortigate - SSL VPN Multiple Failed Login Attempts"
+description_uz: |
   Ushbu qoida Fortigate SSL VPN'da bir xil manbadan ko'p marta muvaffaqiyatsiz login urinishlarini aniqlaydi.
   SSL VPN external access nuqtasi bo'lganligi uchun bu juda xavfli hodisa (T1110, T1133).
   Qonuniy holatlar: foydalanuvchi parol xatosi, VPN client konfiguratsiya muammolari.
@@ -10,6 +12,26 @@ description: |
   - VPN urinishlarining time pattern'ini tahlil qiling
   - Muvaffaqiyatli VPN ulanish bo'lganmi tekshiring
   - Zarur bo'lsa IP blocking amalga oshiring
+description_ru: |
+  Данное правило выявляет многократные неудачные попытки входа в Fortigate SSL VPN из одного и того же источника.
+  Поскольку SSL VPN является точкой внешнего доступа, это очень опасное событие (T1110, T1133).
+  Легитимные случаи: ошибка пароля пользователя, проблемы конфигурации VPN client.
+  Этапы SOC-триажа:
+  - Проверьте IP-адрес источника по threat intelligence
+  - Подтвердите легитимность user name
+  - Проанализируйте time pattern VPN-попыток
+  - Проверьте, было ли успешное VPN-подключение
+  - При необходимости выполните блокировку IP
+description_en: |
+  This rule detects repeated failed login attempts to the Fortigate SSL VPN from the same source.
+  Because SSL VPN is an external access point, this is a highly dangerous event (T1110, T1133).
+  Legitimate cases: user password error, VPN client configuration issues.
+  SOC triage steps:
+  - Check the source IP address against threat intelligence
+  - Confirm the legitimacy of the user name
+  - Analyze the time pattern of the VPN attempts
+  - Check whether a successful VPN connection occurred
+  - Perform IP blocking if necessary
 type: esql
 params: '{}'
 schedule_interval: 10m

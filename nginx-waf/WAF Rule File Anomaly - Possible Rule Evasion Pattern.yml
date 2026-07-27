@@ -1,6 +1,8 @@
 rule_id: c3a24684-e440-4013-a8cd-4eb4ca11c22d
-name: WAF Rule File Anomaly - Possible Rule Evasion Pattern
-description: |
+name_uz: "WAF qoida fayli anomaliyasi - qoidadan qochish patterni ehtimoli"
+name_ru: "Аномалия файла правил WAF - возможный шаблон обхода правил"
+name_en: "WAF Rule File Anomaly - Possible Rule Evasion Pattern"
+description_uz: |
   Turli WAF rule fayllari va line numberlardan bir vaqtda triggerlanish aniqlandi.
   Bu hujumchi tomonidan WAF qoidalarining chegaralarini sinovdan o'tkazish,
   rule evasion texnikalarini qo'llash (encoding, obfuscation, fragmentation)
@@ -11,6 +13,28 @@ description: |
   - `rule.version` (OWASP CRS versiyasi) ni tekshiring — eski versiya exploit bo'layotgan bo'lishi mumkin.
   - WAF konfiguratsiyasini audit qiling va evasion imkoniyati bo'lgan qoidalarni mustahkamlang.
   - OWASP CRS ni so'nggi versiyaga yangilash zarurligini baholang.
+description_ru: |
+  Обнаружено одновременное срабатывание из разных файлов правил WAF и с разных номеров строк.
+  Это может быть попыткой атакующего проверить границы правил WAF,
+  применить техники rule evasion (encoding, obfuscation, fragmentation)
+  или найти уязвимости в конфигурации WAF.
+  Этапы SOC-триажа:
+  - По `file.path` и `rule.monitor.line` определите, какие конкретные модули WAF стали целью.
+  - Изучите payload'ы в `nginx.modsecurity.match_data` и поищите паттерны obfuscation (URL encoding, unicode bypass, case manipulation).
+  - Проверьте `rule.version` (версия OWASP CRS) — возможно, эксплуатируется старая версия.
+  - Проведите аудит конфигурации WAF и усильте правила, допускающие evasion.
+  - Оцените необходимость обновления OWASP CRS до последней версии.
+description_en: |
+  Simultaneous triggering from different WAF rule files and line numbers was detected.
+  This may be an attempt by an attacker to probe the boundaries of the WAF rules,
+  apply rule evasion techniques (encoding, obfuscation, fragmentation)
+  or look for WAF configuration weaknesses.
+  SOC triage steps:
+  - Based on `file.path` and `rule.monitor.line`, determine which specific WAF modules are being targeted.
+  - Review the payloads in `nginx.modsecurity.match_data` and look for obfuscation patterns (URL encoding, unicode bypass, case manipulation).
+  - Check `rule.version` (the OWASP CRS version) — an old version may be being exploited.
+  - Audit the WAF configuration and harden the rules that allow evasion.
+  - Assess whether OWASP CRS needs to be updated to the latest version.
 type: esql
 params: '{}'
 schedule_interval: 5m

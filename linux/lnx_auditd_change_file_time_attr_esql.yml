@@ -1,6 +1,14 @@
 rule_id: 9eaaa4f9-907d-4d74-9ace-06037bab3eb7
-name: "File Time Attribute Modification"
-description: |
+name_uz: "Fayl vaqt atributini o'zgartirish"
+name_ru: "Изменение временных атрибутов файла"
+name_en: "File Time Attribute Modification"
+description_uz: |
+  touch buyrug'i yordamida fayl vaqt atributlari o'zgartirilishini aniqlaydi.
+  Tajovuzkorlar yangi fayllarni yoki mavjud fayllardagi o'zgarishlarni yashirish uchun fayl vaqt atributlarini o'zgartirishi mumkin (timestomping).
+description_ru: |
+  Обнаруживает изменение временных атрибутов файлов с помощью команды touch.
+  Злоумышленники могут изменять временные атрибуты файлов, чтобы скрыть новые файлы или изменения в существующих (timestomping).
+description_en: |
   Detects file time attribute changes using touch command.
   Adversaries may modify file time attributes to hide new or changes to existing files (timestomping).
 type: esql

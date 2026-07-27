@@ -1,6 +1,8 @@
 rule_id: b593f0fe-e059-4e41-84a8-100243b1b78f
-name: "PAN-OS: Internal Host Communicating with Multiple External IPs via SSL"
-description: |
+name_uz: "PAN-OS: ichki host SSL orqali ko'p sonli tashqi IP'lar bilan aloqada"
+name_ru: "PAN-OS: внутренний хост связывается с множеством внешних IP по SSL"
+name_en: "PAN-OS: Internal Host Communicating with Multiple External IPs via SSL"
+description_uz: |
   Ushbu qoida bitta ichki host tomonidan qisqa vaqt ichida ko'p sonli tashqi IP manzillarga SSL ulanishlarini kuzatadi.
   Bu holat browser'ning parallel ulanishlari, CDN foydalanishi yoki — anomal bo'lsa — scanning, DGA (Domain Generation Algorithm) yoki C2 beacon urinishlarini ko'rsatishi mumkin.
   Logda 10.25.255.6 manbai 194.93.25.227 ga o'nlab parallel sessiya ochgan — bu pattern tahlil qilinishi kerak.
@@ -10,6 +12,26 @@ description: |
   - Portlar standartmi (443) yoki noodatiy?
   - Sessiya davomiyligi juda qisqami? (beacon pattern bo'lishi mumkin)
   - Manbaning foydalanuvchisi va qurilmasini aniqlang.
+description_ru: |
+  Это правило отслеживает SSL-подключения одного внутреннего хоста к большому числу внешних IP-адресов за короткое время.
+  Это может быть параллельные подключения браузера, использование CDN или — если аномально — scanning, DGA (Domain Generation Algorithm) либо попытки C2 beacon.
+  В логе источник 10.25.255.6 открыл десятки параллельных сессий к 194.93.25.227 — этот паттерн необходимо проанализировать.
+  Легитимные случаи: параллельные TCP-подключения веб-браузера, видеостриминг, обновление ПО.
+  Этапы SOC-триажа:
+  - К скольким уникальным внешним IP было выполнено подключение?
+  - Порты стандартные (443) или необычные?
+  - Слишком ли короткая длительность сессий? (возможен beacon-паттерн)
+  - Определите пользователя и устройство источника.
+description_en: |
+  This rule monitors SSL connections from a single internal host to a large number of external IP addresses in a short time.
+  This may be a browser's parallel connections, CDN usage or — if anomalous — scanning, DGA (Domain Generation Algorithm) or C2 beacon attempts.
+  In the log, source 10.25.255.6 opened dozens of parallel sessions to 194.93.25.227 — this pattern must be analyzed.
+  Legitimate cases: parallel TCP connections of a web browser, video streaming, software update.
+  SOC triage steps:
+  - How many unique external IPs were connected to?
+  - Are the ports standard (443) or unusual?
+  - Is the session duration very short? (may be a beacon pattern)
+  - Identify the user and device of the source.
 type: esql
 params: '{}'
 schedule_interval: 5m

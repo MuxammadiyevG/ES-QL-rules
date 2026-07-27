@@ -1,7 +1,15 @@
 rule_id: e6cb85d0-8d0c-44e6-ba87-fdc4a8b9034f
-name: "Chain: Windows RDP Lateral Movement — Stage 1: RDP Interactive Logon from Remote IP"
-description: |
+name_uz: "Zanjir: Windows RDP Lateral Movement — 1-bosqich: Masofaviy IP'dan RDP interaktiv logon"
+name_ru: "Цепочка: Windows RDP Lateral Movement — Этап 1: Интерактивный вход по RDP с удалённого IP"
+name_en: "Chain: Windows RDP Lateral Movement — Stage 1: RDP Interactive Logon from Remote IP"
+description_uz: |
   Windows RDP Lateral Movement zanjiri — 1-bosqich (2 dan).
+  RDP Interactive Logon from Remote IP.
+description_ru: |
+  Цепочка Windows RDP Lateral Movement — этап 1 (из 2).
+  Интерактивный вход по RDP с удалённого IP.
+description_en: |
+  Windows RDP Lateral Movement chain — stage 1 (of 2).
   RDP Interactive Logon from Remote IP.
 type: esql
 enabled: true

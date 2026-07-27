@@ -1,11 +1,25 @@
 rule_id: 623dc991-f131-4398-840e-58c194ea634d
-name: Executable Dropped to System32 / Drivers by Non-System Process
-description: |
+name_uz: "Tizimga oid bo'lmagan jarayon tomonidan System32 / Drivers ga bajariluvchi fayl yozilishi"
+name_ru: "Запись исполняемого файла в System32 / Drivers несистемным процессом"
+name_en: "Executable Dropped to System32 / Drivers by Non-System Process"
+description_uz: |
   Ushbu qoida System32 yoki drivers papkasiga exe/dll/sys yozilishini aniqlaydi (Sysmon 11),
   ishonchli o'rnatuvchi (TrustedInstaller/msiexec/WU) bo'lmagan jarayon tomonidan — xizmat/
   drayver persistence yoki DLL search-order hijack (T1543.003/T1574).
   SOC triage:
   - `files`/`images` — qaysi fayl, kim yozdi? Patch/installer emasmi?
+description_ru: |
+  Данное правило выявляет запись exe/dll/sys в папку System32 или drivers (Sysmon 11)
+  процессом, не являющимся доверенным установщиком (TrustedInstaller/msiexec/WU) — закрепление службы/
+  драйвера или DLL search-order hijack (T1543.003/T1574).
+  SOC triage:
+  - `files`/`images` — какой файл, кто его записал? Не патч/установщик ли это?
+description_en: |
+  This rule detects writing of exe/dll/sys into the System32 or drivers folder (Sysmon 11)
+  by a process that is not a trusted installer (TrustedInstaller/msiexec/WU) — service/
+  driver persistence or DLL search-order hijack (T1543.003/T1574).
+  SOC triage:
+  - `files`/`images` — which file, who wrote it? Is it not a patch/installer?
 type: esql
 params: '{}'
 schedule_interval: 10m

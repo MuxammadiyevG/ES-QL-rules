@@ -1,6 +1,8 @@
 rule_id: 277d1fc2-06da-425f-b154-1d748b956f15
-name: "Agent Lateral Movement: SSH Outbound Connection to External Host"
-description: |
+name_uz: "Agent Lateral Movement: Tashqi hostga chiquvchi SSH ulanishi"
+name_ru: "Agent Lateral Movement: Исходящее SSH-подключение к внешнему хосту"
+name_en: "Agent Lateral Movement: SSH Outbound Connection to External Host"
+description_uz: |
   Ushbu qoida Lateral Movement va Exfiltration texnikalariga bog'liq bo'lib, tizimdan tashqi
   manzillarga SSH ulanishlarini aniqlaydi. Hujumchi o'g'irlangan credentials yoki SSH kalitlaridan
   foydalanib tashqi infratuzilmaga yoki C2 serveriga ulanishi mumkin.
@@ -12,6 +14,30 @@ description: |
   - `auditd.data.tty` interaktiv (pts/X) bo'lsa — inson tomonidan bajarilgan.
   - Manzil tashkilotga tegishli IP/domenmi yoki begona ekanligini tekshiring.
   - Noqonuniy bo'lsa: SSH sessiyani bloklang, tarmoq loglarini tekshiring, credentials rotatsiya qiling.
+description_ru: |
+  Это правило связано с техниками Lateral Movement и Exfiltration и выявляет SSH-подключения
+  из системы на внешние адреса. Злоумышленник может использовать украденные credentials или SSH-ключи
+  для подключения к внешней инфраструктуре или к C2-серверу.
+  Легитимные случаи: операции git pull/push разработчиков, администрирование системы, перенос данных.
+  Шаги SOC-триажа:
+  - Проверьте адрес и команду в `process.title` (например, git@github.com, другой хост).
+  - `auditd.summary.actor.primary` — каким пользователем это выполнено.
+  - `process.working_directory` — определите, из какого проекта или каталога это выполнено.
+  - Если `auditd.data.tty` интерактивный (pts/X) — выполнено человеком.
+  - Проверьте, принадлежит ли адрес IP/домену организации или является сторонним.
+  - Если нелегитимно: заблокируйте SSH-сессию, проверьте сетевые логи, выполните ротацию credentials.
+description_en: |
+  This rule is related to Lateral Movement and Exfiltration techniques and detects SSH connections
+  from the system to external addresses. An attacker may use stolen credentials or SSH keys
+  to connect to external infrastructure or to a C2 server.
+  Legitimate cases: developer git pull/push operations, system administration, data transfer.
+  SOC triage steps:
+  - Check the address and the command in `process.title` (for example, git@github.com, another host).
+  - `auditd.summary.actor.primary` — which user performed it.
+  - `process.working_directory` — determine from which project or directory it was run.
+  - If `auditd.data.tty` is interactive (pts/X) — it was performed by a human.
+  - Check whether the address is an IP/domain belonging to the organization or a foreign one.
+  - If illegitimate: block the SSH session, review network logs, rotate the credentials.
 type: esql
 params: '{}'
 schedule_interval: 5m

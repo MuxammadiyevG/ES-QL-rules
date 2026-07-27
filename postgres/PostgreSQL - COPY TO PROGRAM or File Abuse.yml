@@ -1,6 +1,8 @@
 rule_id: 1b244bae-aaab-4555-8800-a3c3dafccf01
-name: PostgreSQL - COPY TO PROGRAM or File Abuse
-description: |
+name_uz: "PostgreSQL - COPY TO PROGRAM yoki Fayl Suiiste'moli"
+name_ru: "PostgreSQL - злоупотребление COPY TO PROGRAM или файловыми функциями"
+name_en: "PostgreSQL - COPY TO PROGRAM or File Abuse"
+description_uz: |
   Ushbu qoida PostgreSQL log (logs-postgresql.log-*) ichida operatsion tizim buyrug'ini
   ishga tushiruvchi yoki server fayllariga o'qish/yozish imkonini beruvchi xavfli
   funksiyalarni aniqlaydi: COPY ... TO/FROM PROGRAM, pg_read_file, pg_write_file,
@@ -12,6 +14,30 @@ description: |
   - PROGRAM target yoki fayl yo'lini tekshiring — shubhali binar yoki maxfiy fayl emasmi.
   - Foydalanuvchi superuser huquqiga ega bo'lishi kerakligini tasdiqlang.
   - Noqonuniy faoliyat tasdiqlansa: sessiyani uzing, credentiallarni rotatsiya qiling.
+description_ru: |
+  Данное правило выявляет в журнале PostgreSQL (logs-postgresql.log-*) опасные функции,
+  запускающие команду операционной системы или дающие возможность чтения/записи
+  файлов сервера: COPY ... TO/FROM PROGRAM, pg_read_file, pg_write_file,
+  lo_export, lo_import. Это может указывать на технику command execution (T1059)
+  или data exfiltration (T1041).
+  Легитимные случаи: ETL/backup-конвейеры, известные административные скрипты импорта/экспорта.
+  Шаги SOC-триажа:
+  - Определите, кто (`actor`) и в какой `db.name` выполнил команду.
+  - Проверьте цель PROGRAM или путь к файлу — не подозрительный ли это бинарь или конфиденциальный файл.
+  - Подтвердите, что пользователь должен обладать правами superuser.
+  - При подтверждении нелегитимной активности: разорвите сессию, произведите ротацию учётных данных.
+description_en: |
+  This rule detects, inside the PostgreSQL log (logs-postgresql.log-*), dangerous functions
+  that run an operating system command or allow reading/writing server files:
+  COPY ... TO/FROM PROGRAM, pg_read_file, pg_write_file,
+  lo_export, lo_import. This may point to the command execution (T1059)
+  or data exfiltration (T1041) technique.
+  Legitimate cases: ETL/backup pipeline, known administrative import/export scripts.
+  SOC triage steps:
+  - Determine who (`actor`) executed the command and in which `db.name`.
+  - Check the PROGRAM target or the file path — is it a suspicious binary or a sensitive file.
+  - Confirm that the user is supposed to have superuser privileges.
+  - If illegitimate activity is confirmed: terminate the session, rotate the credentials.
 type: esql
 params: '{}'
 schedule_interval: 10m

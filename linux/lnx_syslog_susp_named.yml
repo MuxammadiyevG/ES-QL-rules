@@ -1,6 +1,16 @@
 rule_id: aea78bea-08ec-4daa-9063-4e0dc91c058f
-name: "Suspicious Named Error"
-description: |
+name_uz: "Shubhali named xatosi"
+name_ru: "Подозрительная ошибка named"
+name_en: "Suspicious Named Error"
+description_uz: |
+  Halokatli yoki g'ayritabiiy xatti-harakatdan darak beruvchi shubhali DNS (BIND/named) xato xabarlarini aniqlaydi.
+  Bunday xatolar ekspluatatsiya urinishlari, zone transfer suiiste'moli yoki noto'g'ri shakllangan paketlar sabab yuzaga kelishi mumkin.
+  named/BIND demonining xom chiqishini o'z ichiga olgan syslog xabarlariga qaratilgan.
+description_ru: |
+  Обнаруживает подозрительные сообщения об ошибках DNS (BIND/named), указывающие на фатальное или аномальное поведение.
+  Такие ошибки могут быть вызваны попытками эксплуатации, злоупотреблением zone transfer или некорректно сформированными пакетами.
+  Ориентировано на сообщения syslog, содержащие необработанный вывод демона named/BIND.
+description_en: |
   Detects suspicious DNS (BIND/named) error messages that indicate fatal or abnormal behavior.
   Such errors may be caused by exploitation attempts, zone transfer abuse, or malformed packets.
   Targets syslog messages containing raw named/BIND daemon output.

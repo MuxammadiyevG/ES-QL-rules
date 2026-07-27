@@ -1,8 +1,16 @@
 rule_id: e41f3041-94d0-4345-b919-c164e5123fbf
-name: UniFi Receive SFP Signal Loss
-description: |
+name_uz: "UniFi SFP receive signali yo'qolishi"
+name_ru: "Потеря принимаемого сигнала SFP на UniFi"
+name_en: "UniFi Receive SFP Signal Loss"
+description_uz: |
   Ushbu qoida SFP modulida receive signal yo'qolishini aniqlaydi.
   Bu uplink uzilishi, optik kabel shikasti, modul nosozligi yoki ataylab uzib qo'yish oqibati bo'lishi mumkin.
+description_ru: |
+  Это правило обнаруживает потерю receive signal на модуле SFP.
+  Это может быть следствием обрыва uplink, повреждения оптического кабеля, неисправности модуля или преднамеренного отключения.
+description_en: |
+  This rule detects loss of the receive signal on an SFP module.
+  This may be the result of an uplink outage, optical cable damage, module failure or a deliberate disconnection.
 type: esql
 params: "{}"
 schedule_interval: 5m

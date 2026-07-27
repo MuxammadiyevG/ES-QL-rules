@@ -1,10 +1,22 @@
 rule_id: dab0c06e-db71-4fbf-af40-1831eb9eff1b
-name: "Windows File Server: File Handle Closed"
-description: |
+name_uz: "Windows File Server: Fayl Handle Yopildi"
+name_ru: "Windows File Server: закрытие дескриптора файла"
+name_en: "Windows File Server: File Handle Closed"
+description_uz: |
   Ushbu qoida Windows File Server’da fayl handle yopilganini aniqlaydi.
   4658 hodisasi handle closed holatini bildiradi. Bu eventda file path ko‘pincha
   bo‘sh bo‘lishi mumkin, shuning uchun `HandleId` orqali 4656/4663 bilan
   correlation qilish tavsiya etiladi.
+description_ru: |
+  Это правило выявляет закрытие дескриптора файла на Windows File Server.
+  Событие 4658 обозначает состояние handle closed. В этом событии file path часто
+  может быть пустым, поэтому рекомендуется выполнять корреляцию с 4656/4663
+  по `HandleId`.
+description_en: |
+  This rule detects that a file handle has been closed on a Windows File Server.
+  The 4658 event indicates the handle closed state. In this event the file path can often
+  be empty, therefore correlating with 4656/4663 via `HandleId`
+  is recommended.
 type: esql
 params: "{}"
 schedule_interval: 5m

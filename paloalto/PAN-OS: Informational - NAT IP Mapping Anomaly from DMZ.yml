@@ -1,6 +1,8 @@
 rule_id: 1ca604be-95b9-4620-ba94-3bef3da9cf2b
-name: "PAN-OS: Informational - NAT IP Mapping Anomaly from DMZ"
-description: |
+name_uz: "PAN-OS: informatsion - DMZ'dan NAT IP moslashuvidagi anomaliya"
+name_ru: "PAN-OS: информационное - аномалия сопоставления NAT IP из DMZ"
+name_en: "PAN-OS: Informational - NAT IP Mapping Anomaly from DMZ"
+description_uz: |
   Ushbu qoida DMZ zonasidagi serverlardan tashqariga chiqayotgan trafikda
   source.nat.ip manzillarining o'zgarishi yoki kutilmagan NAT IP'larni kuzatadi.
   Agar DMZ serveridan boshqa NAT IP'lar orqali trafik chiqsa — bu noqonuniy NAT konfiguratsiyasi,
@@ -11,6 +13,28 @@ description: |
   - Yangi yoki noma'lum NAT IP aniqlansa — network jamoasiga xabarlang.
   - source.nat.ip va destination.nat.ip kombinatsiyasini tekshiring.
   - related.ip field'idagi barcha IP'lar ruxsat etilganligini tekshiring.
+description_ru: |
+  Это правило отслеживает изменения адресов source.nat.ip или неожиданные NAT IP
+  в исходящем трафике серверов зоны DMZ.
+  Если трафик с сервера DMZ выходит через другие NAT IP — это может быть нелегитимная конфигурация NAT,
+  IP spoofing или несанкционированный туннель.
+  Легитимные случаи: IP-адреса балансировщика нагрузки, несколько NAT-пулов ISP.
+  Этапы SOC-триажа:
+  - Сравните список ожидаемых NAT IP с baseline.
+  - При обнаружении нового или неизвестного NAT IP — сообщите сетевой команде.
+  - Проверьте комбинацию source.nat.ip и destination.nat.ip.
+  - Проверьте, что все IP в поле related.ip разрешены.
+description_en: |
+  This rule monitors changes of source.nat.ip addresses or unexpected NAT IPs
+  in traffic going outbound from servers in the DMZ zone.
+  If traffic from a DMZ server leaves through other NAT IPs — this may be an illegitimate NAT configuration,
+  IP spoofing or an unauthorized tunnel.
+  Legitimate cases: load balancer IPs, multiple ISP NAT pools.
+  SOC triage steps:
+  - Compare the list of expected NAT IPs with the baseline.
+  - If a new or unknown NAT IP is detected — notify the network team.
+  - Check the combination of source.nat.ip and destination.nat.ip.
+  - Check that all IPs in the related.ip field are allowed.
 type: esql
 params: '{}'
 schedule_interval: 15m

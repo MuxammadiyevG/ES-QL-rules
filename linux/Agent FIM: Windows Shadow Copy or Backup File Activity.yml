@@ -1,6 +1,8 @@
 rule_id: 9a747660-40f8-4d43-aec8-27ed76b5ef9b
-name: "Agent FIM: Windows Shadow Copy or Backup File Activity"
-description: |
+name_uz: "Agent FIM: Windows Shadow Copy yoki backup fayl faoliyati"
+name_ru: "Agent FIM: активность Windows Shadow Copy или файлов резервных копий"
+name_en: "Agent FIM: Windows Shadow Copy or Backup File Activity"
+description_uz: |
   Ushbu qoida Impact texnikasiga bog'liq bo'lib, Windows Volume Shadow Copy (VSS)
   va backup fayllari bilan bog'liq o'zgarishlarni aniqlaydi. Ransomware odatda
   encryption boshlashdan avval shadow copylarni o'chiradi, shuning uchun bu katalogdagi
@@ -12,6 +14,30 @@ description: |
   - `file.mtime` — boshqa shubhali hodisalar bilan vaqt korrelatsiyasini tekshiring.
   - Tizimda boshqa FIM error hodisalari ko'payganmi — ransomware encrypting belgisi.
   - Noqonuniy bo'lsa: hostni izolyatsiya qiling, backup dan tiklang.
+description_ru: |
+  Данное правило связано с техникой Impact и обнаруживает изменения, связанные с Windows
+  Volume Shadow Copy (VSS) и файлами backup. Ransomware обычно
+  удаляет shadow copy перед началом encryption, поэтому изменения в этом каталоге
+  могут быть признаком pre-attack активности ransomware.
+  Легитимные случаи: Windows Backup, создание системной restore point.
+  Этапы SOC-триажа:
+  - `event.action` — если deleted, реагируйте немедленно.
+  - `file.name` — если удаляются файлы shadow copy, это этап ransomware.
+  - `file.mtime` — проверьте временную корреляцию с другими подозрительными событиями.
+  - Не выросло ли в системе число других событий FIM error — признак ransomware encrypting.
+  - Если нелегитимно: изолируйте хост, восстановите из backup.
+description_en: |
+  This rule is related to the Impact technique and detects changes involving Windows
+  Volume Shadow Copy (VSS) and backup files. Ransomware usually
+  deletes shadow copies before starting encryption, so changes in this directory
+  may be a sign of ransomware pre-attack activity.
+  Legitimate cases: Windows Backup, creation of a system restore point.
+  SOC triage steps:
+  - `event.action` — if deleted, respond immediately.
+  - `file.name` — if shadow copy files are deleted, this is a ransomware stage.
+  - `file.mtime` — check the time correlation with other suspicious events.
+  - Has the number of other FIM error events on the system increased — a sign of ransomware encrypting.
+  - If illegitimate: isolate the host, restore from backup.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,9 +1,19 @@
 rule_id: 20cf4e48-10b2-42e8-b57d-cf8c2d0a1176
-name: "Chain: Linux Defense Evasion: Log Clearing Followed by Firewall Flush — Stage 2: Firewall Rules Flushed"
-description: |
+name_uz: "Zanjir: Linux Defense Evasion: Log Clearing Followed by Firewall Flush — 2-bosqich: Firewall qoidalari tozalanishi"
+name_ru: "Цепочка: Linux Defense Evasion: Log Clearing Followed by Firewall Flush — Этап 2: Сброс правил firewall"
+name_en: "Chain: Linux Defense Evasion: Log Clearing Followed by Firewall Flush — Stage 2: Firewall Rules Flushed"
+description_uz: |
   Linux Defense Evasion: Log Clearing Followed by Firewall Flush zanjiri — 2-bosqich (2 dan).
   Firewall Rules Flushed.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Linux Defense Evasion: Log Clearing Followed by Firewall Flush — этап 2 (из 2).
+  Сброс правил firewall.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Linux Defense Evasion: Log Clearing Followed by Firewall Flush chain — stage 2 (of 2).
+  Firewall Rules Flushed.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

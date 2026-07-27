@@ -1,11 +1,25 @@
 rule_id: b6daab45-cfe4-4168-b8b5-fb31b3c9e7f7
-name: PowerShell Offensive Tooling
-description: |
+name_uz: "PowerShell hujum vositalari"
+name_ru: "Наступательный инструментарий PowerShell"
+name_en: "PowerShell Offensive Tooling"
+description_uz: |
   Ushbu qoida ScriptBlock (4104) ichida ma'lum hujum freymvorklari/funksiyalarini aniqlaydi:
   Mimikatz, Kerberoast, PowerView/PowerSploit, BloodHound/SharpHound, Rubeus, Invoke-Shellcode,
   Invoke-DCSync, PrintNightmare va h.k.
   SOC triage:
   - `sample_script` qaysi tool? `user`/`host` — darhol triage/izolyatsiya.
+description_ru: |
+  Это правило обнаруживает известные атакующие фреймворки/функции внутри ScriptBlock (4104):
+  Mimikatz, Kerberoast, PowerView/PowerSploit, BloodHound/SharpHound, Rubeus, Invoke-Shellcode,
+  Invoke-DCSync, PrintNightmare и т.д.
+  SOC triage:
+  - Какой инструмент в `sample_script`? `user`/`host` — немедленный триаж/изоляция.
+description_en: |
+  This rule detects known attack frameworks/functions inside a ScriptBlock (4104):
+  Mimikatz, Kerberoast, PowerView/PowerSploit, BloodHound/SharpHound, Rubeus, Invoke-Shellcode,
+  Invoke-DCSync, PrintNightmare, etc.
+  SOC triage:
+  - Which tool is in `sample_script`? `user`/`host` — triage/isolate immediately.
 type: esql
 params: '{}'
 schedule_interval: 10m

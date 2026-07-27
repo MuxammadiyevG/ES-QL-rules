@@ -1,6 +1,8 @@
 rule_id: 573c8066-44dd-4342-971d-0f14d1efd896
-name: Multi-Rule WAF Triggered - Compound Attack Chain Detected
-description: |
+name_uz: "Ko'p qoidali WAF triggeri - kompozit hujum zanjiri aniqlandi"
+name_ru: "Сработало несколько правил WAF - обнаружена составная цепочка атаки"
+name_en: "Multi-Rule WAF Triggered - Compound Attack Chain Detected"
+description_uz: |
   Bitta IP manzildan qisqa vaqt ichida bir nechta turli WAF qoidalari ishga tushdi.
   Bu bitta hujumchi yoki bot tomonidan bir vaqtning o'zida SQLi, XSS, LFI, RCE kabi
   turli attack vektorlari sinab ko'rilayotganligini bildiradi.
@@ -12,6 +14,30 @@ description: |
   - Maqsadli domen va endpoint ning zaif bo'lishi mumkin bo'lgan joylari (login, search, upload) ni tekshiring.
   - `event.severity` yuqori bo'lgan hodisalarga alohida e'tibor bering.
   - Birlashtirilgan hujum vektori aniqlanganda darhol application security jamoasini xabardor qiling.
+description_ru: |
+  С одного IP-адреса за короткое время сработало несколько разных правил WAF.
+  Это означает, что один атакующий или бот одновременно пробует
+  различные векторы атаки, такие как SQLi, XSS, LFI, RCE.
+  Такой паттерн обычно наблюдается при использовании широкого exploit framework
+  (Metasploit, sqlmap, OWASP ZAP) для поиска уязвимости.
+  Этапы SOC-триажа:
+  - Изучите список `triggered_rules` и определите, какие категории атак были объединены.
+  - По `rule.reference` и `file.path` проверьте, какой модуль OWASP CRS сработал.
+  - Проверьте потенциально уязвимые места целевого домена и endpoint (login, search, upload).
+  - Обратите особое внимание на события с высоким `event.severity`.
+  - При обнаружении комбинированного вектора атаки немедленно уведомите команду application security.
+description_en: |
+  Several different WAF rules were triggered from a single IP address within a short time.
+  This means that a single attacker or bot is simultaneously trying
+  various attack vectors such as SQLi, XSS, LFI, RCE.
+  Such a pattern is usually observed when a broad exploit framework
+  (Metasploit, sqlmap, OWASP ZAP) is used to find a vulnerability.
+  SOC triage steps:
+  - Review the `triggered_rules` list and determine which attack categories were combined.
+  - Based on `rule.reference` and `file.path`, check which OWASP CRS module was triggered.
+  - Check the potentially vulnerable areas of the target domain and endpoint (login, search, upload).
+  - Pay special attention to events with high `event.severity`.
+  - When a combined attack vector is identified, notify the application security team immediately.
 type: esql
 params: '{}'
 schedule_interval: 5m

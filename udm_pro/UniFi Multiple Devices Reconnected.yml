@@ -1,8 +1,16 @@
 rule_id: afb9171f-8168-4749-a9ec-2a1448e3b66d
-name: UniFi Multiple Devices Reconnected
-description: |
+name_uz: "Bir nechta UniFi qurilmasi qayta ulandi"
+name_ru: "Несколько устройств UniFi переподключились"
+name_en: "UniFi Multiple Devices Reconnected"
+description_uz: |
   Ushbu qoida bir nechta UniFi qurilmasi bir vaqtda qayta ulanganini aniqlaydi.
   Elektr uzilishi, switch restart, controller muammosi yoki uplink flapping holatlarini tekshiring.
+description_ru: |
+  Это правило обнаруживает одновременное переподключение нескольких устройств UniFi.
+  Проверьте случаи отключения электропитания, switch restart, проблемы контроллера или uplink flapping.
+description_en: |
+  This rule detects multiple UniFi devices reconnecting at the same time.
+  Check for a power outage, a switch restart, a controller issue or uplink flapping.
 type: esql
 params: "{}"
 schedule_interval: 5m

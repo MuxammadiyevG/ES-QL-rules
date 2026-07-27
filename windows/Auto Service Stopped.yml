@@ -1,6 +1,8 @@
 rule_id: ccd052a5-9edc-42fe-ae85-96ac6f81b0f1
-name: "Auto Service Stopped"
-description: |
+name_uz: "Avtomatik ishga tushadigan servis to'xtatildi"
+name_ru: "Остановлена служба с автоматическим запуском"
+name_en: "Auto Service Stopped"
+description_uz: |
   Ushbu qoida Impact texnikasiga bog'liq bo'lib, `Auto Service Stopped` kontekstida Windows serverda avtomatik ishga tushadigan servisning to'xtatilganligini aniqlaydi.
   Bu turdagi hodisa hujumchi muhim tizim servislarini o'chirish orqali xizmat ko'rsatishni buzish (DoS), monitoring tizimlarini o'chirish yoki persistence mexanizmlarini ishga tushirish maqsadida faoliyat yuritayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida rejalashtirilgan maintenance, servis yangilanishi, Windows Update jarayonlari yoki administrator tomonidan bajarilgan konfiguratsiya o'zgarishlari uchrashi mumkin.
@@ -11,6 +13,28 @@ description: |
   - Xostda boshqa shubhali hodisalar borligini tekshiring.
   - Clear condition: 10 daqiqa ichida servis qayta ishga tushsa alert avtomatik tozalanadi.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: servisni qayta tiklang, root cause ni aniqlang va hostni tekshiring.
+description_ru: |
+  Это правило связано с техникой Impact и выявляет в контексте `Auto Service Stopped` остановку службы с автоматическим запуском на сервере Windows.
+  Событие такого типа считается опасным, поскольку оно может указывать на то, что злоумышленник отключает важные системные службы с целью нарушения обслуживания (DoS), отключения систем мониторинга или запуска механизмов закрепления (persistence).
+  В качестве легитимных случаев могут встречаться плановое обслуживание (maintenance), обновление службы, процессы Windows Update или изменения конфигурации, выполненные администратором.
+  Этапы SOC-триажа:
+  - Точно идентифицируйте `winlog.computer_name` (хост) и `winlog.event_data.ServiceName` в событии.
+  - Проверьте, по какой причине служба была остановлена (вручную, сбой, отказ зависимости).
+  - Проверьте путь к файлу службы через `winlog.event_data.ServiceFileName`.
+  - Проверьте, есть ли на хосте другие подозрительные события.
+  - Clear condition: если служба перезапустится в течение 10 минут, алерт очищается автоматически.
+  - При подтверждении нелегитимной активности выполните оперативное сдерживание (containment): восстановите службу, определите первопричину (root cause) и проверьте хост.
+description_en: |
+  This rule is related to the Impact technique and detects, in the `Auto Service Stopped` context, that an automatically started service on a Windows server has been stopped.
+  An event of this type is considered dangerous because it may indicate that an attacker is disabling critical system services in order to disrupt service (DoS), turn off monitoring systems, or launch persistence mechanisms.
+  Legitimate cases may include planned maintenance, a service update, Windows Update processes, or configuration changes made by an administrator.
+  SOC triage steps:
+  - Precisely identify the `winlog.computer_name` (host) and `winlog.event_data.ServiceName` in the event.
+  - Check for what reason the service was stopped (manual, crash, dependency failure).
+  - Check the service file path via `winlog.event_data.ServiceFileName`.
+  - Check whether there are other suspicious events on the host.
+  - Clear condition: if the service restarts within 10 minutes, the alert is cleared automatically.
+  - If malicious activity is confirmed, perform immediate containment: restore the service, determine the root cause, and inspect the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,11 +1,25 @@
 rule_id: 779ed7e7-a0bb-4375-adf3-4daf7813dcb6
-name: PowerShell v2 Downgrade Attack
-description: |
+name_uz: "PowerShell v2 downgrade hujumi"
+name_ru: "Атака понижения до PowerShell v2"
+name_en: "PowerShell v2 Downgrade Attack"
+description_uz: |
   Ushbu qoida PowerShell v2'ga downgrade'ni aniqlaydi (Windows PowerShell, EventID 400,
   EngineVersion=2.x). PowerShell v2 ScriptBlock/AMSI logging'ni qo'llab-quvvatlamaydi — shu
   sabab hujumchilar log'dan qochish uchun `-version 2` ishlatadi (T1562.010/T1059.001).
   SOC triage:
   - `details` da EngineVersion=2.0 va HostApplication nima? Qonuniy legacy skriptmi?
+description_ru: |
+  Это правило обнаруживает понижение до PowerShell v2 (Windows PowerShell, EventID 400,
+  EngineVersion=2.x). PowerShell v2 не поддерживает ScriptBlock/AMSI logging — поэтому
+  атакующие используют `-version 2`, чтобы уйти от логирования (T1562.010/T1059.001).
+  SOC triage:
+  - Что в `details`: EngineVersion=2.0 и HostApplication? Легитимный ли это legacy-скрипт?
+description_en: |
+  This rule detects a downgrade to PowerShell v2 (Windows PowerShell, EventID 400,
+  EngineVersion=2.x). PowerShell v2 does not support ScriptBlock/AMSI logging — that is
+  why attackers use `-version 2` to evade logging (T1562.010/T1059.001).
+  SOC triage:
+  - What are EngineVersion=2.0 and HostApplication in `details`? Is it a legitimate legacy script?
 type: esql
 params: '{}'
 schedule_interval: 10m

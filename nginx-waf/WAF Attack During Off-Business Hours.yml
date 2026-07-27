@@ -1,6 +1,8 @@
 rule_id: 9771fb71-e1b2-4a73-860c-6ccc52454cde
-name: WAF Attack During Off-Business Hours
-description: |
+name_uz: "Ish vaqtidan tashqarida WAF hujumi"
+name_ru: "WAF-атака в нерабочее время"
+name_en: "WAF Attack During Off-Business Hours"
+description_uz: |
   Ish soatlaridan tashqarida (kechasi 22:00 dan 06:00 gacha yoki dam olish kunlari)
   WAF hujum hodisalari aniqlandi. Hujumchilar ko'pincha monitoring kamroq bo'lgan
   vaqtlarda hujumni amalga oshirishga harakat qiladi.
@@ -12,6 +14,30 @@ description: |
   - On-call SOC xodimiga darhol xabar bering.
   - Rejalashtirilgan maintenance oynasi bor-yo'qligini change management tizimidan tekshiring.
   - Agar ichki IP manzildan bo'lsa, insider threat stsenariyini ko'rib chiqing.
+description_ru: |
+  В нерабочее время (ночью с 22:00 до 06:00 или в выходные дни)
+  обнаружены события WAF-атак. Атакующие часто пытаются проводить атаку
+  в периоды, когда мониторинг слабее.
+  Это может быть insider threat, внешний атакующий, использующий разницу часовых поясов,
+  или запланированная (scheduled) автоматизированная атака.
+  Этапы SOC-триажа:
+  - Сопоставьте `source.geo.timezone` и время атаки — для атакующего это может быть рабочее время.
+  - Проверьте логи систем аутентификации и VPN за этот же интервал времени.
+  - Немедленно уведомите дежурного (on-call) сотрудника SOC.
+  - Проверьте в системе change management, есть ли запланированное окно maintenance.
+  - Если источник — внутренний IP-адрес, рассмотрите сценарий insider threat.
+description_en: |
+  Outside business hours (at night from 22:00 to 06:00 or on weekends)
+  WAF attack events were detected. Attackers often try to carry out attacks
+  at times when monitoring is lighter.
+  This may be an insider threat, an external attacker exploiting a time zone difference,
+  or a scheduled automated attack.
+  SOC triage steps:
+  - Compare `source.geo.timezone` with the attack time — it may be business hours for the attacker.
+  - Check authentication systems and VPN logs for the same time window.
+  - Notify the on-call SOC staff member immediately.
+  - Check the change management system for whether a planned maintenance window exists.
+  - If it comes from an internal IP address, consider an insider threat scenario.
 type: esql
 params: '{}'
 schedule_interval: 10m

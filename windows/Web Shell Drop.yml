@@ -1,11 +1,25 @@
 rule_id: 78c0de30-b93c-443e-83e4-32a266e3d29e
-name: Web Shell File Drop
-description: |
+name_uz: "Web Shell Fayl Tashlanishi"
+name_ru: "Сброс файла Web Shell"
+name_en: "Web Shell File Drop"
+description_uz: |
   Ushbu qoida web-server papkasiga (wwwroot/inetpub/htdocs/webapps) bajariladigan veb-fayl
   (.aspx/.asp/.php/.jsp/.ashx) yozilishini aniqlaydi (Sysmon 11) — web-shell persistence
   (T1505.003). Ayniqsa w3wp/php/tomcat jarayoni yozsa.
   SOC triage:
   - `files` qaysi, `images` qaysi jarayon (w3wp.exe → web-shell)? Faylni ko'rib chiqing.
+description_ru: |
+  Это правило выявляет запись исполняемого веб-файла в папку веб-сервера (wwwroot/inetpub/htdocs/webapps)
+  (.aspx/.asp/.php/.jsp/.ashx) (Sysmon 11) — закрепление через web-shell
+  (T1505.003). Особенно если запись выполняет процесс w3wp/php/tomcat.
+  SOC-триаж:
+  - Какие `files`, какой процесс `images` (w3wp.exe → web-shell)? Просмотрите файл.
+description_en: |
+  This rule detects an executable web file being written into a web server folder (wwwroot/inetpub/htdocs/webapps)
+  (.aspx/.asp/.php/.jsp/.ashx) (Sysmon 11) — web-shell persistence
+  (T1505.003). Especially if the w3wp/php/tomcat process writes it.
+  SOC triage:
+  - Which `files`, which process `images` (w3wp.exe → web-shell)? Review the file.
 type: esql
 params: '{}'
 schedule_interval: 10m

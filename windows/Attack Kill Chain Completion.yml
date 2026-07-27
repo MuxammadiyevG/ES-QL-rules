@@ -1,6 +1,8 @@
 rule_id: 0c1e5663-346f-48c6-acd1-b0d727805131
-name: "Attack Kill Chain Completion"
-description: |
+name_uz: "Hujum kill chain'ining yakunlanishi"
+name_ru: "Завершение цепочки атаки (kill chain)"
+name_en: "Attack Kill Chain Completion"
+description_uz: |
   Ushbu qoida murakkab ko'p bosqichli hujumlarni aniqlash uchun mo'ljallangan bo'lib, `Attack Kill Chain Completion` kontekstida bir xost da avval Execution taktikasi, so'ngra Persistence, Credential Access yoki Lateral Movement taktikalaridan birining kuzatilishini aniqlaydi.
   Bu turdagi hodisa hujumchi tizimga dastlabki kirish va kodni bajarganidan so'ng mustahkamlanish, credential o'g'irlash yoki tarmoqda tarqalish bosqichiga o'tganligini ko'rsatishi mumkinligi sababli juda xavfli hisoblanadi.
   Qonuniy holatlar sifatida penetration testing, red team mashqlari yoki administrator tomonidan bajarilgan murakkab skript operatsiyalari uchrashi mumkin.
@@ -11,6 +13,28 @@ description: |
   - Hujum zanjirining boshlanish vaqti (`first_execution`) va davomiyligi (`last_followon`) ni aniqlang.
   - Xostda boshqa shubhali hodisalar borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: xostni izolyatsiya qiling, credentiallarni yangilang va to'liq forensic tahlil bajaring.
+description_ru: |
+  Это правило предназначено для обнаружения сложных многоэтапных атак и в контексте `Attack Kill Chain Completion` выявляет, что на одном хосте сначала наблюдалась тактика Execution, а затем одна из тактик Persistence, Credential Access или Lateral Movement.
+  Событие такого типа считается крайне опасным, поскольку может указывать на то, что после первоначального доступа в систему и выполнения кода злоумышленник перешёл к этапу закрепления, кражи учётных данных (credential) или распространения по сети.
+  Легитимными случаями могут быть penetration testing, учения red team или сложные скриптовые операции, выполненные администратором.
+  Шаги SOC triage:
+  - Точно идентифицируйте `winlog.computer_name` (затронутый хост) в событии.
+  - Проверьте, какой process или script был запущен на этапе Execution.
+  - Проверьте, с помощью какой техники была реализована follow-on тактика (Persistence, Credential Access, Lateral Movement).
+  - Определите время начала (`first_execution`) и продолжительность (`last_followon`) цепочки атаки.
+  - Проверьте, есть ли на хосте другие подозрительные события.
+  - При подтверждении вредоносной активности выполните немедленный containment: изолируйте хост, обновите учётные данные (credentials) и выполните полный forensic-анализ.
+description_en: |
+  This rule is intended to detect complex multi-stage attacks and, in the context of `Attack Kill Chain Completion`, detects that on a single host the Execution tactic was observed first, followed by one of the Persistence, Credential Access or Lateral Movement tactics.
+  This type of event is considered very dangerous because it may indicate that, after initial access to the system and code execution, the attacker has moved on to the persistence, credential theft or network propagation stage.
+  Legitimate cases may include penetration testing, red team exercises or complex script operations performed by an administrator.
+  SOC triage steps:
+  - Precisely identify `winlog.computer_name` (the affected host) in the event.
+  - Check which process or script was launched during the Execution stage.
+  - Check by which technique the follow-on tactic (Persistence, Credential Access, Lateral Movement) was carried out.
+  - Determine the start time (`first_execution`) and the duration (`last_followon`) of the attack chain.
+  - Check whether there are other suspicious events on the host.
+  - If malicious activity is confirmed, perform immediate containment: isolate the host, rotate the credentials and perform a full forensic analysis.
 type: esql
 params: '{}'
 schedule_interval: 1h

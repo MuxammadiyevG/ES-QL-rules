@@ -1,6 +1,8 @@
 rule_id: 743d5f68-26d7-4a1a-89de-8ddc55c88ab5
-name: Linux Auth - Multiple Failed sudo Attempts
-description: |
+name_uz: "Linux Auth - bir nechta muvaffaqiyatsiz sudo urinishi"
+name_ru: "Linux Auth - несколько неуспешных попыток sudo"
+name_en: "Linux Auth - Multiple Failed sudo Attempts"
+description_uz: |
   Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi takroriy muvaffaqiyatsiz sudo
   autentifikatsiya urinishlarini aniqlaydi. Bitta foydalanuvchi qisqa vaqt ichida ko'p
   marta sudo parolini noto'g'ri kiritishi yoki ruxsatsiz sudo urinishi privilege
@@ -11,6 +13,28 @@ description: |
   - Urinishlar interaktiv sessiyadan yoki avtomatlashtirilgan jarayondan kelganini ko'ring.
   - Sudoers ro'yxatida foydalanuvchi borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa: akkauntni bloklang, sudoers ni audit qiling.
+description_ru: |
+  Данное правило выявляет повторяющиеся неуспешные попытки аутентификации sudo в Linux
+  auth.log (logs-linux.auth-*). Многократный неверный ввод пароля sudo одним
+  пользователем за короткое время либо несанкционированная попытка sudo может быть
+  признаком повышения привилегий (T1548.003 - Sudo and Sudo Caching).
+  Легитимные случаи: пользователь забыл пароль, скрипт настроен неверно.
+  Шаги SOC-триажа:
+  - Проверьте `actor` (user.name) и на каком `host` это произошло.
+  - Определите, поступили ли попытки из интерактивной сессии или автоматизированного процесса.
+  - Проверьте наличие пользователя в списке sudoers.
+  - При подтверждении нелегитимной активности: заблокируйте учётную запись, проведите аудит sudoers.
+description_en: |
+  This rule detects repeated failed sudo authentication attempts in the Linux auth.log
+  (logs-linux.auth-*). A single user entering the sudo password incorrectly many times
+  within a short period, or an unauthorized sudo attempt, may be a sign of privilege
+  escalation (T1548.003 - Sudo and Sudo Caching).
+  Legitimate cases: the user forgot the password, a script is misconfigured.
+  SOC triage steps:
+  - Check the `actor` (user.name) and which `host` it occurred on.
+  - See whether the attempts came from an interactive session or an automated process.
+  - Check whether the user is present in the sudoers list.
+  - If malicious activity is confirmed: block the account, audit sudoers.
 type: esql
 params: '{}'
 schedule_interval: 10m

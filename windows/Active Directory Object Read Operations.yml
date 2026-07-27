@@ -1,9 +1,19 @@
 rule_id: ca4f0dd4-11bf-4ba8-8c11-9db181309981
-name: Active Directory Object Read Operations
-description: |
+name_uz: "Active Directory obyektlarini o'qish amallari"
+name_ru: "Операции чтения объектов Active Directory"
+name_en: "Active Directory Object Read Operations"
+description_uz: |
   Baseline/monitoring qoidasi: MASHINA bo'lmagan akkauntlar tomonidan AD obyektlariga
   kirish (4662) hodisalarini soatlik yig'adi. Directory access'ning normal darajasini
   belgilash uchun (alert emas, kontekst/threat-hunting).
+description_ru: |
+  Правило baseline/мониторинга: почасово агрегирует события доступа (4662) к объектам AD
+  со стороны НЕ МАШИННЫХ учётных записей. Служит для определения нормального уровня
+  directory access (не алерт, контекст/threat-hunting).
+description_en: |
+  Baseline/monitoring rule: hourly aggregates access (4662) events to AD objects
+  by NON-MACHINE accounts. Used to establish the normal level of
+  directory access (not an alert, context/threat-hunting).
 type: esql
 params: '{}'
 schedule_interval: 10m

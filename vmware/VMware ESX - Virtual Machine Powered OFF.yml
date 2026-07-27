@@ -1,6 +1,8 @@
 rule_id: a2bb9144-7609-429c-87ac-3c5b6525acce
-name: VMware ESX - Virtual Machine Powered OFF
-description: |
+name_uz: "VMware ESX - Virtual mashina o'chirildi"
+name_ru: "VMware ESX - Виртуальная машина выключена"
+name_en: "VMware ESX - Virtual Machine Powered OFF"
+description_uz: |
   VMware ESX muhitida virtual mashina holati VM_STATE_OFF ga o'tdi (T1529).
   Bu ruxsatsiz shutdown, tizim crash yoki sabotaj belgisi bo'lishi mumkin.
   SOC triage bosqichlari:
@@ -9,6 +11,24 @@ description: |
   - vmware.sid sessiyasini solishtiring
   - Boshqa VM'larda parallel o'zgarishlar bor-yo'qligini tekshiring
   - Change management ticketi mavjudligini aniqlang
+description_ru: |
+  В среде VMware ESX состояние виртуальной машины изменилось на VM_STATE_OFF (T1529).
+  Это может быть признаком несанкционированного выключения, сбоя системы или саботажа.
+  Шаги SOC-триажа:
+  - Определите через vmware.originator, кто инициировал выключение
+  - Отследите операцию с помощью vmware.opid
+  - Сопоставьте сессию vmware.sid
+  - Проверьте, есть ли параллельные изменения на других ВМ
+  - Выясните, есть ли тикет change management
+description_en: |
+  In a VMware ESX environment a virtual machine transitioned to VM_STATE_OFF (T1529).
+  This may be a sign of an unauthorized shutdown, a system crash or sabotage.
+  SOC triage steps:
+  - Identify via vmware.originator who initiated the shutdown
+  - Trace the operation with vmware.opid
+  - Compare the vmware.sid session
+  - Check whether there are parallel changes on other VMs
+  - Determine whether a change management ticket exists
 type: esql
 params: '{}'
 schedule_interval: 5m

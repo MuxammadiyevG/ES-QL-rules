@@ -1,11 +1,25 @@
 rule_id: b78275ad-2078-4cec-a26d-5267bff4c412
-name: Defender / AMSI Tampering via Registry
-description: |
+name_uz: "Registry orqali Defender / AMSI buzilishi"
+name_ru: "Подделка Defender / AMSI через реестр"
+name_en: "Defender / AMSI Tampering via Registry"
+description_uz: |
   Ushbu qoida Windows Defender yoki AMSI'ni registry orqali o'chirish/buzishni aniqlaydi
   (Sysmon 13): DisableAntiSpyware, DisableRealtimeMonitoring, DisableBehaviorMonitoring,
   Exclusions yoki AMSI provider o'chirish (T1562.001).
   SOC triage:
   - `target_objects`/`details` qaysi himoya o'chirildi? Ruxsatlimi?
+description_ru: |
+  Это правило выявляет отключение/подделку Windows Defender или AMSI через реестр
+  (Sysmon 13): DisableAntiSpyware, DisableRealtimeMonitoring, DisableBehaviorMonitoring,
+  Exclusions или отключение AMSI provider (T1562.001).
+  SOC triage:
+  - Какая защита отключена по `target_objects`/`details`? Это авторизовано?
+description_en: |
+  This rule detects disabling/tampering with Windows Defender or AMSI via the registry
+  (Sysmon 13): DisableAntiSpyware, DisableRealtimeMonitoring, DisableBehaviorMonitoring,
+  Exclusions or disabling of the AMSI provider (T1562.001).
+  SOC triage:
+  - Which protection was disabled per `target_objects`/`details`? Is it authorized?
 type: esql
 params: '{}'
 schedule_interval: 10m

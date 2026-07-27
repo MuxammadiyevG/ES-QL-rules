@@ -1,6 +1,12 @@
 rule_id: 092b7846-9d70-46eb-bc0a-19135fd07d21
-name: "Steghide Embed Steganography"
-description: |
+name_uz: "Steghide bilan steganografiya joylash"
+name_ru: "Встраивание данных стеганографией Steghide"
+name_en: "Steghide Embed Steganography"
+description_uz: |
+  Rasmlarga ma'lumot joylash uchun steghide'dan foydalanishni aniqlaydi.
+description_ru: |
+  Обнаруживает использование steghide для встраивания данных в изображения.
+description_en: |
   Detects usage of steghide to embed data in images.
 type: esql
 params: '{}'

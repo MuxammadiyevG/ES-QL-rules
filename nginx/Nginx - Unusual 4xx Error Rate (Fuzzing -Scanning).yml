@@ -1,6 +1,8 @@
 rule_id: a48548c7-dd4e-4569-8727-4b90eec7fc8d
-name: Nginx - Unusual 4xx Error Rate (Fuzzing/Scanning)
-description: |
+name_uz: "Nginx - G'ayrioddiy 4xx xatolar darajasi (Fuzzing/Scanning)"
+name_ru: "Nginx - Аномальный уровень ошибок 4xx (Fuzzing/Scanning)"
+name_en: "Nginx - Unusual 4xx Error Rate (Fuzzing/Scanning)"
+description_uz: |
   Bitta IP manzilidan ko'p miqdorda mavjud bo'lmagan sahifalarga so'rov yuborilishini aniqlaydi.
   Bu ko'pincha "dirbuster", "ffuf" yoki "gobuster" kabi vositalar yordamida
   yashirin fayl va kataloglarni qidirishdir (Wordlist Scanning).
@@ -10,6 +12,26 @@ description: |
   - `user_agent` ni tekshiring — scanning tool belgisi bormi.
   - `url.original` pattern ini tekshiring — wordlist asosidami.
   - Noqonuniy faoliyat tasdiqlansa: IP ni bloklang, WAF qoidasini yangilang.
+description_ru: |
+  Обнаруживает отправку большого количества запросов к несуществующим страницам с одного IP-адреса.
+  Чаще всего это поиск с помощью таких инструментов, как "dirbuster", "ffuf" или "gobuster",
+  скрытых файлов и каталогов (Wordlist Scanning).
+  Легитимные случаи: нагрузочное тестирование, проверка битых ссылок, некорректно настроенный краулер.
+  Этапы SOC triage:
+  - Проверьте адрес `source.ip` — внешний он или внутренний.
+  - Проверьте `user_agent` — есть ли признаки инструмента сканирования.
+  - Проверьте паттерн `url.original` — основан ли он на wordlist.
+  - При подтверждении нелегитимной активности: заблокируйте IP, обновите правило WAF.
+description_en: |
+  Detects a large number of requests to non-existent pages from a single IP address.
+  This is most often a search using tools such as "dirbuster", "ffuf" or "gobuster"
+  for hidden files and directories (Wordlist Scanning).
+  Legitimate cases: load testing, broken link checker, misconfigured crawler.
+  SOC triage steps:
+  - Check the `source.ip` address — is it external or internal.
+  - Check the `user_agent` — are there signs of a scanning tool.
+  - Check the `url.original` pattern — is it wordlist-based.
+  - If illegitimate activity is confirmed: block the IP, update the WAF rule.
 type: esql
 params: '{}'
 schedule_interval: 10m

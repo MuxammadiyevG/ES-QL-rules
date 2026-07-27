@@ -1,9 +1,19 @@
 rule_id: aa995425-5134-41fd-bbf4-609486c519de
-name: "Chain: Suspicious Process After Defender Tampering (Sysmon 1)"
-description: |
+name_uz: "Zanjir: Defender buzilganidan keyin shubhali jarayon (Sysmon 1)"
+name_ru: "Цепочка: Подозрительный процесс после вмешательства в Defender (Sysmon 1)"
+name_en: "Chain: Suspicious Process After Defender Tampering (Sysmon 1)"
+description_uz: |
   Defender evasion zanjiri — 2-bosqich.
   Himoya o'chirilgandan keyin o'sha host'da shubhali jarayon (Sysmon EventID 1): encoded PowerShell, /temp dan, LOLBin.
   1-bosqichga bog'langan.
+description_ru: |
+  Цепочка обхода Defender — этап 2.
+  После отключения защиты подозрительный процесс на том же host (Sysmon EventID 1): encoded PowerShell, из /temp, LOLBin.
+  Связан с этапом 1.
+description_en: |
+  Defender evasion chain — stage 2.
+  After protection is disabled, a suspicious process on the same host (Sysmon EventID 1): encoded PowerShell, from /temp, LOLBin.
+  Linked to stage 1.
 type: esql
 enabled: true
 params: "{}"

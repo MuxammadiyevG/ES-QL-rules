@@ -1,6 +1,8 @@
 rule_id: 1cb6d002-3774-488f-87e5-a3eff83800f0
-name: "Database Server Disk Latency Critical"
-description: |
+name_uz: "Database server disk kechikishi kritik"
+name_ru: "Критическая задержка диска сервера базы данных"
+name_en: "Database Server Disk Latency Critical"
+description_uz: |
   Ushbu qoida database server disk I/O kechikishi kritik darajaga (50 ms dan yuqori) yetganligini aniqlaydi.
   10 daqiqalik oraliqda ketma-ket 2 ta o'lchov asosida disk read yoki write latency 50 ms dan oshsa alert ishga tushadi.
   Bu turdagi hodisa database server ning disk I/O muammolari, storage tizimidagi bottleneck yoki disk xatoliklari natijasida yuzaga kelishi mumkin bo'lib, database ishlashiga jiddiy ta'sir ko'rsatishi mumkin.
@@ -13,6 +15,32 @@ description: |
   - Storage tizimi, RAID konfiguratsiyasi va disk holatini tekshiring.
   - Clear condition: 20 daqiqa ichida rule qayta ishga tushmasa alert avtomatik tozalanadi.
   - Kerak bo'lsa resurslarni ko'paytiring yoki storage tizimini optimallashtiring.
+description_ru: |
+  Это правило выявляет, что задержка дискового I/O сервера базы данных достигла критического уровня (выше 50 ms).
+  Алерт срабатывает, если по 2 последовательным измерениям в 10-минутном интервале disk read или write latency превышает 50 ms.
+  Событие такого типа может возникать из-за проблем с дисковым I/O сервера базы данных, bottleneck в системе хранения или дисковых ошибок и способно серьёзно повлиять на работу базы данных.
+  В качестве легитимных сценариев могут встречаться плановые операции backup, дефрагментация диска или периоды высокой нагрузки.
+  Шаги SOC triage:
+  - Точно идентифицируйте затронутый `host.hostname` и имя диска (`system.diskio.name`).
+  - Проверьте значения disk read и write latency (`avg_read_latency_ms`, `avg_write_latency_ms`).
+  - Сравните дельту времени read/write и количество операций.
+  - Дисковый раздел `/boot` исключён.
+  - Проверьте систему хранения, конфигурацию RAID и состояние диска.
+  - Clear condition: если правило не срабатывает повторно в течение 20 минут, алерт очищается автоматически.
+  - При необходимости увеличьте ресурсы или оптимизируйте систему хранения.
+description_en: |
+  This rule detects that database server disk I/O latency has reached a critical level (above 50 ms).
+  The alert fires when disk read or write latency exceeds 50 ms based on 2 consecutive measurements within a 10-minute interval.
+  An event of this type may result from database server disk I/O problems, a bottleneck in the storage system or disk errors, and it can seriously affect database performance.
+  Legitimate cases may include scheduled backup operations, disk defragmentation or high-load periods.
+  SOC triage steps:
+  - Precisely identify the affected `host.hostname` and the disk name (`system.diskio.name`).
+  - Check the disk read and write latency values (`avg_read_latency_ms`, `avg_write_latency_ms`).
+  - Compare the delta read/write time and the number of operations.
+  - The `/boot` disk partition is excluded.
+  - Check the storage system, the RAID configuration and the disk health.
+  - Clear condition: if the rule does not fire again within 20 minutes, the alert is cleared automatically.
+  - If needed, increase resources or optimize the storage system.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: c485b565-ffba-47bf-99cc-c186a38ced00
-name: Excessive Destination Windows DC Replication Failure
-description: |
+name_uz: "Windows DC manzilida haddan ziyod replikatsiya xatolari"
+name_ru: "Чрезмерное количество ошибок репликации на целевом Windows DC"
+name_en: "Excessive Destination Windows DC Replication Failure"
+description_uz: |
   Ushbu qoida server monitoring va availability texnikalariga bog'liq bo'lib, `Excessive Destination Windows DC Replication Failure` kontekstidagi shubhali Active Directory replikatsiya xatolarini aniqlaydi.
   Bu turdagi hodisa AD muhitida Domain Controller'lar o'rtasidagi replikatsiya jarayoni buzilgan bo'lib, hujumchi yoki texnik nosozlik natijasida parol o'zgarishlari, yangi foydalanuvchilar va Group Policy yangilanishlari boshqa DC larga yetib bormasligi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida rejalashtirilgan DC maintenance ishlari, tarmoq uzilishlari, DNS muammolari yoki AD replikatsiya topologiyasidagi o'zgarishlar uchrashi mumkin.
@@ -10,6 +12,26 @@ description: |
   - DC lar o'rtasidagi tarmoq ulanishi va DNS resolution ni tekshiring.
   - Replication topology va site link konfiguratsiyasini tekshiring (`repadmin /showrepl`).
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: ta'sirlangan DC ni izolyatsiya qiling, replikatsiyani qayta tiklang va root cause ni bartaraf eting.
+description_ru: |
+  Это правило связано с техниками мониторинга серверов и доступности и выявляет подозрительные ошибки репликации Active Directory в контексте `Excessive Destination Windows DC Replication Failure`.
+  Событие такого типа считается опасным, поскольку в среде AD нарушен процесс репликации между Domain Controller'ами и в результате действий злоумышленника или технического сбоя изменения паролей, новые пользователи и обновления Group Policy могут не доходить до других DC.
+  В качестве легитимных сценариев могут встречаться плановые работы по обслуживанию DC, сетевые обрывы, проблемы DNS или изменения в топологии репликации AD.
+  Шаги SOC triage:
+  - Точно идентифицируйте `source_host` (исходный DC) и `destination_dc` (целевой DC) в событии.
+  - Проверьте event ID ошибки: 1925 (соединение не установлено), 1926 (репликация не удалась), 2087/2088 (проблема DNS).
+  - Проверьте сетевую связность между DC и DNS resolution.
+  - Проверьте replication topology и конфигурацию site link (`repadmin /showrepl`).
+  - При подтверждении нелегитимной активности выполните оперативное containment: изолируйте затронутый DC, восстановите репликацию и устраните root cause.
+description_en: |
+  This rule relates to server monitoring and availability techniques and detects suspicious Active Directory replication failures in the `Excessive Destination Windows DC Replication Failure` context.
+  An event of this type is considered dangerous because the replication process between Domain Controllers in the AD environment is broken and, as a result of an attacker or a technical fault, password changes, new users and Group Policy updates may not reach the other DCs.
+  Legitimate cases may include scheduled DC maintenance work, network outages, DNS problems or changes in the AD replication topology.
+  SOC triage steps:
+  - Precisely identify the `source_host` (source DC) and `destination_dc` (destination DC) in the event.
+  - Check the error event ID: 1925 (connection not established), 1926 (replication failed), 2087/2088 (DNS problem).
+  - Check the network connectivity between the DCs and DNS resolution.
+  - Check the replication topology and the site link configuration (`repadmin /showrepl`).
+  - If illegitimate activity is confirmed, perform rapid containment: isolate the affected DC, restore replication and eliminate the root cause.
 type: esql
 params: '{}'
 schedule_interval: 2m

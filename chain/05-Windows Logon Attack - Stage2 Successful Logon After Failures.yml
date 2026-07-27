@@ -1,9 +1,19 @@
 rule_id: 1ecf04a6-379e-4f2b-9dd0-137403dd461d
-name: "Chain: Windows Successful Logon After Failures (4624)"
-description: |
+name_uz: "Zanjir: Muvaffaqiyatsizliklardan keyin Windows muvaffaqiyatli kirish (4624)"
+name_ru: "Цепочка: Успешный вход Windows после неудач (4624)"
+name_en: "Chain: Windows Successful Logon After Failures (4624)"
+description_uz: |
   Windows kirish zanjiri — 2-bosqich.
   Muvaffaqiyatsiz urinishlardan keyin o'sha hisob bo'yicha muvaffaqiyatli kirish (4624, LogonType 2/3/10).
   1-bosqichga bog'langan.
+description_ru: |
+  Цепочка входа Windows — этап 2.
+  После неудачных попыток успешный вход по той же учётной записи (4624, LogonType 2/3/10).
+  Связан с этапом 1.
+description_en: |
+  Windows logon chain — stage 2.
+  After failed attempts, a successful logon for the same account (4624, LogonType 2/3/10).
+  Linked to stage 1.
 type: esql
 enabled: true
 params: "{}"

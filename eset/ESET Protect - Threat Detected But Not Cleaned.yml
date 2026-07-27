@@ -1,6 +1,8 @@
 rule_id: e8979ec2-bf63-4421-8c19-0860cf60c95e
-name: ESET Protect - Threat Detected But Not Cleaned
-description: |
+name_uz: "ESET Protect - tahdid aniqlandi, lekin tozalanmadi"
+name_ru: "ESET Protect - угроза обнаружена, но не устранена"
+name_en: "ESET Protect - Threat Detected But Not Cleaned"
+description_uz: |
   Ushbu qoida ESET Protect tomonidan aniqlangan, biroq tozalanmagan yoki karantinga
   olinmagan (cleaned/quarantined emas) threat'larni aniqlaydi. Bunday holatda zararli
   obyekt tizimda saqlanib qoladi va keyingi kompromisaga olib kelishi mumkin
@@ -12,6 +14,30 @@ description: |
   - Threat turi va obyekt yo'lini threat intelligence bilan solishtiring.
   - Host da threat hali ham mavjudligini tasdiqlang.
   - Noqonuniy faoliyat tasdiqlansa: majburiy remediation yoki host izolyatsiyasi.
+description_ru: |
+  Это правило выявляет угрозы, обнаруженные ESET Protect, но не очищенные и не помещённые
+  в карантин (не cleaned/quarantined). В таком случае вредоносный
+  объект остаётся в системе и может привести к дальнейшей компрометации
+  (incomplete remediation / impact).
+  Легитимные случаи: откладывание пользователем, объект, требующий ручного вмешательства,
+  носитель только для чтения.
+  Шаги SOC triage:
+  - Определите, каким было действие реагирования (none/blocked/deleted/error).
+  - Сопоставьте тип угрозы и путь объекта с threat intelligence.
+  - Подтвердите, присутствует ли угроза на хосте до сих пор.
+  - Если нелегитимная активность подтверждена: принудительное устранение или изоляция хоста.
+description_en: |
+  This rule detects threats that were detected by ESET Protect but were not cleaned or
+  quarantined (not cleaned/quarantined). In such a case the malicious
+  object remains in the system and may lead to further compromise
+  (incomplete remediation / impact).
+  Legitimate cases: user postponement, an object requiring manual intervention,
+  read-only media.
+  SOC triage steps:
+  - Determine what the response action was (none/blocked/deleted/error).
+  - Compare the threat type and object path with threat intelligence.
+  - Confirm whether the threat is still present on the host.
+  - If illegitimate activity is confirmed: forced remediation or host isolation.
 type: esql
 params: '{}'
 schedule_interval: 10m

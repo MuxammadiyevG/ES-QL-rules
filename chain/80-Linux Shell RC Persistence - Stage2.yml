@@ -1,9 +1,19 @@
 rule_id: a8a31517-f910-433b-9cf3-a1e8d74d87dd
-name: "Chain: Linux Shell RC Persistence — Stage 2: Interactive Login After RC Modification"
-description: |
+name_uz: "Zanjir: Linux Shell RC Persistence — 2-bosqich: RC o'zgartirilgandan keyin interaktiv kirish"
+name_ru: "Цепочка: Linux Shell RC Persistence — Этап 2: Интерактивный вход после изменения RC"
+name_en: "Chain: Linux Shell RC Persistence — Stage 2: Interactive Login After RC Modification"
+description_uz: |
   Linux Shell RC Persistence zanjiri — 2-bosqich (2 dan).
   Interactive Login After RC Modification.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Linux Shell RC Persistence — этап 2 (из 2).
+  Интерактивный вход после изменения RC.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Linux Shell RC Persistence chain — stage 2 (of 2).
+  Interactive Login After RC Modification.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

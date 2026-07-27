@@ -1,9 +1,19 @@
 rule_id: 06843f2f-3a9b-4d54-81fe-6195ac0e864c
-name: "Switch AAA: Sessiya uzildi (DISCONNECT)"
-description: |
+name_uz: "Switch AAA: Sessiya uzildi (DISCONNECT)"
+name_ru: "Switch AAA: сессия разорвана (DISCONNECT)"
+name_en: "Switch AAA: Session disconnected (DISCONNECT)"
+description_uz: |
   Foydalanuvchi SSH/Telnet sessiyasi uzildi yoki server tomonidan tugatildi.
   TERMINATED — foydalanuvchi o'zi chiqdi.
   DISCONNECT — sessiya server/switch tomonidan yopildi.
+description_ru: |
+  SSH/Telnet-сессия пользователя разорвана или завершена сервером.
+  TERMINATED — пользователь вышел сам.
+  DISCONNECT — сессия закрыта сервером/коммутатором.
+description_en: |
+  The user's SSH/Telnet session was disconnected or terminated by the server.
+  TERMINATED — the user logged out themselves.
+  DISCONNECT — the session was closed by the server/switch.
 type: esql
 params: '{}'
 schedule_interval: 5m

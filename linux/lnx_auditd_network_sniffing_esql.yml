@@ -1,6 +1,18 @@
 rule_id: 1146e9a5-e43e-4fc0-b6f6-bccb59a29e03
-name: "Network Sniffing Detection - Linux"
-description: |
+name_uz: "Tarmoq sniffing'ini aniqlash - Linux"
+name_ru: "Обнаружение перехвата сетевого трафика - Linux"
+name_en: "Network Sniffing Detection - Linux"
+description_uz: |
+  Tarmoq sniffing'i — bu simli yoki simsiz ulanish orqali uzatilayotgan ma'lumotni kuzatish yoki qo'lga kiritish uchun tizimdagi tarmoq interfeysidan foydalanish.
+  Tajovuzkor tarmoq orqali uzatilayotgan ma'lumotlarga passiv kirish uchun tarmoq interfeysini promiscuous rejimga o'tkazishi yoki kattaroq hajmdagi ma'lumotni qo'lga kiritish uchun span port'lardan foydalanishi mumkin.
+  tcpdump va tshark tarmoq sniffing vositalaridan foydalanishni aniqlaydi.
+  Eslatma: Qonuniy administratorlar bu vositalardan nosozliklarni bartaraf etish uchun foydalanishi mumkin. Muhitingiz uchun baseline tuzing.
+description_ru: |
+  Перехват сетевого трафика (sniffing) — это использование сетевого интерфейса системы для мониторинга или захвата информации, передаваемой по проводному или беспроводному соединению.
+  Злоумышленник может перевести сетевой интерфейс в promiscuous-режим, чтобы пассивно получать доступ к передаваемым по сети данным, либо использовать span-порты для захвата большего объёма данных.
+  Обнаруживает использование инструментов перехвата трафика tcpdump и tshark.
+  Примечание: Легитимные администраторы могут использовать эти инструменты для диагностики. Составьте базовый профиль вашей среды.
+description_en: |
   Network sniffing refers to using the network interface on a system to monitor or capture information sent over a wired or wireless connection.
   An adversary may place a network interface into promiscuous mode to passively access data in transit over the network, or use span ports to capture a larger amount of data.
   Detects usage of tcpdump and tshark network sniffing tools.

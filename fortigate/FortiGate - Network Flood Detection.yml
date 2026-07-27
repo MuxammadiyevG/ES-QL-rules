@@ -1,8 +1,16 @@
 rule_id: 999d6e3d-41ec-4a50-a239-f818d4ba6217
-name: FortiGate - Network Flood Detection
-description: |
+name_uz: "FortiGate - Tarmoq flood hujumini aniqlash"
+name_ru: "FortiGate - Обнаружение сетевого flood"
+name_en: "FortiGate - Network Flood Detection"
+description_uz: |
   Bitta manba IPdan juda qisqa vaqt ichida haddan tashqari ko'p (5000 dan ortiq) sessiyalar ochilishini aniqlaydi. 
   Bu Denial of Service (DoS) hujumining belgisi bo'lishi mumkin.
+description_ru: |
+  Выявляет открытие чрезмерно большого числа сессий (более 5000) с одного IP источника за очень короткое время. 
+  Это может быть признаком атаки Denial of Service (DoS).
+description_en: |
+  Detects an excessive number of sessions (more than 5000) being opened from a single source IP within a very short time. 
+  This may be a sign of a Denial of Service (DoS) attack.
 type: esql
 params: '{}'
 schedule_interval: 5m

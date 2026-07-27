@@ -1,11 +1,22 @@
 rule_id: 5cae4211-f301-4a51-8762-5814b57daee3
-name: "Defense Evasion: Firewall Rules Modified or Cleared"
-description: |
+name_uz: "Defense Evasion: firewall qoidalari o'zgartirildi yoki tozalandi"
+name_ru: "Defense Evasion: правила firewall изменены или очищены"
+name_en: "Defense Evasion: Firewall Rules Modified or Cleared"
+description_uz: |
   Ushbu qoida Linux tizimida firewall qoidalarini o‘zgartirish,
   tozalash yoki o‘chirish holatlarini aniqlaydi (iptables, nftables, ufw).
 
   Bu attacker tomonidan network protection bypass qilish uchun ishlatiladi.
+description_ru: |
+  Данное правило выявляет изменение, очистку или удаление правил firewall
+  в системе Linux (iptables, nftables, ufw).
 
+  Это используется злоумышленником для обхода network protection.
+description_en: |
+  This rule detects modification, clearing or deletion of firewall rules
+  on a Linux system (iptables, nftables, ufw).
+
+  This is used by an attacker to bypass network protection.
 type: esql
 params: "{}"
 schedule_interval: 10m

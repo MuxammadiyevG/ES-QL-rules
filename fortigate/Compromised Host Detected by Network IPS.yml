@@ -1,6 +1,8 @@
 rule_id: b1102a0c-dbc0-427d-9665-121845ed4e88
-name: "Compromised Host Detected by Network IPS"
-description: |
+name_uz: "Compromised Host Detected by Network IPS"
+name_ru: "Compromised Host Detected by Network IPS"
+name_en: "Compromised Host Detected by Network IPS"
+description_uz: |
   Ushbu qoida tarmoq IPS/IDS tizimlari tomonidan aniqlangan kompromatlangan (buzilgan) hostlarni kuzatadi.
   Bu turdagi hodisa tarmoq qurilmasi (FortiGate, FortiProxy, Checkpoint, Palo Alto) tomonidan ichki hostdan zararli trafik aniqlanganda ishga tushadi.
   Kompromatlangan host botnet, C2 server bilan aloqa, malware tarqatish yoki lateral movement uchun ishlatilayotgan bo'lishi mumkin.
@@ -13,6 +15,32 @@ description: |
   - Destination IP lar C2 server yoki malware distribution point bo'lishi mumkin.
   - Manba IP ni `Malware Likely IP` watch list ga qo'shing.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: hostni tarmoqdan izolyatsiya qiling, to'liq forensic tahlil bajaring va compromised credentiallarni yangilang.
+description_ru: |
+  Данное правило отслеживает скомпрометированные (взломанные) хосты, обнаруженные сетевыми системами IPS/IDS.
+  Событие такого типа срабатывает, когда сетевое устройство (FortiGate, FortiProxy, Checkpoint, Palo Alto) обнаруживает вредоносный трафик от внутреннего хоста.
+  Скомпрометированный хост может использоваться для botnet, связи с C2-сервером, распространения malware или lateral movement.
+  В качестве легитимных случаев могут встречаться false positive со стороны IPS, penetration testing или учения red team.
+  Этапы SOC triage:
+  - Точно идентифицируйте в событии `source.ip` (скомпрометированный хост).
+  - Проверьте IPS signature ID и event type — какой именно вредоносный трафик был обнаружен.
+  - Определите сетевой сегмент и роль хоста-источника.
+  - Проверьте все исходящие сетевые соединения этого хоста.
+  - Destination IP могут быть C2-серверами или точками распространения malware.
+  - Добавьте IP источника в watch list `Malware Likely IP`.
+  - При подтверждении вредоносной активности выполните оперативный containment: изолируйте хост от сети, проведите полный форензик-анализ и обновите скомпрометированные учётные данные.
+description_en: |
+  This rule tracks compromised (breached) hosts detected by network IPS/IDS systems.
+  This type of event fires when a network device (FortiGate, FortiProxy, Checkpoint, Palo Alto) detects malicious traffic from an internal host.
+  A compromised host may be used for a botnet, communication with a C2 server, malware distribution or lateral movement.
+  Legitimate cases may include IPS false positives, penetration testing or red team exercises.
+  SOC triage steps:
+  - Precisely identify `source.ip` (the compromised host) in the event.
+  - Check the IPS signature ID and event type — what kind of malicious traffic was detected.
+  - Determine the network segment and role of the source host.
+  - Review all outbound network connections from the host.
+  - The destination IPs may be C2 servers or malware distribution points.
+  - Add the source IP to the `Malware Likely IP` watch list.
+  - If malicious activity is confirmed, perform rapid containment: isolate the host from the network, run a full forensic analysis and rotate the compromised credentials.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,8 @@
 rule_id: 9286b10d-9212-4850-8f85-584d3a565c08
-name: "Blocklist User Agent Match"
-description: |
+name_uz: "Blocklist User Agent Match"
+name_ru: "Blocklist User Agent Match"
+name_en: "Blocklist User Agent Match"
+description_uz: |
   Ushbu qoida Exfiltration texnikasiga bog'liq bo'lib, `Blocklist User Agent Match` kontekstida HTTP so'rovlarida bloklangan (blacklist) user agent qiymatlarini aniqlaydi.
   Malware, Adware, Spyware va boshqa zararli dasturlar odatda noodatiy yoki maxsus HTTP user agent lardan foydalanadi. Bu turdagi hodisa C2 (Command and Control) server bilan aloqa, ma'lumot chiqarish yoki zararli faoliyat belgilarini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida noto'g'ri klassifikatsiyalangan legitimate dasturlar, maxsus API clientlar yoki korporativ monitoring vositalari uchrashi mumkin.
@@ -12,6 +14,30 @@ description: |
   - Manba hostda boshqa shubhali hodisalar borligini tekshiring.
   - Manba IP ni `Malware Likely IP` watch list ga qo'shing.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, hostni izolyatsiya qiling va to'liq malware scan bajaring.
+description_ru: |
+  Данное правило связано с техникой Exfiltration и в контексте `Blocklist User Agent Match` выявляет заблокированные (blacklist) значения user agent в HTTP-запросах.
+  Malware, Adware, Spyware и другие вредоносные программы обычно используют нетипичные или специально созданные HTTP user agent. Событие такого типа считается опасным, поскольку может указывать на связь с C2 (Command and Control) сервером, вывод данных или вредоносную активность.
+  В качестве легитимных случаев могут встречаться некорректно классифицированные легитимные программы, специализированные API-клиенты или корпоративные средства мониторинга.
+  Этапы SOC triage:
+  - Точно идентифицируйте в событии `source.ip` и значение HTTP user agent.
+  - Сравните значение user agent с базой сигнатур malware.
+  - Проверьте сетевой сегмент и тип устройства источника IP.
+  - Проверьте destination IP и URL — это может быть C2-сервер.
+  - Проверьте, есть ли на хосте-источнике другие подозрительные события.
+  - Добавьте IP источника в watch list `Malware Likely IP`.
+  - При подтверждении вредоносной активности выполните оперативный containment: заблокируйте IP источника, изолируйте хост и выполните полное сканирование на malware.
+description_en: |
+  This rule is related to the Exfiltration technique and, in the context of `Blocklist User Agent Match`, detects blocklisted (blacklist) user agent values in HTTP requests.
+  Malware, Adware, Spyware and other malicious programs usually use unusual or custom HTTP user agents. This type of event is considered dangerous because it may indicate communication with a C2 (Command and Control) server, data exfiltration or malicious activity.
+  Legitimate cases may include misclassified legitimate applications, custom API clients or corporate monitoring tools.
+  SOC triage steps:
+  - Precisely identify `source.ip` and the HTTP user agent value in the event.
+  - Compare the user agent value against a malware signature database.
+  - Check the network segment and device type of the source IP.
+  - Check the destination IP and URL — it may be a C2 server.
+  - Check whether there are other suspicious events on the source host.
+  - Add the source IP to the `Malware Likely IP` watch list.
+  - If malicious activity is confirmed, perform rapid containment: block the source IP, isolate the host and run a full malware scan.
 type: esql
 params: '{}'
 schedule_interval: 10m

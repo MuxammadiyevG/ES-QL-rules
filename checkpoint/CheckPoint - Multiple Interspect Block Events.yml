@@ -1,6 +1,8 @@
 rule_id: c34ad240-e64a-42e9-973a-50a92f1e053c
-name: CheckPoint - Multiple Interspect Block Events
-description: |
+name_uz: "CheckPoint - Bir nechta Interspect block hodisasi"
+name_ru: "CheckPoint - Множественные события блокировки Interspect"
+name_en: "CheckPoint - Multiple Interspect Block Events"
+description_uz: |
   Ushbu qoida CheckPoint Interspect tomonidan bir xil manbadan ko'p block hodisalarini aniqlaydi.
   Bu IPS/IDS detection yoki malicious activity belgisi.
   Qonuniy holatlar: false positive, legitimate traffic misclassified.
@@ -10,6 +12,26 @@ description: |
   - Source reputation va history'sini tekshiring
   - Attack severity va impact'ini baholang
   - Blocking effectiveness'ni validate qiling
+description_ru: |
+  Это правило выявляет множественные события блокировки от одного источника, зафиксированные CheckPoint Interspect.
+  Это признак срабатывания IPS/IDS или вредоносной активности.
+  Легитимные ситуации: ложное срабатывание, легитимный трафик классифицирован неверно.
+  Этапы SOC-триажа:
+  - Проверьте заблокированные сигнатуры атак
+  - Определите имя и тип защиты (protection)
+  - Проверьте репутацию и историю источника
+  - Оцените критичность и воздействие атаки
+  - Подтвердите эффективность блокировки
+description_en: |
+  This rule detects multiple block events from the same source recorded by CheckPoint Interspect.
+  This is a sign of IPS/IDS detection or malicious activity.
+  Legitimate cases: false positive, legitimate traffic misclassified.
+  SOC triage steps:
+  - Check the blocked attack signatures
+  - Determine the protection name and type
+  - Check the source reputation and history
+  - Assess the attack severity and impact
+  - Validate the blocking effectiveness
 type: esql
 params: '{}'
 schedule_interval: 10m

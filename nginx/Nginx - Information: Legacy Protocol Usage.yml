@@ -1,8 +1,16 @@
 rule_id: 14ee0902-6fcf-4654-998f-bd2dbcedb9b5
-name: Nginx - Information Legacy Protocol Usage
-description: |
+name_uz: "Nginx - Ma'lumot: eskirgan protokoldan foydalanish"
+name_ru: "Nginx - Информация: использование устаревшего протокола"
+name_en: "Nginx - Information Legacy Protocol Usage"
+description_uz: |
   HTTP/1.0 yoki undan eski protokollar orqali kelayotgan so'rovlarni aniqlaydi.
   Odatda eski skanerlar yoki botlar tomonidan qo'llaniladi.
+description_ru: |
+  Обнаруживает запросы, поступающие по протоколу HTTP/1.0 или более старым.
+  Обычно применяются старыми сканерами или ботами.
+description_en: |
+  Detects requests arriving over HTTP/1.0 or older protocols.
+  Usually used by old scanners or bots.
 type: esql
 params: '{}'
 schedule_interval: 30m

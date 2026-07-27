@@ -1,6 +1,8 @@
 rule_id: 7147315f-941e-489c-8844-770b507b1e60
-name: "Agent Defense Evasion: BPF Program Loaded or Unloaded"
-description: |
+name_uz: "Agent Defense Evasion: BPF dasturi yuklandi yoki o'chirildi"
+name_ru: "Agent Defense Evasion: BPF-программа загружена или выгружена"
+name_en: "Agent Defense Evasion: BPF Program Loaded or Unloaded"
+description_uz: |
   Ushbu qoida Defense Evasion va Execution texnikalariga bog'liq bo'lib, eBPF dasturlarining tizimga yuklanishi yoki o'chirilishini aniqlaydi.
   Hujumchi eBPF rootkit orqali tizim chaqiruvlarini ushlash, tarmoq trafikini filtrlash yoki xavfsizlik vositalarini chetlab o'tishi mumkin.
   Qonuniy holatlar: monitoring agentlari (Cilium, Falco, bcc tools), kernel debugging, tarmoq observability tizimlari.
@@ -10,6 +12,26 @@ description: |
   - Tizimda eBPF dasturlarni ko'rish uchun `bpftool prog list` ni ishlatib tekshiring.
   - Kutilmagan vaqt yoki foydalanuvchi tomonidan yuklangan bo'lsa — yuqori prioritet.
   - Noqonuniy bo'lsa: BPF dasturni o'chirib, yuklovchi processni to'xtating.
+description_ru: |
+  Это правило связано с техниками Defense Evasion и Execution и выявляет загрузку или выгрузку eBPF-программ в системе.
+  Злоумышленник может через eBPF-руткит перехватывать системные вызовы, фильтровать сетевой трафик или обходить средства защиты.
+  Легитимные случаи: агенты мониторинга (Cilium, Falco, bcc tools), отладка ядра, системы сетевого observability.
+  Шаги SOC-триажа:
+  - Определите тип BPF-операции (`auditd.data.op`: LOAD/UNLOAD) и ID программы (`auditd.data.prog-id`).
+  - Проверьте, какой процесс загрузил BPF в этот момент (process.executable).
+  - Проверьте eBPF-программы в системе с помощью `bpftool prog list`.
+  - Если загрузка произошла в неожиданное время или от неожиданного пользователя — высокий приоритет.
+  - Если активность нелегитимна: выгрузите BPF-программу и остановите загрузивший процесс.
+description_en: |
+  This rule is related to Defense Evasion and Execution techniques and detects eBPF programs being loaded into or unloaded from the system.
+  An attacker may use an eBPF rootkit to intercept system calls, filter network traffic, or bypass security tools.
+  Legitimate cases: monitoring agents (Cilium, Falco, bcc tools), kernel debugging, network observability systems.
+  SOC triage steps:
+  - Identify the BPF operation type (`auditd.data.op`: LOAD/UNLOAD) and the program ID (`auditd.data.prog-id`).
+  - Check which process loaded the BPF program at that time (process.executable).
+  - Use `bpftool prog list` to review the eBPF programs on the system.
+  - If it was loaded at an unexpected time or by an unexpected user — high priority.
+  - If illegitimate: unload the BPF program and stop the loading process.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,8 @@
 rule_id: 901f4dbc-4b1c-4986-b8e5-86a141de2fa1
-name: "Agent FIM: Linux Directory Ownership or Permission Changed"
-description: |
+name_uz: "Agent FIM: Linux katalog egaligi yoki huquqlari o'zgartirildi"
+name_ru: "Agent FIM: изменены владелец или права каталога в Linux"
+name_en: "Agent FIM: Linux Directory Ownership or Permission Changed"
+description_uz: |
   Ushbu qoida Impact va Defense Evasion texnikalariga bog'liq bo'lib, directory ownership yoki permission o'zgarishini aniqlaydi.
   Hujumchi privilege escalation yoki muhim papkalarga ruxsatsiz kirish maqsadida fayl tizimi huquqlarini o'zgartirayotgan bo'lishi mumkin.
   Qonuniy holatlar: rejalashtirilgan tizim yangilanishlari, administrativ konfiguratsiya o'zgarishlari, deployment jarayonlari.
@@ -10,6 +12,26 @@ description: |
   - Yangi permission qiymatlari (`auditd.paths.mode`) ning xavfliligini baholang.
   - Tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
   - Noqonuniy bo'lsa: permissionlarni qaytaring, sessiyani to'xtating, hostni tekshiring.
+description_ru: |
+  Это правило связано с техниками Impact и Defense Evasion и выявляет изменение владельца или прав доступа каталога.
+  Злоумышленник может изменять права файловой системы с целью повышения привилегий или несанкционированного доступа к важным каталогам.
+  Легитимные случаи: плановые обновления системы, административные изменения конфигурации, процессы развёртывания.
+  Шаги SOC-триажа:
+  - Идентифицируйте `host.hostname`, `user.name` и изменённый каталог `auditd.paths.name`.
+  - Проверьте роль и привилегии пользователя, выполнившего изменение.
+  - Оцените опасность новых значений прав доступа (`auditd.paths.mode`).
+  - Проверьте наличие утверждённой заявки на изменение или записи о развёртывании.
+  - Если активность нелегитимна: верните права, остановите сессию, проверьте хост.
+description_en: |
+  This rule is related to Impact and Defense Evasion techniques and detects changes to directory ownership or permissions.
+  An attacker may be changing file system permissions for privilege escalation or unauthorized access to important folders.
+  Legitimate cases: scheduled system updates, administrative configuration changes, deployment processes.
+  SOC triage steps:
+  - Identify `host.hostname`, `user.name` and the changed directory `auditd.paths.name`.
+  - Check the role and privileges of the user who made the change.
+  - Assess how dangerous the new permission values (`auditd.paths.mode`) are.
+  - Check whether an approved change ticket or deployment record exists.
+  - If illegitimate: restore the permissions, terminate the session, inspect the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,9 +1,19 @@
 rule_id: c7683cc7-c4d3-4f67-9d1b-96ab7385fa35
-name: "Chain: SSH Brute Force — Auth Failure Burst (Linux)"
-description: |
+name_uz: "Zanjir: SSH brute force — autentifikatsiya xatolari to'plami (Linux)"
+name_ru: "Цепочка: SSH brute force — всплеск ошибок аутентификации (Linux)"
+name_en: "Chain: SSH Brute Force — Auth Failure Burst (Linux)"
+description_uz: |
   Linux SSH zanjiri — 1-bosqich.
   Bitta source.ip dan qisqa vaqtda ko'p SSH login failure (auditd user_login fail, terminal=sshd).
   Korrelyatsiya dvigateli source.ip bo'yicha chastotani hisoblaydi; zanjirning kirish nuqtasi.
+description_ru: |
+  Цепочка Linux SSH — этап 1.
+  Множество неудачных SSH-входов с одного source.ip за короткое время (auditd user_login fail, terminal=sshd).
+  Корреляционный движок считает частоту по source.ip; точка входа цепочки.
+description_en: |
+  Linux SSH chain — stage 1.
+  Many SSH login failures from a single source.ip within a short time (auditd user_login fail, terminal=sshd).
+  The correlation engine counts frequency by source.ip; the entry point of the chain.
 type: esql
 enabled: true
 params: "{}"

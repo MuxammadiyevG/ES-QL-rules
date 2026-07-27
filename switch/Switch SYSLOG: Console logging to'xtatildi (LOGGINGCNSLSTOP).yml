@@ -1,8 +1,16 @@
 rule_id: 2b4d746a-8b18-41fe-bc15-31487e47b53d
-name: "Switch SYSLOG: Console logging to'xtatildi (LOGGINGCNSLSTOP)"
-description: |
+name_uz: "Switch SYSLOG: Console logging to'xtatildi (LOGGINGCNSLSTOP)"
+name_ru: "Switch SYSLOG: Console logging остановлен (LOGGINGCNSLSTOP)"
+name_en: "Switch SYSLOG: Console Logging Stopped (LOGGINGCNSLSTOP)"
+description_uz: |
   Switch konsol terminaliga logging to'xtatildi.
   Bu odatiy boshqaruv harakati, lekin qayd etilishi kerak.
+description_ru: |
+  Logging на консольный терминал switch был остановлен.
+  Это обычное административное действие, но оно должно быть зафиксировано.
+description_en: |
+  Logging to the switch console terminal was stopped.
+  This is a routine administrative action, but it must be recorded.
 type: esql
 params: '{}'
 schedule_interval: 5m

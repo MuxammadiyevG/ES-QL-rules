@@ -1,12 +1,28 @@
 rule_id: c62c62b8-ffd8-4cfd-91f4-8ad9cef85303
-name: VMware ESX - Error Message Detected
-description: |
+name_uz: "VMware ESX - error darajasidagi xabar aniqlandi"
+name_ru: "VMware ESX - обнаружено сообщение уровня error"
+name_en: "VMware ESX - Error Message Detected"
+description_uz: |
   VMware ESX tizimidan error darajasidagi xabar qayd etildi.
   Tizim xatoliklari yoki servis muammolarining belgisi bo'lishi mumkin.
   SOC triage bosqichlari:
   - Error xabar matnini o'qib, qaysi komponent xato bergani aniqlang
   - Vaqt oralig'ida takrorlanayotgan errorlar bor-yo'qligini tekshiring
   - Host va process ma'lumotlarini solishtiring
+description_ru: |
+  Зафиксировано сообщение уровня error от системы VMware ESX.
+  Может быть признаком системных ошибок или проблем сервисов.
+  Шаги SOC-триажа:
+  - Прочитайте текст сообщения error и определите, какой компонент дал сбой
+  - Проверьте, есть ли повторяющиеся ошибки за интервал времени
+  - Сопоставьте данные host и process
+description_en: |
+  A message of error level was recorded from the VMware ESX system.
+  It may indicate system errors or service issues.
+  SOC triage steps:
+  - Read the text of the error message and determine which component failed
+  - Check whether there are errors repeating over the time range
+  - Compare the host and process details
 type: esql
 params: '{}'
 schedule_interval: 5m

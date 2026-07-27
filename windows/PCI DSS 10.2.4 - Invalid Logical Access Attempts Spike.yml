@@ -1,6 +1,28 @@
 rule_id: 2b6cde5a-964c-426e-affb-960080270f90
-name: "PCI DSS 10.2.4 - Invalid Logical Access Attempts Spike"
-description: |
+name_uz: "PCI DSS 10.2.4 - Noto'g'ri logik kirish urinishlarining keskin o'sishi"
+name_ru: "PCI DSS 10.2.4 - Всплеск неудачных попыток логического доступа"
+name_en: "PCI DSS 10.2.4 - Invalid Logical Access Attempts Spike"
+description_uz: |
+  Windows va Linux tizimlarida noto'g'ri logik kirish urinishlarining anomal keskin o'sishini aniqlaydi.
+  PCI DSS Requirement 10.2.4 barcha noto'g'ri logik kirish urinishlarini loglashni talab qiladi.
+  Ushbu qoida tizimli hujum shakllarini,
+  password spraying yoki CDE tizimlariga qarshi insider suiiste'molini aniqlash uchun umumlashtirilgan ko'rinish beradi.
+  Trigger: 5 daqiqada bitta hostdan >50 noto'g'ri kirish urinishi (ehtimoliy spray hujumi),
+  yoki muhitda jami >200 noto'g'ri urinish (ehtimoliy muvofiqlashtirilgan hujum).
+  False positive: noto'g'ri credential bilan ishlaydigan avtomatlashtirilgan vositalar, domain trust muammolari.
+  Triage: eng ko'p nishonga olingan akkauntlarni aniqlang, manba IP'lar ichki ekanini tekshiring,
+  tashqi kelib chiqishni aniqlash uchun VPN/masofaviy kirish loglari bilan korrelyatsiya qiling.
+description_ru: |
+  Обнаруживает аномальный всплеск неудачных попыток логического доступа в системах Windows и Linux.
+  PCI DSS Requirement 10.2.4 требует логирования всех неудачных попыток логического доступа.
+  Это правило даёт агрегированную видимость для выявления системных шаблонов атак,
+  password spraying или попыток злоупотребления со стороны инсайдеров против систем CDE.
+  Trigger: >50 неудачных попыток доступа с одного хоста за 5 минут (возможная spray-атака),
+  или >200 неудачных попыток суммарно в среде (возможная скоординированная атака).
+  False positives: автоматизированные инструменты с неверными учётными данными, проблемы domain trust.
+  Triage: определите наиболее атакуемые учётные записи, проверьте, являются ли исходные IP внутренними,
+  сопоставьте с логами VPN/удалённого доступа для выявления внешнего источника.
+description_en: |
   Detects abnormal spike in invalid logical access attempts across Windows and Linux systems.
   PCI DSS Requirement 10.2.4 mandates logging of all invalid logical access attempts.
   This rule provides aggregate visibility to identify systematic attack patterns,

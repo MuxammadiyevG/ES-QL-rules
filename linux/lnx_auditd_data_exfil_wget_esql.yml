@@ -1,6 +1,18 @@
 rule_id: f21208cd-3564-4a3b-8248-30e334cde122
-name: "Data Exfiltration with Wget Detection"
-description: |
+name_uz: "Wget orqali ma'lumot eksfiltratsiyasini aniqlash"
+name_ru: "Обнаружение эксфильтрации данных через wget"
+name_en: "Data Exfiltration with Wget Detection"
+description_uz: |
+  wget utilitasi yordamida fayllarni yuborishga urinishlarni aniqlaydi.
+  Tajovuzkor wget uchun noto'g'ri sozlangan sudo ruxsatlari orqali ruxsat cheklovlarini chetlab o'tishi mumkin,
+  bu esa unga /etc/shadow kabi maxfiy fayllarni o'qish va ularni eksfiltratsiya qilish imkonini beradi.
+  --post-file bayrog'i fayl mazmunini HTTP POST orqali yuborish uchun ishlatiladi.
+description_ru: |
+  Обнаруживает попытки отправки файлов с помощью утилиты wget.
+  Злоумышленник может обойти ограничения прав при неверно настроенных sudo-разрешениях для wget,
+  что позволит ему читать конфиденциальные файлы вроде /etc/shadow и выгружать их.
+  Флаг --post-file используется для отправки содержимого файла через HTTP POST.
+description_en: |
   Detects attempts to post files using the wget utility.
   The adversary can bypass permission restrictions with misconfigured sudo permissions for wget,
   which could allow them to read sensitive files like /etc/shadow and exfiltrate them.

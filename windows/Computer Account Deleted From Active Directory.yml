@@ -1,6 +1,8 @@
 rule_id: 9e0f2d7e-dccf-4f8a-9232-d4c7a0d8c1ec
-name: Computer Account Deleted From Active Directory
-description: |
+name_uz: "Active Directory'dan computer account o'chirildi"
+name_ru: "Учётная запись компьютера удалена из Active Directory"
+name_en: "Computer Account Deleted From Active Directory"
+description_uz: |
   Ushbu qoida credential access va privilege escalation texnikalariga bog'liq bo'lib, `Computer Account Deleted From Active Directory` kontekstidagi shubhali Active Directory faoliyatini aniqlaydi.
   Bu turdagi hodisa AD muhitida hujumchiga ruxsatsiz kirishni mustahkamlash, hisoblarni egallash yoki boshqaruv huquqlarini oshirish imkonini berishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida rejalashtirilgan administrativ ishlar, change/deployment jarayonlari, IAM sinxronizatsiyasi yoki servis konfiguratsiya yangilanishlari uchrashi mumkin.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manzili, manba host va tarmoq segmentining legitimligini tekshiring.
   - Ta'sirlangan akkaunt yoki obyektning guruh a'zoligi, ayniqsa imtiyozli guruhlar bilan bog'liqligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manbani cheklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+description_ru: |
+  Это правило связано с техниками credential access и privilege escalation и выявляет подозрительную активность Active Directory в контексте `Computer Account Deleted From Active Directory`.
+  Событие такого типа считается опасным, поскольку в среде AD оно может позволить злоумышленнику закрепить несанкционированный доступ, захватить учётные записи или повысить административные права.
+  В качестве легитимных случаев могут встречаться плановые административные работы, процессы change/deployment, синхронизация IAM или обновления конфигурации служб.
+  Этапы SOC-триажа:
+  - Точно идентифицируйте `actor` и `target_user` (или целевой объект) в событии.
+  - Проверьте наличие утверждённого change-тикета или записи о deployment для изменения/доступа.
+  - Проверьте легитимность адреса `src_ip`, исходного хоста и сетевого сегмента.
+  - Проверьте членство в группах затронутой учётной записи или объекта, особенно связь с привилегированными группами.
+  - При подтверждении нелегитимной активности выполните оперативное сдерживание (containment): ограничьте источник, смените учётные данные и изолируйте зону воздействия.
+description_en: |
+  This rule is related to credential access and privilege escalation techniques and detects suspicious Active Directory activity in the `Computer Account Deleted From Active Directory` context.
+  An event of this type is considered dangerous because in an AD environment it may allow an attacker to establish unauthorized access, take over accounts, or escalate administrative rights.
+  Legitimate cases may include planned administrative work, change/deployment processes, IAM synchronization, or service configuration updates.
+  SOC triage steps:
+  - Precisely identify the `actor` and `target_user` (or target object) in the event.
+  - Check whether an approved change ticket or deployment record exists for the change/access.
+  - Verify the legitimacy of the `src_ip` address, the source host, and the network segment.
+  - Check the group membership of the affected account or object, especially any association with privileged groups.
+  - If malicious activity is confirmed, perform immediate containment: restrict the source, rotate credentials, and isolate the affected scope.
 type: esql
 params: '{}'
 schedule_interval: 10m

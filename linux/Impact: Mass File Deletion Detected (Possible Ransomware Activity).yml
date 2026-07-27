@@ -1,12 +1,25 @@
 rule_id: c3c00f1e-b829-46b8-b9dc-33cb19ca1f9f
-name: "Impact: Mass File Deletion Detected (Possible Ransomware Activity)"
-description: |
+name_uz: "Impact: ommaviy fayl o'chirish aniqlandi (ehtimoliy ransomware faoliyati)"
+name_ru: "Impact: обнаружено массовое удаление файлов (возможная активность ransomware)"
+name_en: "Impact: Mass File Deletion Detected (Possible Ransomware Activity)"
+description_uz: |
   Ushbu qoida Linux tizimida qisqa vaqt ichida ko‘p fayllarni o‘chirish
   holatini aniqlaydi. Bu ransomware yoki destructive attack belgisi
   bo‘lishi mumkin.
 
   Auditd orqali unlink/unlinkat syscall’lar hisoblanadi.
+description_ru: |
+  Данное правило выявляет удаление большого количества файлов за короткое
+  время в системе Linux. Это может быть признаком ransomware или
+  destructive attack.
 
+  Через Auditd подсчитываются syscall unlink/unlinkat.
+description_en: |
+  This rule detects the deletion of many files within a short period of time
+  on a Linux system. This may be a sign of ransomware or a destructive
+  attack.
+
+  unlink/unlinkat syscalls are counted via Auditd.
 type: esql
 params: "{}"
 schedule_interval: 10m

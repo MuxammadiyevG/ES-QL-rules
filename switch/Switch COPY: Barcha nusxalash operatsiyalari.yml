@@ -1,8 +1,16 @@
 rule_id: 6ba2bcc4-22a8-464c-99d2-43c03cc1efda
-name: "Switch COPY: Barcha nusxalash operatsiyalari"
-description: |
+name_uz: "Switch COPY: Barcha nusxalash operatsiyalari"
+name_ru: "Switch COPY: все операции копирования"
+name_en: "Switch COPY: All copy operations"
+description_uz: |
   Switch da bajarilgan barcha fayl operatsiyalari.
   Firmware yangilanish, config backup/restore, TFTP/SCP operatsiyalari.
+description_ru: |
+  Все файловые операции, выполненные на коммутаторе.
+  Обновление firmware, config backup/restore, операции TFTP/SCP.
+description_en: |
+  All file operations performed on the switch.
+  Firmware update, config backup/restore, TFTP/SCP operations.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,9 +1,19 @@
 rule_id: a9320141-449c-46fc-a81c-7c7a37ee75f7
-name: Normal Kerberos TGT Requests - Baseline
-description: |
+name_uz: "Normal Kerberos TGT so'rovlari - Baseline"
+name_ru: "Нормальные запросы TGT Kerberos - Baseline"
+name_en: "Normal Kerberos TGT Requests - Baseline"
+description_uz: |
   Baseline/monitoring qoidasi: muvaffaqiyatli TGT (4768) so'rovlarini foydalanuvchi va
   shifrlash turi bo'yicha yig'adi. Kerberos autentikatsiyasi uchun normal darajani
   belgilash maqsadida (alert emas, kontekst).
+description_ru: |
+  Правило baseline/мониторинга: агрегирует успешные запросы TGT (4768) по пользователю и
+  типу шифрования. Служит для определения нормального уровня аутентификации Kerberos
+  (не алерт, контекст).
+description_en: |
+  Baseline/monitoring rule: aggregates successful TGT (4768) requests by user and
+  encryption type. Intended to establish the normal level for Kerberos authentication
+  (not an alert, context).
 type: esql
 params: '{}'
 schedule_interval: 10m

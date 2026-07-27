@@ -1,11 +1,25 @@
 rule_id: 93011f33-473f-4fc9-bc14-044d9633a143
-name: Scheduled Task Deleted (Non-Microsoft)
-description: |
+name_uz: "Scheduled Task o'chirildi (Microsoft'niki emas)"
+name_ru: "Удаление Scheduled Task (не Microsoft)"
+name_en: "Scheduled Task Deleted (Non-Microsoft)"
+description_uz: |
   Ushbu qoida scheduled task o'chirilishini aniqlaydi (TaskScheduler/Operational 141) —
   Microsoft tizim tasklaridan tashqari. Hujumchi o'z task'ini yoki izlarini yashirish uchun
   o'chirishi mumkin (T1053.005 / defense evasion).
   SOC triage:
   - `task_names`/`user_names` — qaysi task, kim o'chirdi? Qonuniy o'zgartirishmi?
+description_ru: |
+  Это правило выявляет удаление scheduled task (TaskScheduler/Operational 141) —
+  кроме системных задач Microsoft. Атакующий может удалить свою задачу или скрыть следы
+  таким удалением (T1053.005 / defense evasion).
+  SOC triage:
+  - `task_names`/`user_names` — какая задача, кто удалил? Легитимное ли это изменение?
+description_en: |
+  This rule detects deletion of a scheduled task (TaskScheduler/Operational 141) —
+  excluding Microsoft system tasks. An attacker may delete their own task or hide their traces
+  by deleting it (T1053.005 / defense evasion).
+  SOC triage:
+  - `task_names`/`user_names` — which task, who deleted it? Is it a legitimate change?
 type: esql
 params: "{}"
 schedule_interval: 10m

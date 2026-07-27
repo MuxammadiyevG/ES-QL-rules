@@ -1,6 +1,8 @@
 rule_id: 002200a6-6192-41cc-9b5f-757cde0a50f9
-name: WAF - Single Source Triggering Many Distinct Rule IDs (Compound Attack)
-description: |
+name_uz: "WAF - bitta manba ko'p sonli turli Rule ID larni ishga tushirmoqda (kompozit hujum)"
+name_ru: "WAF - один источник запускает множество различных Rule ID (составная атака)"
+name_en: "WAF - Single Source Triggering Many Distinct Rule IDs (Compound Attack)"
+description_uz: |
   Bitta source.ip qisqa vaqt oralig'ida ko'p sonli turli ModSecurity rule.id
   larini ishga tushirdi. Bu bitta hujumchi yoki avtomatlashtirilgan vosita
   bir vaqtning o'zida turli attack vektorlarini (SQLi, XSS, LFI, RCE, protocol
@@ -14,6 +16,34 @@ description: |
   - `source.ip` hosting provayderini (VPS, Tor, cloud) va threat intel reputatsiyasini tekshiring.
   - Maqsadli `url.domain` va endpoint'larning zaif joylarini tekshiring.
   - Tasdiqlangan pentest bo'lmasa, IP ni WAF darajasida bloklang.
+description_ru: |
+  Один source.ip за короткий промежуток времени запустил множество различных
+  ModSecurity rule.id. Это означает, что один атакующий или автоматизированный инструмент
+  одновременно пробует различные векторы атаки (SQLi, XSS, LFI, RCE, protocol
+  anomaly) — это широкая, многослойная
+  составная (compound) атака (T1190).
+  Легитимные случаи: подтверждённый pentest или vulnerability scan.
+  Этапы SOC-триажа:
+  - Чем выше значение `distinct_rules`, тем шире охват атаки.
+  - Изучите списки `triggered_rules` и `rule_categories` и определите, какие классы
+    атак были объединены.
+  - Проверьте хостинг-провайдера `source.ip` (VPS, Tor, cloud) и его репутацию по threat intel.
+  - Проверьте уязвимые места целевого `url.domain` и endpoint'ов.
+  - Если подтверждённого pentest нет, заблокируйте IP на уровне WAF.
+description_en: |
+  A single source.ip triggered a large number of different ModSecurity rule.id
+  values within a short time window. This means that one attacker or automated tool
+  is simultaneously trying various attack vectors (SQLi, XSS, LFI, RCE, protocol
+  anomaly) — a broad, multi-layered
+  compound attack (T1190).
+  Legitimate cases: an approved pentest or vulnerability scan.
+  SOC triage steps:
+  - The higher the `distinct_rules` value, the broader the attack.
+  - Review the `triggered_rules` and `rule_categories` lists and determine which attack
+    classes were combined.
+  - Check the hosting provider of `source.ip` (VPS, Tor, cloud) and its threat intel reputation.
+  - Check the vulnerable spots of the target `url.domain` and endpoints.
+  - If there is no approved pentest, block the IP at the WAF level.
 type: esql
 params: '{}'
 schedule_interval: 5m

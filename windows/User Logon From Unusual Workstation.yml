@@ -1,6 +1,8 @@
 rule_id: 556f281b-01f2-4179-9ef2-664f776fc13e
-name: User Logon From Unusual Workstation
-description: |
+name_uz: "G'ayrioddiy ish stansiyasidan foydalanuvchi logoni"
+name_ru: "Вход пользователя с необычной рабочей станции"
+name_en: "User Logon From Unusual Workstation"
+description_uz: |
   Ushbu qoida bitta foydalanuvchi qisqa vaqtda KO'P xil workstation/manbadan logon qilishini
   aniqlaydi (4624, LogonType 2/3/10). Bir foydalanuvchining bir soatda 5+ xil ish-stansiyadan
   kirishi credential almashinuvi yoki o'g'irlangan akkaunt belgisi bo'lishi mumkin.
@@ -8,6 +10,22 @@ description: |
   SOC triage:
   - `target_user`/`workstations` — manbalar haqiqiy va kutilganmi?
   - Tasdiqlanmasa: akkauntni tekshiring, parolni reset qiling.
+description_ru: |
+  Данное правило выявляет вход одного пользователя за короткое время с МНОГИХ различных
+  рабочих станций/источников (4624, LogonType 2/3/10). Вход одного пользователя за час с 5+ различных
+  рабочих станций может быть признаком передачи учётных данных или украденной учётной записи.
+  Примечание: агрегация выполняется по пользователю между хостами.
+  SOC triage:
+  - `target_user`/`workstations` — являются ли источники подлинными и ожидаемыми?
+  - Если не подтверждено: проверьте учётную запись, сбросьте пароль.
+description_en: |
+  This rule detects a single user logging on from MANY different workstations/sources in a short
+  time (4624, LogonType 2/3/10). One user logging in from 5+ different workstations within an hour
+  may be a sign of credential sharing or a stolen account.
+  Note: it aggregates across hosts per user.
+  SOC triage:
+  - `target_user`/`workstations` — are the sources genuine and expected?
+  - If not confirmed: review the account, reset the password.
 type: esql
 params: '{}'
 schedule_interval: 10m

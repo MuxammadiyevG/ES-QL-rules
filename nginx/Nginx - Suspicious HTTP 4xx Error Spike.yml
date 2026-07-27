@@ -1,6 +1,8 @@
 rule_id: 3d22b12c-5ddd-4ebf-8a7d-0707ce0020d8
-name: Nginx - Suspicious HTTP 4xx Error Spike
-description: |
+name_uz: "Nginx - Shubhali HTTP 4xx xatolar keskin o'sishi"
+name_ru: "Nginx - Подозрительный всплеск ошибок HTTP 4xx"
+name_en: "Nginx - Suspicious HTTP 4xx Error Spike"
+description_uz: |
   Ushbu qoida Nginx access log'da bir xil manbadan ko'p 4xx status code'larni aniqlaydi.
   Bu web scanning, forced browsing yoki unauthorized access urinishi belgisi.
   Qonuniy holatlar: broken links, client misconfiguration, legitimate crawlers.
@@ -10,6 +12,26 @@ description: |
   - User agent va behavior'ni analyze qiling
   - Directory/file enumeration pattern'i bormi aniqlang
   - Rate limiting yoki blocking zarurligini baholang
+description_ru: |
+  Это правило обнаруживает множество status code 4xx с одного источника в access log Nginx.
+  Это признак web scanning, forced browsing или попытки несанкционированного доступа.
+  Легитимные случаи: битые ссылки, некорректная настройка клиента, легитимные краулеры.
+  Этапы SOC triage:
+  - Проанализируйте распределение status code 4xx (401, 403, 404)
+  - Проверьте паттерны URL запросов
+  - Проанализируйте user agent и поведение
+  - Определите, есть ли паттерн перечисления каталогов/файлов
+  - Оцените необходимость rate limiting или блокировки
+description_en: |
+  This rule detects many 4xx status codes from the same source in the Nginx access log.
+  This is an indicator of web scanning, forced browsing or an unauthorized access attempt.
+  Legitimate cases: broken links, client misconfiguration, legitimate crawlers.
+  SOC triage steps:
+  - Analyze the 4xx status code distribution (401, 403, 404)
+  - Check the request URL patterns
+  - Analyze the user agent and behavior
+  - Determine whether there is a directory/file enumeration pattern
+  - Assess whether rate limiting or blocking is required
 type: esql
 params: '{}'
 schedule_interval: 10m

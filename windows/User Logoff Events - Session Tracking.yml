@@ -1,9 +1,19 @@
 rule_id: c9baea88-0f0a-479b-8805-ecce7fe4632d
-name: User Logoff Events - Session Tracking
-description: |
+name_uz: "Foydalanuvchi logoff hodisalari - Sessiyani kuzatish"
+name_ru: "События выхода пользователей - отслеживание сессий"
+name_en: "User Logoff Events - Session Tracking"
+description_uz: |
   Baseline/monitoring qoidasi: foydalanuvchi logoff (4634, 4647) hodisalarini yig'adi. 4634/4647
   da Subject yo'q — foydalanuvchi `TargetUserName` da bo'ladi. Sessiya davomiyligi va xulqini
   kuzatish uchun (alert emas, kontekst).
+description_ru: |
+  Правило baseline/мониторинга: собирает события выхода пользователя (4634, 4647). В 4634/4647
+  нет Subject — пользователь находится в `TargetUserName`. Для отслеживания длительности сессии и
+  поведения (не алерт, а контекст).
+description_en: |
+  Baseline/monitoring rule: collects user logoff (4634, 4647) events. In 4634/4647
+  there is no Subject — the user is in `TargetUserName`. For tracking session duration and
+  behavior (not an alert, but context).
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -8,8 +8,24 @@ rule_id: 0122fc83-fb74-44ac-ac4f-34c566128cfb
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Allowlist known configuration management tools (Ansible, Puppet), change windows
 
-name: "Critical Configuration File Modification"
-description: |
+name_uz: "Muhim konfiguratsiya faylining o'zgartirilishi"
+name_ru: "Изменение критичного файла конфигурации"
+name_en: "Critical Configuration File Modification"
+description_uz: |
+  Muhim tizim konfiguratsiya fayllari va registr kalitlariga ruxsatsiz o'zgartirishlarni aniqlaydi.
+  Xavfsizlik siyosati, firewall qoidalari yoki servis konfiguratsiyalarining o'zgarishi imtiyozlarni oshirishdan darak berishi mumkin.
+  Windows registrida xavfsizlik sozlamalariga kiritilgan o'zgarishlar yoki Linux /etc fayllaridagi o'zgarishlar qamrab olinadi.
+  False positive: qonuniy administrativ o'zgarishlar, dasturiy ta'minot yangilanishlari, avtomatlashtirilgan konfiguratsiya boshqaruvi.
+  Triage: o'zgarish change ticket orqali tasdiqlanganini tekshiring, o'zgartirgan shaxsda admin imtiyozlari bor-yo'qligini tekshiring,
+  o'zgartirilgan aniq konfiguratsiyani xavfsizlikka ta'siri jihatidan ko'rib chiqing.
+description_ru: |
+  Обнаруживает несанкционированные изменения критичных файлов конфигурации системы и ключей реестра.
+  Изменения политики безопасности, правил firewall или конфигураций служб могут указывать на повышение привилегий.
+  Фиксируются изменения параметров безопасности в реестре Windows или изменения файлов /etc в Linux.
+  Ложные срабатывания: легитимные административные изменения, обновления ПО, автоматизированное управление конфигурацией.
+  Триаж: убедитесь, что изменение согласовано через change ticket, проверьте, есть ли у изменившего права администратора,
+  оцените конкретное изменённое значение конфигурации с точки зрения влияния на безопасность.
+description_en: |
   Detects unauthorized changes to critical system configuration files and registry keys.
   Modifications to security policy, firewall rules, or service configurations may indicate privilege escalation.
   Windows registry changes to security settings or Linux /etc file modifications captured.

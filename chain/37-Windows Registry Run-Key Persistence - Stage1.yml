@@ -1,7 +1,15 @@
 rule_id: ca178d79-2212-496c-a612-e5cc49adc3ba
-name: "Chain: Windows Registry Run-Key Persistence — Stage 1: Run Key Registry Set"
-description: |
+name_uz: "Zanjir: Windows Registry Run-Key Persistence — 1-bosqich: Reyestrda Run kaliti o'rnatilishi"
+name_ru: "Цепочка: Windows Registry Run-Key Persistence — Этап 1: Установка значения Run-ключа в реестре"
+name_en: "Chain: Windows Registry Run-Key Persistence — Stage 1: Run Key Registry Set"
+description_uz: |
   Windows Registry Run-Key Persistence zanjiri — 1-bosqich (2 dan).
+  Run Key Registry Set.
+description_ru: |
+  Цепочка Windows Registry Run-Key Persistence — этап 1 (из 2).
+  Установка значения Run-ключа в реестре.
+description_en: |
+  Windows Registry Run-Key Persistence chain — stage 1 (of 2).
   Run Key Registry Set.
 type: esql
 enabled: true

@@ -1,6 +1,8 @@
 rule_id: 7cb1e9ff-c947-44b2-ba8f-0ca80ff1343d
-name: PostgreSQL - Multiple Fatal Errors Detected
-description: |
+name_uz: "PostgreSQL - Ko'p Sonli FATAL Xatolar Aniqlandi"
+name_ru: "PostgreSQL - обнаружено множество фатальных ошибок"
+name_en: "PostgreSQL - Multiple Fatal Errors Detected"
+description_uz: |
   Ushbu qoida PostgreSQL da qisqa vaqt ichida ko'p FATAL xato hodisalarini kuzatadi (Rule 50580).
   Ko'p xato servis ta'siriga (T1499 - Endpoint Denial of Service) yoki konfiguratsiya muammosiga ishora qilishi mumkin.
   Qonuniy holatlar: dastur xatosi, noto'g'ri konfiguratsiya, connection pool muammosi.
@@ -9,6 +11,24 @@ description: |
   - `actor` va `db.name` takrorlanayotganligini tekshiring.
   - Xatolar bir xil manba yoki jarayondan kelayotganini ko'ring.
   - Noqonuniy faoliyat tasdiqlansa: manbani cheklang, DBA xabardor qiling.
+description_ru: |
+  Данное правило отслеживает большое количество ошибок FATAL в PostgreSQL за короткое время (Rule 50580).
+  Множество ошибок может указывать на воздействие на сервис (T1499 - Endpoint Denial of Service) или на проблему конфигурации.
+  Легитимные случаи: ошибка приложения, некорректная конфигурация, проблема connection pool.
+  Шаги SOC-триажа:
+  - Точно определите тип ошибки в `postgresql.log.message`.
+  - Проверьте, повторяются ли `actor` и `db.name`.
+  - Посмотрите, приходят ли ошибки из одного и того же источника или процесса.
+  - При подтверждении нелегитимной активности: ограничьте источник, оповестите DBA.
+description_en: |
+  This rule tracks a large number of FATAL error events in PostgreSQL within a short period of time (Rule 50580).
+  Many errors may point to service impact (T1499 - Endpoint Denial of Service) or to a configuration problem.
+  Legitimate cases: application bug, misconfiguration, connection pool problem.
+  SOC triage steps:
+  - Precisely determine the error type in `postgresql.log.message`.
+  - Check whether `actor` and `db.name` are repeating.
+  - See whether the errors are coming from the same source or process.
+  - If illegitimate activity is confirmed: restrict the source, notify the DBA.
 type: esql
 params: '{}'
 schedule_interval: 10m

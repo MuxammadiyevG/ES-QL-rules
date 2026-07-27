@@ -8,8 +8,24 @@ rule_id: 3879c32f-f5e7-41e0-a5d3-9c086f8912e1
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Adjust size threshold per application (consider file upload endpoints)
 
-name: "Suspicious Large HTTP POST"
-description: |
+name_uz: "Shubhali katta hajmli HTTP POST"
+name_ru: "Подозрительный HTTP POST большого размера"
+name_en: "Suspicious Large HTTP POST"
+description_uz: |
+  Fayl yuklash hujumlari yoki DoS'dan dalolat berishi mumkin bo'lgan g'ayrioddiy katta tanaga ega POST so'rovlarini aniqlaydi.
+  Upload uchun mo'ljallanmagan endpoint'larga >10MB tana zararli fayl yuklashdan (webshell, malware) dalolat beradi.
+  Bitta manbadan bir nechta katta POST resurslarni tugatish hujumini ko'rsatishi mumkin.
+  False positive: qonuniy fayl yuklashlar, media yuklashlar, backup operatsiyalari.
+  Triage: maqsad URL'ni ko'rib chiqing (bu upload endpoint'mi?), yuklangan content type'ni tekshiring,
+  hajm ilova limitlari ichidami tasdiqlang, webshell joylashtirilganini tekshiring.
+description_ru: |
+  Обнаруживает POST-запросы с необычно большим размером тела, что может указывать на атаки через загрузку файлов или DoS.
+  Тело >10MB на endpoint, не предназначенные для загрузки, указывает на вредоносные загрузки файлов (webshell, malware).
+  Несколько больших POST с одного источника могут указывать на атаку исчерпания ресурсов.
+  Ложные срабатывания: легитимные загрузки файлов, загрузки медиа, операции резервного копирования.
+  Triage: изучите целевой URL (это upload endpoint?), проверьте content type загруженного,
+  убедитесь, что размер укладывается в лимиты приложения, проверьте на развёртывание webshell.
+description_en: |
   Detects POST requests with unusually large body sizes that may indicate file upload attacks or DoS.
   Bodies >10MB to non-upload endpoints suggest malicious file uploads (webshells, malware).
   Multiple large POSTs from single source may indicate resource exhaustion attack.

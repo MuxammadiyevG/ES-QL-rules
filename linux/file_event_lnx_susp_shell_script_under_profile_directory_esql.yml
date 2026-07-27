@@ -1,6 +1,14 @@
 rule_id: 0e26001a-8c7e-4957-907e-c25fcd0ddb2e
-name: "Suspicious Shell Script in Profile Directory"
-description: |
+name_uz: "Profile katalogida shubhali shell skript"
+name_ru: "Подозрительный shell-скрипт в каталоге profile"
+name_en: "Suspicious Shell Script in Profile Directory"
+description_uz: |
+  /etc/profile.d/ ichida shell skriptlar (.sh, .csh) yaratilishini aniqlaydi.
+  Bu katalogdagi skriptlar foydalanuvchilar tizimga kirganda bajariladi va mustahkamlanish (persistence) tekshiruvlarini ta'minlaydi.
+description_ru: |
+  Обнаруживает создание shell-скриптов (.sh, .csh) в /etc/profile.d/.
+  Скрипты в этом каталоге выполняются при входе пользователей в систему, что обеспечивает проверки закрепления.
+description_en: |
   Detects creation of shell scripts (.sh, .csh) in /etc/profile.d/.
   Scripts in this directory are executed when users log in, providing persistence checks.
 type: esql

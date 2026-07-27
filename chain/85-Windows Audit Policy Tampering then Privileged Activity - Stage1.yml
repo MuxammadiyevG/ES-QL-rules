@@ -1,7 +1,15 @@
 rule_id: 088454aa-9c78-462a-b3d1-e8bdda0d1dee
-name: "Chain: Windows Audit Policy Tampering then Privileged Activity — Stage 1: Audit Policy Source Manipulation"
-description: |
+name_uz: "Zanjir: Windows audit siyosatini buzish, so'ng imtiyozli faoliyat — 1-bosqich: audit siyosati manbasini manipulyatsiya qilish"
+name_ru: "Цепочка: подмена политики аудита Windows, затем привилегированная активность — Этап 1: манипуляция источником политики аудита"
+name_en: "Chain: Windows Audit Policy Tampering then Privileged Activity — Stage 1: Audit Policy Source Manipulation"
+description_uz: |
   Windows Audit Policy Tampering then Privileged Activity zanjiri — 1-bosqich (2 dan).
+  Audit Policy Source Manipulation.
+description_ru: |
+  Цепочка подмены политики аудита Windows с последующей привилегированной активностью — Этап 1 (из 2).
+  Манипуляция источником политики аудита.
+description_en: |
+  Windows Audit Policy Tampering then Privileged Activity chain — Stage 1 (of 2).
   Audit Policy Source Manipulation.
 type: esql
 enabled: true

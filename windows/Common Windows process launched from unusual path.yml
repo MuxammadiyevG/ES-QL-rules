@@ -1,6 +1,8 @@
 rule_id: 1a4f18a7-173c-4572-97c6-1656669f3625
-name: "Common Windows process launched from unusual path"
-description: |
+name_uz: "Odatiy Windows jarayoni noodatiy yo'ldan ishga tushirilgan"
+name_ru: "Обычный процесс Windows запущен из нетипичного пути"
+name_en: "Common Windows process launched from unusual path"
+description_uz: |
   Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib, `Common Windows process launched from unusual path` kontekstida taniqli Windows jarayonlarining odatiy yo'lidan boshqa joydan ishga tushirilganligini aniqlaydi.
   Kuzatiladigan jarayonlar: conhost.exe, csrss.exe, explorer.exe, dllhost.exe, lsass.exe, services.exe, smss.exe, svchost.exe, wininit.exe, winlogon.exe, wmiprvse.exe.
   Bu turdagi hodisa hujumchi legitimli jarayon nomini nusxalab boshqa joydan ishga tushirish orqali masquerading yoki process hijacking amalga oshirayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
@@ -11,6 +13,28 @@ description: |
   - Jarayonning command line argumentlarini tekshiring.
   - Hostda boshqa shubhali hodisalar borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: jarayonni to'xtating, hostni izolyatsiya qiling va to'liq forensic tahlil bajaring.
+description_ru: |
+  Это правило связано с техниками Persistence и Privilege Escalation и выявляет в контексте `Common Windows process launched from unusual path` запуск известных процессов Windows из места, отличного от их обычного пути.
+  Отслеживаемые процессы: conhost.exe, csrss.exe, explorer.exe, dllhost.exe, lsass.exe, services.exe, smss.exe, svchost.exe, wininit.exe, winlogon.exe, wmiprvse.exe.
+  Событие такого типа считается опасным, поскольку оно может указывать на то, что злоумышленник выполняет masquerading или process hijacking, копируя имя легитимного процесса и запуская его из другого места.
+  В качестве легитимных случаев могут встречаться некоторые обновления системы или специализированные корпоративные среды.
+  Этапы SOC-триажа:
+  - Точно идентифицируйте `winlog.computer_name`, `winlog.event_data.NewProcessName` и путь к файлу в событии.
+  - Проверьте цифровую подпись (digital signature) и значение хеша процесса.
+  - Проверьте аргументы командной строки процесса.
+  - Проверьте, есть ли на хосте другие подозрительные события.
+  - При подтверждении нелегитимной активности выполните оперативное сдерживание (containment): остановите процесс, изолируйте хост и проведите полный форензик-анализ.
+description_en: |
+  This rule is related to Persistence and Privilege Escalation techniques and detects, in the `Common Windows process launched from unusual path` context, well-known Windows processes being launched from a location other than their usual path.
+  Monitored processes: conhost.exe, csrss.exe, explorer.exe, dllhost.exe, lsass.exe, services.exe, smss.exe, svchost.exe, wininit.exe, winlogon.exe, wmiprvse.exe.
+  An event of this type is considered dangerous because it may indicate that an attacker is performing masquerading or process hijacking by copying the name of a legitimate process and launching it from another location.
+  Legitimate cases may include some system updates or specialized corporate environments.
+  SOC triage steps:
+  - Precisely identify the `winlog.computer_name`, `winlog.event_data.NewProcessName` and the file path in the event.
+  - Check the digital signature and hash value of the process.
+  - Check the command line arguments of the process.
+  - Check whether there are other suspicious events on the host.
+  - If malicious activity is confirmed, perform immediate containment: terminate the process, isolate the host, and carry out a full forensic analysis.
 type: esql
 params: '{}'
 schedule_interval: 5m

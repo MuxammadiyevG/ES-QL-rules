@@ -8,8 +8,24 @@ rule_id: cd5b4b8a-69fb-4820-bd90-17644306adb6
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Customize admin path patterns per application, allowlist admin source IPs
 
-name: "Administrative Interface Probing"
-description: |
+name_uz: "Administrativ interfeyslarni zondlash"
+name_ru: "Зондирование административных интерфейсов"
+name_en: "Administrative Interface Probing"
+description_uz: |
+  Keng tarqalgan administrativ URL'lar va boshqaruv panellariga kirish urinishlarini aniqlaydi.
+  Ruxsatsiz manbalardan /admin, /phpmyadmin, /wp-admin, /dashboard, /console endpoint'lariga so'rovlar.
+  Bir necha muvaffaqiyatsiz urinish (403/404) admin interfeyslarini razvedka qilishdan darak beradi.
+  False positive: yangi IP'lardan kirayotgan qonuniy administratorlar, masofaviy boshqaruv.
+  Triage: manba IP vakolatli admin tarmog'iga tegishliligini tekshiring, muvaffaqiyatli kirish bo'lganini tekshiring,
+  brute force pattern'larini ko'rib chiqing, admin interfeyslari agent_id, IP/VPN bo'yicha cheklanganiga ishonch hosil qiling.
+description_ru: |
+  Обнаруживает попытки доступа к типичным административным URL и панелям управления.
+  Запросы к эндпоинтам /admin, /phpmyadmin, /wp-admin, /dashboard, /console из неавторизованных источников.
+  Множественные неудачные попытки (403/404) указывают на разведку административных интерфейсов.
+  Ложные срабатывания: легитимные администраторы с новых IP, удалённое управление.
+  Triage: проверьте, принадлежит ли IP источника доверенной админ-сети, проверьте наличие успешного доступа,
+  изучите признаки перебора паролей (brute force), убедитесь, что админ-интерфейсы ограничены по agent_id, IP/VPN.
+description_en: |
   Detects access attempts to common administrative URLs and control panels.
   Requests to /admin, /phpmyadmin, /wp-admin, /dashboard, /console endpoints from unauthorized sources.
   Multiple failed attempts (403/404) suggest reconnaissance for admin interfaces.

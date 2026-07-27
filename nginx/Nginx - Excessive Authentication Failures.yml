@@ -1,8 +1,16 @@
 rule_id: 275a06aa-df63-441a-b0a2-b19bf20b0ac2
-name: Nginx - Excessive Authentication Failures
-description: |
+name_uz: "Nginx - haddan ortiq ko'p autentifikatsiya xatoliklari"
+name_ru: "Nginx - чрезмерное количество ошибок аутентификации"
+name_en: "Nginx - Excessive Authentication Failures"
+description_uz: |
   Bitta manbadan ko'plab 401 va 403 xatoliklarini aniqlaydi. 
   Bu parollarni terib ko'rish (Brute-force) yoki himoyalangan zonalarga kirishga urinish.
+description_ru: |
+  Обнаруживает множество ошибок 401 и 403 из одного источника. 
+  Это перебор паролей (Brute-force) или попытка доступа к защищённым зонам.
+description_en: |
+  Detects many 401 and 403 errors from a single source. 
+  This is password guessing (Brute-force) or an attempt to access protected zones.
 type: esql
 params: '{}'
 schedule_interval: 10m

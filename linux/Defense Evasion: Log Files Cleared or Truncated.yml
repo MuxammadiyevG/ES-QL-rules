@@ -1,9 +1,16 @@
 rule_id: 16156b1a-32d3-4cc0-9f98-1cf10521be51
-name: "Defense Evasion: Log Files Cleared or Truncated"
-description: |
+name_uz: "Defense Evasion: log fayllar tozalandi yoki qisqartirildi"
+name_ru: "Defense Evasion: файлы логов очищены или усечены"
+name_en: "Defense Evasion: Log Files Cleared or Truncated"
+description_uz: |
   Ushbu qoida Linux tizimida log fayllarini tozalash, truncate qilish
   yoki o‘chirish holatlarini aniqlaydi (/var/log/*).
-
+description_ru: |
+  Данное правило выявляет очистку, усечение (truncate) или удаление файлов
+  логов в системе Linux (/var/log/*).
+description_en: |
+  This rule detects clearing, truncating or deleting log files on a Linux
+  system (/var/log/*).
 type: esql
 params: "{}"
 schedule_interval: 10m

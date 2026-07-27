@@ -1,6 +1,8 @@
 rule_id: 060c9752-8d3e-4045-821f-707400b91eef
-name: "Kerio: NetBIOS Broadcast DROP (Informational)"
-description: |
+name_uz: "Kerio: NetBIOS broadcast DROP (Informational)"
+name_ru: "Kerio: DROP широковещательных NetBIOS-пакетов (Informational)"
+name_en: "Kerio: NetBIOS Broadcast DROP (Informational)"
+description_uz: |
   Ushbu qoida Kerio tomonidan bloklangan NetBIOS broadcast paketlarini qayd etadi.
   Port 137 (NetBIOS Name Service) va 138 (NetBIOS Datagram) broadcastlar.
   Logda ko'ringan: 10.1.27.139:137 → 10.1.27.255:137.
@@ -8,6 +10,22 @@ description: |
   SOC triage bosqichlari:
   - Kutilmagan VLAN dan kelsa — ruxsatsiz qurilma bo'lishi mumkin.
   - Ko'p hostdan kelsa — NetBIOS enumeration urinishi.
+description_ru: |
+  Это правило фиксирует широковещательные NetBIOS-пакеты, заблокированные Kerio.
+  Широковещательные пакеты на порты 137 (NetBIOS Name Service) и 138 (NetBIOS Datagram).
+  Замечено в логе: 10.1.27.139:137 → 10.1.27.255:137.
+  Легитимные ситуации: сетевое обнаружение Windows, общий доступ к файлам.
+  Этапы SOC-триажа:
+  - Если приходит из неожиданного VLAN — возможно несанкционированное устройство.
+  - Если приходит со многих хостов — попытка NetBIOS enumeration.
+description_en: |
+  This rule records NetBIOS broadcast packets blocked by Kerio.
+  Broadcasts on port 137 (NetBIOS Name Service) and 138 (NetBIOS Datagram).
+  Seen in the log: 10.1.27.139:137 → 10.1.27.255:137.
+  Legitimate cases: Windows network discovery, file sharing.
+  SOC triage steps:
+  - If it comes from an unexpected VLAN — it may be an unauthorized device.
+  - If it comes from many hosts — a NetBIOS enumeration attempt.
 type: esql
 params: '{}'
 schedule_interval: 15m

@@ -1,6 +1,8 @@
 rule_id: 152d3f1f-ff61-469a-aef7-9a6cdf918076
-name: "PAN-OS: DNS Sinkhole or Malicious Domain Blocked"
-description: |
+name_uz: "PAN-OS: DNS sinkhole yoki zararli domen bloklandi"
+name_ru: "PAN-OS: DNS sinkhole или заблокирован вредоносный домен"
+name_en: "PAN-OS: DNS Sinkhole or Malicious Domain Blocked"
+description_uz: |
   Ushbu qoida Palo Alto threat log'da DNS sinkhole yoki spyware/DNS
   kategoriyasidagi zararli domen hit'larini kuzatadi (panw.threat dataset).
   DNS sinkhole — firewall zararli domen so'rovini soxta IP'ga yo'naltiradi,
@@ -13,6 +15,32 @@ description: |
   - Bir host'dan takroriy sinkhole hit — faol infektsiya belgisi.
   - Domen threat intel'da ma'lum C2/malware ekanligini tasdiqlang.
   - Kerak bo'lsa: host'ni izolyatsiya qiling, to'liq tekshiruv o'tkazing.
+description_ru: |
+  Это правило отслеживает срабатывания DNS sinkhole или вредоносных доменов
+  категории spyware/DNS в threat-логе Palo Alto (dataset panw.threat).
+  DNS sinkhole — межсетевой экран перенаправляет запрос к вредоносному домену на подставной IP,
+  что указывает на заражение malware на внутреннем хосте или попытку связи
+  через C2-домен (T1071.004 - DNS).
+  Легитимные случаи: ложное срабатывание недавно добавленного threat feed, тестовый домен.
+  Этапы SOC-триажа:
+  - Определите домен, попавший в sinkhole, и внутренний хост (source.ip), отправивший запрос.
+  - Проверьте хост на наличие malware через EDR/антивирус.
+  - Повторяющиеся срабатывания sinkhole с одного хоста — признак активного заражения.
+  - Подтвердите по threat intel, что домен известен как C2/malware.
+  - При необходимости: изолируйте хост, проведите полную проверку.
+description_en: |
+  This rule monitors DNS sinkhole or malicious domain hits in the spyware/DNS
+  category within the Palo Alto threat log (panw.threat dataset).
+  DNS sinkhole — the firewall redirects a malicious domain request to a fake IP,
+  which indicates a malware infection on an internal host or an attempt to communicate
+  via a C2 domain (T1071.004 - DNS).
+  Legitimate cases: false positive from a newly added threat feed, test domain.
+  SOC triage steps:
+  - Identify the sinkholed domain and the internal host (source.ip) that sent the request.
+  - Check the host for malware using EDR/antivirus.
+  - Repeated sinkhole hits from one host — a sign of active infection.
+  - Confirm in threat intel that the domain is known C2/malware.
+  - If needed: isolate the host and perform a full investigation.
 type: esql
 params: '{}'
 schedule_interval: 5m

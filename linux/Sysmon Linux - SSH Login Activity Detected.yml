@@ -1,6 +1,8 @@
 rule_id: d4411e69-12d7-479f-a4a8-019d0b8c9808
-name: Linux Auth - SSH Login Activity
-description: |
+name_uz: "Linux Auth - SSH kirish faoliyati"
+name_ru: "Linux Auth - активность SSH-входов"
+name_en: "Linux Auth - SSH Login Activity"
+description_uz: |
   Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi SSH kirish va chiqish hodisalarini kuzatadi.
   sshd tomonidan qayd etilgan muvaffaqiyatli va muvaffaqiyatsiz SSH urinishlari, noma'lum
   foydalanuvchilar hamda session ochilish/yopilish hodisalari monitoring qilinadi.
@@ -11,6 +13,28 @@ description: |
   - GeoIP ma'lumotlarini (`source.geo`) tekshiring — noodatiy mamlakat/shahardan kirish bormi.
   - Muvaffaqiyatsiz urinishlar soni ortib borayotgan bo'lsa brute-force ehtimolini ko'rib chiqing.
   - `event.outcome` failure bo'lsa va takrorlanayotgan bo'lsa escalation bajaring.
+description_ru: |
+  Это правило отслеживает события входа и выхода SSH в Linux auth.log (logs-linux.auth-*).
+  Мониторятся успешные и неуспешные попытки SSH, зафиксированные sshd, неизвестные
+  пользователи, а также события открытия/закрытия сессий.
+  Правилу присвоен уровень low severity, оно предназначено в основном для аудита и видимости.
+  Легитимные случаи: обычные SSH-входы администраторов, DevOps и сервисных учётных записей.
+  Этапы SOC triage:
+  - Проверьте `actor` (user.name) и `source.ip`.
+  - Проверьте данные GeoIP (`source.geo`) — нет ли входа из необычной страны/города.
+  - Если число неуспешных попыток растёт, рассмотрите вероятность перебора паролей (brute-force).
+  - Если `event.outcome` равен failure и повторяется, выполните эскалацию.
+description_en: |
+  This rule monitors SSH login and logout events in the Linux auth.log (logs-linux.auth-*).
+  Successful and failed SSH attempts recorded by sshd, unknown
+  users and session open/close events are monitored.
+  This rule is set at low severity mainly for audit and visibility purposes.
+  Legitimate cases: routine SSH logins by administrators, DevOps and service accounts.
+  SOC triage steps:
+  - Check `actor` (user.name) and `source.ip`.
+  - Check GeoIP data (`source.geo`) — whether the login comes from an unusual country/city.
+  - If the number of failed attempts is growing, consider the possibility of brute-force.
+  - If `event.outcome` is failure and it repeats, escalate.
 type: esql
 params: '{}'
 schedule_interval: 10m

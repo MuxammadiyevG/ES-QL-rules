@@ -1,6 +1,8 @@
 rule_id: 439dfa4b-532d-4be2-b597-82fdb97bce2c
-name: "Agent Defense Evasion: AppArmor Policy Violation (AVC Denied)"
-description: |
+name_uz: "Agent Defense Evasion: AppArmor Siyosati Buzilishi (AVC Denied)"
+name_ru: "Agent Defense Evasion: нарушение политики AppArmor (AVC Denied)"
+name_en: "Agent Defense Evasion: AppArmor Policy Violation (AVC Denied)"
+description_uz: |
   Ushbu qoida Defense Evasion texnikasiga bog'liq bo'lib, AppArmor/SELinux tomonidan bloklangan operatsiyalarni aniqlaydi.
   Hujumchi xavfsizlik siyosatini chetlab o'tishga yoki cheklangan resurslarga kirishga urinayotgan bo'lishi mumkin.
   Qonuniy holatlar: noto'g'ri AppArmor profillari, yangi o'rnatilgan dastur ruxsatnomalari, container isolation muammolari.
@@ -10,6 +12,26 @@ description: |
   - Bloklangan process (`process.executable`, `process.name`) legitimligini baholang.
   - Takroriy DENIED hodisalar pattern ni tekshiring — bu bypass urinishi bo'lishi mumkin.
   - Noqonuniy bo'lsa: profil o'zgarishlarini audit qiling, process ni o'ldiring.
+description_ru: |
+  Это правило связано с техникой Defense Evasion и выявляет операции, заблокированные AppArmor/SELinux.
+  Злоумышленник может пытаться обойти политику безопасности или получить доступ к ограниченным ресурсам.
+  Легитимные случаи: некорректные профили AppArmor, разрешения только что установленного приложения, проблемы container isolation.
+  Этапы SOC-триажа:
+  - Определите заблокированную операцию (`auditd.data.operation`) и путь к файлу (`auditd.data.name`).
+  - Проверьте, какой профиль AppArmor (`auditd.data.profile`) сработал.
+  - Оцените легитимность заблокированного process (`process.executable`, `process.name`).
+  - Проверьте паттерн повторяющихся событий DENIED — это может быть попытка bypass.
+  - Если активность нелегитимна: проаудируйте изменения профиля, завершите process.
+description_en: |
+  This rule is related to the Defense Evasion technique and detects operations blocked by AppArmor/SELinux.
+  An attacker may be attempting to bypass the security policy or to access restricted resources.
+  Legitimate cases: incorrect AppArmor profiles, permissions of a newly installed application, container isolation issues.
+  SOC triage steps:
+  - Identify the blocked operation (`auditd.data.operation`) and the file path (`auditd.data.name`).
+  - Check which AppArmor profile (`auditd.data.profile`) was triggered.
+  - Assess the legitimacy of the blocked process (`process.executable`, `process.name`).
+  - Check the pattern of repeated DENIED events — this may be a bypass attempt.
+  - If illegitimate: audit the profile changes, kill the process.
 type: esql
 params: '{}'
 schedule_interval: 5m

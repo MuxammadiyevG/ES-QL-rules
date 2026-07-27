@@ -1,6 +1,8 @@
 rule_id: 21c621b5-a42d-41c3-9de8-5f201900bcf4
-name: Multiple Account Lockouts Detected
-description: |
+name_uz: "Ko'p sonli akkaunt qulflanishi aniqlandi"
+name_ru: "Обнаружено множество блокировок учётных записей"
+name_en: "Multiple Account Lockouts Detected"
+description_uz: |
   Ushbu qoida ko'p sonli akkaunt qulflanishini (4740) aniqlaydi. 4740 da qulflangan akkaunt
   `TargetUserName` da, qo'ng'iroq qilgan kompyuter `TargetDomainName` da bo'ladi (Subject —
   DC mashina akkaunti, shu sabab actor-filtri qo'llanmaydi). Ko'p lockout password spray yoki
@@ -8,6 +10,22 @@ description: |
   SOC triage:
   - `locked_accounts`/`caller_machines` — qaysi akkauntlar, qayerdan?
   - Tasdiqlansa: manbani toping/bloklang, ta'sirlangan akkauntlarni tekshiring.
+description_ru: |
+  Это правило обнаруживает большое число блокировок учётных записей (4740). В 4740 заблокированная
+  учётная запись находится в `TargetUserName`, а вызывающий компьютер — в `TargetDomainName` (Subject —
+  машинная учётная запись DC, поэтому фильтр по actor не применяется). Множество блокировок — признак password spray или
+  перебора паролей (brute force).
+  SOC triage:
+  - `locked_accounts`/`caller_machines` — какие учётные записи, откуда?
+  - При подтверждении: найдите/заблокируйте источник, проверьте затронутые учётные записи.
+description_en: |
+  This rule detects a large number of account lockouts (4740). In 4740 the locked account is in
+  `TargetUserName`, and the calling computer is in `TargetDomainName` (Subject is the
+  DC machine account, so no actor filter is applied). Many lockouts indicate password spray or
+  brute force.
+  SOC triage:
+  - `locked_accounts`/`caller_machines` — which accounts, from where?
+  - If confirmed: find/block the source, check the affected accounts.
 type: esql
 params: '{}'
 schedule_interval: 10m

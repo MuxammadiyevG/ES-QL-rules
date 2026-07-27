@@ -1,8 +1,16 @@
 rule_id: 115e214d-c336-42b4-8cd6-cb1d928939f3
-name: "Switch LINK: Port o'chdi (Interface Down)"
-description: |
+name_uz: "Switch LINK: Port o'chdi (Interface Down)"
+name_ru: "Switch LINK: порт отключился (Interface Down)"
+name_en: "Switch LINK: Port went down (Interface Down)"
+description_uz: |
   Switch portidan qurilma uzildi yoki port o'chirildi.
   Qaysi switchda, qaysi portda yuz berganini qayd etadi.
+description_ru: |
+  Устройство отключилось от порта коммутатора или порт был выключен.
+  Фиксирует, на каком коммутаторе и на каком порту это произошло.
+description_en: |
+  A device was disconnected from the switch port or the port was disabled.
+  Records on which switch and on which port it happened.
 type: esql
 params: '{}'
 schedule_interval: 5m

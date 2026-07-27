@@ -1,6 +1,8 @@
 rule_id: d93e663a-e4ca-4eca-9086-b0bee6a53357
-name: "Integrity: Critical Linux Directory Permissions or Ownership Changed"
-description: |
+name_uz: "Integrity: Linux muhim kataloglarining ruxsatlari yoki egaligi o'zgartirildi"
+name_ru: "Integrity: изменены права доступа или владелец критичных каталогов Linux"
+name_en: "Integrity: Critical Linux Directory Permissions or Ownership Changed"
+description_uz: |
   Ushbu qoida Linux tizimida muhim kataloglar yoki ularning ichidagi fayllar
   uchun chmod/chown orqali permission yoki ownership o‘zgartirilishini aniqlaydi.
 
@@ -10,7 +12,26 @@ description: |
   - /usr
 
   Bu privilege escalation, persistence yoki defense evasion belgisi bo‘lishi mumkin.
+description_ru: |
+  Данное правило выявляет изменение permission или ownership через chmod/chown для
+  важных каталогов или файлов внутри них в системе Linux.
 
+  Отслеживаемые пути:
+  - /etc
+  - /bin
+  - /usr
+
+  Это может быть признаком повышения привилегий, закрепления или defense evasion.
+description_en: |
+  This rule detects permission or ownership changes made via chmod/chown for
+  critical directories or the files inside them on a Linux system.
+
+  Paths monitored:
+  - /etc
+  - /bin
+  - /usr
+
+  This may be a sign of privilege escalation, persistence or defense evasion.
 type: esql
 params: "{}"
 schedule_interval: 10m

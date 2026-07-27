@@ -1,6 +1,8 @@
 rule_id: 86ad84ea-8b12-4f56-92bd-2f7200710e7a
-name: AD Suspicious User Account Change on Domain Controller (4738)
-description: |
+name_uz: "Domain Controller'da shubhali AD foydalanuvchi akkaunti o'zgarishi (4738)"
+name_ru: "Подозрительное изменение учётной записи AD на контроллере домена (4738)"
+name_en: "AD Suspicious User Account Change on Domain Controller (4738)"
+description_uz: |
   Ushbu qoida persistence va privilege escalation faoliyatlariga tegishli bo'lib, foydalanuvchi atributlaridagi xavfli o'zgarishlarni kuzatadi.
   4738 orqali parol siyosati, UAC flaglari, SPN yoki delegatsiya parametrlaridagi manipulyatsiya aniqlanishi mumkin; bular AD'da yashirin hukmronlikka olib keladi.
   Qonuniy holatlar: helpdesk profili yangilashi, IAM platforma sync, servis akkaunt konfiguratsiyasi o'zgarishi.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manbasi va boshqaruv vositasi (jump host/script runner)ni tekshiring.
   - Target akkauntning guruh a'zoligi va yangi huquq kontekstini tekshiring.
   - Shubhali bo'lsa atributni oldingi holatga qaytaring, parol/kalitlarni yangilang va komprometatsiya doirasini cheklang.
+description_ru: |
+  Данное правило относится к активности закрепления и повышения привилегий и отслеживает опасные изменения атрибутов пользователя.
+  Через 4738 могут быть выявлены манипуляции с парольной политикой, флагами UAC, SPN или параметрами делегирования; они ведут к скрытому доминированию в AD.
+  Легитимные случаи: обновление профиля службой helpdesk, синхронизация IAM-платформы, изменение конфигурации служебной учётной записи.
+  Этапы SOC triage:
+  - Определите `actor`, инициировавшего изменение, и затронутого `target_user`.
+  - Проверьте точное соответствие change ticket/документу развёртывания.
+  - Проверьте источник `src_ip` и средство управления (jump host/script runner).
+  - Проверьте членство целевой учётной записи в группах и контекст новых прав.
+  - При подозрении верните атрибут в прежнее состояние, обновите пароли/ключи и ограничьте область компрометации.
+description_en: |
+  This rule relates to persistence and privilege escalation activity and monitors dangerous changes to user attributes.
+  Through 4738, manipulation of the password policy, UAC flags, SPN or delegation parameters can be detected; these lead to covert dominance in AD.
+  Legitimate cases: a helpdesk profile update, IAM platform sync, a service account configuration change.
+  SOC triage steps:
+  - Identify the `actor` who initiated the change and the affected `target_user`.
+  - Check that it exactly matches a change ticket/deployment document.
+  - Check the `src_ip` source and the management tool (jump host/script runner).
+  - Check the target account's group membership and the context of the new privileges.
+  - If suspicious, revert the attribute to its previous state, rotate passwords/keys and limit the scope of compromise.
 type: esql
 params: '{}'
 schedule_interval: 10m

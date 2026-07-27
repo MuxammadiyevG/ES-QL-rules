@@ -1,6 +1,8 @@
 rule_id: a082232c-7b33-4ff0-8b7e-5ba86592727d
-name: User Logon Outside Business Hours
-description: |
+name_uz: "Ish vaqtidan tashqari foydalanuvchi logoni"
+name_ru: "Вход пользователя вне рабочего времени"
+name_en: "User Logon Outside Business Hours"
+description_uz: |
   Ushbu qoida ish vaqtidan tashqari (Du-Ju 06:00-22:00 dan tashqari, dam olish kunlari)
   foydalanuvchi logon'larini aniqlaydi (4624, LogonType 2/3/7/10). Servis/admin/mashina
   akkauntlari chiqariladi. Off-hours kirish o'g'irlangan credential yoki insider belgisi
@@ -9,6 +11,24 @@ description: |
   SOC triage:
   - `target_user`/`source_ips` odatiy egasimi, shu vaqtda kutilganmi?
   - Tasdiqlanmasa: akkauntni tekshiring, kontekstni (VPN, on-call) aniqlang.
+description_ru: |
+  Данное правило выявляет входы пользователей вне рабочего времени (вне Пн-Пт 06:00-22:00, в
+  выходные дни) (4624, LogonType 2/3/7/10). Сервисные/административные/машинные
+  учётные записи исключаются. Доступ в нерабочее время может быть признаком украденных
+  учётных данных или инсайдера.
+  Примечание: время указано в UTC; настройте окно рабочего времени под свой регион.
+  SOC triage:
+  - `target_user`/`source_ips` — это обычный владелец, ожидается ли он в это время?
+  - Если не подтверждено: проверьте учётную запись, установите контекст (VPN, on-call).
+description_en: |
+  This rule detects user logons outside business hours (outside Mon-Fri 06:00-22:00, and on
+  weekends) (4624, LogonType 2/3/7/10). Service/admin/machine accounts are
+  excluded. Off-hours access may be a sign of stolen credentials or of an insider
+  threat.
+  Note: times are in UTC; adjust the business-hours window to your own region.
+  SOC triage:
+  - `target_user`/`source_ips` — is it the usual owner, and is it expected at this time?
+  - If not confirmed: review the account, determine the context (VPN, on-call).
 type: esql
 params: '{}'
 schedule_interval: 10m

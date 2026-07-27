@@ -1,12 +1,28 @@
 rule_id: fd6a56f2-1ac9-4839-a75c-7140118cbd48
-name: "Kerio: UDP Non-Standard Port Outbound Allowed"
-description: |
+name_uz: "Kerio: Standart bo'lmagan portga chiquvchi UDP ga ruxsat berildi"
+name_ru: "Kerio: Разрешён исходящий UDP на нестандартный порт"
+name_en: "Kerio: UDP Non-Standard Port Outbound Allowed"
+description_uz: |
   Ushbu qoida standart bo'lmagan portlarga ruxsat berilgan UDP trafikni aniqlaydi.
   DNS tunneling va boshqa covert channel usullari shu pattern orqali aniqlanadi.
   SOC triage bosqichlari:
   - destination.port 53 bo'lsa DNS tunnel tekshiring.
   - destination.ip — threat intel da bormi.
   - kerio.control.packet_length — katta hajmli UDP shubhali.
+description_ru: |
+  Это правило выявляет разрешённый UDP-трафик на нестандартные порты.
+  DNS tunneling и другие методы скрытых каналов обнаруживаются по этому шаблону.
+  Этапы SOC-триажа:
+  - Если destination.port равен 53 — проверьте DNS tunnel.
+  - destination.ip — есть ли он в threat intel.
+  - kerio.control.packet_length — UDP большого объёма подозрителен.
+description_en: |
+  This rule detects allowed UDP traffic to non-standard ports.
+  DNS tunneling and other covert channel techniques are detected by this pattern.
+  SOC triage steps:
+  - If destination.port is 53, check for a DNS tunnel.
+  - destination.ip — whether it appears in threat intel.
+  - kerio.control.packet_length — large UDP packets are suspicious.
 type: esql
 params: '{}'
 schedule_interval: 10m

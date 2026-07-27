@@ -1,6 +1,8 @@
 rule_id: 0150e8a4-9791-484f-ab61-a9c48ed61121
-name: AD Domain Policy Changed (4739)
-description: |
+name_uz: "AD Domen Siyosatining O'zgartirilishi (4739)"
+name_ru: "Изменение политики домена AD (4739)"
+name_en: "AD Domain Policy Changed (4739)"
+description_uz: |
   Ushbu qoida privilege escalation va defense evasion bilan bog'liq bo'lib, domen siyosati parametrlarining o'zgarishini aniqlaydi.
   Domain policy (password, lockout, kerberos) o'zgarishi hujumchiga himoya cheklovlarini yumshatish va hisoblarni egallashni osonlashtirish imkonini beradi.
   Qonuniy holatlar: rasmiy security baseline yangilanishi, audit/compliance talabiga ko'ra policy tuning.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manbasi va boshqaruv hostini tekshirib, noodatiy manbani ajrating.
   - O'zgarishdan keyin imtiyozli guruhlarga ta'sir qiluvchi authentikatsiya parametrlarini tekshiring.
   - Shubhali bo'lsa policy'ni qayta tiklang, aktorni cheklang va domen bo'ylab qo'shimcha monitoringni kuchaytiring.
+description_ru: |
+  Это правило связано с повышением привилегий и обходом защиты и обнаруживает изменение параметров политики домена.
+  Изменение domain policy (password, lockout, kerberos) позволяет атакующему ослабить защитные ограничения и упростить захват учётных записей.
+  Легитимные случаи: официальное обновление security baseline, тюнинг политики по требованиям аудита/compliance.
+  Шаги SOC triage:
+  - Точно идентифицируйте `actor` и затронутое событие изменения политики.
+  - Проверьте легитимность изменения политики на основании change ticket/deployment.
+  - Проверьте источник `src_ip` и хост управления, чтобы выделить нетипичный источник.
+  - После изменения проверьте параметры аутентификации, влияющие на привилегированные группы.
+  - При подозрении восстановите политику, ограничьте актора и усильте дополнительный мониторинг по всему домену.
+description_en: |
+  This rule is related to privilege escalation and defense evasion and detects changes to domain policy parameters.
+  A change to domain policy (password, lockout, kerberos) allows an attacker to loosen protective restrictions and make account takeover easier.
+  Legitimate cases: an official security baseline update, policy tuning driven by audit/compliance requirements.
+  SOC triage steps:
+  - Precisely identify the `actor` and the affected policy event.
+  - Check the legitimacy of the policy change on the basis of a change ticket/deployment.
+  - Check the `src_ip` source and the management host to single out an unusual source.
+  - After the change, review the authentication parameters that affect privileged groups.
+  - If suspicious, restore the policy, restrict the actor and strengthen additional monitoring across the domain.
 type: esql
 params: '{}'
 schedule_interval: 10m

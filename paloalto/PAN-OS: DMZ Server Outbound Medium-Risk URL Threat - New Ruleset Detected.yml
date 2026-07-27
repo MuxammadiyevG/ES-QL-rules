@@ -1,12 +1,28 @@
 rule_id: c6a48eac-6a5f-4d3c-b9db-930dea1a83d8
-name: "PAN-OS: DMZ Server Outbound Medium-Risk URL Threat - New Ruleset Detected"
-description: |
-  Ushbu qoida DMZ zonasidagi  serverdan "pass-waf-out-1" qoidasi orqali
+name_uz: "PAN-OS: DMZ serveridan chiquvchi o'rtacha xavfli URL tahdidi - yangi qoidalar to'plami aniqlandi"
+name_ru: "PAN-OS: исходящая URL-угроза среднего риска с сервера DMZ - обнаружен новый набор правил"
+name_en: "PAN-OS: DMZ Server Outbound Medium-Risk URL Threat - New Ruleset Detected"
+description_uz: |
+  Ushbu qoida DMZ zonasidagi serverdan "pass-waf-out-1" qoidasi orqali
   kategoriyasida "alert" sifatida belgilangan SSL trafikni aniqlaydi.
   ThreatID (9999) — noma'lum yoki aniqlanmagan tahdid identifikatori.
   App teglari: used-by-malware, able-to-transfer-file, has-known-vulnerability, tunnel-other-application.
   DestinationLocation: UZ-Manual — manzil IP qo'lda qo'shilgan Uzbekiston IP ro'yxatida.
   Qonuniy holatlar: korporativ proksi, antivirus update, CDN so'rovlari.
+description_ru: |
+  Это правило выявляет SSL-трафик с сервера в зоне DMZ через правило "pass-waf-out-1",
+  помеченный в категории как "alert".
+  ThreatID (9999) — идентификатор неизвестной или неопределённой угрозы.
+  Теги App: used-by-malware, able-to-transfer-file, has-known-vulnerability, tunnel-other-application.
+  DestinationLocation: UZ-Manual — IP назначения находится в вручную добавленном списке IP Узбекистана.
+  Легитимные случаи: корпоративный прокси, обновление антивируса, запросы CDN.
+description_en: |
+  This rule detects SSL traffic from a server in the DMZ zone via the "pass-waf-out-1" rule,
+  flagged as "alert" in the category.
+  ThreatID (9999) — an unknown or unidentified threat identifier.
+  App tags: used-by-malware, able-to-transfer-file, has-known-vulnerability, tunnel-other-application.
+  DestinationLocation: UZ-Manual — the destination IP is in the manually added Uzbekistan IP list.
+  Legitimate cases: corporate proxy, antivirus update, CDN requests.
 type: esql
 params: '{}'
 schedule_interval: 5m

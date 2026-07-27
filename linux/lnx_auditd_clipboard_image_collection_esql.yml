@@ -1,6 +1,14 @@
 rule_id: 4759cf1e-0ad9-49d2-bb6b-c13cc247f3a6
-name: "Clipboard Image Collection - Linux"
-description: |
+name_uz: "Clipboard rasmlarini yig'ish - Linux"
+name_ru: "Сбор изображений из буфера обмена - Linux"
+name_en: "Clipboard Image Collection - Linux"
+description_uz: |
+  Clipboard rasmlarini olish uchun xclip dan foydalanishni aniqlaydi.
+  Tajovuzkorlar screenshotlar va rasmlarni o'z ichiga olgan clipboard ma'lumotlarini yig'ishi mumkin.
+description_ru: |
+  Обнаруживает использование xclip для захвата изображений из буфера обмена.
+  Злоумышленники могут собирать данные буфера обмена, включая скриншоты и изображения.
+description_en: |
   Detects usage of xclip to capture clipboard images.
   Adversaries may collect clipboard data including screenshots and images.
 type: esql

@@ -1,6 +1,8 @@
 rule_id: d6479d3d-d42e-48b7-bb47-49d265f31f9d
-name: PaloAlto - System High Severity Event (Defense Evasion Indicator)
-description: |
+name_uz: "PaloAlto - Tizimning HIGH darajadagi voqeasi (Defense Evasion indikatori)"
+name_ru: "PaloAlto - системное событие уровня HIGH (индикатор Defense Evasion)"
+name_en: "PaloAlto - System High Severity Event (Defense Evasion Indicator)"
+description_uz: |
   Palo Alto NGFW tizimidan HIGH darajadagi system xabari aniqlandi.
   Bu qurilma konfiguratsiyasining o'zgartirilishi, xavfsizlik xizmatlarining
   o'chirilishi yoki tizim muammosining belgisi bo'lishi mumkin (T1089 - Defense Evasion).
@@ -11,6 +13,28 @@ description: |
   - Boshqa qurilmalarda ham xuddi shunday voqea borligini solishtiring
   - Change management tizimida mos ticket borligini tekshiring
   - Agar kutilmagan bo'lsa, incident ochib, qurilma loglarini to'liq oling
+description_ru: |
+  Обнаружено системное сообщение уровня HIGH от Palo Alto NGFW.
+  Это может быть признаком изменения конфигурации устройства, отключения
+  служб безопасности или системной проблемы (T1089 - Defense Evasion).
+  Легитимные случаи: плановое техническое обслуживание, обновление firmware, операция администратора.
+  Этапы SOC-триажа:
+  - Определите имя устройства, на котором произошло событие (observer.hostname)
+  - Проверьте изменения, внесённые администратором в это время
+  - Сравните, есть ли такое же событие и на других устройствах
+  - Проверьте наличие соответствующего тикета в системе change management
+  - Если событие неожиданное, откройте инцидент и снимите полные логи устройства
+description_en: |
+  A HIGH severity system message was detected from the Palo Alto NGFW.
+  This may be a sign of a device configuration change, security services being
+  disabled, or a system problem (T1089 - Defense Evasion).
+  Legitimate cases: planned maintenance, firmware update, admin operation.
+  SOC triage steps:
+  - Identify the name of the device where the event occurred (observer.hostname)
+  - Check the changes made by administrators at that time
+  - Compare whether the same event also occurred on other devices
+  - Check for a matching ticket in the change management system
+  - If unexpected, open an incident and collect the full device logs
 type: esql
 params: '{}'
 schedule_interval: 5m

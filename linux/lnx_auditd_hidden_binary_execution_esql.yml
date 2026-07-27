@@ -1,6 +1,14 @@
 rule_id: 28b2fd42-06dc-41c1-93b7-d2278c2d33c1
-name: "Hidden Binary Execution Detection"
-description: |
+name_uz: "Yashirin binary bajarilishini aniqlash"
+name_ru: "Обнаружение запуска скрытых бинарных файлов"
+name_en: "Hidden Binary Execution Detection"
+description_uz: |
+  Yashirin kataloglardan (nuqta bilan boshlanadigan) binary fayllarning bajarilishini aniqlaydi.
+  Tajovuzkorlar aniqlanishdan qochish uchun zararli binary fayllarni yashirin kataloglarda yashirishi mumkin.
+description_ru: |
+  Обнаруживает запуск бинарных файлов из скрытых каталогов (начинающихся с точки).
+  Злоумышленники могут прятать вредоносные бинарные файлы в скрытых каталогах для обхода обнаружения.
+description_en: |
   Detects execution of binaries from hidden directories (starting with dot).
   Adversaries may hide malicious binaries in hidden directories to evade detection.
 type: esql

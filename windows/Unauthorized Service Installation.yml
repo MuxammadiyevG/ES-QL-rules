@@ -8,8 +8,24 @@ rule_id: 934e7f06-ec03-4633-b2d7-1cd10f660653
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Requires approved service baseline, adjust for environment-specific services
 #
-name: "Unauthorized Service Installation"
-description: |
+name_uz: "Ruxsatsiz servis o'rnatilishi"
+name_ru: "Неавторизованная установка службы"
+name_en: "Unauthorized Service Installation"
+description_uz: |
+  Tasdiqlangan baseline'da bo'lmagan yangi Windows servislari yoki Linux systemd unitlarining o'rnatilishi yoki ishga tushirilishini aniqlaydi.
+  Yangi servislar ko'pincha malware mustahkamlanishi (persistence), RAT tarqatilishi yoki ruxsatsiz dasturiy ta'minot belgisidir.
+  G'ayrioddiy yo'llardan ishga tushadigan yoki shubhali nomga ega servislarga e'tibor bering.
+  False positive: qonuniy dasturiy ta'minot o'rnatishlari, Windows yangilanishlari, drayver o'rnatishlari.
+  Triage: servis bajariluvchi faylining imzosini tekshiring, servis yo'li legitimligini tasdiqlang, 
+  o'rnatish change management orqali ruxsat etilganini ko'rib chiqing.
+description_ru: |
+  Выявляет установку или запуск новых служб Windows или юнитов systemd в Linux, отсутствующих в утверждённом baseline.
+  Новые службы часто указывают на закрепление вредоносного ПО, развёртывание RAT или неавторизованное программное обеспечение.
+  Обратите внимание на службы, запускающиеся из необычных путей или с подозрительными именами.
+  Ложные срабатывания: легитимная установка ПО, обновления Windows, установка драйверов.
+  Triage: проверьте подпись исполняемого файла службы, подтвердите легитимность пути службы, 
+  проверьте, была ли установка авторизована через change management.
+description_en: |
   Detects installation or starting of new Windows services or Linux systemd units not in approved baseline.
   New services often indicate malware persistence, RAT deployment, or unauthorized software.
   Focus on services starting from unusual paths or with suspicious names.

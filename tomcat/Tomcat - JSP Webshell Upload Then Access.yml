@@ -1,6 +1,8 @@
 rule_id: c799c929-d6d0-46d9-8680-fce9e0f92a7a
-name: Tomcat - JSP Webshell Upload Then Access
-description: |
+name_uz: "Tomcat - JSP Webshell yuklash va keyin unga kirish"
+name_ru: "Tomcat - загрузка JSP-вебшелла и последующее обращение к нему"
+name_en: "Tomcat - JSP Webshell Upload Then Access"
+description_uz: |
   Ushbu qoida .jsp yoki .jspx fayllarga qaratilgan shubhali so'rovlarni
   aniqlaydi — katta hajmli POST (webshell yuklash) yoki upload/temp
   kataloglaridagi .jsp fayllarga GET (yuklangan webshell'ni ishga tushirish).
@@ -14,6 +16,34 @@ description: |
   - Response code'ni tekshiring (200 = webshell ishlayapti!)
   - Serverda yangi .jsp fayllari paydo bo'lganligini fayl tizimida tekshiring
   - Manba IP'dan keyingi GET so'rovlarini korrelyatsiya qiling
+description_ru: |
+  Это правило обнаруживает подозрительные запросы к файлам .jsp или .jspx —
+  POST большого объёма (загрузка вебшелла) либо GET к файлам .jsp в
+  каталогах upload/temp (запуск загруженного вебшелла).
+  Это может быть признаком развёртывания вебшелла и постоянного доступа
+  (T1505.003).
+  Легитимные случаи: обычные страницы JSP-приложения (но файлы .jsp в
+  /upload/, /temp/, /work/ почти всегда подозрительны).
+  Шаги SOC-триажа:
+  - Проверьте целевой путь .jsp и каталог, в котором он находится
+  - Проверьте объём POST (packet_length) — это payload вебшелла?
+  - Проверьте код ответа (200 = вебшелл работает!)
+  - Проверьте в файловой системе появление новых .jsp файлов на сервере
+  - Скоррелируйте последующие GET-запросы с исходного IP
+description_en: |
+  This rule detects suspicious requests targeting .jsp or .jspx files —
+  large POST requests (webshell upload) or GET requests to .jsp files in
+  upload/temp directories (executing an uploaded webshell).
+  This may indicate webshell deployment and persistent access
+  (T1505.003).
+  Legitimate cases: normal pages of a JSP application (but .jsp files under
+  /upload/, /temp/, /work/ are almost always suspicious).
+  SOC triage steps:
+  - Check the target .jsp path and the directory it resides in
+  - Check the POST size (packet_length) — is it a webshell payload?
+  - Check the response code (200 = the webshell is working!)
+  - Check the file system for new .jsp files appearing on the server
+  - Correlate subsequent GET requests from the source IP
 type: esql
 params: '{}'
 schedule_interval: 5m

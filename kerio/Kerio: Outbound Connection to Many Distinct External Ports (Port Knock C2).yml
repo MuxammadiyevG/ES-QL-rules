@@ -1,6 +1,8 @@
 rule_id: 57746b73-726f-4699-8a04-1ff284777799
-name: "Kerio: Outbound Connection to Many Distinct External Ports (Port Knock / C2)"
-description: |
+name_uz: "Kerio: Ko'p xil tashqi portlarga chiquvchi ulanish (Port Knock / C2)"
+name_ru: "Kerio: Исходящие подключения ко множеству разных внешних портов (Port Knock / C2)"
+name_en: "Kerio: Outbound Connection to Many Distinct External Ports (Port Knock / C2)"
+description_uz: |
   Ushbu qoida bitta ichki hostdan qisqa vaqt ichida ko'p xil tashqi
   destination port'larga ruxsat berilgan (allow) outbound ulanishlarni aniqlaydi.
   Bu port knocking, C2 framework multi-port callback yoki firewall qoidalarini
@@ -10,6 +12,26 @@ description: |
   - destination.ip va dst_ports VALUES ni threat intel bilan solishtiring.
   - unique_ports juda yuqori bo'lsa — avtomatlashtirilgan ulanish.
   - Hostda malware scan bajaring.
+description_ru: |
+  Это правило выявляет разрешённые (allow) исходящие подключения с одного внутреннего
+  хоста ко множеству разных внешних destination port за короткий промежуток времени.
+  Это признак port knocking, multi-port callback C2-фреймворка или попытки
+  прощупать правила firewall (T1571 - Non-Standard Port, T1046 - Network Service Discovery).
+  Этапы SOC-триажа:
+  - Определите, какое приложение использует хост source.ip.
+  - Сопоставьте destination.ip и VALUES поля dst_ports с threat intel.
+  - Если unique_ports очень высок — подключения автоматизированы.
+  - Выполните сканирование хоста на вредоносное ПО.
+description_en: |
+  This rule detects allowed (allow) outbound connections from a single internal host
+  to many distinct external destination ports within a short time window.
+  This is a sign of port knocking, a C2 framework multi-port callback, or an attempt
+  to probe firewall rules (T1571 - Non-Standard Port, T1046 - Network Service Discovery).
+  SOC triage steps:
+  - Determine which application the source.ip host is running.
+  - Compare destination.ip and the dst_ports VALUES against threat intel.
+  - If unique_ports is very high — automated connections.
+  - Run a malware scan on the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

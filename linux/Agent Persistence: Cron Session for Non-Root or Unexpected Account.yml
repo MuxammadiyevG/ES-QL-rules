@@ -1,6 +1,8 @@
 rule_id: 79ad67e7-b6f4-4f84-b1a3-671729294e5a
-name: "Agent Persistence: Cron Session for Non-Root or Unexpected Account"
-description: |
+name_uz: "Agent Persistence: root bo'lmagan yoki kutilmagan akkaunt uchun cron sessiyasi"
+name_ru: "Agent Persistence: Cron-сессия для не-root или неожиданной учётной записи"
+name_en: "Agent Persistence: Cron Session for Non-Root or Unexpected Account"
+description_uz: |
   Ushbu qoida Persistence texnikasiga bog'liq bo'lib, cron orqali boshlanadigan sessiyalarni
   kuzatadi. Hujumchi crontab ga backdoor buyruq qo'shib, muntazam ravishda zararli kod
   ishga tushirishi mumkin. Ayniqsa root bo'lmagan foydalanuvchi nomidan cron sessiyasi
@@ -12,6 +14,30 @@ description: |
   - Cron sessiyasi `auditd.session` raqamini keyingi execve hodisalar bilan korrelatsiya qiling.
   - Crontab faylini tekshiring: `crontab -l -u <user>` va `/etc/cron*` kataloglarini ko'ring.
   - Agar noma'lum account bo'lsa — darhol crontab ni tekshiring va tozalang.
+description_ru: |
+  Это правило связано с техникой Persistence и отслеживает сессии, которые запускаются
+  через cron. Злоумышленник может добавить в crontab backdoor-команду и регулярно запускать
+  вредоносный код. Особенно подозрительной считается cron-сессия от имени пользователя
+  без прав root.
+  Легитимные случаи: системные задания cron (root, www-data, сервисные учётные записи backup).
+  Шаги SOC-триажа:
+  - `auditd.data.acct` — определите, какая учётная запись открыла cron-сессию.
+  - Сравните `user.effective.name` и `auditd.summary.actor.primary`.
+  - Скоррелируйте номер `auditd.session` cron-сессии с последующими событиями execve.
+  - Проверьте файл crontab: `crontab -l -u <user>` и просмотрите каталоги `/etc/cron*`.
+  - Если учётная запись неизвестна — немедленно проверьте и очистите crontab.
+description_en: |
+  This rule is related to the Persistence technique and monitors sessions that are started
+  via cron. An attacker may add a backdoor command to crontab and regularly run malicious
+  code. A cron session on behalf of a non-root user is considered especially
+  suspicious.
+  Legitimate cases: system cron jobs (root, www-data, backup service accounts).
+  SOC triage steps:
+  - `auditd.data.acct` — determine which account opened the cron session.
+  - Compare `user.effective.name` and `auditd.summary.actor.primary`.
+  - Correlate the cron session `auditd.session` number with subsequent execve events.
+  - Check the crontab file: `crontab -l -u <user>` and review the `/etc/cron*` directories.
+  - If the account is unknown — check and clean the crontab immediately.
 type: esql
 params: '{}'
 schedule_interval: 5m

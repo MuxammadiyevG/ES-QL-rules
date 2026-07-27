@@ -1,6 +1,8 @@
 rule_id: 97e95af6-162a-446f-af30-71ffecacae7f
-name: "NPM Access: HTTP 5xx Server Error Flood"
-description: |
+name_uz: "NPM Access: HTTP 5xx server xatoliklari oqimi"
+name_ru: "NPM Access: поток серверных ошибок HTTP 5xx"
+name_en: "NPM Access: HTTP 5xx Server Error Flood"
+description_uz: |
   Ushbu qoida Nginx Proxy Manager access logida ko'p sonli 5xx server
   xatoliklarini aniqlaydi. 500, 502, 503, 504 xatoliklar backend servis
   ishlamayotganini yoki hujum ostida ekanligini bildirishi mumkin.
@@ -10,6 +12,26 @@ description: |
   - event.original — qaysi URL dan kelayotganini tekshiring.
   - Backend servis holati va resurslari (CPU, RAM) ni tekshiring.
   - Bitta Client IP dan kelayotgan bo'lsa — hujum bo'lishi mumkin.
+description_ru: |
+  Это правило обнаруживает большое количество серверных ошибок 5xx
+  в access-логе Nginx Proxy Manager. Ошибки 500, 502, 503, 504 могут означать, что backend-сервис
+  не работает или находится под атакой.
+  Легитимные случаи: перезапуск backend, процесс deployment.
+  Этапы SOC-триажа:
+  - log.file.path — какой proxy host выдаёт ошибку.
+  - event.original — проверьте, с какого URL это приходит.
+  - Проверьте состояние backend-сервиса и его ресурсы (CPU, RAM).
+  - Если запросы идут с одного Client IP — это может быть атака.
+description_en: |
+  This rule detects a large number of 5xx server errors
+  in the Nginx Proxy Manager access log. 500, 502, 503, 504 errors may indicate that the backend service
+  is down or under attack.
+  Legitimate cases: backend restart, deployment process.
+  SOC triage steps:
+  - log.file.path — which proxy host is returning the error.
+  - event.original — check which URL it is coming from.
+  - Check the backend service state and its resources (CPU, RAM).
+  - If the requests come from a single Client IP — it may be an attack.
 type: esql
 params: '{}'
 schedule_interval: 5m

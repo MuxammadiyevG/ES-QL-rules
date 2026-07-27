@@ -1,11 +1,25 @@
 rule_id: 8609c9ce-6abd-4f9c-8a6b-12108cb9dae7
-name: LNK / Script File Created in Suspicious Location
-description: |
+name_uz: "Shubhali joyda LNK / skript fayli yaratilishi"
+name_ru: "Создание LNK / скриптового файла в подозрительном расположении"
+name_en: "LNK / Script File Created in Suspicious Location"
+description_uz: |
   Ushbu qoida shubhali joyda (Startup/Temp/AppData/Downloads/Public) LNK, HTA, SCR yoki
   skript fayli yaratilishini aniqlaydi (Sysmon 11) — fishing artefakti yoki persistence
   (T1547.009/T1566).
   SOC triage:
   - `files` qaysi, `images` kim yaratdi (brauzer/arxivator/Office)?
+description_ru: |
+  Это правило обнаруживает создание файла LNK, HTA, SCR или скрипта в подозрительном
+  расположении (Startup/Temp/AppData/Downloads/Public) (Sysmon 11) — артефакт фишинга или закрепление
+  (T1547.009/T1566).
+  SOC triage:
+  - Какие `files`, какие `images` их создали (браузер/архиватор/Office)?
+description_en: |
+  This rule detects the creation of an LNK, HTA, SCR or script file in a suspicious location
+  (Startup/Temp/AppData/Downloads/Public) (Sysmon 11) — a phishing artifact or persistence
+  (T1547.009/T1566).
+  SOC triage:
+  - Which are the `files`, which `images` created them (browser/archiver/Office)?
 type: esql
 params: '{}'
 schedule_interval: 10m

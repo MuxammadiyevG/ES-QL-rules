@@ -1,6 +1,26 @@
 rule_id: a696e6ee-f177-499d-b970-fb3f682e110f
-name: "PCI DSS 10.2.2 - Privileged User Actions (Windows Admin)"
-description: |
+name_uz: "PCI DSS 10.2.2 - Imtiyozli foydalanuvchi harakatlari (Windows Admin)"
+name_ru: "PCI DSS 10.2.2 - Действия привилегированных пользователей (Windows Admin)"
+name_en: "PCI DSS 10.2.2 - Privileged User Actions (Windows Admin)"
+description_uz: |
+  agent_id, root yoki administrativ imtiyozlarga ega foydalanuvchilar bajargan barcha harakatlarni aniqlaydi va kuzatadi,
+  PCI DSS Requirement 10.2.2 talab qilganidek.
+  Windows Event 4672 (Special privileges assigned to new logon) ni kuzatadi — u
+  sezgir imtiyozlarga ega akkaunt tizimga kirganda ishga tushadi - admin faoliyatining asosiy indikatori.
+  Trigger: audit trail to'liqligini tekshirish uchun har qanday admin/imtiyozli logon hodisasi.
+  False positive: maintenance oynalarida odatiy admin kirishlari.
+  Triage: change management tiketlari bilan solishtiring, ish vaqtidan tashqarida bo'lganini tekshiring,
+  imtiyozli akkauntning ushbu tizimga kirishi kutilganmi - tekshiring.
+description_ru: |
+  Обнаруживает и отслеживает все действия, выполняемые agent_id, пользователями с root или административными привилегиями,
+  как того требует PCI DSS Requirement 10.2.2.
+  Отслеживает Windows Event 4672 (Special privileges assigned to new logon), которое срабатывает
+  при каждом входе учётной записи с чувствительными привилегиями - ключевой индикатор административной активности.
+  Trigger: любое событие административного/привилегированного входа для проверки полноты audit trail.
+  False positives: рутинные входы администраторов во время окон обслуживания.
+  Triage: сопоставьте с тикетами change management, проверьте, было ли это вне рабочего времени,
+  проверьте, ожидается ли вход этой привилегированной учётной записи в данную систему.
+description_en: |
   Detects and tracks all actions taken by agent_id, users with root or administrative privileges
   as required by PCI DSS Requirement 10.2.2.
   Monitors Windows Event 4672 (Special privileges assigned to new logon) which fires

@@ -1,14 +1,34 @@
 rule_id: 8bea42b6-66c4-4c3e-a095-0558961c56fc
-name: "PAN-OS: Google Services Traffic Monitoring from Internal Hosts"
-description: |
+name_uz: "PAN-OS: ichki hostlardan Google xizmatlariga trafik monitoringi"
+name_ru: "PAN-OS: мониторинг трафика к сервисам Google с внутренних хостов"
+name_en: "PAN-OS: Google Services Traffic Monitoring from Internal Hosts"
+description_uz: |
   Ushbu qoida ichki tarmoqdagi qurilmalardan Google infrastrukturasiga (google-base) yo'naltirilgan trafikni kuzatadi.
-  Bu informatsion rule bo'lib, Google xizmatlari orqali ma'lumot sızıntısı, ruxsatsiz proksi yoki tunneling urinishlarini erta aniqlash uchun baseline yaratishga yordam beradi.
+  Bu informatsion rule bo'lib, Google xizmatlari orqali ma'lumot sizib chiqishi, ruxsatsiz proksi yoki tunneling urinishlarini erta aniqlash uchun baseline yaratishga yordam beradi.
   Qonuniy holatlar: Gmail, Google Drive, Google Meet, Chrome brauzeri fon trafigi.
   SOC triage bosqichlari:
   - Trafik hajmini kunlik baseline bilan solishtiring.
   - google-base orqali tunnel yaratish (TCP over HTTP) urinishlari borligini tekshiring.
   - Bir qurilmadan juda ko'p Google sessiyasi anomal bo'lishi mumkin.
   - Korporativ Google Workspace foydalanilayotganligini tekshiring.
+description_ru: |
+  Это правило отслеживает трафик с устройств внутренней сети, направленный к инфраструктуре Google (google-base).
+  Это информационное правило, помогающее сформировать baseline для раннего выявления утечки данных через сервисы Google, несанкционированного прокси или попыток туннелирования.
+  Легитимные случаи: Gmail, Google Drive, Google Meet, фоновый трафик браузера Chrome.
+  Этапы SOC-триажа:
+  - Сравните объём трафика с ежедневным baseline.
+  - Проверьте наличие попыток создания туннеля через google-base (TCP over HTTP).
+  - Очень большое количество сессий Google с одного устройства может быть аномальным.
+  - Проверьте, используется ли корпоративный Google Workspace.
+description_en: |
+  This rule monitors traffic from internal network devices directed to Google infrastructure (google-base).
+  This is an informational rule that helps build a baseline for early detection of data leakage through Google services, unauthorized proxying or tunneling attempts.
+  Legitimate cases: Gmail, Google Drive, Google Meet, Chrome browser background traffic.
+  SOC triage steps:
+  - Compare the traffic volume with the daily baseline.
+  - Check for tunneling attempts through google-base (TCP over HTTP).
+  - A very large number of Google sessions from one device may be anomalous.
+  - Check whether corporate Google Workspace is in use.
 type: esql
 params: '{}'
 schedule_interval: 5m

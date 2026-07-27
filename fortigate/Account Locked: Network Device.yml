@@ -1,6 +1,8 @@
 rule_id: 67bd3261-045d-40ab-8db8-f0c53bea32b3
-name: Account Locked - Network Device
-description: |
+name_uz: "Akkaunt bloklandi - Tarmoq qurilmasi"
+name_ru: "Учётная запись заблокирована - Сетевое устройство"
+name_en: "Account Locked - Network Device"
+description_uz: |
   Ushbu qoida Credential Access texnikalariga bog'liq bo'lib, `Account Locked: Network Device` kontekstida haddan tashqari noto'g'ri kirish urinishlari natijasida tarmoq qurilmasi akkauntining bloklanishini aniqlaydi.
   Bu turdagi hodisa hujumchi brute force yoki password spraying orqali FortiGate, FortiProxy, Cisco ASA, Cisco IOS, FortiDeceptor yoki FortiSwitch kabi tarmoq qurilmalariga ruxsatsiz kirish huquqini egallashga urinayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida administrator parolini unutganligi, boshqa tizimda keshlangan eski credential, servis konfiguratsiyasidagi noto'g'ri autentifikatsiya sozlamalari yoki avtomatik monitoring skriptlardagi muammolar uchrashi mumkin.
@@ -11,6 +13,28 @@ description: |
   - Manba hostda boshqa shubhali hodisalar (lateral movement, port scanning) borligini tekshiring.
   - Manba va manzil hostlarda zaifliklar borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, qurilma credentiallarini yangilang va ta'sir doirasini izolyatsiya qiling.
+description_ru: |
+  Данное правило связано с техниками Credential Access и в контексте `Account Locked: Network Device` выявляет блокировку учётной записи сетевого устройства в результате чрезмерного количества неудачных попыток входа.
+  Событие такого типа считается опасным, поскольку может указывать на то, что злоумышленник пытается получить несанкционированный доступ к сетевым устройствам, таким как FortiGate, FortiProxy, Cisco ASA, Cisco IOS, FortiDeceptor или FortiSwitch, с помощью brute force или password spraying.
+  В качестве легитимных случаев могут встречаться забытый администратором пароль, старые учётные данные, закэшированные в другой системе, некорректные настройки аутентификации в конфигурации сервиса или проблемы в автоматических скриптах мониторинга.
+  Этапы SOC triage:
+  - Точно идентифицируйте в событии `user.name` (заблокированный пользователь) и `source.ip` (IP источника).
+  - Определите сетевое устройство, на котором произошла блокировка (`observer.name`, `observer.ip`), и оцените его роль в сетевом сегменте.
+  - Если IP источника приходит из Интернета, проверьте и усильте ограничения доступа через firewall или ACL.
+  - Проверьте, есть ли на хосте-источнике другие подозрительные события (lateral movement, port scanning).
+  - Проверьте наличие уязвимостей на хостах источника и назначения.
+  - При подтверждении вредоносной активности выполните оперативный containment: заблокируйте IP источника, обновите учётные данные устройства и изолируйте зону воздействия.
+description_en: |
+  This rule is related to Credential Access techniques and, in the context of `Account Locked: Network Device`, detects the lockout of a network device account caused by an excessive number of failed logon attempts.
+  This type of event is considered dangerous because it may indicate that an attacker is trying to gain unauthorized access to network devices such as FortiGate, FortiProxy, Cisco ASA, Cisco IOS, FortiDeceptor or FortiSwitch through brute force or password spraying.
+  Legitimate cases may include an administrator forgetting their password, old credentials cached on another system, incorrect authentication settings in a service configuration, or problems in automated monitoring scripts.
+  SOC triage steps:
+  - Precisely identify `user.name` (the locked account) and `source.ip` (source IP) in the event.
+  - Identify the network device where the lockout occurred (`observer.name`, `observer.ip`) and assess its role in the network segment.
+  - If the source IP comes from the Internet, check and tighten the access restrictions enforced by firewall or ACL.
+  - Check whether there are other suspicious events (lateral movement, port scanning) on the source host.
+  - Check the source and destination hosts for vulnerabilities.
+  - If malicious activity is confirmed, perform rapid containment: block the source IP, rotate the device credentials and isolate the affected scope.
 type: esql
 params: '{}'
 schedule_interval: 10m

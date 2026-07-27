@@ -1,8 +1,16 @@
 rule_id: 558f45bf-2f3a-43a4-ad8d-09cac495fd46
-name: "Agent Info: User Session Opened (SSH Login Success)"
-description: |
+name_uz: "Agent Info: Foydalanuvchi sessiyasi ochildi (muvaffaqiyatli SSH login)"
+name_ru: "Agent Info: Открыта сессия пользователя (успешный вход по SSH)"
+name_en: "Agent Info: User Session Opened (SSH Login Success)"
+description_uz: |
   Tizimga SSH orqali muvaffaqiyatli kirgan foydalanuvchilar haqida ma'lumot beradi.
   Bu qoida threat hunting va sessiya monitoring uchun ishlatiladi.
+description_ru: |
+  Предоставляет информацию о пользователях, успешно вошедших в систему по SSH.
+  Это правило используется для threat hunting и мониторинга сессий.
+description_en: |
+  Provides information about users who successfully logged in to the system via SSH.
+  This rule is used for threat hunting and session monitoring.
 type: esql
 params: '{}'
 schedule_interval: 5m

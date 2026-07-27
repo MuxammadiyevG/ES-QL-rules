@@ -1,9 +1,19 @@
 rule_id: a34dbc9d-6c51-4d87-9efe-67ef5f6794de
-name: "Windows File Server: File Open via Handle Request"
-description: |
+name_uz: "Windows File Server: Handle So'rovi orqali Fayl Ochilishi"
+name_ru: "Windows File Server: открытие файла через запрос дескриптора"
+name_en: "Windows File Server: File Open via Handle Request"
+description_uz: |
   Ushbu qoida Windows File Server’da fayl ochish/open request hodisasini
   aniqlaydi. 4656 hodisasi object handle so‘ralganini bildiradi. Fayl haqiqatan
   ishlatilganini 4663 bilan qo‘shimcha tekshirish mumkin.
+description_ru: |
+  Это правило выявляет событие открытия файла / open request на Windows
+  File Server. Событие 4656 означает, что был запрошен object handle. Действительно ли файл
+  использовался, можно дополнительно проверить по 4663.
+description_en: |
+  This rule detects the file open / open request event on a Windows
+  File Server. The 4656 event indicates that an object handle was requested. Whether the file was actually
+  used can be additionally verified with 4663.
 type: esql
 params: "{}"
 schedule_interval: 5m

@@ -1,6 +1,8 @@
 rule_id: 0c3087cb-ef40-4a6b-bdb8-a3b8870b8a79
-name: "Agent FIM: Linux Executable File Created or Modified in System Directories"
-description: |
+name_uz: "Agent FIM: tizim kataloglarida Linux bajariladigan fayl yaratildi yoki o'zgartirildi"
+name_ru: "Agent FIM: в системных каталогах Linux создан или изменён исполняемый файл"
+name_en: "Agent FIM: Linux Executable File Created or Modified in System Directories"
+description_uz: |
   Ushbu qoida Persistence va Defense Evasion texnikalariga bog'liq bo'lib, Linux tizim
   kataloglarida bajariladigan fayl (.sh, .py, .pl, .rb, .elf va extension-siz binary)
   yaratilishi yoki o'zgartirilishini aniqlaydi.
@@ -14,6 +16,34 @@ description: |
   - O'sha paytda qaysi process ishlayotganini auditd SYSCALL loglar bilan korrelatsiya qiling.
   - `file.mtime` vs `file.ctime` farqini tekshiring.
   - Noqonuniy bo'lsa: faylni karantinga oling, `sha256sum` bilan verify qiling.
+description_ru: |
+  Это правило связано с техниками Persistence и Defense Evasion и выявляет создание или
+  изменение исполняемых файлов (.sh, .py, .pl, .rb, .elf и бинарные файлы без расширения)
+  в системных каталогах Linux.
+  Злоумышленник может разместить троянизированный бинарный файл или скрипт-бэкдор в каталогах
+  /usr/bin, /usr/sbin, /bin, /sbin.
+  Легитимные случаи: установка пакетов apt/dpkg, обновление системы, скрипты развёртывания.
+  Шаги SOC-триажа:
+  - Проверьте `file.path` — это системный каталог бинарных файлов или домашний каталог пользователя.
+  - Если `file.owner` не root или в `file.mode` есть биты SUID/SGID — высокий риск.
+  - Сравните `file.hash.sha1` с предыдущим baseline.
+  - Скоррелируйте, какой процесс работал в этот момент, с логами auditd SYSCALL.
+  - Проверьте разницу между `file.mtime` и `file.ctime`.
+  - Если активность нелегитимна: поместите файл в карантин, проверьте его с помощью `sha256sum`.
+description_en: |
+  This rule is related to Persistence and Defense Evasion techniques and detects executable files
+  (.sh, .py, .pl, .rb, .elf and extensionless binaries) being created or modified in Linux system
+  directories.
+  An attacker may place a trojanized binary or a backdoor script in the /usr/bin, /usr/sbin,
+  /bin, /sbin directories.
+  Legitimate cases: apt/dpkg package installation, system update, deployment scripts.
+  SOC triage steps:
+  - Check `file.path` — whether it is a system binary directory or a user home.
+  - High risk if `file.owner` is not root or if `file.mode` has SUID/SGID bits.
+  - Compare `file.hash.sha1` with the previous baseline.
+  - Correlate which process was running at that time with auditd SYSCALL logs.
+  - Check the difference between `file.mtime` and `file.ctime`.
+  - If illegitimate: quarantine the file, verify it with `sha256sum`.
 type: esql
 params: '{}'
 schedule_interval: 5m

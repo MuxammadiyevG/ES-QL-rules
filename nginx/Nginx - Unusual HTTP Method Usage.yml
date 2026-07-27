@@ -1,8 +1,16 @@
 rule_id: 7ef6f13d-2922-440e-aeba-9b693adfdf2a
-name: Nginx - Unusual HTTP Method Usage
-description: |
+name_uz: "Nginx - G'ayrioddiy HTTP metodlaridan foydalanish"
+name_ru: "Nginx - Использование необычных HTTP-методов"
+name_en: "Nginx - Unusual HTTP Method Usage"
+description_uz: |
   Kutilmagan HTTP metodlari (PUT, DELETE, TRACK, DEBUG) orqali yuborilgan so'rovlarni aniqlaydi.
   Bu API abuse yoki server konfiguratsiyasini tekshirish belgisi.
+description_ru: |
+  Обнаруживает запросы, отправленные неожиданными HTTP-методами (PUT, DELETE, TRACK, DEBUG).
+  Это признак злоупотребления API или проверки конфигурации сервера.
+description_en: |
+  Detects requests sent using unexpected HTTP methods (PUT, DELETE, TRACK, DEBUG).
+  This is an indicator of API abuse or probing of the server configuration.
 type: esql
 params: '{}'
 schedule_interval: 15m

@@ -1,6 +1,30 @@
 rule_id: e380ccc3-333d-458f-b1a5-569a514c92f1
-name: "PCI DSS 10.2.5 - User Account Privilege Changes and New Admin Accounts (Windows)"
-description: |
+name_uz: "PCI DSS 10.2.5 - Akkaunt imtiyozlari o'zgarishi va yangi admin akkauntlar (Windows)"
+name_ru: "PCI DSS 10.2.5 - Изменения привилегий учётных записей и новые админ-аккаунты (Windows)"
+name_en: "PCI DSS 10.2.5 - User Account Privilege Changes and New Admin Accounts (Windows)"
+description_uz: |
+  Windows tizimlarida yangi akkauntlar yaratilishini, imtiyozlarni oshirishni va admin guruh
+  a'zoligidagi o'zgarishlarni aniqlaydi. PCI DSS Requirement 10.2.5 identifikatsiya/autentifikatsiya
+  mexanizmlaridan har qanday foydalanish va ulardagi o'zgarishlarni, jumladan yangi akkauntlar yaratish
+  va imtiyozlarni oshirishni loglashni talab qiladi.
+  Kuzatadi: 4720 (akkaunt yaratildi), 4728/4732/4756 (xavfsizlik guruhiga qo'shildi),
+  4738 (foydalanuvchi akkaunti o'zgartirildi), 4670 (ruxsatlar o'zgartirildi).
+  Trigger: imtiyozli guruhlar uchun har qanday yangi akkaunt yaratilishi yoki guruh a'zoligi o'zgarishi.
+  False positive: qonuniy IT provisioning jarayonlari, HR onboarding avtomatlashtirilishi.
+  Triage: HR/IT tiket tizimi bilan solishtiring, o'zgarish ish vaqtidan tashqarida bo'lganini tekshiring,
+  tasdiqlovchi shaxsni aniqlang, guruh a'zoligi rol talablariga mos kelishini tekshiring.
+description_ru: |
+  Обнаруживает создание новых учётных записей, повышение привилегий и изменения членства в
+  административных группах в системах Windows. PCI DSS Requirement 10.2.5 требует логирования
+  любого использования и изменения механизмов идентификации/аутентификации, включая
+  создание новых учётных записей и повышение привилегий.
+  Отслеживает: 4720 (учётная запись создана), 4728/4732/4756 (добавление в группу безопасности),
+  4738 (учётная запись пользователя изменена), 4670 (изменены разрешения).
+  Trigger: любое создание новой учётной записи или изменение членства для привилегированных групп.
+  False positives: легитимные процессы IT provisioning, автоматизация HR onboarding.
+  Triage: сверьтесь с системой тикетов HR/IT, проверьте, было ли изменение вне рабочего времени,
+  подтвердите личность согласующего, убедитесь, что членство в группах соответствует требованиям роли.
+description_en: |
   Detects creation of new accounts, privilege elevation, and changes to admin group
   membership on Windows systems. PCI DSS Requirement 10.2.5 requires logging of
   all use of and changes to identification/authentication mechanisms including

@@ -1,11 +1,25 @@
 rule_id: 4d06c4a8-c85c-4e58-aa0a-8b86bbb69f7f
-name: Suspicious Process Making Outbound Connection
-description: |
+name_uz: "Chiquvchi ulanish o'rnatayotgan shubhali jarayon"
+name_ru: "Подозрительный процесс, устанавливающий исходящее подключение"
+name_en: "Suspicious Process Making Outbound Connection"
+description_uz: |
   Ushbu qoida skript/LOLBin jarayonlari (powershell, cmd, wscript, mshta, rundll32, regsvr32,
   certutil, bitsadmin) tashqi (internal bo'lmagan) IP'ga CHIQUVCHI ulanish qilishini aniqlaydi
   (WFP 5156). Bu C2 yoki tool yuklash belgisi (T1071/T1105).
   SOC triage:
   - `applications` qaysi jarayon, `dest_addresses` qayerga? Domen/IP reputatsiyasini tekshiring.
+description_ru: |
+  Данное правило выявляет, что процессы скриптов/LOLBin (powershell, cmd, wscript, mshta, rundll32, regsvr32,
+  certutil, bitsadmin) устанавливают ИСХОДЯЩИЕ подключения к внешним (не внутренним) IP
+  (WFP 5156). Это признак C2 или загрузки инструментов (T1071/T1105).
+  SOC triage:
+  - `applications` — какой процесс, `dest_addresses` — куда? Проверьте репутацию домена/IP.
+description_en: |
+  This rule detects script/LOLBin processes (powershell, cmd, wscript, mshta, rundll32, regsvr32,
+  certutil, bitsadmin) making OUTBOUND connections to external (non-internal) IPs
+  (WFP 5156). This is a sign of C2 or tool download (T1071/T1105).
+  SOC triage:
+  - `applications` which process, `dest_addresses` to where? Check the domain/IP reputation.
 type: esql
 params: '{}'
 schedule_interval: 10m

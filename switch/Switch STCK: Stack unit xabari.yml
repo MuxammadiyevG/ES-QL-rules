@@ -1,8 +1,16 @@
 rule_id: e93a5d86-2001-4ad3-9bc4-b2c1de2d2da1
-name: "Switch STCK: Stack unit xabari"
-description: |
+name_uz: "Switch STCK: Stack unit xabari"
+name_ru: "Switch STCK: Сообщение stack unit"
+name_en: "Switch STCK: Stack Unit Message"
+description_uz: |
   Switch stack dan xabar keldi. Stack a'zolaridan biri holat
   o'zgarishi yoki konfiguratsiya xabari yubordi.
+description_ru: |
+  Получено сообщение от switch stack. Один из членов stack отправил
+  сообщение об изменении состояния или о конфигурации.
+description_en: |
+  A message was received from the switch stack. One of the stack members sent
+  a state change or configuration message.
 type: esql
 params: '{}'
 schedule_interval: 5m

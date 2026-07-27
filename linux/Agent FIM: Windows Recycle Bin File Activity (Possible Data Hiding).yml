@@ -1,6 +1,8 @@
 rule_id: ded7b5e3-fa51-4f66-89f3-c1d31306a92d
-name: "Agent FIM: Windows Recycle Bin File Activity (Possible Data Hiding)"
-description: |
+name_uz: "Agent FIM: Windows Recycle Bin'da fayl faoliyati (ehtimoliy ma'lumot yashirish)"
+name_ru: "Agent FIM: файловая активность в Windows Recycle Bin (возможное сокрытие данных)"
+name_en: "Agent FIM: Windows Recycle Bin File Activity (Possible Data Hiding)"
+description_uz: |
   Ushbu qoida Defense Evasion va Collection texnikalariga bog'liq bo'lib, Windows
   Recycle Bin ($Recycle.Bin) katalogida fayl faoliyatini aniqlaydi. Hujumchi
   o'g'irlangan ma'lumotlarni yoki zararli fayllarni Recycle Bin ichida yashirishi,
@@ -12,6 +14,30 @@ description: |
   - `file.owner` — SYSTEM tomonidan yaratilgan Recycle Bin fayli shubhali.
   - `file.mtime` — hujum vaqti bilan mosligini tekshiring.
   - Noqonuniy bo'lsa: faylni forensic tahlil qiling.
+description_ru: |
+  Данное правило связано с техниками Defense Evasion и Collection и обнаруживает файловую
+  активность в каталоге Windows Recycle Bin ($Recycle.Bin). Атакующий может
+  скрывать похищенные данные или вредоносные файлы внутри Recycle Bin
+  либо уничтожать артефакты через удалённые файлы.
+  Легитимные случаи: удаление файлов пользователем.
+  Этапы SOC-триажа:
+  - `file.extension` — если exe, dll, zip — высокий риск.
+  - `file.size` — файл большого объёма мог использоваться для staging.
+  - `file.owner` — файл в Recycle Bin, созданный SYSTEM, подозрителен.
+  - `file.mtime` — проверьте совпадение со временем атаки.
+  - Если нелегитимно: проведите криминалистический анализ файла.
+description_en: |
+  This rule is related to Defense Evasion and Collection techniques and detects file
+  activity in the Windows Recycle Bin ($Recycle.Bin) directory. An attacker may
+  hide stolen data or malicious files inside the Recycle Bin,
+  or destroy artifacts through deleted files.
+  Legitimate cases: a user deleting files.
+  SOC triage steps:
+  - `file.extension` — exe, dll, zip means high risk.
+  - `file.size` — a large file may have been used for staging.
+  - `file.owner` — a Recycle Bin file created by SYSTEM is suspicious.
+  - `file.mtime` — check whether it matches the time of the attack.
+  - If illegitimate: perform forensic analysis of the file.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,16 @@
 rule_id: 4a6d86e7-ed77-4e9d-bd9e-16cb226ea773
-name: "System Information Discovery"
-description: |
+name_uz: "Tizim ma'lumotlarini aniqlash (discovery)"
+name_ru: "Разведка сведений о системе"
+name_en: "System Information Discovery"
+description_uz: |
+  Tizim ma'lumotlarini (OS versiyasi, yadro va h.k.) aniqlash uchun ishlatiladigan buyruqlar va fayllarga murojaatni aniqlaydi.
+  Tajovuzkorlar bundan razvedka uchun foydalanadi.
+  /etc/*release fayllarini va uname, uptime, lsmod kabi buyruqlarni kuzatadi.
+description_ru: |
+  Обнаруживает команды и обращения к файлам, используемые для получения сведений о системе (версия ОС, ядро и т.д.).
+  Злоумышленники используют это для разведки.
+  Отслеживает файлы /etc/*release и команды вроде uname, uptime, lsmod.
+description_en: |
   Detects commands and file accesses used to identify system information (OS version, kernel, etc.).
   Adversaries use this for reconnaissance.
   Monitors /etc/*release files and commands like uname, uptime, lsmod.

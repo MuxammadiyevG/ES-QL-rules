@@ -1,8 +1,10 @@
 rule_id: 60fe1317-95aa-4f21-b626-8b57855b32af
-name: Tomcat - Scanner / Reconnaissance Activity Detected
-description: |
-  Ushbu qoida bir IP'dan ko'p xil URL path'lariga qilingan so'rovlarni 
-  aniqlaydi — bu automated scanner (Nikto, Dirbuster, Nuclei) yoki 
+name_uz: "Tomcat - Skaner / razvedka faoliyati aniqlandi"
+name_ru: "Tomcat - обнаружена активность сканера / разведки"
+name_en: "Tomcat - Scanner / Reconnaissance Activity Detected"
+description_uz: |
+  Ushbu qoida bir IP'dan ko'p xil URL path'lariga qilingan so'rovlarni
+  aniqlaydi — bu automated scanner (Nikto, Dirbuster, Nuclei) yoki
   manual reconnaissance belgisi bo'lishi mumkin (T1595, T1046).
   Qonuniy holatlar: pentest, vulnerability scan (authorized).
   SOC triage bosqichlari:
@@ -11,6 +13,28 @@ description: |
   - Scan qilingan path'larni ro'yxatlang
   - Manba IP'ni threat intel bilan solishtiring
   - Muvaffaqiyatli (200) response'lar borligini tekshiring
+description_ru: |
+  Это правило обнаруживает запросы с одного IP к множеству различных URL-путей —
+  это может быть признаком автоматического сканера (Nikto, Dirbuster, Nuclei) или
+  ручной разведки (T1595, T1046).
+  Легитимные случаи: pentest, vulnerability scan (авторизованный).
+  Шаги SOC-триажа:
+  - Проверьте строку User-Agent (это сигнатура сканера?)
+  - Подтвердите соответствие сканирования авторизованному pentest
+  - Составьте список просканированных путей
+  - Сопоставьте исходный IP с threat intel
+  - Проверьте наличие успешных (200) ответов
+description_en: |
+  This rule detects requests from a single IP to many different URL paths —
+  this may indicate an automated scanner (Nikto, Dirbuster, Nuclei) or
+  manual reconnaissance (T1595, T1046).
+  Legitimate cases: pentest, vulnerability scan (authorized).
+  SOC triage steps:
+  - Check the User-Agent string (is it a scanner signature?)
+  - Confirm that the scan matches an authorized pentest
+  - List the scanned paths
+  - Compare the source IP with threat intel
+  - Check whether there are successful (200) responses
 type: esql
 params: '{}'
 schedule_interval: 10m

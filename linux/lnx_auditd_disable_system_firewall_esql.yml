@@ -1,6 +1,16 @@
 rule_id: d872d82f-7359-49ab-83d0-053f0276c427
-name: "System Firewall Service Stopped or Disabled"
-description: |
+name_uz: "Tizim firewall xizmati to'xtatilgan yoki o'chirilgan"
+name_ru: "Служба системного файрвола остановлена или отключена"
+name_en: "System Firewall Service Stopped or Disabled"
+description_uz: |
+  Tizim firewall xizmatlarining (firewalld, ufw, iptables) to'xtatilishi yoki o'chirilishini aniqlaydi.
+  Tajovuzkorlar tarmoq nazoratini chetlab o'tish uchun firewall larni o'chirishi mumkin.
+  systemctl/service buyruqlarini va Auditd SERVICE_STOP hodisalarini kuzatadi.
+description_ru: |
+  Обнаруживает остановку или отключение служб системного файрвола (firewalld, ufw, iptables).
+  Злоумышленники могут отключать файрволы, чтобы обойти сетевые средства контроля.
+  Отслеживает команды systemctl/service и события Auditd SERVICE_STOP.
+description_en: |
   Detects stopping or disabling of system firewall services (firewalld, ufw, iptables).
   Adversaries may disable firewalls to bypass network controls.
   Monitors systemctl/service commands and Auditd SERVICE_STOP events.

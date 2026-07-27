@@ -1,8 +1,16 @@
 rule_id: 1e33be0d-5a2b-4f67-94b1-3ca22707f956
-name: Nginx - Information User-Agent Switching Anomaly
-description: |
+name_uz: "Nginx - Ma'lumot: User-Agent almashtirish anomaliyasi"
+name_ru: "Nginx - Информация: аномалия смены User-Agent"
+name_en: "Nginx - Information User-Agent Switching Anomaly"
+description_uz: |
   Bitta IP manzili tomonidan ko'plab turli xil User-Agent'lar ishlatilishini aniqlaydi.
   Bu odatda skanerlarning deteksiyadan qochish usuli.
+description_ru: |
+  Обнаруживает использование множества различных User-Agent с одного IP-адреса.
+  Обычно это способ сканеров уклоняться от обнаружения.
+description_en: |
+  Detects the use of many different User-Agents by a single IP address.
+  This is usually a way for scanners to evade detection.
 type: esql
 params: '{}'
 schedule_interval: 30m

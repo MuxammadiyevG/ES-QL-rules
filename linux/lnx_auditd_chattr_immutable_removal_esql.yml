@@ -1,6 +1,14 @@
 rule_id: 6c0f7b48-307b-43dc-8b52-75813025ad1c
-name: "Chattr Immutable Attribute Removal"
-description: |
+name_uz: "Chattr orqali immutable atributini olib tashlash"
+name_ru: "Снятие атрибута immutable через chattr"
+name_en: "Chattr Immutable Attribute Removal"
+description_uz: |
+  chattr yordamida faylning immutable atributi olib tashlanishini aniqlaydi.
+  Tajovuzkorlar himoyalangan tizim fayllarini o'zgartirish uchun immutable atributlarini olib tashlashi mumkin.
+description_ru: |
+  Обнаруживает снятие атрибута immutable с файла с помощью chattr.
+  Злоумышленники могут снимать атрибуты immutable, чтобы изменять защищённые системные файлы.
+description_en: |
   Detects removal of immutable file attribute using chattr.
   Adversaries may remove immutable attributes to modify protected system files.
 type: esql

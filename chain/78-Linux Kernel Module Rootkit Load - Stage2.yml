@@ -1,9 +1,19 @@
 rule_id: 9ec69022-932d-4b47-bff9-aead59a24c79
-name: "Chain: Linux Kernel Module Rootkit Load — Stage 2: Post-Load Defense Evasion"
-description: |
+name_uz: "Zanjir: Linux Kernel Module Rootkit Load — 2-bosqich: Yuklashdan keyin himoyadan qochish"
+name_ru: "Цепочка: Linux Kernel Module Rootkit Load — Этап 2: Обход защиты после загрузки"
+name_en: "Chain: Linux Kernel Module Rootkit Load — Stage 2: Post-Load Defense Evasion"
+description_uz: |
   Linux Kernel Module Rootkit Load zanjiri — 2-bosqich (2 dan).
   Post-Load Defense Evasion.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Linux Kernel Module Rootkit Load — этап 2 (из 2).
+  Обход защиты после загрузки.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Linux Kernel Module Rootkit Load chain — stage 2 (of 2).
+  Post-Load Defense Evasion.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

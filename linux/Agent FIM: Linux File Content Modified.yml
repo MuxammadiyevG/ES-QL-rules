@@ -1,6 +1,8 @@
 rule_id: 8af7ec11-b009-4c31-b51b-65203a963ab1
-name: "Agent FIM: Linux File Content Modified"
-description: |
+name_uz: "Agent FIM: Linux fayl mazmuni o'zgartirildi"
+name_ru: "Agent FIM: изменено содержимое файла в Linux"
+name_en: "Agent FIM: Linux File Content Modified"
+description_uz: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, fayl yoki directory mazmuni yoki atributlarining o'zgartirilganligini aniqlaydi.
   Ayniqsa `/etc/passwd` kabi kritik tizim fayllarida o'zgarish sodir bo'lganda xavfli bo'lib, hujumchi persistence yoki credential manipulation maqsadida ishlayotgan bo'lishi mumkin.
   Qonuniy holatlar: rejalashtirilgan tizim yangilanishlari, administrator konfiguratsiya o'zgarishlari, dastur o'rnatish.
@@ -9,6 +11,24 @@ description: |
   - O'zgarishni amalga oshirgan foydalanuvchining sudo huquqlarini tekshiring.
   - Tasdiqlangan change ticket borligini tekshiring.
   - Noqonuniy bo'lsa: faylni tiklang, sessiyani to'xtating, hostni izolyatsiya qiling.
+description_ru: |
+  Это правило связано с техниками Defense Evasion и Impact и выявляет изменение содержимого или атрибутов файла либо каталога.
+  Особенно опасно, когда изменения происходят в критичных системных файлах, таких как `/etc/passwd`, — злоумышленник может действовать с целью закрепления или манипуляции учётными данными.
+  Легитимные случаи: плановые обновления системы, изменения конфигурации администратором, установка программ.
+  Шаги SOC-триажа:
+  - В приоритетном порядке разбирайте изменения критичных файлов, таких как `/etc/passwd`, `/etc/shadow`, `/etc/sudoers`.
+  - Проверьте права sudo пользователя, выполнившего изменение.
+  - Проверьте наличие утверждённой заявки на изменение.
+  - Если активность нелегитимна: восстановите файл, остановите сессию, изолируйте хост.
+description_en: |
+  This rule is related to Defense Evasion and Impact techniques and detects that the content or attributes of a file or directory have been modified.
+  It is especially dangerous when a change occurs in critical system files such as `/etc/passwd`, where the attacker may be working toward persistence or credential manipulation.
+  Legitimate cases: scheduled system updates, administrator configuration changes, software installation.
+  SOC triage steps:
+  - Prioritize review if critical files such as `/etc/passwd`, `/etc/shadow`, `/etc/sudoers` have been modified.
+  - Check the sudo privileges of the user who made the change.
+  - Check whether an approved change ticket exists.
+  - If illegitimate: restore the file, terminate the session, isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

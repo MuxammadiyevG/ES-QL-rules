@@ -1,9 +1,19 @@
 rule_id: 6fb103c8-dfaa-41c0-a0ca-34457ea4a5f7
-name: "Chain: ESET Malware Threat Detected"
-description: |
+name_uz: "Zanjir: ESET zararli dastur tahdidini aniqladi"
+name_ru: "Цепочка: ESET обнаружил вредоносную угрозу"
+name_en: "Chain: ESET Malware Threat Detected"
+description_uz: |
   ESET tahdid zanjiri — 1-bosqich.
   ESET endpoint'da zararli dastur/tahdid aniqlanishi (Threat_Event).
   Korrelyatsiya host bo'yicha.
+description_ru: |
+  Цепочка угроз ESET — этап 1.
+  Обнаружение вредоносного ПО/угрозы на endpoint ESET (Threat_Event).
+  Корреляция по host.
+description_en: |
+  ESET threat chain — stage 1.
+  Malware/threat detection on an ESET endpoint (Threat_Event).
+  Correlation by host.
 type: esql
 enabled: true
 params: "{}"

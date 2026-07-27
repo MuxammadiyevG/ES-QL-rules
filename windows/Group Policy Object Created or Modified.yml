@@ -1,6 +1,8 @@
 rule_id: f4695ec1-a212-401b-b9ae-a70b4a203c13
-name: Group Policy Object Created or Modified
-description: |
+name_uz: "Group Policy Object yaratildi yoki o'zgartirildi"
+name_ru: "Создание или изменение Group Policy Object"
+name_en: "Group Policy Object Created or Modified"
+description_uz: |
   Ushbu qoida GPO yaratish/o'zgartirishni aniqlaydi: 5136/5137/5141 da `ObjectName` ichida
   "CN=Policies,CN=System" bo'lsa. Hujumchi GPO orqali domen bo'ylab kod ijro etishi yoki
   huquq oshirishi mumkin.
@@ -9,6 +11,24 @@ description: |
   SOC triage:
   - `modifier` GPO boshqarishga vakolatlimi? `objects` nima?
   - Tasdiqlanmasa: GPO'ni qaytaring, scheduled-task/script qismini tekshiring.
+description_ru: |
+  Это правило обнаруживает создание/изменение GPO: если в 5136/5137/5141 внутри `ObjectName`
+  есть "CN=Policies,CN=System". Атакующий через GPO может выполнить код по всему домену или
+  повысить привилегии.
+  ПРИМЕЧАНИЕ: в вашем индексе `ObjectDN`/`ObjectClass` ОТСУТСТВУЮТ — для DN использовано
+  `ObjectName`. Если 5136 не записывает DN в ObjectName, правило ничего не вернёт (ошибки не будет).
+  SOC triage:
+  - Уполномочен ли `modifier` управлять GPO? Что за `objects`?
+  - Если не подтверждено: откатите GPO, проверьте часть со scheduled-task/script.
+description_en: |
+  This rule detects GPO creation/modification: when `ObjectName` in 5136/5137/5141 contains
+  "CN=Policies,CN=System". Via a GPO an attacker can execute code across the domain or
+  escalate privileges.
+  NOTE: `ObjectDN`/`ObjectClass` DO NOT EXIST in your index — `ObjectName` was used
+  for the DN. If 5136 does not write the DN into ObjectName, the rule returns nothing (without erroring).
+  SOC triage:
+  - Is the `modifier` authorized to manage GPOs? What are the `objects`?
+  - If not confirmed: roll back the GPO, inspect the scheduled-task/script part.
 type: esql
 params: '{}'
 schedule_interval: 10m

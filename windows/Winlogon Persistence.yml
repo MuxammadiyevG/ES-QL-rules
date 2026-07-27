@@ -1,11 +1,25 @@
 rule_id: cf21673f-a259-4d53-a2cf-7b7ed3497db3
-name: Winlogon Shell / Userinit Persistence
-description: |
+name_uz: "Winlogon Shell / Userinit orqali Mustahkamlanish (Persistence)"
+name_ru: "Закрепление через Winlogon Shell / Userinit"
+name_en: "Winlogon Shell / Userinit Persistence"
+description_uz: |
   Ushbu qoida Winlogon Shell/Userinit/Notify kalitlariga yozishni aniqlaydi (Sysmon 13).
   Bu kalitlar login paytida ishga tushadi — hujumchi qo'shimcha bajariluvchi qo'shib
   persistence o'rnatadi (T1547.004).
   SOC triage:
   - `details` da explorer.exe / userinit.exe dan tashqari narsa bormi?
+description_ru: |
+  Это правило выявляет запись в ключи Winlogon Shell/Userinit/Notify (Sysmon 13).
+  Эти ключи запускаются при входе в систему — злоумышленник добавляет дополнительный исполняемый файл и так
+  устанавливает закрепление (T1547.004).
+  SOC-триаж:
+  - Есть ли в `details` что-то, кроме explorer.exe / userinit.exe?
+description_en: |
+  This rule detects writes to the Winlogon Shell/Userinit/Notify keys (Sysmon 13).
+  These keys run at login — an attacker adds an extra executable and thereby
+  establishes persistence (T1547.004).
+  SOC triage:
+  - Is there anything in `details` other than explorer.exe / userinit.exe?
 type: esql
 params: '{}'
 schedule_interval: 10m

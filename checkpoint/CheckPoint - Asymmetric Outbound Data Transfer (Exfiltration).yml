@@ -1,6 +1,8 @@
 rule_id: 5a187db2-19b8-43d2-90dc-92a7826a8c70
-name: CheckPoint - Asymmetric Outbound Data Transfer (Exfiltration)
-description: |
+name_uz: "CheckPoint - Asimmetrik outbound ma'lumot uzatish (eksfiltratsiya)"
+name_ru: "CheckPoint - асимметричная исходящая передача данных (эксфильтрация)"
+name_en: "CheckPoint - Asymmetric Outbound Data Transfer (Exfiltration)"
+description_uz: |
   Ushbu qoida ichki hostdan tashqi destination'ga yuborilgan (outbound) baytlar
   qabul qilingan (inbound) baytlardan keskin ko'p bo'lgan session'larni aniqlaydi.
   Asimmetrik outbound transfer data exfiltration belgisi bo'lishi mumkin
@@ -13,6 +15,32 @@ description: |
   - Application/service legitimate ekanligini tekshiring (cloud backup vs unknown)
   - Data classification va sensitivity'ni baholang
   - Containment va network isolation zarurligini aniqlang
+description_ru: |
+  Это правило выявляет сессии, в которых количество отправленных (outbound) байт с внутреннего хоста
+  во внешнее назначение резко превышает количество полученных (inbound) байт.
+  Асимметричная исходящая передача может быть признаком data exfiltration
+  (T1048 - Exfiltration Over Alternative Protocol).
+  Легитимные случаи: backup upload, cloud sync, загрузка больших файлов, video stream upload.
+  Этапы SOC-триажа:
+  - Идентифицируйте хост Source IP и процесс/пользователя на нём
+  - Сопоставьте Destination IP и порт с threat intel
+  - Проанализируйте объём и длительность передачи
+  - Проверьте, легитимно ли application/service (cloud backup vs unknown)
+  - Оцените классификацию и чувствительность данных
+  - Определите необходимость containment и сетевой изоляции
+description_en: |
+  This rule detects sessions where the bytes sent (outbound) from an internal host
+  to an external destination sharply exceed the bytes received (inbound).
+  Asymmetric outbound transfer may be a sign of data exfiltration
+  (T1048 - Exfiltration Over Alternative Protocol).
+  Legitimate cases: backup upload, cloud sync, large file upload, video stream upload.
+  SOC triage steps:
+  - Identify the Source IP host and the process/user on it
+  - Compare the Destination IP and port against threat intel
+  - Analyze the transfer volume and duration
+  - Check whether the application/service is legitimate (cloud backup vs unknown)
+  - Assess the data classification and sensitivity
+  - Determine whether containment and network isolation are required
 type: esql
 params: '{}'
 schedule_interval: 15m

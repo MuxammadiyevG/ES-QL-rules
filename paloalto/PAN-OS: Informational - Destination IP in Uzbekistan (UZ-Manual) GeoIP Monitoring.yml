@@ -1,6 +1,8 @@
 rule_id: 75b95203-d3c4-4aa8-a258-9a87e12d7f1e
-name: "PAN-OS: Informational - Destination IP in Uzbekistan (UZ-Manual) GeoIP Monitoring"
-description: |
+name_uz: "PAN-OS: informatsion - Uzbekistondagi (UZ-Manual) maqsad IP GeoIP monitoringi"
+name_ru: "PAN-OS: информационное - мониторинг GeoIP для IP назначения в Узбекистане (UZ-Manual)"
+name_en: "PAN-OS: Informational - Destination IP in Uzbekistan (UZ-Manual) GeoIP Monitoring"
+description_uz: |
   Ushbu qoida destination.geo.country_name: Uzbekistan va DestinationLocation: UZ-Manual
   bo'lgan barcha trafik sessiyalarini kuzatadi.
   PAN-OS "UZ-Manual" — qo'lda qo'shilgan Uzbekiston IP manzillari ro'yxati.
@@ -13,6 +15,32 @@ description: |
   - UZ-Manual ro'yxatiga kim qo'shganini tekshiring — aktual va to'g'rimi?
   - Uzbekiston manzillariga g'ayrioddiy port yoki protokol borligini tekshiring.
   - destination.geo.location koordinatasi bilan IP geolocation xizmatlari solishtiring.
+description_ru: |
+  Это правило отслеживает все сессии трафика, у которых destination.geo.country_name: Uzbekistan
+  и DestinationLocation: UZ-Manual.
+  PAN-OS "UZ-Manual" — список вручную добавленных IP-адресов Узбекистана.
+  destination.geo.city_name: Tashkent, destination.geo.location: POINT (69.2177 41.2615).
+  Это правило формирует baseline для мониторинга трафика, направленного на IP Узбекистана, и
+  выявления аномальных адресов назначения.
+  Легитимные случаи: локальные серверы, государственные ресурсы, локальный CDN.
+  Этапы SOC-триажа:
+  - Сравните destination.ip с локальным реестром IP.
+  - Проверьте, кто добавил запись в список UZ-Manual — актуальна и корректна ли она?
+  - Проверьте наличие необычных портов или протоколов к адресам Узбекистана.
+  - Сравните координаты destination.geo.location с сервисами IP-геолокации.
+description_en: |
+  This rule monitors all traffic sessions with destination.geo.country_name: Uzbekistan
+  and DestinationLocation: UZ-Manual.
+  PAN-OS "UZ-Manual" — a manually added list of Uzbekistan IP addresses.
+  destination.geo.city_name: Tashkent, destination.geo.location: POINT (69.2177 41.2615).
+  This rule builds a baseline for monitoring traffic directed to Uzbekistan IPs and
+  identifying anomalous destination addresses.
+  Legitimate cases: local servers, government resources, local CDN.
+  SOC triage steps:
+  - Compare destination.ip with the local IP registry.
+  - Check who added the entry to the UZ-Manual list — is it current and correct?
+  - Check for unusual ports or protocols toward Uzbekistan addresses.
+  - Compare the destination.geo.location coordinates with IP geolocation services.
 type: esql
 params: '{}'
 schedule_interval: 15m

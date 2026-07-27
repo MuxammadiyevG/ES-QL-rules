@@ -1,9 +1,19 @@
 rule_id: 624f91a7-cc58-4fa3-a466-a6005c8823f0
-name: "Switch NT_GREEN: LLDP yoki EEE holati o'zgardi"
-description: |
+name_uz: "Switch NT_GREEN: LLDP yoki EEE holati o'zgardi"
+name_ru: "Switch NT_GREEN: состояние LLDP или EEE изменилось"
+name_en: "Switch NT_GREEN: LLDP or EEE state changed"
+description_uz: |
   Switch LLDP (Link Layer Discovery Protocol) yoki EEE
   (Energy Efficient Ethernet) holati o'zgardi.
   Yangi qurilma ulanganda yoki port holati o'zgarganda keladi.
+description_ru: |
+  Состояние LLDP (Link Layer Discovery Protocol) или EEE
+  (Energy Efficient Ethernet) на коммутаторе изменилось.
+  Приходит при подключении нового устройства или изменении состояния порта.
+description_en: |
+  The switch LLDP (Link Layer Discovery Protocol) or EEE
+  (Energy Efficient Ethernet) state changed.
+  It arrives when a new device is connected or the port state changes.
 type: esql
 params: '{}'
 schedule_interval: 5m

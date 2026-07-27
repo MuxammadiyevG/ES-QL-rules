@@ -1,12 +1,28 @@
 rule_id: 5c1ff6ba-1f76-4275-a7ba-e53de4f304b4
-name: Disabled / Expired / Locked Account Logon Attempt
-description: |
+name_uz: "O'chirilgan / muddati o'tgan / qulflangan akkauntga kirish urinishi"
+name_ru: "Попытка входа отключённой / просроченной / заблокированной учётной записи"
+name_en: "Disabled / Expired / Locked Account Logon Attempt"
+description_uz: |
   Ushbu qoida o'chirilgan, muddati o'tgan yoki qulflangan akkauntga kirish urinishini
   aniqlaydi (4625, SubStatus): 0xC0000072 (disabled), 0xC0000193 (expired), 0xC0000234
   (locked), 0xC0000070 (workstation restriction), 0xC0000071 (password expired). Eski/o'chirilgan
   akkauntdan foydalanishga urinish shubhali (T1078).
   SOC triage:
   - `target_users` qaysi akkaunt, `src_ips` qayerdan? Nega o'chirilgan akkaunt urinilyapti?
+description_ru: |
+  Это правило выявляет попытку входа в отключённую, просроченную или заблокированную
+  учётную запись (4625, SubStatus): 0xC0000072 (disabled), 0xC0000193 (expired), 0xC0000234
+  (locked), 0xC0000070 (workstation restriction), 0xC0000071 (password expired). Попытка использовать старую/отключённую
+  учётную запись подозрительна (T1078).
+  SOC triage:
+  - Какая учётная запись в `target_users`, откуда `src_ips`? Почему выполняется попытка входа отключённой учётной записи?
+description_en: |
+  This rule detects a logon attempt to a disabled, expired or locked account
+  (4625, SubStatus): 0xC0000072 (disabled), 0xC0000193 (expired), 0xC0000234
+  (locked), 0xC0000070 (workstation restriction), 0xC0000071 (password expired). An attempt to use an old/disabled
+  account is suspicious (T1078).
+  SOC triage:
+  - Which account is in `target_users`, where do `src_ips` come from? Why is a disabled account being attempted?
 type: esql
 params: '{}'
 schedule_interval: 10m

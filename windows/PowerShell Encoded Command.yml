@@ -1,12 +1,28 @@
 rule_id: df18167f-34e3-46b9-81ee-0a9087dafada
-name: PowerShell Encoded / Base64 Command
-description: |
+name_uz: "PowerShell Encoded / Base64 buyruq"
+name_ru: "PowerShell Encoded / Base64 команда"
+name_en: "PowerShell Encoded / Base64 Command"
+description_uz: |
   Ushbu qoida obfuskatsiya qilingan PowerShell'ni aniqlaydi: ScriptBlock (4104) ichida
   `-EncodedCommand`/`-enc` yoki `FromBase64String` bo'lishi — hujumchilar buyruqni yashirish
   uchun ko'p ishlatadi.
   SOC triage:
   - `sample_script` ni dekod qiling (base64); qaysi user/host (`user`)?
   - Qonuniy avtomatlashtirish bo'lishi mumkin — kontekstni tasdiqlang.
+description_ru: |
+  Это правило обнаруживает обфусцированный PowerShell: наличие `-EncodedCommand`/`-enc` или
+  `FromBase64String` внутри ScriptBlock (4104) — атакующие часто используют это для сокрытия
+  команд.
+  SOC triage:
+  - Декодируйте `sample_script` (base64); какой user/host (`user`)?
+  - Возможна легитимная автоматизация — подтвердите контекст.
+description_en: |
+  This rule detects obfuscated PowerShell: the presence of `-EncodedCommand`/`-enc` or
+  `FromBase64String` inside a ScriptBlock (4104) — attackers use it a lot to hide
+  commands.
+  SOC triage:
+  - Decode `sample_script` (base64); which user/host (`user`)?
+  - It may be legitimate automation — confirm the context.
 type: esql
 params: '{}'
 schedule_interval: 10m

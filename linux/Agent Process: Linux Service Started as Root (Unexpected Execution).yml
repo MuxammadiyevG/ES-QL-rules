@@ -1,6 +1,8 @@
 rule_id: a41d1065-e467-4155-87d5-c92860fe8c9a
-name: "Agent Process: Linux Service Started as Root (Unexpected Execution)"
-description: |
+name_uz: "Agent Process: Linux servisi root sifatida ishga tushirildi (kutilmagan bajarilish)"
+name_ru: "Agent Process: служба Linux запущена от root (неожиданный запуск)"
+name_en: "Agent Process: Linux Service Started as Root (Unexpected Execution)"
+description_uz: |
   Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib,
   root (uid=0) tomonidan Linux servisning ishga tushirilishini aniqlaydi.
   Hujumchi backdoor yoki reverse shell ni servis sifatida ro'yxatdan o'tkazib,
@@ -12,6 +14,30 @@ description: |
   - `systemctl list-units --type=service` orqali yangi servislarni tekshiring.
   - `/etc/systemd/system/` da yangi unit fayl bormi.
   - Noqonuniy bo'lsa: servisni to'xtating, unit faylini o'chiring, tizimni tekshiring.
+description_ru: |
+  Данное правило связано с техниками Persistence и Privilege Escalation и выявляет
+  запуск службы Linux пользователем root (uid=0).
+  Злоумышленник может зарегистрировать backdoor или reverse shell в качестве службы
+  и обеспечить закрепление с правами root.
+  Легитимные случаи: системные службы (sshd, cron, rsyslog), начальная загрузка системы.
+  Шаги SOC-триажа:
+  - `auditd.summary.how` или `process.executable` — неожиданный путь к binary.
+  - `user.selinux.user: unconfined` — ограничения SELinux отсутствуют.
+  - Проверьте новые службы через `systemctl list-units --type=service`.
+  - Есть ли новый unit-файл в `/etc/systemd/system/`.
+  - Если нелегитимно: остановите службу, удалите unit-файл, проверьте систему.
+description_en: |
+  This rule is related to Persistence and Privilege Escalation techniques and detects
+  a Linux service being started by root (uid=0).
+  An attacker may register a backdoor or a reverse shell as a service and thereby
+  maintain persistence with root privileges.
+  Legitimate cases: system services (sshd, cron, rsyslog), system boot.
+  SOC triage steps:
+  - `auditd.summary.how` or `process.executable` — an unexpected binary path.
+  - `user.selinux.user: unconfined` — no SELinux confinement.
+  - Check new services via `systemctl list-units --type=service`.
+  - Whether there is a new unit file in `/etc/systemd/system/`.
+  - If illegitimate: stop the service, delete the unit file, inspect the system.
 type: esql
 params: '{}'
 schedule_interval: 5m

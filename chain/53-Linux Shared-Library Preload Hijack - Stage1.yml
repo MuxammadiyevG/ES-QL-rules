@@ -1,7 +1,15 @@
 rule_id: 2435637a-ef31-4edd-af99-e823683bf467
-name: "Chain: Linux Shared-Library Preload Hijack — Stage 1: LD Preload Config Modified"
-description: |
+name_uz: "Zanjir: Linux Shared-Library Preload Hijack — 1-bosqich: LD preload konfiguratsiyasi o'zgartirilishi"
+name_ru: "Цепочка: Linux Shared-Library Preload Hijack — Этап 1: Изменение конфигурации LD preload"
+name_en: "Chain: Linux Shared-Library Preload Hijack — Stage 1: LD Preload Config Modified"
+description_uz: |
   Linux Shared-Library Preload Hijack zanjiri — 1-bosqich (2 dan).
+  LD Preload Config Modified.
+description_ru: |
+  Цепочка Linux Shared-Library Preload Hijack — этап 1 (из 2).
+  Изменение конфигурации LD preload.
+description_en: |
+  Linux Shared-Library Preload Hijack chain — stage 1 (of 2).
   LD Preload Config Modified.
 type: esql
 enabled: true

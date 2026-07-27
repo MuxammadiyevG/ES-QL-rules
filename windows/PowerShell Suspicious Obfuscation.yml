@@ -1,11 +1,25 @@
 rule_id: 1548cacc-ad42-4d0f-9106-e539d5d3b326
-name: PowerShell Suspicious Obfuscation
-description: |
+name_uz: "PowerShell shubhali obfuskatsiya"
+name_ru: "Подозрительная обфускация PowerShell"
+name_en: "PowerShell Suspicious Obfuscation"
+description_uz: |
   Ushbu qoida obfuskatsiya texnikalarini aniqlaydi: `-bxor` (XOR dekod), `[char[]]`/`-join`
   (char-array qurish), `[Convert]::FromBase64String`, yoki ScriptBlock ichida uzun (120+)
   base64/alfanumerik blob. Bular payload'ni yashirish belgisidir (T1027).
   SOC triage:
   - `sample_script` ni deobfuskatsiya qiling; qonuniy minifikatsiya bo'lishi mumkin — tekshiring.
+description_ru: |
+  Это правило обнаруживает техники обфускации: `-bxor` (XOR-декодирование), `[char[]]`/`-join`
+  (сборка char-массива), `[Convert]::FromBase64String` или длинный (120+)
+  base64/алфавитно-цифровой blob внутри ScriptBlock. Это признаки сокрытия payload (T1027).
+  SOC triage:
+  - Деобфусцируйте `sample_script`; возможна легитимная минификация — проверьте.
+description_en: |
+  This rule detects obfuscation techniques: `-bxor` (XOR decode), `[char[]]`/`-join`
+  (building a char array), `[Convert]::FromBase64String`, or a long (120+)
+  base64/alphanumeric blob inside a ScriptBlock. These are signs of hiding a payload (T1027).
+  SOC triage:
+  - Deobfuscate `sample_script`; it may be legitimate minification — verify.
 type: esql
 params: '{}'
 schedule_interval: 10m

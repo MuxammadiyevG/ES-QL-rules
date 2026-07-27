@@ -1,8 +1,16 @@
 rule_id: e0dedbee-c422-472b-9089-4b5cfcfd7d7e
-name: "Switch SYSLOG: Logging sozlamalari o'zgardi"
-description: |
+name_uz: "Switch SYSLOG: Logging sozlamalari o'zgardi"
+name_ru: "Switch SYSLOG: Изменены настройки logging"
+name_en: "Switch SYSLOG: Logging Settings Changed"
+description_uz: |
   Switch logging konfiguratsiyasi o'zgartirildi.
   Buffer level, remote server, severity level o'zgarishlari qayd etiladi.
+description_ru: |
+  Конфигурация logging на switch была изменена.
+  Фиксируются изменения buffer level, remote server, severity level.
+description_en: |
+  The switch logging configuration was changed.
+  Changes to buffer level, remote server and severity level are recorded.
 type: esql
 params: '{}'
 schedule_interval: 5m

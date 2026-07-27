@@ -1,6 +1,8 @@
 rule_id: f52c0d20-463c-4115-a36f-b50c85165b14
-name: Fortigate - Network Attack Detected
-description: |
+name_uz: "Fortigate - Tarmoq hujumi aniqlandi"
+name_ru: "Fortigate - Обнаружена сетевая атака"
+name_en: "Fortigate - Network Attack Detected"
+description_uz: |
   Ushbu qoida Fortigate IPS tomonidan aniqlangan tarmoq hujumlarini monitoring qiladi.
   Detected action bilan hujum aniqlanganini, lekin to'xtatilmaganini bildiradi.
   Qonuniy holatlar: false positive, test trafigi, vulnerability scanning.
@@ -11,6 +13,28 @@ description: |
   - Network traffic pattern'ini tahlil qiling
   - Muvaffaqiyatli exploit bo'lganmi tekshiring
   - Zarur bo'lsa blocking rule qo'shing
+description_ru: |
+  Данное правило отслеживает сетевые атаки, обнаруженные Fortigate IPS.
+  Action 'detected' означает, что атака обнаружена, но не остановлена.
+  Легитимные случаи: false positive, тестовый трафик, vulnerability scanning.
+  Этапы SOC-триажа:
+  - Определите тип атаки и attack ID
+  - Проанализируйте IP-адреса источника и назначения
+  - Проверьте attack signature и severity
+  - Проанализируйте паттерн сетевого трафика
+  - Проверьте, был ли успешный exploit
+  - При необходимости добавьте blocking rule
+description_en: |
+  This rule monitors network attacks detected by Fortigate IPS.
+  The 'detected' action means the attack was identified but not stopped.
+  Legitimate cases: false positive, test traffic, vulnerability scanning.
+  SOC triage steps:
+  - Determine the attack type and the attack ID
+  - Analyze the source and destination IP addresses
+  - Check the attack signature and severity
+  - Analyze the network traffic pattern
+  - Check whether the exploit was successful
+  - Add a blocking rule if necessary
 type: esql
 params: '{}'
 schedule_interval: 10m

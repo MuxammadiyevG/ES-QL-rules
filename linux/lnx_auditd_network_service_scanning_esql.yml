@@ -1,6 +1,14 @@
 rule_id: ee2dd13f-9f21-48d1-b1c9-be97b64ea005
-name: "Network Service Scanning Tools Detection"
-description: |
+name_uz: "Tarmoq xizmatlarini skanerlash vositalarini aniqlash"
+name_ru: "Обнаружение инструментов сканирования сетевых сервисов"
+name_en: "Network Service Scanning Tools Detection"
+description_uz: |
+  Tarmoq skanerlash vositalari (nmap, netcat, telnet) ishga tushirilishini aniqlaydi.
+  Tajovuzkorlar bu vositalardan discovery va lateral harakat uchun foydalanishi mumkin.
+description_ru: |
+  Обнаруживает запуск инструментов сканирования сети (nmap, netcat, telnet).
+  Злоумышленники могут использовать эти инструменты для разведки и горизонтального перемещения.
+description_en: |
   Detects execution of network scanning tools (nmap, netcat, telnet).
   Adversaries may use these tools for discovery and lateral movement.
 type: esql

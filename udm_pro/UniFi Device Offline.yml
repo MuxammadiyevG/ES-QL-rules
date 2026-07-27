@@ -1,8 +1,16 @@
 rule_id: 98bfa125-e044-45cf-974f-1e0d75c1e319
-name: UniFi Device Offline
-description: |
+name_uz: "UniFi qurilmasi offline"
+name_ru: "Устройство UniFi недоступно (offline)"
+name_en: "UniFi Device Offline"
+description_uz: |
   Ushbu qoida UniFi AP yoki switch offline bo'lganini aniqlaydi.
   Qurilma, IP, MAC, model, firmware, uplink switch va port alertga chiqariladi.
+description_ru: |
+  Это правило обнаруживает переход UniFi AP или switch в offline.
+  Устройство, IP, MAC, модель, firmware, uplink switch и порт выводятся в алерт.
+description_en: |
+  This rule detects that a UniFi AP or switch has gone offline.
+  The device, IP, MAC, model, firmware, uplink switch and port are included in the alert.
 type: esql
 params: "{}"
 schedule_interval: 5m

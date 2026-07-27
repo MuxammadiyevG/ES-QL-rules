@@ -8,8 +8,24 @@ rule_id: df5044f0-49ce-4979-9aca-dab8078f1667
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Allowlist RESTful APIs that legitimately use PUT/DELETE
 
-name: "Dangerous HTTP Method Usage"
-description: |
+name_uz: "Xavfli HTTP metodlaridan foydalanish"
+name_ru: "Использование опасных HTTP-методов"
+name_en: "Dangerous HTTP Method Usage"
+description_uz: |
+  Potentsial xavfli HTTP metodlaridan (PUT, DELETE, TRACE, CONNECT, OPTIONS) foydalanishni aniqlaydi.
+  PUT/DELETE noto'g'ri sozlanganda resurslarni o'zgartirishi/o'chirishi mumkin, TRACE esa XST hujumlariga imkon beradi.
+  Aksariyat veb-ilovalarda GET/POST/HEAD dan boshqa metodlar cheklanishi kerak.
+  False positive: RESTful API'lar, WebDAV xizmatlari, qonuniy admin operatsiyalari.
+  Triage: ilova REST API sifatida loyihalanganini tekshiring, metodlar to'g'ri autentifikatsiya qilinganini tekshiring,
+  muvaffaqiyatli ekspluatatsiya (200/204 javoblar) bor-yo'qligini ko'rib chiqing, metod cheklovlari o'rnatilganiga ishonch hosil qiling.
+description_ru: |
+  Обнаруживает использование потенциально опасных HTTP-методов (PUT, DELETE, TRACE, CONNECT, OPTIONS).
+  PUT/DELETE при неверной настройке позволяют изменять/удалять ресурсы, TRACE открывает возможность атак XST.
+  В большинстве веб-приложений методы, отличные от GET/POST/HEAD, должны быть ограничены.
+  Ложные срабатывания: RESTful API, службы WebDAV, легитимные административные операции.
+  Triage: проверьте, спроектировано ли приложение как REST API, проверьте, требуют ли методы аутентификации,
+  изучите признаки успешной эксплуатации (ответы 200/204), убедитесь, что ограничения методов настроены.
+description_en: |
   Detects usage of potentially dangerous HTTP methods (PUT, DELETE, TRACE, CONNECT, OPTIONS).
   PUT/DELETE can modify/delete resources if improperly configured, TRACE enables XST attacks.
   Methods other than GET/POST/HEAD should be restricted on most web applications.

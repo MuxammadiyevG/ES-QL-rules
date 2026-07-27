@@ -1,9 +1,19 @@
 rule_id: d0313f2e-b0b0-4a96-84a5-a0db74b62783
-name: "Switch SYSLOG: Syslog server o'chirildi (NOSYSLOGSERVER)"
-description: |
+name_uz: "Switch SYSLOG: Syslog server o'chirildi (NOSYSLOGSERVER)"
+name_ru: "Switch SYSLOG: Syslog server удалён (NOSYSLOGSERVER)"
+name_en: "Switch SYSLOG: Syslog Server Removed (NOSYSLOGSERVER)"
+description_uz: |
   Switch dan remote syslog server manzili o'chirildi.
   Bu holda loglar SIEM ga yetib kelmaydi — ko'r nuqta yaratiladi.
   SOC triage: Kim o'chirdi? GCLI logidan tekshiring.
+description_ru: |
+  С switch был удалён адрес remote syslog server.
+  В этом случае логи не доходят до SIEM — создаётся слепая зона.
+  SOC triage: Кто удалил? Проверьте по логу GCLI.
+description_en: |
+  The remote syslog server address was removed from the switch.
+  In this case logs do not reach the SIEM — a blind spot is created.
+  SOC triage: Who removed it? Check the GCLI log.
 type: esql
 params: '{}'
 schedule_interval: 5m

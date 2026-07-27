@@ -1,11 +1,25 @@
 rule_id: 89ee353a-cbc0-470c-898e-8f839c644a43
-name: Computer Account Created (MachineAccountQuota Abuse)
-description: |
+name_uz: "Computer account yaratildi (MachineAccountQuota suiiste'moli)"
+name_ru: "Создана учётная запись компьютера (злоупотребление MachineAccountQuota)"
+name_en: "Computer Account Created (MachineAccountQuota Abuse)"
+description_uz: |
   Ushbu qoida yangi computer account yaratilishini (4741) aniqlaydi. Oddiy domen foydalanuvchisi
   (admin emas) computer account yaratsa — bu MachineAccountQuota suiiste'mol (RBCD, sAMAccount
   spoofing / noPac CVE-2021-42278) belgisi bo'lishi mumkin.
   SOC triage:
   - `creators` kim — admin/provisioning xizmatimi yoki oddiy user? `new_computers` qanday nomlar?
+description_ru: |
+  Это правило выявляет создание новой учётной записи компьютера (4741). Если обычный доменный пользователь
+  (не администратор) создаёт учётную запись компьютера — это может быть признаком злоупотребления MachineAccountQuota (RBCD, sAMAccount
+  spoofing / noPac CVE-2021-42278).
+  Триаж SOC:
+  - Кто такие `creators` — админ/служба провижининга или обычный пользователь? Какие имена в `new_computers`?
+description_en: |
+  This rule detects the creation of a new computer account (4741). If an ordinary domain user
+  (not an admin) creates a computer account, this may be a sign of MachineAccountQuota abuse (RBCD, sAMAccount
+  spoofing / noPac CVE-2021-42278).
+  SOC triage:
+  - Who are the `creators` — an admin/provisioning service or an ordinary user? What names are in `new_computers`?
 type: esql
 params: '{}'
 schedule_interval: 10m

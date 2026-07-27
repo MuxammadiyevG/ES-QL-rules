@@ -1,9 +1,19 @@
 rule_id: 09a3dd70-a261-4cbc-94c3-74af6a4af9b5
-name: "Chain: Web Login Success After Brute Force (Nginx)"
-description: |
+name_uz: "Zanjir: Brute force'dan keyin muvaffaqiyatli veb login (Nginx)"
+name_ru: "Цепочка: Успешный веб-вход после перебора паролей (Nginx)"
+name_en: "Chain: Web Login Success After Brute Force (Nginx)"
+description_uz: |
   Veb auth brute zanjiri — 2-bosqich.
   Muvaffaqiyatsiz urinishlardan keyin o'sha source.ip dan muvaffaqiyatli login (200/201).
   1-bosqichga bog'langan.
+description_ru: |
+  Цепочка Web auth brute — этап 2.
+  Успешный вход (200/201) с того же source.ip после неудачных попыток.
+  Связано с этапом 1.
+description_en: |
+  Web auth brute chain — stage 2.
+  Successful login (200/201) from the same source.ip after the failed attempts.
+  Linked to stage 1.
 type: esql
 enabled: true
 params: "{}"

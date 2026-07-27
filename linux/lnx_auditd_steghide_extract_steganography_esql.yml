@@ -1,6 +1,12 @@
 rule_id: bab90c52-e483-44f8-8d92-5207322e521d
-name: "Steghide Extract Steganography"
-description: |
+name_uz: "Steghide bilan steganografiyani chiqarish"
+name_ru: "Извлечение данных стеганографией Steghide"
+name_en: "Steghide Extract Steganography"
+description_uz: |
+  Rasmlardan ma'lumot chiqarish uchun steghide'dan foydalanishni aniqlaydi.
+description_ru: |
+  Обнаруживает использование steghide для извлечения данных из изображений.
+description_en: |
   Detects usage of steghide to extract data from images.
 type: esql
 params: '{}'

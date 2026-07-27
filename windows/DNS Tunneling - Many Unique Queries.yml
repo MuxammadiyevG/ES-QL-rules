@@ -1,11 +1,25 @@
 rule_id: 6cd334ce-151d-4b37-8844-d7fb0bce94bc
-name: DNS Tunneling - Excessive Unique Queries by One Process
-description: |
+name_uz: "DNS tunneling - bitta jarayondan haddan ziyod ko'p noyob so'rov"
+name_ru: "DNS Tunneling - чрезмерное число уникальных запросов от одного процесса"
+name_en: "DNS Tunneling - Excessive Unique Queries by One Process"
+description_uz: |
   Ushbu qoida DNS tunneling/DGA'ni aniqlaydi: bitta jarayon qisqa vaqtda JUDA KO'P xil domen
   so'rasa (Sysmon 22). Tunneling data'ni subdomenlarga kodlab chiqaradi (T1071.004/T1048).
   Brauzer/CDN jarayonlari chiqarib tashlangan.
   SOC triage:
   - `image` brauzer emasmi? `unique_domains` juda yuqorimi? namuna `domains`.
+description_ru: |
+  Это правило выявляет DNS tunneling/DGA: когда один процесс за короткое время запрашивает ОЧЕНЬ МНОГО разных
+  доменов (Sysmon 22). Туннелирование кодирует данные в поддомены и выводит их наружу (T1071.004/T1048).
+  Процессы браузеров/CDN исключены.
+  Триаж SOC:
+  - Не браузер ли `image`? Не слишком ли высок `unique_domains`? образец `domains`.
+description_en: |
+  This rule detects DNS tunneling/DGA: when a single process queries VERY MANY different domains
+  in a short time (Sysmon 22). Tunneling encodes data into subdomains and sends it out (T1071.004/T1048).
+  Browser/CDN processes are excluded.
+  SOC triage:
+  - Is `image` not a browser? Is `unique_domains` very high? sample `domains`.
 type: esql
 params: '{}'
 schedule_interval: 10m

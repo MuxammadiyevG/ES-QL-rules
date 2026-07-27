@@ -1,9 +1,19 @@
 rule_id: 7c9e4d39-0139-4379-9286-c3c07f21780d
-name: "Chain: Windows Failed Logon Burst (4625)"
-description: |
+name_uz: "Zanjir: Windows muvaffaqiyatsiz kirishlar to'plami (4625)"
+name_ru: "Цепочка: Всплеск неудачных входов Windows (4625)"
+name_en: "Chain: Windows Failed Logon Burst (4625)"
+description_uz: |
   Windows kirish zanjiri — 1-bosqich.
   Bitta hisob (user.name) bo'yicha qisqa vaqtda ko'p muvaffaqiyatsiz kirish (4625).
   Korrelyatsiya dvigateli hisob bo'yicha chastotani hisoblaydi (brute / password guessing).
+description_ru: |
+  Цепочка входа Windows — этап 1.
+  Множество неудачных входов по одной учётной записи (user.name) за короткое время (4625).
+  Корреляционный движок считает частоту по учётной записи (brute / password guessing).
+description_en: |
+  Windows logon chain — stage 1.
+  Many failed logons for a single account (user.name) within a short time (4625).
+  The correlation engine counts frequency by account (brute / password guessing).
 type: esql
 enabled: true
 params: "{}"

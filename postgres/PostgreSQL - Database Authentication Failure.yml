@@ -1,6 +1,8 @@
 rule_id: 77101ee2-2cc0-46a6-af74-eac961453c71
-name: PostgreSQL - Database Authentication Failure
-description: |
+name_uz: "PostgreSQL - Ma'lumotlar Bazasida Autentifikatsiya Xatosi"
+name_ru: "PostgreSQL - неудачная аутентификация в базе данных"
+name_en: "PostgreSQL - Database Authentication Failure"
+description_uz: |
   Ushbu qoida PostgreSQL da muvaffaqiyatsiz autentifikatsiya hodisalarini kuzatadi (Rule 50512).
   Takroriy muvaffaqiyatsiz urinishlar brute-force yoki credential stuffing hujumiga ishora qiladi (T1078).
   Qonuniy holatlar: xato kiritilgan parol, servis konfiguratsiya xatosi.
@@ -9,6 +11,24 @@ description: |
   - `source.ip` manzilini tekshiring — bir IP dan ko'p urinish bormi.
   - Muvaffaqiyatsiz urinishlardan keyin muvaffaqiyatli kirish borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa: IP ni bloklang, credentiallarni yangilang.
+description_ru: |
+  Данное правило отслеживает события неудачной аутентификации в PostgreSQL (Rule 50512).
+  Повторяющиеся неудачные попытки указывают на атаку перебора паролей (brute force) или credential stuffing (T1078).
+  Легитимные случаи: ошибочно введённый пароль, ошибка конфигурации сервиса.
+  Шаги SOC-триажа:
+  - Проверьте `actor` (user.name) и `db.name`.
+  - Проверьте адрес `source.ip` — нет ли множества попыток с одного IP.
+  - Проверьте, был ли успешный вход после неудачных попыток.
+  - При подтверждении нелегитимной активности: заблокируйте IP, обновите учётные данные.
+description_en: |
+  This rule tracks failed authentication events in PostgreSQL (Rule 50512).
+  Repeated failed attempts point to a brute-force or credential stuffing attack (T1078).
+  Legitimate cases: mistyped password, service misconfiguration.
+  SOC triage steps:
+  - Check `actor` (user.name) and `db.name`.
+  - Check the `source.ip` address — are there many attempts from one IP.
+  - Check whether there was a successful login after the failed attempts.
+  - If illegitimate activity is confirmed: block the IP, renew the credentials.
 type: esql
 params: '{}'
 schedule_interval: 10m

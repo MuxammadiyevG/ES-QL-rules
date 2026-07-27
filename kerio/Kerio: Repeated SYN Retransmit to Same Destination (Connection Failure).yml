@@ -1,6 +1,8 @@
 rule_id: b2659e66-63cb-4c30-85cc-868c61970a76
-name: "Kerio: Repeated SYN Retransmit to Same Destination (Connection Failure)"
-description: |
+name_uz: "Kerio: Bir xil destination ga takroriy SYN retransmit (Connection Failure)"
+name_ru: "Kerio: Повторные SYN retransmit к одному и тому же назначению (Connection Failure)"
+name_en: "Kerio: Repeated SYN Retransmit to Same Destination (Connection Failure)"
+description_uz: |
   Ushbu qoida bitta source IP dan bitta destination IP:port ga bir xil TCP sequence
   number bilan takroriy SYN paketlarini aniqlaydi. Bu TCP retransmit — destination
   javob bermayotgan yoki bloklangan. Logda ko'ringan pattern: bir xil seq number
@@ -10,6 +12,26 @@ description: |
   - source.ip — qaysi host ulanmoqchi.
   - destination.ip — server mavjud va ishlayaptimi.
   - Juda ko'p xil destination bo'lsa — C2 ulanish urinishi.
+description_ru: |
+  Это правило выявляет повторные SYN-пакеты с одного source IP на один destination IP:port
+  с одинаковым TCP sequence number. Это TCP retransmit — назначение
+  не отвечает или заблокировано. Замеченный в логе шаблон: SYN-пакеты, повторно отправленные
+  3-5 раз с одинаковым seq number.
+  Легитимные ситуации: хост пытается подключиться к недоступному серверу.
+  Этапы SOC-триажа:
+  - source.ip — какой хост пытается подключиться.
+  - destination.ip — существует ли сервер и работает ли он.
+  - Если разных destination очень много — попытка C2-подключения.
+description_en: |
+  This rule detects repeated SYN packets from a single source IP to a single destination IP:port
+  with the same TCP sequence number. This is a TCP retransmit — the destination
+  is not responding or is blocked. The pattern seen in the log: SYN packets resent
+  3-5 times with the same seq number.
+  Legitimate cases: a host trying to connect to an unreachable server.
+  SOC triage steps:
+  - source.ip — which host is trying to connect.
+  - destination.ip — whether the server exists and is running.
+  - If there are very many different destinations — a C2 connection attempt.
 type: esql
 params: '{}'
 schedule_interval: 5m

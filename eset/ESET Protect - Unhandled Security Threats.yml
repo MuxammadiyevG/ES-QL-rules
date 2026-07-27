@@ -1,6 +1,8 @@
 rule_id: 290a5a94-8e9a-45d5-b641-f3fd5f132d86
-name: ESET Protect - Unhandled Security Threats
-description: |
+name_uz: "ESET Protect - hal qilinmagan xavfsizlik tahdidlari"
+name_ru: "ESET Protect - необработанные угрозы безопасности"
+name_en: "ESET Protect - Unhandled Security Threats"
+description_uz: |
   Ushbu qoida ESET tomonidan detect qilingan lekin handle qilinmagan threat'larni aniqlaydi.
   Bu incomplete remediation yoki persistent threat belgisi.
   Qonuniy holatlar: user postponement, manual intervention required, policy configuration.
@@ -10,6 +12,26 @@ description: |
   - Manual intervention requirement'ni assess qiling
   - Host compromise risk'ini baholang
   - Force remediation yoki isolation zarurligini aniqlang
+description_ru: |
+  Это правило выявляет угрозы, обнаруженные ESET, но не обработанные.
+  Это признак неполного устранения или устойчивой угрозы.
+  Легитимные случаи: откладывание пользователем, требуется ручное вмешательство, конфигурация политики.
+  Шаги SOC triage:
+  - Определите тип и причину необработанной угрозы
+  - Проанализируйте длительность сохранения угрозы
+  - Оцените необходимость ручного вмешательства
+  - Оцените риск компрометации хоста
+  - Определите необходимость принудительного устранения или изоляции
+description_en: |
+  This rule detects threats that were detected by ESET but not handled.
+  This is a sign of incomplete remediation or a persistent threat.
+  Legitimate cases: user postponement, manual intervention required, policy configuration.
+  SOC triage steps:
+  - Determine the unhandled threat type and reason
+  - Analyze the threat persistence duration
+  - Assess the manual intervention requirement
+  - Evaluate the host compromise risk
+  - Determine whether forced remediation or isolation is required
 type: esql
 params: '{}'
 schedule_interval: 15m

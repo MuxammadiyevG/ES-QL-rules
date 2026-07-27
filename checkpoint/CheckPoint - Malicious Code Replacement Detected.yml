@@ -1,6 +1,8 @@
 rule_id: 32879085-7727-4573-9239-fac52f6e553d
-name: CheckPoint - Malicious Code Replacement Detected
-description: |
+name_uz: "CheckPoint - Zararli kod almashtirilishi aniqlandi"
+name_ru: "CheckPoint - обнаружена подмена вредоносным кодом"
+name_en: "CheckPoint - Malicious Code Replacement Detected"
+description_uz: |
   Ushbu qoida CheckPoint IPS tomonidan malicious code replacement hodisalarini aniqlaydi.
   Bu active attack yoki malware injection urinishi belgisi (T1001 - Data Obfuscation).
   Qonuniy holatlar: false positive, IPS test, security validation.
@@ -11,6 +13,28 @@ description: |
   - Attack vector va delivery method'ni tahlil qiling
   - Boshqa compromise indicator'lari bormi tekshiring
   - Incident response jarayonini boshlang
+description_ru: |
+  Это правило выявляет события malicious code replacement, обнаруженные CheckPoint IPS.
+  Это признак активной атаки или попытки malware injection (T1001 - Data Obfuscation).
+  Легитимные случаи: false positive, тест IPS, валидация средств защиты.
+  Этапы SOC-триажа:
+  - Определите тип и характеристики вредоносного кода
+  - Проверьте репутацию source и destination IP
+  - Определите, к какому malware family или варианту это относится
+  - Проанализируйте вектор атаки и метод доставки
+  - Проверьте, есть ли другие индикаторы компрометации
+  - Запустите процесс incident response
+description_en: |
+  This rule detects malicious code replacement events identified by CheckPoint IPS.
+  This is a sign of an active attack or a malware injection attempt (T1001 - Data Obfuscation).
+  Legitimate cases: false positive, IPS test, security validation.
+  SOC triage steps:
+  - Determine the type and characteristics of the malicious code
+  - Check the reputation of the source and destination IP
+  - Determine which malware family or variant it belongs to
+  - Analyze the attack vector and delivery method
+  - Check whether other compromise indicators are present
+  - Start the incident response process
 type: esql
 params: '{}'
 schedule_interval: 5m

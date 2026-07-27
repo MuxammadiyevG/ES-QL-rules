@@ -1,6 +1,8 @@
 rule_id: 3846c8ab-b781-4bcd-b363-a123f0ff4424
-name: Active Directory Trust Enumeration Detected
-description: |
+name_uz: "Active Directory trust enumeratsiyasi aniqlandi"
+name_ru: "Обнаружено перечисление доверительных отношений Active Directory"
+name_en: "Active Directory Trust Enumeration Detected"
+description_uz: |
   Ushbu qoida AD discovery/recon'ni aniqlaydi: bitta MASHINA bo'lmagan akkaunt qisqa vaqtda
   juda ko'p xil AD obyektiga (4662) kirsa — bu domain/trust enumeratsiya (nltest, BloodHound,
   PowerView) belgisi. Qo'shimcha: trustedDomain klass GUID'iga kirish ham belgilanadi.
@@ -8,6 +10,22 @@ description: |
   SOC triage:
   - `accessing_user` kim, `unique_objects` qancha? Recon tooli ishlatilganmi?
   - Tasdiqlanmasa: manba hostni tekshiring, akkauntni cheklang.
+description_ru: |
+  Это правило обнаруживает AD discovery/recon: если одна не МАШИННАЯ учётная запись за короткое время
+  обращается к слишком большому числу разных объектов AD (4662) — это признак перечисления доменов/доверительных отношений (nltest, BloodHound,
+  PowerView). Дополнительно: обращение к GUID класса trustedDomain также отмечается.
+  ПРИМЕЧАНИЕ: проверьте/настройте `trustedDomain` schemaIDGUID в соответствии с вашей средой.
+  SOC triage:
+  - Кто такой `accessing_user`, сколько `unique_objects`? Использовался ли recon-инструмент?
+  - Если не подтверждено: проверьте исходный хост, ограничьте учётную запись.
+description_en: |
+  This rule detects AD discovery/recon: if a single non-MACHINE account accesses
+  too many distinct AD objects (4662) in a short time — this is a sign of domain/trust enumeration (nltest, BloodHound,
+  PowerView). Additionally: access to the trustedDomain class GUID is also flagged.
+  NOTE: verify/adjust the `trustedDomain` schemaIDGUID according to your environment.
+  SOC triage:
+  - Who is `accessing_user`, how many `unique_objects`? Was a recon tool used?
+  - If not confirmed: check the source host, restrict the account.
 type: esql
 params: '{}'
 schedule_interval: 10m

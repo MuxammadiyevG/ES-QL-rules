@@ -1,8 +1,16 @@
 rule_id: 204cc6c6-2cd0-458c-971e-e109533f3329
-name: "Agent Info: Network Interface Activity Observed"
-description: |
+name_uz: "Agent Info: Tarmoq interfeysi faoliyati kuzatildi"
+name_ru: "Agent Info: Зафиксирована активность сетевого интерфейса"
+name_en: "Agent Info: Network Interface Activity Observed"
+description_uz: |
   Tarmoq interfeysi bilan bog'liq auditd hodisalarini qayd etadi.
   Tizim tarmoq faoliyatini kuzatish va inventory uchun ishlatiladi.
+description_ru: |
+  Фиксирует события auditd, связанные с сетевым интерфейсом.
+  Используется для наблюдения за сетевой активностью системы и для inventory.
+description_en: |
+  Records auditd events related to the network interface.
+  Used for monitoring system network activity and for inventory.
 type: esql
 params: '{}'
 schedule_interval: 5m

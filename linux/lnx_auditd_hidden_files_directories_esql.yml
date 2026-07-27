@@ -1,6 +1,14 @@
 rule_id: 1a2339b5-da0b-4dce-a905-1531d7c2ea86
-name: "Hidden Files and Directories Creation"
-description: |
+name_uz: "Yashirin fayl va kataloglar yaratilishi"
+name_ru: "Создание скрытых файлов и каталогов"
+name_en: "Hidden Files and Directories Creation"
+description_uz: |
+  Yashirin fayl va kataloglarning (nuqta bilan boshlanadigan) yaratilishini aniqlaydi.
+  Tajovuzkorlar zararli faoliyatni yashirish uchun yashirin fayllardan foydalanishi mumkin.
+description_ru: |
+  Обнаруживает создание скрытых файлов и каталогов (начинающихся с точки).
+  Злоумышленники могут использовать скрытые файлы для сокрытия вредоносной активности.
+description_en: |
   Detects creation of hidden files and directories (starting with dot).
   Adversaries may use hidden files to conceal malicious activity.
 type: esql

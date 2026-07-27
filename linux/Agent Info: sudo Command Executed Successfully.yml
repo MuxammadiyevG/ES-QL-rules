@@ -1,8 +1,16 @@
 rule_id: 1fedc191-632b-472d-bdd6-999914990fbd
-name: "Agent Info: sudo Command Executed Successfully"
-description: |
+name_uz: "Agent Info: sudo buyrug'i muvaffaqiyatli bajarildi"
+name_ru: "Agent Info: Команда sudo успешно выполнена"
+name_en: "Agent Info: sudo Command Executed Successfully"
+description_uz: |
   sudo orqali muvaffaqiyatli bajarilgan buyruqlarni qayd etadi.
   Kim, qachon, qaysi hostda sudo ishlatganini kuzatish uchun ishlatiladi.
+description_ru: |
+  Фиксирует команды, успешно выполненные через sudo.
+  Используется для отслеживания того, кто, когда и на каком хосте использовал sudo.
+description_en: |
+  Records commands successfully executed via sudo.
+  Used to track who used sudo, when, and on which host.
 type: esql
 params: '{}'
 schedule_interval: 5m

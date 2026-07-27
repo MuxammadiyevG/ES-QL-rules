@@ -1,6 +1,8 @@
 rule_id: 069d9960-94ad-42d3-a08d-082c4c35e039
-name: "Execution: Possible Reverse Shell Process Execution"
-description: |
+name_uz: "Execution: ehtimoliy reverse shell process bajarilishi"
+name_ru: "Execution: возможный запуск процесса reverse shell"
+name_en: "Execution: Possible Reverse Shell Process Execution"
+description_uz: |
   Ushbu qoida Linux tizimida reverse shell yoki interaktiv shell ochish uchun
   ishlatiladigan noodatiy process execution holatlarini aniqlaydi.
 
@@ -11,7 +13,28 @@ description: |
   - python/perl/php/ruby -c yoki socket bilan command execution
   - socat orqali exec
   - /dev/tcp orqali reverse shell
+description_ru: |
+  Данное правило выявляет нетипичный запуск процессов (process execution), используемый
+  для открытия reverse shell или интерактивного shell в системе Linux.
 
+  Отслеживаемые шаблоны:
+  - подключение shell через nc/netcat/ncat
+  - bash -i
+  - sh -i
+  - command execution через python/perl/php/ruby -c или socket
+  - exec через socat
+  - reverse shell через /dev/tcp
+description_en: |
+  This rule detects unusual process execution used to open a reverse shell or an
+  interactive shell on a Linux system.
+
+  Patterns monitored:
+  - attaching a shell with nc/netcat/ncat
+  - bash -i
+  - sh -i
+  - command execution with python/perl/php/ruby -c or a socket
+  - exec via socat
+  - reverse shell via /dev/tcp
 type: esql
 params: "{}"
 schedule_interval: 10m

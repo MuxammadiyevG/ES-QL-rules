@@ -1,6 +1,8 @@
 rule_id: 1e1b31d8-2fb2-44bb-9fcb-d3d003b95534
-name: Linux Auth - Suspicious File Op via sudo/root
-description: |
+name_uz: "Linux Auth - sudo/root orqali shubhali fayl amali"
+name_ru: "Linux Auth - подозрительная файловая операция через sudo/root"
+name_en: "Linux Auth - Suspicious File Op via sudo/root"
+description_uz: |
   Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi sudo komandalarini kuzatib,
   fayl yaratuvchi buyruqlar (touch/cp/dd/tee/install) shubhali kataloglarda (/tmp,
   /dev/shm, /var/tmp, /run) imtiyoz bilan ishlatilishini aniqlaydi. Bu persistence yoki
@@ -11,6 +13,28 @@ description: |
   - `process.command_line` (cmd) va `process.working_directory` ni tahlil qiling.
   - Yaratilgan fayl yo'li shubhali katalogda emasligini tasdiqlang (/tmp, /dev/shm, /var/tmp).
   - Noqonuniy faoliyat tasdiqlansa: faylni karantinga oling, manbani cheklang.
+description_ru: |
+  Это правило отслеживает команды sudo в Linux auth.log (logs-linux.auth-*) и выявляет
+  запуск команд создания файлов (touch/cp/dd/tee/install) с привилегиями в подозрительных
+  каталогах (/tmp, /dev/shm, /var/tmp, /run). Это может указывать на закрепление (persistence) или
+  сброс полезной нагрузки (payload, T1044).
+  Легитимные случаи: плановые скрипты развёртывания, установка пакетов, обновления конфигурации.
+  Этапы SOC triage:
+  - Проверьте `actor` (user.name) и `user.effective.name`.
+  - Проанализируйте `process.command_line` (cmd) и `process.working_directory`.
+  - Убедитесь, что путь созданного файла не находится в подозрительном каталоге (/tmp, /dev/shm, /var/tmp).
+  - При подтверждении вредоносной активности: поместите файл в карантин, ограничьте источник.
+description_en: |
+  This rule monitors sudo commands in the Linux auth.log (logs-linux.auth-*) and detects
+  file-creating commands (touch/cp/dd/tee/install) being run with privileges in suspicious
+  directories (/tmp, /dev/shm, /var/tmp, /run). This may point to persistence or
+  payload drop (T1044) techniques.
+  Legitimate cases: scheduled deployment scripts, package installations, configuration updates.
+  SOC triage steps:
+  - Check `actor` (user.name) and `user.effective.name`.
+  - Analyze `process.command_line` (cmd) and `process.working_directory`.
+  - Confirm that the created file path is not in a suspicious directory (/tmp, /dev/shm, /var/tmp).
+  - If malicious activity is confirmed: quarantine the file, restrict the source.
 type: esql
 params: '{}'
 schedule_interval: 10m

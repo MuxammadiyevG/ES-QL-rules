@@ -1,9 +1,19 @@
 rule_id: 34729e5c-3574-4c60-b002-c898c00efc18
-name: "Chain: Windows Service Persistence — Stage 2: Suspicious Service Started"
-description: |
+name_uz: "Zanjir: Windows Service Persistence — 2-bosqich: Shubhali xizmat ishga tushirilishi"
+name_ru: "Цепочка: Windows Service Persistence — Этап 2: Запуск подозрительной службы"
+name_en: "Chain: Windows Service Persistence — Stage 2: Suspicious Service Started"
+description_uz: |
   Windows Service Persistence zanjiri — 2-bosqich (2 dan).
   Suspicious Service Started.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows Service Persistence — этап 2 (из 2).
+  Запуск подозрительной службы.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows Service Persistence chain — stage 2 (of 2).
+  Suspicious Service Started.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

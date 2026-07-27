@@ -1,10 +1,22 @@
 rule_id: 3ef583bc-5dc3-429a-bc9c-5383b1924331
-name: "Switch SYSLOG: Yangi syslog server qo'shildi (NEWSYSLOGSERVER)"
-description: |
+name_uz: "Switch SYSLOG: Yangi syslog server qo'shildi (NEWSYSLOGSERVER)"
+name_ru: "Switch SYSLOG: Добавлен новый syslog server (NEWSYSLOGSERVER)"
+name_en: "Switch SYSLOG: New Syslog Server Added (NEWSYSLOGSERVER)"
+description_uz: |
   Switch ga yangi remote syslog server manzili qo'shildi.
   Noma'lum server qo'shilsa loglar boshqa joyga yuborilishi mumkin —
   bu defense evasion belgisi bo'lishi mumkin.
   SOC triage: Server IP korporativ SIEM serveri ekanligini tasdiqlang.
+description_ru: |
+  На switch добавлен адрес нового remote syslog server.
+  Если добавлен неизвестный сервер, логи могут отправляться в другое место —
+  это может быть признаком defense evasion.
+  SOC triage: Подтвердите, что IP сервера является корпоративным SIEM-сервером.
+description_en: |
+  A new remote syslog server address was added to the switch.
+  If an unknown server is added, logs may be sent elsewhere —
+  this may be a sign of defense evasion.
+  SOC triage: Confirm that the server IP is the corporate SIEM server.
 type: esql
 params: '{}'
 schedule_interval: 5m

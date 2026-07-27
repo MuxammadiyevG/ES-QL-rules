@@ -1,9 +1,19 @@
 rule_id: 0c27a7c4-94e3-427d-a25b-3c097f72f69f
-name: "Chain: Root Command After Sudo Escalation (Linux)"
-description: |
+name_uz: "Zanjir: Sudo orqali imtiyoz oshirilgandan keyin root buyrug'i (Linux)"
+name_ru: "Цепочка: Root-команда после повышения привилегий через sudo (Linux)"
+name_en: "Chain: Root Command After Sudo Escalation (Linux)"
+description_uz: |
   Linux sudo privesc zanjiri — 3-bosqich.
   Sudo'dan o'tgandan keyin root (uid=0) sifatida buyruq bajarilishi.
   2-bosqichga bog'langan.
+description_ru: |
+  Цепочка Linux sudo privesc — этап 3.
+  Выполнение команды от имени root (uid=0) после прохождения через sudo.
+  Связано с этапом 2.
+description_en: |
+  Linux sudo privesc chain — stage 3.
+  Command executed as root (uid=0) after passing through sudo.
+  Linked to stage 2.
 type: esql
 enabled: true
 params: "{}"

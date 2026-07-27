@@ -1,6 +1,8 @@
 rule_id: f0758664-b86e-4fa8-a9c0-8e5090afdeae
-name: "Agent Persistence: Software Package Installed or Unpacked via dpkg"
-description: |
+name_uz: "Agent Persistence: dpkg orqali dasturiy paket o'rnatildi yoki ochildi"
+name_ru: "Agent Persistence: Программный пакет установлен или распакован через dpkg"
+name_en: "Agent Persistence: Software Package Installed or Unpacked via dpkg"
+description_uz: |
   Ushbu qoida Persistence va Defense Evasion texnikalariga bog'liq bo'lib, dpkg orqali
   paket o'rnatish operatsiyalarini aniqlaydi. Hujumchi zararli paket o'rnatib, tizimga
   backdoor yoki rootkit kiritishi mumkin.
@@ -12,6 +14,30 @@ description: |
   - `auditd.summary.actor.primary` = unset bo'lsa — avtomatik (unattended-upgrades yoki skript).
   - Kutilmagan paket nomi yoki manba bo'lsa — paket hash ni tekshiring.
   - Noqonuniy bo'lsa: paketni olib tashlang (`dpkg --remove`), tizimni skan qiling.
+description_ru: |
+  Это правило связано с техниками Persistence и Defense Evasion и выявляет операции установки
+  пакетов через dpkg. Злоумышленник может установить вредоносный пакет и внедрить в систему
+  backdoor или rootkit.
+  Легитимные случаи: обновление системы (apt upgrade), установка администратором.
+  Шаги SOC-триажа:
+  - Проверьте имя пакета в `process.title` — является ли это ожидаемым пакетом в `/var/cache/apt/archives/`.
+  - Сопоставьте время установки (`@timestamp`) с запланированным maintenance window.
+  - Если `auditd.data.tty` интерактивный — определите, кто выполнил установку.
+  - Если `auditd.summary.actor.primary` = unset — установка автоматическая (unattended-upgrades или скрипт).
+  - Если имя пакета или источник неожиданные — проверьте hash пакета.
+  - Если нелегитимно: удалите пакет (`dpkg --remove`), просканируйте систему.
+description_en: |
+  This rule is related to Persistence and Defense Evasion techniques and detects package
+  installation operations via dpkg. An attacker may install a malicious package and introduce
+  a backdoor or rootkit into the system.
+  Legitimate cases: system update (apt upgrade), installation by an administrator.
+  SOC triage steps:
+  - Check the package name in `process.title` — is it an expected package in `/var/cache/apt/archives/`.
+  - Compare the installation time (`@timestamp`) with the planned maintenance window.
+  - If `auditd.data.tty` is interactive — determine who installed it.
+  - If `auditd.summary.actor.primary` = unset — it is automated (unattended-upgrades or a script).
+  - If the package name or source is unexpected — check the package hash.
+  - If illegitimate: remove the package (`dpkg --remove`), scan the system.
 type: esql
 params: '{}'
 schedule_interval: 5m

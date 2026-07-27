@@ -1,7 +1,15 @@
 rule_id: a4d2b88d-657e-46df-a1c4-2cee4486e15c
-name: "Chain: Linux Data Exfiltration — Stage 1: Archive or Staging Creation"
-description: |
+name_uz: "Zanjir: Linux Data Exfiltration — 1-bosqich: Arxiv yoki staging yaratilishi"
+name_ru: "Цепочка: Linux Data Exfiltration — Этап 1: Создание архива или staging"
+name_en: "Chain: Linux Data Exfiltration — Stage 1: Archive or Staging Creation"
+description_uz: |
   Linux Data Exfiltration zanjiri — 1-bosqich (2 dan).
+  Archive or Staging Creation.
+description_ru: |
+  Цепочка Linux Data Exfiltration — этап 1 (из 2).
+  Создание архива или staging.
+description_en: |
+  Linux Data Exfiltration chain — stage 1 (of 2).
   Archive or Staging Creation.
 type: esql
 enabled: true

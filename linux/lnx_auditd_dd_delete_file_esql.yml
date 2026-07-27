@@ -1,6 +1,14 @@
 rule_id: 03f4c445-fc34-4314-81d9-71dcd10e13c5
-name: "DD File Deletion Detection"
-description: |
+name_uz: "DD orqali fayl o'chirishni aniqlash"
+name_ru: "Обнаружение удаления файлов через dd"
+name_en: "DD File Deletion Detection"
+description_uz: |
+  dd buyrug'i agent_id, nollar bilan ustidan yozish orqali fayllarni o'chirish uchun ishlatilayotganini aniqlaydi.
+  Tajovuzkorlar tiklanishning oldini olish uchun fayllarni xavfsiz o'chirishda dd dan foydalanishi mumkin.
+description_ru: |
+  Обнаруживает использование команды dd для удаления файлов посредством agent_id, перезаписи нулями.
+  Злоумышленники могут использовать dd для безопасного удаления файлов, чтобы предотвратить восстановление.
+description_en: |
   Detects dd command being used to delete files by agent_id, overwriting with zeros.
   Adversaries may use dd to securely delete files to prevent recovery.
 type: esql

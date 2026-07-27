@@ -1,6 +1,8 @@
 rule_id: 7764b5dd-5cea-4c89-9fe9-2202b916cf7c
-name: AD Service Installed on Domain Controller (7045)
-description: |
+name_uz: "Domain Controller'da AD servisi o'rnatildi (7045)"
+name_ru: "Установка службы AD на контроллере домена (7045)"
+name_en: "AD Service Installed on Domain Controller (7045)"
+description_uz: |
   Ushbu qoida yangi servis o'rnatilishini aniqlaydi (7045 — Service Control Manager,
   "System" kanalida). Yangi servis hujumchiga reboot'dan keyin saqlanadigan persistence va
   ko'pincha masofadan kod ijro etish (PsExec, lateral movement) imkonini beradi.
@@ -9,6 +11,24 @@ description: |
   - `service_name`/`service_path` — binar qayerda, nomi shubhalimi?
   - Shubhali yo'l (temp/appdata/programdata) yoki interpretator (powershell/cmd) bormi (`suspicious`)?
   - Tasdiqlanmasa: servisni to'xtating/o'chiring, hostni tekshiring.
+description_ru: |
+  Данное правило выявляет установку новой службы (7045 — Service Control Manager,
+  в канале "System"). Новая служба даёт атакующему закрепление, сохраняющееся после reboot, и
+  часто возможность удалённого выполнения кода (PsExec, lateral movement).
+  Легитимные случаи: агенты EDR/backup/monitoring, patch management.
+  SOC triage:
+  - `service_name`/`service_path` — где находится бинарный файл, подозрительно ли имя?
+  - Есть ли подозрительный путь (temp/appdata/programdata) или интерпретатор (powershell/cmd) (`suspicious`)?
+  - Если не подтверждено: остановите/удалите службу, проверьте хост.
+description_en: |
+  This rule detects the installation of a new service (7045 — Service Control Manager,
+  in the "System" channel). A new service gives an attacker persistence that survives a reboot and
+  often the ability to execute code remotely (PsExec, lateral movement).
+  Legitimate cases: EDR/backup/monitoring agents, patch management.
+  SOC triage:
+  - `service_name`/`service_path` — where is the binary, is the name suspicious?
+  - Is there a suspicious path (temp/appdata/programdata) or an interpreter (powershell/cmd) (`suspicious`)?
+  - If not confirmed: stop/delete the service, check the host.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,9 +1,19 @@
 rule_id: 98cdd92c-d7a9-4bf8-a436-12c418102251
-name: "Chain: Windows DCSync Replication Attack — Stage 2: Special Privileges Assigned Post-DCSync"
-description: |
+name_uz: "Zanjir: Windows DCSync Replication Attack — 2-bosqich: DCSync'dan keyin maxsus imtiyozlar berilishi"
+name_ru: "Цепочка: Windows DCSync Replication Attack — Этап 2: Назначение специальных привилегий после DCSync"
+name_en: "Chain: Windows DCSync Replication Attack — Stage 2: Special Privileges Assigned Post-DCSync"
+description_uz: |
   Windows DCSync Replication Attack zanjiri — 2-bosqich (2 dan).
   Special Privileges Assigned Post-DCSync.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows DCSync Replication Attack — этап 2 (из 2).
+  Назначение специальных привилегий после DCSync.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows DCSync Replication Attack chain — stage 2 (of 2).
+  Special Privileges Assigned Post-DCSync.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

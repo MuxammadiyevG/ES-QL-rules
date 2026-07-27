@@ -1,9 +1,19 @@
 rule_id: 7300077d-2c29-45d1-a777-675b70ac8882
-name: "Chain: Web Shell Deployment via Nginx — Stage 2: Web Shell Command Execution"
-description: |
+name_uz: "Zanjir: Web Shell Deployment via Nginx — 2-bosqich: Web shell orqali buyruq bajarilishi"
+name_ru: "Цепочка: Web Shell Deployment via Nginx — Этап 2: Выполнение команды через web shell"
+name_en: "Chain: Web Shell Deployment via Nginx — Stage 2: Web Shell Command Execution"
+description_uz: |
   Web Shell Deployment via Nginx zanjiri — 2-bosqich (2 dan).
   Web Shell Command Execution.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Web Shell Deployment via Nginx — этап 2 (из 2).
+  Выполнение команды через web shell.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Web Shell Deployment via Nginx chain — stage 2 (of 2).
+  Web Shell Command Execution.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

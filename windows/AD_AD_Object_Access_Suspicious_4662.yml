@@ -1,6 +1,8 @@
 rule_id: c4c5e872-d89e-47af-97ff-aa9e8e6ba282
-name: AD Suspicious Directory Object Access (4662)
-description: |
+name_uz: "AD Katalog Obyektiga Shubhali Kirish (4662)"
+name_ru: "Подозрительный доступ к объекту каталога AD (4662)"
+name_en: "AD Suspicious Directory Object Access (4662)"
+description_uz: |
   Ushbu qoida AD obyektlariga xavfli kengaytirilgan-huquq kirishlarini aniqlaydi: 4662
   `Properties` maydonida User-Force-Change-Password (00299570), User-Change-Password
   (ab721a53) yoki Reanimate-Tombstones (45ec5156) GUID'lari MASHINA bo'lmagan akkaunt
@@ -10,6 +12,26 @@ description: |
   - `actor` va `props_seen` — qaysi huquq, qaysi obyektga?
   - Akkauntning bu huquqqa qonuniy ehtiyoji bormi (helpdesk/IAM)?
   - Tasdiqlanmasa: huquqni qaytaring, akkauntni cheklang, tokenlarni bekor qiling.
+description_ru: |
+  Это правило обнаруживает опасный доступ с расширенными правами к объектам AD: если в поле
+  `Properties` события 4662 присутствуют GUID User-Force-Change-Password (00299570), User-Change-Password
+  (ab721a53) или Reanimate-Tombstones (45ec5156) и они используются учётной записью, НЕ являющейся
+  машинной. Это признак злоупотребления ACL / повышения привилегий (репликация вынесена в отдельное
+  правило DCSync).
+  SOC triage:
+  - `actor` и `props_seen` — какое право и к какому объекту?
+  - Есть ли у учётной записи легитимная потребность в этом праве (helpdesk/IAM)?
+  - Если не подтверждено: отзовите право, ограничьте учётную запись, отзовите токены.
+description_en: |
+  This rule detects dangerous extended-right access to AD objects: when the 4662
+  `Properties` field contains the User-Force-Change-Password (00299570), User-Change-Password
+  (ab721a53) or Reanimate-Tombstones (45ec5156) GUIDs and they are used by a NON-MACHINE
+  account. This is a sign of ACL abuse / privilege escalation (replication is covered by a separate
+  DCSync rule).
+  SOC triage:
+  - `actor` and `props_seen` — which right, against which object?
+  - Does the account have a legitimate need for this right (helpdesk/IAM)?
+  - If not confirmed: revoke the right, restrict the account, revoke the tokens.
 type: esql
 params: '{}'
 schedule_interval: 10m

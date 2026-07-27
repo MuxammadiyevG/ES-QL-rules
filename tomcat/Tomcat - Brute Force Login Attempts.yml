@@ -1,8 +1,10 @@
 rule_id: 992d85c1-d035-4b32-a9ab-21ef769ca931
-name: Tomcat - Brute Force Login Attempts
-description: |
-  Ushbu qoida qisqa vaqt ichida bir xil manba IP'dan ko'p marta 401/403 HTTP 
-  xatoliklarini aniqlaydi. Bu credential stuffing yoki brute-force hujum 
+name_uz: "Tomcat - Brute Force Login Urinishlari"
+name_ru: "Tomcat - попытки входа методом перебора паролей (brute force)"
+name_en: "Tomcat - Brute Force Login Attempts"
+description_uz: |
+  Ushbu qoida qisqa vaqt ichida bir xil manba IP'dan ko'p marta 401/403 HTTP
+  xatoliklarini aniqlaydi. Bu credential stuffing yoki brute-force hujum
   belgisi bo'lishi mumkin (T1110).
   Qonuniy holatlar: expired session, misconfigured app, bot crawlers.
   SOC triage bosqichlari:
@@ -11,6 +13,28 @@ description: |
   - Target URL pattern'ini tahlil qiling (login endpoint?)
   - Geo-location va business hours bilan solishtiring
   - Keyingi muvaffaqiyatli login borligini tekshiring
+description_ru: |
+  Данное правило выявляет многократные HTTP-ошибки 401/403 с одного и того же
+  исходного IP за короткое время. Это может быть признаком credential stuffing
+  или атаки перебора паролей (brute force) (T1110).
+  Легитимные случаи: expired session, misconfigured app, bot crawlers.
+  Шаги SOC-триажа:
+  - Сравните исходный IP с данными threat intel
+  - Проверьте строку user-agent (бот или обычный браузер?)
+  - Проанализируйте паттерн целевого URL (login endpoint?)
+  - Сопоставьте с гео-локацией и business hours
+  - Проверьте, был ли затем успешный вход
+description_en: |
+  This rule detects many 401/403 HTTP errors from the same source IP within a
+  short period of time. This may be a sign of credential stuffing or a brute-force
+  attack (T1110).
+  Legitimate cases: expired session, misconfigured app, bot crawlers.
+  SOC triage steps:
+  - Compare the source IP against threat intel
+  - Check the user-agent string (a bot or an ordinary browser?)
+  - Analyse the target URL pattern (a login endpoint?)
+  - Compare against geo-location and business hours
+  - Check whether a successful login followed
 type: esql
 params: '{}'
 schedule_interval: 5m

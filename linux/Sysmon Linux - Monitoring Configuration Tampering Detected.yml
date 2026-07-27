@@ -1,6 +1,8 @@
 rule_id: 869ba50f-daf9-44c1-b61c-1305dfa94074
-name: Linux Auth - Security Tool Tampering via sudo
-description: |
+name_uz: "Linux Auth - sudo orqali xavfsizlik vositasiga aralashuv"
+name_ru: "Linux Auth - вмешательство в средства безопасности через sudo"
+name_en: "Linux Auth - Security Tool Tampering via sudo"
+description_uz: |
   Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi sudo komandalarini kuzatib,
   xavfsizlik/monitoring vositalarini (auditd, rsyslog, sysmon) to'xtatish, o'chirish,
   mask qilish yoki ularning konfiguratsiyalarini (/etc/audit, /etc/rsyslog) tahrirlashga
@@ -11,6 +13,28 @@ description: |
   - Change ticket yoki deployment yozuvi borligini tekshiring.
   - `process.command_line` (cmd) da qaysi vosita to'xtatilgani yoki o'zgartirilganini aniqlang.
   - Noqonuniy faoliyat tasdiqlansa: darhol containment bajaring.
+description_ru: |
+  Это правило отслеживает команды sudo в Linux auth.log (logs-linux.auth-*) и выявляет
+  попытки остановить, отключить, замаскировать (mask) средства безопасности/мониторинга (auditd, rsyslog, sysmon)
+  или изменить их конфигурации (/etc/audit, /etc/rsyslog).
+  Это указывает на технику обхода защиты (defense evasion, T1562).
+  Легитимные случаи: плановые административные обновления конфигурации.
+  Этапы SOC triage:
+  - Точно идентифицируйте `actor` (user.name) и `user.effective.name`.
+  - Проверьте наличие change ticket или записи о развёртывании.
+  - По `process.command_line` (cmd) определите, какое средство было остановлено или изменено.
+  - При подтверждении вредоносной активности: немедленно выполните containment.
+description_en: |
+  This rule monitors sudo commands in the Linux auth.log (logs-linux.auth-*) and detects
+  attempts to stop, disable or mask security/monitoring tools (auditd, rsyslog, sysmon)
+  or to edit their configurations (/etc/audit, /etc/rsyslog).
+  This points to a defense evasion technique (T1562).
+  Legitimate cases: scheduled administrative configuration updates.
+  SOC triage steps:
+  - Precisely identify `actor` (user.name) and `user.effective.name`.
+  - Check whether a change ticket or deployment record exists.
+  - Determine from `process.command_line` (cmd) which tool was stopped or modified.
+  - If malicious activity is confirmed: perform containment immediately.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: c70e1892-8b4f-48c9-9126-b0d609157b0e
-name: WAF Inbound Anomaly Score Threshold Exceeded
-description: |
+name_uz: "WAF kiruvchi anomaliya balli chegaradan oshdi"
+name_ru: "Превышен порог входящего anomaly score WAF"
+name_en: "WAF Inbound Anomaly Score Threshold Exceeded"
+description_uz: |
   OWASP CRS ning anomaly scoring mexanizmi (rule 949110) bir so'rov uchun
   belgilangan threshold (score >= 5) dan oshishini aniqladi.
   Bu bir so'rovda bir nechta attack signallarining birlashishi — ya'ni murakkab,
@@ -12,6 +14,30 @@ description: |
   - `source.ip` va `source.geo` asosida manbaning legitimligini baholang.
   - Agar bir xil IP bir nechta domenlarni nishonlayotgan bo'lsa, keng ko'lamli
     scan kampaniyasi haqida xulosa chiqaring.
+description_ru: |
+  Механизм anomaly scoring в OWASP CRS (rule 949110) обнаружил превышение
+  установленного порога (score >= 5) для одного запроса.
+  Это может указывать на объединение нескольких сигналов атаки в одном запросе — то есть на сложную,
+  многослойную попытку атаки.
+  Этапы SOC-триажа:
+  - Выполните корреляцию всех связанных событий WAF по `event.id`.
+  - Изучите поля `rule.description` и `nginx.modsecurity.match_data` и определите,
+    какие векторы атаки были задействованы.
+  - Оцените легитимность источника по `source.ip` и `source.geo`.
+  - Если один и тот же IP нацелен на несколько доменов, сделайте вывод о широкомасштабной
+    scan-кампании.
+description_en: |
+  The OWASP CRS anomaly scoring mechanism (rule 949110) detected that a single request
+  exceeded the configured threshold (score >= 5).
+  This may indicate the combination of several attack signals in one request — that is, a complex,
+  multi-layered attack attempt.
+  SOC triage steps:
+  - Correlate all related WAF events by `event.id`.
+  - Review the `rule.description` and `nginx.modsecurity.match_data` fields and determine
+    which attack vectors were involved.
+  - Assess the legitimacy of the source based on `source.ip` and `source.geo`.
+  - If the same IP is targeting several domains, conclude that this is a large-scale
+    scan campaign.
 type: esql
 params: '{}'
 schedule_interval: 5m

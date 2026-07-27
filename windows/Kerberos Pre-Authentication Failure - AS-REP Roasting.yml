@@ -1,6 +1,8 @@
 rule_id: 27433a7c-c099-4db9-8fa5-d6269e35cb4c
-name: Kerberos Pre-Authentication Failure - AS-REP Roasting
-description: |
+name_uz: "Kerberos oldindan autentifikatsiya xatosi - AS-REP Roasting"
+name_ru: "Сбой предварительной аутентификации Kerberos - AS-REP Roasting"
+name_en: "Kerberos Pre-Authentication Failure - AS-REP Roasting"
+description_uz: |
   Ushbu qoida credential access texnikasi AS-REP Roasting'ni aniqlaydi: "Do not require
   Kerberos preauthentication" yoqilgan akkauntlarga AS-REQ (4768) — PreAuthType=0 bilan
   muvaffaqiyatli javob, yoki RC4 (0x17) shifrlangan TGT. Bunday akkaunt hashlari preauth'siz
@@ -10,6 +12,26 @@ description: |
   - `users` ro'yxatidagi akkauntlar haqiqatan preauth talab qilmasligini tekshiring.
   - `nopreauth` va `unique_users` qiymatlari ommaviy roasting belgisimi?
   - Tasdiqlansa: akkauntlarga "require preauth"ni yoqing, parollarni reset qiling.
+description_ru: |
+  Это правило обнаруживает технику credential access AS-REP Roasting: AS-REQ (4768) к учётным
+  записям с включённым "Do not require Kerberos preauthentication" — успешный ответ с
+  PreAuthType=0 либо TGT, зашифрованный RC4 (0x17). Хеши таких учётных записей можно получить
+  без preauth и взломать offline.
+  Легитимные случаи: старые/legacy учётные записи (встречаются редко — подтверждайте отдельно).
+  SOC triage:
+  - Проверьте, действительно ли учётные записи из списка `users` не требуют preauth.
+  - Являются ли значения `nopreauth` и `unique_users` признаком массового roasting?
+  - При подтверждении: включите для учётных записей "require preauth", сбросьте пароли.
+description_en: |
+  This rule detects the credential access technique AS-REP Roasting: AS-REQ (4768) to accounts
+  with "Do not require Kerberos preauthentication" enabled — a successful response with
+  PreAuthType=0, or an RC4 (0x17) encrypted TGT. Hashes of such accounts can be obtained
+  without preauth and cracked offline.
+  Legitimate cases: old/legacy accounts (rare — confirm separately).
+  SOC triage:
+  - Verify that the accounts in the `users` list genuinely do not require preauth.
+  - Are the `nopreauth` and `unique_users` values a sign of mass roasting?
+  - If confirmed: enable "require preauth" on the accounts, reset the passwords.
 type: esql
 params: '{}'
 schedule_interval: 10m

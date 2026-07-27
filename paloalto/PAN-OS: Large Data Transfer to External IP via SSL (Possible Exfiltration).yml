@@ -1,6 +1,8 @@
 rule_id: c4a5e28a-45a5-43f4-a809-e1d62f54c26f
-name: "PAN-OS: Large Data Transfer to External IP via SSL (Possible Exfiltration)"
-description: |
+name_uz: "PAN-OS: SSL orqali tashqi IP'ga katta hajmdagi ma'lumot uzatish (ehtimoliy exfiltration)"
+name_ru: "PAN-OS: передача большого объёма данных на внешний IP по SSL (возможная эксфильтрация)"
+name_en: "PAN-OS: Large Data Transfer to External IP via SSL (Possible Exfiltration)"
+description_uz: |
   Ushbu qoida DMZ yoki ichki tarmoqdan tashqi IP manzillarga SSL orqali yuqori hajmdagi ma'lumot uzatilishini aniqlaydi.
   Logda 10 MB dan oshiq trafik qayd etilgan sessionlar mavjud (masalan, 11 MB, 1.8 MB).
   Bu holat ma'lumot o'g'irlash (data exfiltration), noqonuniy fayl uzatish yoki tunneling orqali C2 aloqasini ko'rsatishi mumkin.
@@ -11,6 +13,28 @@ description: |
   - SSL sertifikatini tekshiring — self-signed yoki noma'lum CA bo'lsa xavfli.
   - Session davomiyligini tekshiring: qisqa vaqtda katta hajm — anomal.
   - Noqonuniy bo'lsa: sessiyani to'xtating, manba hostni izolyatsiya qiling.
+description_ru: |
+  Это правило выявляет передачу большого объёма данных по SSL из DMZ или внутренней сети на внешние IP-адреса.
+  В логе есть сессии с зафиксированным трафиком более 10 MB (например, 11 MB, 1.8 MB).
+  Это может указывать на кражу данных (data exfiltration), нелегитимную передачу файлов или C2-связь через туннелирование.
+  Легитимные случаи: операции резервного копирования, обновление ПО, наполнение кэша CDN.
+  Этапы SOC-триажа:
+  - Проверьте внешний IP-адрес по threat intelligence.
+  - Сравните объём переданных данных с обычным baseline.
+  - Проверьте SSL-сертификат — self-signed или неизвестный CA опасны.
+  - Проверьте длительность сессии: большой объём за короткое время — аномалия.
+  - Если нелегитимно: остановите сессию, изолируйте хост-источник.
+description_en: |
+  This rule detects transfer of large data volumes over SSL from the DMZ or the internal network to external IP addresses.
+  The log contains sessions with more than 10 MB of recorded traffic (for example, 11 MB, 1.8 MB).
+  This may indicate data exfiltration, unauthorized file transfer or C2 communication via tunneling.
+  Legitimate cases: backup operations, software update, CDN cache fill.
+  SOC triage steps:
+  - Check the external IP address against threat intelligence.
+  - Compare the transferred data volume with the usual baseline.
+  - Check the SSL certificate — self-signed or unknown CA is dangerous.
+  - Check the session duration: a large volume in a short time is anomalous.
+  - If illegitimate: terminate the session, isolate the source host.
 type: esql
 params: '{}'
 schedule_interval: 5m

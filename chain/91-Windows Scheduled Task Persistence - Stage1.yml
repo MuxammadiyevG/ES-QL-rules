@@ -1,7 +1,15 @@
 rule_id: a4d5f034-7ecc-4b18-af07-25d2fb197072
-name: "Chain: Windows Scheduled Task Persistence — Stage 1: Scheduled Task Created or Updated"
-description: |
+name_uz: "Zanjir: Windows Scheduled Task orqali mustahkamlanish (persistence) — 1-bosqich: rejalashtirilgan vazifa yaratildi yoki yangilandi"
+name_ru: "Цепочка: закрепление через Scheduled Task в Windows — Этап 1: запланированная задача создана или обновлена"
+name_en: "Chain: Windows Scheduled Task Persistence — Stage 1: Scheduled Task Created or Updated"
+description_uz: |
   Windows Scheduled Task Persistence zanjiri — 1-bosqich (2 dan).
+  Scheduled Task Created or Updated.
+description_ru: |
+  Цепочка закрепления через Scheduled Task в Windows — Этап 1 (из 2).
+  Запланированная задача создана или обновлена.
+description_en: |
+  Windows Scheduled Task Persistence chain — Stage 1 (of 2).
   Scheduled Task Created or Updated.
 type: esql
 enabled: true

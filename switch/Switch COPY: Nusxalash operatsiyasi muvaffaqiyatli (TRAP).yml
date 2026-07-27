@@ -1,10 +1,22 @@
 rule_id: 686c26bc-ff5d-47a0-bfc6-f5a39024d12a
-name: "Switch COPY: Nusxalash operatsiyasi muvaffaqiyatli (TRAP)"
-description: |
+name_uz: "Switch COPY: Nusxalash operatsiyasi muvaffaqiyatli (TRAP)"
+name_ru: "Switch COPY: операция копирования успешна (TRAP)"
+name_en: "Switch COPY: Copy operation successful (TRAP)"
+description_uz: |
   Switch da fayl nusxalash operatsiyasi (backup, firmware upload,
   config copy va h.k.) muvaffaqiyatli yakunlandi.
   Bu firmware yangilanishi, config backup yoki config restore bo'lishi mumkin.
   SOC triage: Kim bajardi? GCLI logidan tekshiring.
+description_ru: |
+  Операция копирования файла на коммутаторе (backup, firmware upload,
+  config copy и т.д.) успешно завершена.
+  Это может быть обновление firmware, config backup или config restore.
+  SOC triage: Кто выполнил? Проверьте по логу GCLI.
+description_en: |
+  A file copy operation on the switch (backup, firmware upload,
+  config copy, etc.) completed successfully.
+  This may be a firmware update, config backup or config restore.
+  SOC triage: Who performed it? Check the GCLI log.
 type: esql
 params: '{}'
 schedule_interval: 5m

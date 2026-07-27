@@ -1,11 +1,25 @@
 rule_id: 6d8bff8c-ff31-41bf-8580-cd6ca1905f3e
-name: Multiple Accounts Authenticated From Single Source
-description: |
+name_uz: "Bitta manbadan bir nechta akkauntning autentifikatsiyasi"
+name_ru: "Аутентификация нескольких учётных записей с одного источника"
+name_en: "Multiple Accounts Authenticated From Single Source"
+description_uz: |
   Ushbu qoida bitta manba IP'dan qisqa vaqtda KO'P xil akkauntning muvaffaqiyatli kirishini
   aniqlaydi (4624) — credential testing muvaffaqiyati, password-spray natijasi yoki egallangan
   pivot host belgisidir (T1078). Jump-server/VDI istisno bo'lishi mumkin.
   SOC triage:
   - `src_ip` jump/VDI emasmi? `users` ro'yxati — bir necha akkaunt bitta manbadan nega?
+description_ru: |
+  Это правило обнаруживает успешные входы МНОГИХ разных учётных записей с одного исходного IP за
+  короткое время (4624) — признак успешного подбора учётных данных, результата password-spray или скомпрометированного
+  pivot-хоста (T1078). Jump-сервер/VDI могут быть исключением.
+  SOC triage:
+  - Не является ли `src_ip` jump/VDI? Список `users` — почему несколько учётных записей с одного источника?
+description_en: |
+  This rule detects successful logons of MANY different accounts from a single source IP in a
+  short time (4624) — a sign of successful credential testing, password-spray results or a compromised
+  pivot host (T1078). Jump servers/VDI may be an exception.
+  SOC triage:
+  - Is `src_ip` a jump/VDI host? Review the `users` list — why several accounts from one source?
 type: esql
 params: "{}"
 schedule_interval: 10m

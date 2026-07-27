@@ -1,6 +1,8 @@
 rule_id: 91de9d76-ca74-4758-ae76-a12745b841b3
-name: AD Successful Logon After Multiple Failed Attempts (4624/4625)
-description: |
+name_uz: "AD'da ko'p muvaffaqiyatsiz urinishlardan keyin muvaffaqiyatli logon (4624/4625)"
+name_ru: "Успешный вход в AD после множества неудачных попыток (4624/4625)"
+name_en: "AD Successful Logon After Multiple Failed Attempts (4624/4625)"
+description_uz: |
   Ushbu qoida credential access va lateral movement texnikalariga bog'liq bo'lib, bir xil manbadan ketma-ket muvaffaqiyatsiz urinishlardan keyin muvaffaqiyatli kirishni aniqlaydi.
   4625 hodisalari ortidan 4624 paydo bo'lishi brute-force yoki credential stuffing muvaffaqiyatga erishganini ko'rsatishi mumkin, bu AD ichida hujumchiga haqiqiy akkaunt bilan harakatlanish imkonini beradi.
   Qonuniy holatlar sifatida foydalanuvchining parolni bir necha marta noto'g'ri kiritishi, saqlangan eski credentiallar yoki servis konfiguratsiyasi xatolari uchrashi mumkin.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manbasi, tarmoq segmenti va tarixiy faoliyatini chuqur tekshiring.
   - Ta'sirlangan akkauntlarning guruh a'zoligi, ayniqsa Domain Admins/Enterprise Admins bilan bog'liqligini tekshiring.
   - Shubhali bo'lsa manba IP ni cheklang, akkaunt credentiallarini reset qiling va komprometatsiya doirasini containment qiling.
+description_ru: |
+  Данное правило связано с техниками credential access и горизонтального перемещения и выявляет успешный вход после серии неудачных попыток с одного и того же источника.
+  Появление 4624 вслед за событиями 4625 может указывать на то, что brute-force или credential stuffing увенчался успехом, что позволяет атакующему перемещаться внутри AD с реальной учётной записью.
+  В качестве легитимных случаев могут встречаться многократный неверный ввод пароля пользователем, сохранённые старые учётные данные или ошибки конфигурации службы.
+  Этапы SOC triage:
+  - Определите `actor` и `target_user`, а также на каком `hostn` и `src_ip` произошло событие.
+  - Подтвердите, связаны ли эти входы с запланированным тестом, deployment или change ticket.
+  - Тщательно проверьте источник `src_ip`, сетевой сегмент и его историческую активность.
+  - Проверьте членство затронутых учётных записей в группах, особенно связь с Domain Admins/Enterprise Admins.
+  - При подозрении ограничьте исходный IP, сбросьте учётные данные аккаунта и выполните containment области компрометации.
+description_en: |
+  This rule is related to credential access and lateral movement techniques and detects a successful logon after consecutive failed attempts from the same source.
+  The appearance of 4624 after 4625 events may indicate that brute-force or credential stuffing succeeded, which allows an attacker to move inside AD with a real account.
+  Legitimate cases may include a user entering the password incorrectly several times, stored old credentials or service configuration errors.
+  SOC triage steps:
+  - Identify the `actor` and `target_user`, as well as on which `hostn` and `src_ip` the event occurred.
+  - Confirm whether these logons are related to a planned test, deployment or change ticket.
+  - Thoroughly check the `src_ip` source, the network segment and its historical activity.
+  - Check the group membership of the affected accounts, especially any relation to Domain Admins/Enterprise Admins.
+  - If suspicious, restrict the source IP, reset the account credentials and contain the scope of compromise.
 type: esql
 params: "{}"
 schedule_interval: 10m

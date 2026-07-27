@@ -1,6 +1,8 @@
 rule_id: 517d2ffe-9af4-4da0-9c75-53c4cf8d268e
-name: Linux Auth - Suspicious File Deletion via sudo
-description: |
+name_uz: "Linux Auth - sudo orqali shubhali fayl o'chirish"
+name_ru: "Linux Auth - подозрительное удаление файлов через sudo"
+name_en: "Linux Auth - Suspicious File Deletion via sudo"
+description_uz: |
   Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi sudo komandalarini kuzatib,
   fayl o'chiruvchi buyruqlar (rm/shred/unlink/truncate) muhim kataloglarda (/var/log,
   /etc) imtiyoz bilan ishlatilishini aniqlaydi. Bu indicator removal (T1107) yoki
@@ -11,6 +13,28 @@ description: |
   - O'chirilgan fayl yo'lini (`process.command_line`) tahlil qiling.
   - Log fayllari yoki konfiguratsiya fayllar o'chirilganini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa: backup dan tiklang, manbani cheklang.
+description_ru: |
+  Это правило отслеживает команды sudo в Linux auth.log (logs-linux.auth-*) и выявляет
+  запуск команд удаления файлов (rm/shred/unlink/truncate) с привилегиями в важных
+  каталогах (/var/log, /etc). Это может указывать на удаление индикаторов (indicator removal, T1107) или
+  уничтожение данных (data destruction, T1485).
+  Легитимные случаи: плановые скрипты очистки, управление дисковым пространством.
+  Этапы SOC triage:
+  - Проверьте `actor` (user.name) и `user.effective.name`.
+  - Проанализируйте путь удалённого файла (`process.command_line`).
+  - Проверьте, не были ли удалены файлы журналов или конфигурационные файлы.
+  - При подтверждении вредоносной активности: восстановите из резервной копии, ограничьте источник.
+description_en: |
+  This rule monitors sudo commands in the Linux auth.log (logs-linux.auth-*) and detects
+  file-deleting commands (rm/shred/unlink/truncate) being run with privileges in critical
+  directories (/var/log, /etc). This may point to indicator removal (T1107) or
+  data destruction (T1485) techniques.
+  Legitimate cases: scheduled cleanup scripts, disk space management.
+  SOC triage steps:
+  - Check `actor` (user.name) and `user.effective.name`.
+  - Analyze the deleted file path (`process.command_line`).
+  - Check whether log files or configuration files were deleted.
+  - If malicious activity is confirmed: restore from backup, restrict the source.
 type: esql
 params: '{}'
 schedule_interval: 10m

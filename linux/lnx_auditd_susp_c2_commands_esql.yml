@@ -1,6 +1,16 @@
 rule_id: 953cfb04-be55-4d1a-a415-6e53d54d5b70
-name: "Suspicious C2 and Reconnaissance Commands"
-description: |
+name_uz: "Shubhali C2 va razvedka buyruqlari"
+name_ru: "Подозрительные команды C2 и разведки"
+name_en: "Suspicious C2 and Reconnaissance Commands"
+description_uz: |
+  Ko'pincha C2, razvedka va ma'lumot eksfiltratsiyasi bilan bog'liq bo'lgan bajarilgan buyruqlarni aniqlaydi.
+  'susp_activity' audit kalitiga asoslangan, biroq jarayon nomlariga to'g'ridan-to'g'ri moslash uchun kengaytirilgan.
+  wget, curl, nc, ssh, nmap va boshqalarni o'z ichiga oladi.
+description_ru: |
+  Обнаруживает выполненные команды, часто связанные с C2, разведкой и эксфильтрацией данных.
+  Основана на ключе аудита 'susp_activity', но расширена для прямого сопоставления по именам процессов.
+  Включает wget, curl, nc, ssh, nmap и другие.
+description_en: |
   Detects executed commands often associated with C2, reconnaissance, and data exfiltration.
   Based on 'susp_activity' audit key but expanded to match process names directly.
   Includes wget, curl, nc, ssh, nmap, and others.

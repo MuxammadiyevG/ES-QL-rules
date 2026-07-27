@@ -1,6 +1,8 @@
 rule_id: c98a5bc6-6984-42a7-baa4-0e5663871925
-name: "Agent Process: Linux Critical Service Stopped with Failure"
-description: |
+name_uz: "Agent Process: Linux'da kritik servis xatolik bilan to'xtatildi"
+name_ru: "Agent Process: критичная служба Linux остановлена с ошибкой"
+name_en: "Agent Process: Linux Critical Service Stopped with Failure"
+description_uz: |
   Ushbu qoida Impact va Defense Evasion texnikalariga bog'liq bo'lib, Linux tizimida
   servis muvaffaqiyatsiz to'xtatilishini (stopped-service + failure) aniqlaydi.
   Bu holat servis crash, kill signali, yoki hujumchi tomonidan ataylab to'xtatilishni
@@ -14,6 +16,34 @@ description: |
   - Bir xil hostda qisqa vaqtda bir nechta servis to'xtashi — ransomware yoki wiper belgisi.
   - `journalctl -u <service> --since` orqali servis loglarini tekshiring.
   - Noqonuniy bo'lsa: servisni qayta ishga tushiring, sababi aniqlang.
+description_ru: |
+  Данное правило связано с техниками Impact и Defense Evasion и выявляет неуспешную
+  остановку службы (stopped-service + failure) в системе Linux.
+  Это может указывать на сбой службы, сигнал kill или преднамеренную остановку
+  злоумышленником. Остановка критичных служб, таких как Security, auditd, syslog,
+  создаёт пробел в мониторинге.
+  Легитимные случаи: ошибка конфигурации службы, процедура перезапуска, обновление системы.
+  Шаги SOC-триажа:
+  - `auditd.summary.how` — проверьте, какой процесс остановил службу.
+  - Остановка без `user.id == 0` подозрительна.
+  - `user.selinux.user: unconfined` — пользователь без ограничений SELinux.
+  - Остановка нескольких служб на одном хосте за короткое время — признак ransomware или wiper.
+  - Проверьте логи службы через `journalctl -u <service> --since`.
+  - Если нелегитимно: перезапустите службу, установите причину.
+description_en: |
+  This rule is related to Impact and Defense Evasion techniques and detects a service
+  being stopped with a failure (stopped-service + failure) on a Linux system.
+  This may indicate a service crash, a kill signal, or a deliberate stop performed by
+  an attacker. Stopping critical services such as Security, auditd, syslog creates a
+  monitoring gap.
+  Legitimate cases: service configuration error, restart procedure, system update.
+  SOC triage steps:
+  - `auditd.summary.how` — check which process stopped the service.
+  - A stop performed without `user.id == 0` is suspicious.
+  - `user.selinux.user: unconfined` — user without SELinux confinement.
+  - Several services stopping on the same host in a short time — a sign of ransomware or a wiper.
+  - Check the service logs via `journalctl -u <service> --since`.
+  - If illegitimate: restart the service, determine the cause.
 type: esql
 params: '{}'
 schedule_interval: 5m

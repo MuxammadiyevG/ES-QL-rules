@@ -1,11 +1,25 @@
 rule_id: e5a4a898-fc2c-4025-80e7-97a133c1b6ca
-name: Security Service Start Type Changed
-description: |
+name_uz: "Xavfsizlik xizmatining ishga tushish turi o'zgartirildi"
+name_ru: "Изменён тип запуска службы безопасности"
+name_en: "Security Service Start Type Changed"
+description_uz: |
   Ushbu qoida xavfsizlik xizmatining ishga tushish turi o'zgartirilishini aniqlaydi (System
   7040) — Windows Defender (WinDefend/WdNisSvc), Defender ATP (Sense), Firewall (MpsSvc),
   EventLog yoki Sysmon. "Disabled"ga o'zgartirish himoyani o'chiradi (T1562.001).
   Eslatma: start-type qiymatlari lokalizatsiyalangan bo'lishi mumkin — xizmat NOMI (param4)
   bo'yicha aniqlanadi; `old`/`new` qiymatlarini qo'lda solishtiring.
+description_ru: |
+  Это правило выявляет изменение типа запуска службы безопасности (System
+  7040) — Windows Defender (WinDefend/WdNisSvc), Defender ATP (Sense), Firewall (MpsSvc),
+  EventLog или Sysmon. Изменение на "Disabled" отключает защиту (T1562.001).
+  Примечание: значения start-type могут быть локализованы — определение выполняется по ИМЕНИ службы (param4);
+  сравнивайте значения `old`/`new` вручную.
+description_en: |
+  This rule detects a change of the start type of a security service (System
+  7040) — Windows Defender (WinDefend/WdNisSvc), Defender ATP (Sense), Firewall (MpsSvc),
+  EventLog or Sysmon. Changing it to "Disabled" turns protection off (T1562.001).
+  Note: start-type values may be localized — detection is based on the service NAME (param4);
+  compare the `old`/`new` values manually.
 type: esql
 params: '{}'
 schedule_interval: 10m

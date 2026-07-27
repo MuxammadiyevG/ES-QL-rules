@@ -1,6 +1,8 @@
 rule_id: 9cc75f83-b636-4f6b-9a4c-fbef9ffb4466
-name: "Common Windows process launched by unusual parent"
-description: |
+name_uz: "Odatiy Windows jarayoni noodatiy ota-jarayon tomonidan ishga tushirilgan"
+name_ru: "Обычный процесс Windows запущен нетипичным родительским процессом"
+name_en: "Common Windows process launched by unusual parent"
+description_uz: |
   Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib, `Common Windows process launched by unusual parent` kontekstida taniqli Windows jarayonlarining noodatiy ota-jarayon tomonidan ishga tushirilganligini aniqlaydi.
   Kuzatiladigan jarayonlar: services.exe, svchost.exe, lsass.exe, cmd.exe, powershell.exe, notepad++.exe, notepad.exe, firefox.exe, chrome.exe, conhost.exe.
   Bu turdagi hodisa hujumchi process injection, living-off-the-land yoki persistence mexanizmlari orqali zararli kodni legitimli jarayon sifatida yashirayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
@@ -12,6 +14,30 @@ description: |
   - `osqueryd.exe` va `RuntimeBroker.exe` ota-jarayonlari istisno qilingan.
   - Hostda boshqa shubhali hodisalar borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: jarayonni to'xtating, hostni izolyatsiya qiling va to'liq forensic tahlil bajaring.
+description_ru: |
+  Это правило связано с техниками Persistence и Privilege Escalation и выявляет в контексте `Common Windows process launched by unusual parent` запуск известных процессов Windows нетипичным родительским процессом.
+  Отслеживаемые процессы: services.exe, svchost.exe, lsass.exe, cmd.exe, powershell.exe, notepad++.exe, notepad.exe, firefox.exe, chrome.exe, conhost.exe.
+  Событие такого типа считается опасным, поскольку оно может указывать на то, что злоумышленник скрывает вредоносный код под видом легитимного процесса с помощью process injection, living-off-the-land или механизмов закрепления (persistence).
+  В качестве легитимных случаев могут встречаться некоторые обновления системы, административные скрипты или специализированные корпоративные приложения.
+  Этапы SOC-триажа:
+  - Точно идентифицируйте `winlog.computer_name`, `winlog.event_data.NewProcessName` и `winlog.event_data.ParentProcessName` в событии.
+  - Проверьте полный путь и цифровую подпись (digital signature) родительского процесса.
+  - Проверьте аргументы командной строки процесса.
+  - Родительские процессы `osqueryd.exe` и `RuntimeBroker.exe` исключены.
+  - Проверьте, есть ли на хосте другие подозрительные события.
+  - При подтверждении нелегитимной активности выполните оперативное сдерживание (containment): остановите процесс, изолируйте хост и проведите полный форензик-анализ.
+description_en: |
+  This rule is related to Persistence and Privilege Escalation techniques and detects, in the `Common Windows process launched by unusual parent` context, well-known Windows processes being launched by an unusual parent process.
+  Monitored processes: services.exe, svchost.exe, lsass.exe, cmd.exe, powershell.exe, notepad++.exe, notepad.exe, firefox.exe, chrome.exe, conhost.exe.
+  An event of this type is considered dangerous because it may indicate that an attacker is hiding malicious code as a legitimate process through process injection, living-off-the-land, or persistence mechanisms.
+  Legitimate cases may include some system updates, administrative scripts, or specialized corporate applications.
+  SOC triage steps:
+  - Precisely identify the `winlog.computer_name`, `winlog.event_data.NewProcessName` and `winlog.event_data.ParentProcessName` in the event.
+  - Check the full path and digital signature of the parent process.
+  - Check the process command line arguments.
+  - The `osqueryd.exe` and `RuntimeBroker.exe` parent processes are excluded.
+  - Check whether there are other suspicious events on the host.
+  - If malicious activity is confirmed, perform immediate containment: terminate the process, isolate the host, and carry out a full forensic analysis.
 type: esql
 params: '{}'
 schedule_interval: 5m

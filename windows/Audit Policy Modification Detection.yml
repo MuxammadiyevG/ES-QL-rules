@@ -8,8 +8,24 @@ rule_id: 5782b3da-79d6-4e0f-8234-46107140512f
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Baseline normal audit policy changes, allowlist SCCM/GPO update windows
 #
-name: "Audit Policy Modification Detection"
-description: |
+name_uz: "Audit siyosatining o'zgartirilishini aniqlash"
+name_ru: "Обнаружение изменения политики аудита"
+name_en: "Audit Policy Modification Detection"
+description_uz: |
+  Tizim audit siyosati, event log sozlamalari yoki auditd konfiguratsiyasidagi o'zgarishlarni aniqlaydi.
+  Audit izlarini o'chirish ko'plab murakkab hujumlar va APT kampaniyalari uchun dastlabki shart hisoblanadi.
+  Windows registrida audit siyosatlariga kiritilgan o'zgarishlar yoki Linux auditd.conf o'zgarishlari qamrab olinadi.
+  False positive: Group Policy yangilanishlari, qonuniy security hardening, compliance skanerlari.
+  Triage: o'zgarish change management orqali tasdiqlanganini tekshiring, hujumchida admin huquqi bor-yo'qligini tekshiring,
+  qaysi hodisalar o'chirilganini ko'rib chiqing (muvaffaqiyatsiz kirishlarmi? imtiyozdan foydalanishmi?).
+description_ru: |
+  Обнаруживает изменения политики аудита системы, настроек журнала событий или конфигурации auditd.
+  Отключение журналов аудита является предпосылкой для многих продвинутых атак и APT-кампаний.
+  Фиксируются изменения политик аудита в реестре Windows или изменения Linux auditd.conf.
+  Ложные срабатывания: обновления Group Policy, легитимное усиление защиты (security hardening), сканирование на соответствие требованиям.
+  Триаж: убедитесь, что изменение согласовано через change management, проверьте, есть ли у злоумышленника права администратора,
+  просмотрите, какие события были отключены (неудачные входы? использование привилегий?).
+description_en: |
   Detects changes to system audit policy, event log settings, or auditd configuration.
   Disabling audit trails is prerequisite for many advanced attacks and APT campaigns.
   Windows registry modifications to audit policies or Linux auditd.conf changes captured.

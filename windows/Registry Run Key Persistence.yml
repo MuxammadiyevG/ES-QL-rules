@@ -1,10 +1,22 @@
 rule_id: 103cd21e-7321-433d-95a0-73c8594535d7
-name: Registry Run / RunOnce Key Persistence
-description: |
+name_uz: "Registry Run / RunOnce kaliti orqali mustahkamlanish (persistence)"
+name_ru: "Закрепление через ключи реестра Run / RunOnce"
+name_en: "Registry Run / RunOnce Key Persistence"
+description_uz: |
   Ushbu qoida Run/RunOnce autostart kalitlariga yozishni aniqlaydi (Sysmon 13). Bu eng keng
   tarqalgan persistence mexanizmi (T1547.001).
   SOC triage:
   - `target_objects` qaysi kalit, `details` qanday qiymat (bajariluvchi)? Qonuniy o'rnatishmi?
+description_ru: |
+  Это правило обнаруживает запись в ключи автозапуска Run/RunOnce (Sysmon 13). Это самый
+  распространённый механизм закрепления (T1547.001).
+  SOC triage:
+  - Какой ключ в `target_objects`, какое значение (исполняемый файл) в `details`? Легитимная ли это установка?
+description_en: |
+  This rule detects writes to the Run/RunOnce autostart keys (Sysmon 13). This is the most
+  widespread persistence mechanism (T1547.001).
+  SOC triage:
+  - Which key is in `target_objects`, what value (executable) is in `details`? Is it a legitimate install?
 type: esql
 params: '{}'
 schedule_interval: 10m

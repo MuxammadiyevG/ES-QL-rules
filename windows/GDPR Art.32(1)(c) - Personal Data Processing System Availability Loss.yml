@@ -1,6 +1,34 @@
 rule_id: c948a9f5-d10f-4261-80f4-091f8cf3f80d
-name: "GDPR Art.32(1)(c) - Personal Data Processing System Availability Loss"
-description: |
+name_uz: "GDPR Art.32(1)(c) - Shaxsiy ma'lumotlarni qayta ishlash tizimi mavjudligining yo'qolishi"
+name_ru: "GDPR Art.32(1)(c) - Потеря доступности системы обработки персональных данных"
+name_en: "GDPR Art.32(1)(c) - Personal Data Processing System Availability Loss"
+description_uz: |
+  Shaxsiy ma'lumotlarni qayta ishlaydigan tizimlar mavjudligining yo'qolishini aniqlaydi, bu
+  agent_id, GDPR 32(1)(c)-moddasi talabi bo'lib, jismoniy yoki texnik hodisadan so'ng mavjudlik va shaxsiy
+  ma'lumotlarga kirishni o'z vaqtida tiklash imkoniyatini majburiy qiladi.
+  Windows Event 6006 (tizimning kutilmagan o'chishi), 41 (tizim to'g'ri o'chirilmasdan qayta
+  yuklandi - kernel power), 7034 (servis kutilmaganda ishdan chiqdi), 7036 (servis
+  to'xtatildi) hamda Linux auditd SYSTEM_SHUTDOWN va servis xatoliklari hodisalarini kuzatadi.
+  Shaxsiy ma'lumotlar tizimlari mavjudligining yo'qolishi, agar ma'lumot subyektlari uzilish
+  davomida o'z huquqlaridan foydalana olmasa, Art.33 bo'yicha xabar berishni keltirib chiqarishi mumkin.
+  Trigger: Shaxsiy ma'lumotlarni qayta ishlovchi hostlarda servisning kutilmagan ishdan chiqishi yoki tizimning o'chishi.
+  False positive: Rejalashtirilgan texnik xizmat qayta yuklashlari, OS yangilash sikllari, nazorat ostida o'chirishlar.
+  Triage: O'chirish rejalashtirilgan yoki kutilmagan bo'lganini aniqlang, ma'lumotlar mavjudligiga ta'sirni baholang,
+  shaxsiy ma'lumotlarga kirish uzilganini tekshiring, Art.32 muvofiqlik yozuvlari uchun hujjatlashtiring.
+description_ru: |
+  Обнаруживает потерю доступности систем, обрабатывающих персональные данные, как того требует
+  agent_id, статья 32(1)(c) GDPR, которая предписывает способность своевременно восстанавливать доступность и доступ
+  к персональным данным после физического или технического инцидента.
+  Отслеживает Windows Event 6006 (неожиданное завершение работы системы), 41 (система перезагружена без
+  корректного завершения работы - kernel power), 7034 (служба аварийно завершилась), 7036 (служба
+  остановлена), а также события Linux auditd SYSTEM_SHUTDOWN и сбоев служб.
+  Потеря доступности систем персональных данных может повлечь уведомление по Art.33, если субъекты
+  данных не могут реализовать свои права во время простоя.
+  Триггер: Неожиданный сбой службы или завершение работы системы на хостах, обрабатывающих персональные данные.
+  Ложные срабатывания: Плановые перезагрузки при обслуживании, циклы обновления ОС, контролируемые выключения.
+  Разбор: Определите, было ли выключение плановым или неожиданным, оцените влияние на доступность данных,
+  проверьте, был ли прерван доступ к персональным данным, задокументируйте для записей соответствия Art.32.
+description_en: |
   Detects loss of availability of systems that process personal data, as required by
   agent_id, GDPR Article 32(1)(c) which mandates the ability to restore availability and access
   to personal data in a timely manner after a physical or technical incident.

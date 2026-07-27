@@ -1,10 +1,22 @@
 rule_id: bdda1664-9a5f-40d3-9ba5-1b31c2f34e2a
-name: "Switch AAA: Foydalanuvchi switch dan chiqdi"
-description: |
+name_uz: "Switch AAA: Foydalanuvchi switch dan chiqdi"
+name_ru: "Switch AAA: пользователь вышел из коммутатора"
+name_en: "Switch AAA: User logged out of the switch"
+description_uz: |
   Foydalanuvchi SSH/Telnet sessiyasi yakunlandi.
   TERMINATED — foydalanuvchi o'zi chiqdi (exit/logout).
   DISCONNECT — sessiya switch tomonidan yopildi (timeout, admin kick).
   Kim, qachon, qaysi switch dan chiqib ketganini qayd etadi.
+description_ru: |
+  SSH/Telnet-сессия пользователя завершена.
+  TERMINATED — пользователь вышел сам (exit/logout).
+  DISCONNECT — сессия закрыта коммутатором (timeout, admin kick).
+  Фиксирует, кто, когда и с какого коммутатора вышел.
+description_en: |
+  The user's SSH/Telnet session has ended.
+  TERMINATED — the user logged out themselves (exit/logout).
+  DISCONNECT — the session was closed by the switch (timeout, admin kick).
+  Records who logged out, when, and from which switch.
 type: esql
 params: '{}'
 schedule_interval: 5m

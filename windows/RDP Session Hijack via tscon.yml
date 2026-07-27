@@ -1,12 +1,28 @@
 rule_id: 4eaa2e36-300b-40e5-823a-6d5458701580
-name: RDP Session Hijack via tscon
-description: |
+name_uz: "tscon orqali RDP sessiyani egallash"
+name_ru: "Перехват RDP-сессии через tscon"
+name_en: "RDP Session Hijack via tscon"
+description_uz: |
   Ushbu qoida RDP sessiya o'g'irlashni aniqlaydi: `tscon.exe` boshqa sessiyaga ulanish uchun
   ishlatilsa (ko'pincha SYSTEM huquqida, `/dest:` bilan) — hujumchi boshqa foydalanuvchining
   faol RDP sessiyasini parolsiz egallab oladi.
   SOC triage:
   - `command_line` da boshqa sessiya ID/`/dest:` bormi? Kim ishga tushirgan (`user`)?
   - SYSTEM yoki admin tomonidan bo'lsa — sessiya hijack ehtimoli yuqori.
+description_ru: |
+  Это правило обнаруживает перехват RDP-сессии: когда `tscon.exe` используется для подключения к
+  чужой сессии (часто с правами SYSTEM, с `/dest:`) — атакующий захватывает активную RDP-сессию
+  другого пользователя без пароля.
+  SOC triage:
+  - Есть ли в `command_line` идентификатор чужой сессии/`/dest:`? Кто запустил (`user`)?
+  - Если это SYSTEM или администратор — вероятность перехвата сессии высока.
+description_en: |
+  This rule detects RDP session hijacking: when `tscon.exe` is used to connect to another
+  session (often with SYSTEM rights, with `/dest:`) — the attacker takes over another user's
+  active RDP session without a password.
+  SOC triage:
+  - Is there another session ID/`/dest:` in `command_line`? Who launched it (`user`)?
+  - If it was by SYSTEM or an admin — the likelihood of session hijack is high.
 type: esql
 params: '{}'
 schedule_interval: 10m

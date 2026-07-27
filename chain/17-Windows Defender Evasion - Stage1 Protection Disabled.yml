@@ -1,10 +1,22 @@
 rule_id: c88f5da2-dc40-47b3-844f-2a7bae54d509
-name: "Chain: Defender Protection Disabled or Exclusion Added (5001/5007)"
-description: |
+name_uz: "Zanjir: Defender himoyasi o'chirildi yoki exclusion qo'shildi (5001/5007)"
+name_ru: "Цепочка: Защита Defender отключена или добавлено исключение (5001/5007)"
+name_en: "Chain: Defender Protection Disabled or Exclusion Added (5001/5007)"
+description_uz: |
   Defender evasion zanjiri — 1-bosqich.
   Windows Defender real-time himoyasi o'chirilishi (5001) yoki himoyani o'chiruvchi/exclusion qo'shuvchi konfiguratsiya o'zgarishi (5007).
   Korrelyatsiya host bo'yicha.
   FP kamaytirish: 5007 ko'p benign hodisa beradi (signature update, service lifecycle, tamperprotection=0x1 yoqilishi, spynetreportinglocation telemetriya URL). Faqat himoya feature O'CHIRILAYOTGAN bo'lsa olinadi: disable* kalitlar, yoki tamperprotection/spynetreporting/submitsamplesconsent/realtimeprotection = 0x0, yoki Exclusions path qo'shilishi.
+description_ru: |
+  Цепочка обхода Defender — этап 1.
+  Отключение защиты Windows Defender в реальном времени (5001) или изменение конфигурации, отключающее защиту/добавляющее exclusion (5007).
+  Корреляция по host.
+  Снижение FP: 5007 даёт много benign-событий (signature update, service lifecycle, включение tamperprotection=0x1, телеметрийный URL spynetreportinglocation). Берётся только тогда, когда функция защиты ОТКЛЮЧАЕТСЯ: ключи disable*, или tamperprotection/spynetreporting/submitsamplesconsent/realtimeprotection = 0x0, или добавление пути в Exclusions.
+description_en: |
+  Defender evasion chain — stage 1.
+  Windows Defender real-time protection being disabled (5001) or a configuration change that disables protection/adds an exclusion (5007).
+  Correlation by host.
+  FP reduction: 5007 produces many benign events (signature update, service lifecycle, tamperprotection=0x1 being enabled, spynetreportinglocation telemetry URL). Only taken when a protection feature is being DISABLED: disable* keys, or tamperprotection/spynetreporting/submitsamplesconsent/realtimeprotection = 0x0, or an Exclusions path being added.
 type: esql
 enabled: true
 params: "{}"

@@ -1,6 +1,26 @@
 rule_id: b5647324-804b-4ff4-84bb-485d32cc0729
-name: "PCI DSS 8.1.8 - Long-Running Idle Interactive Sessions (Windows)"
-description: |
+name_uz: "PCI DSS 8.1.8 - Uzoq davom etuvchi faoliyatsiz interaktiv sessiyalar (Windows)"
+name_ru: "PCI DSS 8.1.8 - Длительные неактивные интерактивные сессии (Windows)"
+name_en: "PCI DSS 8.1.8 - Long-Running Idle Interactive Sessions (Windows)"
+description_uz: |
+  Qayta autentifikatsiyasiz 15 daqiqadan ortiq faol bo'lgan foydalanuvchi sessiyalarini
+  aniqlaydi, bu PCI DSS Requirement 8.1.8 ni buzadi.
+  Interaktiv logon turlariga ega (2=Interactive, 10=RemoteInteractive) kirish hodisalarini (4624) topadi,
+  ular uchun talab qilingan 15 daqiqalik oyna ichida logoff hodisasi (4634/4647) bo'lmagan.
+  Trigger: interaktiv logon turidagi sessiyalar faoliyatsiz holda 15 daqiqadan uzoq davom etishi.
+  False positive: uzoq davom etadigan qonuniy admin sessiyalari, kiosk terminallar, monitoring tizimlari.
+  Triage: ekran qulfi / sessiya timeout siyosati GPO orqali qo'llanayotganini tekshiring,
+  sessiya servis akkauntga yoki interaktiv foydalanuvchiga tegishli ekanini tekshiring.
+description_ru: |
+  Обнаруживает пользовательские сессии, активные более 15 минут без
+  повторной аутентификации, что нарушает PCI DSS Requirement 8.1.8.
+  Выявляет события входа (4624) с интерактивными типами logon (2=Interactive, 10=RemoteInteractive),
+  для которых в требуемом 15-минутном окне не было события выхода (4634/4647).
+  Trigger: сессии с интерактивными типами logon длительностью более 15 минут без активности.
+  False positives: длительные легитимные административные сессии, киоск-терминалы, системы мониторинга.
+  Triage: проверьте, применяется ли через GPO политика блокировки экрана / таймаута сессии,
+  проверьте, принадлежит ли сессия сервисной учётной записи или интерактивному пользователю.
+description_en: |
   Detects user sessions that have been active for more than 15 minutes without
   re-authentication, violating PCI DSS Requirement 8.1.8.
   Identifies logon events (4624) with interactive logon types (2=Interactive, 10=RemoteInteractive)

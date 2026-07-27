@@ -1,6 +1,8 @@
 rule_id: c80e3037-f392-41e0-b01d-76082669851b
-name: "Kerio: Internal Host Connecting to Multiple External IPs (C2 Beaconing)"
-description: |
+name_uz: "Kerio: Ichki host ko'p tashqi IP larga ulanmoqda (C2 Beaconing)"
+name_ru: "Kerio: Внутренний хост подключается ко многим внешним IP (C2 Beaconing)"
+name_en: "Kerio: Internal Host Connecting to Multiple External IPs (C2 Beaconing)"
+description_uz: |
   Ushbu qoida bitta ichki hostdan qisqa vaqt ichida ko'p sonli tashqi IP larga
   TCP SYN ulanish urinishlarini aniqlaydi. Bu C2 beaconing yoki malware tarqalish
   urinishining klassik belgisi. Loglardan ko'ringan 192.168.213.32 dan port 80 ga
@@ -10,6 +12,26 @@ description: |
   - Endpointda malware scan bajaring.
   - Destination IP larni threat intel bilan solishtiring.
   - Host network traffic history ni tekshiring.
+description_ru: |
+  Это правило выявляет большое количество попыток TCP SYN-подключений с одного
+  внутреннего хоста ко многим внешним IP за короткий промежуток времени. Это классический
+  признак C2 beaconing или попытки распространения вредоносного ПО. Замеченные в логах SYN-пакеты
+  с 192.168.213.32 на порт 80 множества разных внешних IP — именно такой шаблон.
+  Этапы SOC-триажа:
+  - Немедленно изолируйте хост source.ip.
+  - Выполните сканирование endpoint на вредоносное ПО.
+  - Сопоставьте destination IP с threat intel.
+  - Проверьте историю сетевого трафика хоста.
+description_en: |
+  This rule detects a large number of TCP SYN connection attempts from a single
+  internal host to many external IPs within a short time window. This is a classic sign of
+  C2 beaconing or a malware propagation attempt. The SYN packets seen in the logs from
+  192.168.213.32 to port 80 of many different external IPs are exactly this pattern.
+  SOC triage steps:
+  - Isolate the source.ip host immediately.
+  - Run a malware scan on the endpoint.
+  - Compare the destination IPs against threat intel.
+  - Check the host network traffic history.
 type: esql
 params: '{}'
 schedule_interval: 5m

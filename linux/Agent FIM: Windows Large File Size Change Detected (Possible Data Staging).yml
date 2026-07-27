@@ -1,6 +1,8 @@
 rule_id: d97e72d7-4beb-4454-ba72-5d44659a8b94
-name: "Agent FIM: Windows Large File Size Change Detected (Possible Data Staging)"
-description: |
+name_uz: "Agent FIM: Windows'da katta fayl hajmi o'zgarishi aniqlandi (ehtimoliy Data Staging)"
+name_ru: "Agent FIM: обнаружено изменение размера крупного файла в Windows (возможен Data Staging)"
+name_en: "Agent FIM: Windows Large File Size Change Detected (Possible Data Staging)"
+description_uz: |
   Ushbu qoida Collection va Exfiltration texnikalariga bog'liq bo'lib, Windows
   tizimida hajmi katta (5MB dan yuqori) fayllarning o'zgarishini aniqlaydi.
   Hujumchi ma'lumotlarni arxivlab, exfiltration uchun tayyorlash (staging) paytida
@@ -12,6 +14,30 @@ description: |
   - `file.owner` — kutilmagan foydalanuvchi tomonidan yaratilgan bo'lsa tekshiring.
   - Tarmoq loglarini tekshiring — katta fayl yaratilgandan keyin tashqariga transfer.
   - Noqonuniy bo'lsa: faylni bloklang, network traffic ni tekshiring.
+description_ru: |
+  Данное правило связано с техниками Collection и Exfiltration и обнаруживает изменение
+  файлов большого размера (более 5MB) в системе Windows.
+  Атакующий может создавать файлы большого объёма, архивируя данные при подготовке
+  (staging) к exfiltration.
+  Легитимные случаи: database backup, log rotation, медиафайлы.
+  Этапы SOC-триажа:
+  - `file.path` — если это не каталог backup, а temp или папка пользователя — подозрительно.
+  - `file.extension` — если это архив вроде zip, rar, 7z, tar — подготовка к exfiltration.
+  - `file.owner` — если файл создан неожиданным пользователем, проверьте это.
+  - Проверьте сетевые логи — передача наружу после создания крупного файла.
+  - Если нелегитимно: заблокируйте файл, проверьте network traffic.
+description_en: |
+  This rule is related to Collection and Exfiltration techniques and detects modification
+  of large files (over 5MB) on a Windows system.
+  An attacker may create large files while archiving data and preparing it
+  (staging) for exfiltration.
+  Legitimate cases: database backup, log rotation, media files.
+  SOC triage steps:
+  - `file.path` — suspicious if it is not a backup directory but a temp or user folder.
+  - `file.extension` — an archive such as zip, rar, 7z, tar indicates readiness for exfiltration.
+  - `file.owner` — check if the file was created by an unexpected user.
+  - Check network logs — an outbound transfer after the large file was created.
+  - If illegitimate: block the file, inspect network traffic.
 type: esql
 params: '{}'
 schedule_interval: 5m

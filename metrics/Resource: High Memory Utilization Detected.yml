@@ -1,12 +1,25 @@
 rule_id: 60ec6f7e-9e3f-42a4-91d3-9d24a01fd7e7
-name: "Resource: High Memory Utilization Detected"
-description: |
+name_uz: "Resurs: Yuqori memory ishlatilishi aniqlandi"
+name_ru: "Ресурсы: обнаружено высокое использование памяти"
+name_en: "Resource: High Memory Utilization Detected"
+description_uz: |
   Ushbu qoida Linux yoki Windows hostda memory utilization yuqori bo‘lishini
   aniqlaydi. Agar hostda 5 daqiqa davomida o‘rtacha RAM ishlatilishi
   80% dan yuqori bo‘lsa alert hosil qiladi.
 
   Metricbeat orqali system.memory.actual.used.pct fieldi tahlil qilinadi.
+description_ru: |
+  Это правило выявляет высокое использование памяти на хосте Linux или Windows.
+  Оповещение создаётся, если среднее использование RAM на хосте в течение 5 минут
+  превышает 80%.
 
+  С помощью Metricbeat анализируется поле system.memory.actual.used.pct.
+description_en: |
+  This rule detects high memory utilization on a Linux or Windows host.
+  It raises an alert if the average RAM usage on the host over 5 minutes
+  exceeds 80%.
+
+  The system.memory.actual.used.pct field is analyzed via Metricbeat.
 type: esql
 params: "{}"
 schedule_interval: 15m

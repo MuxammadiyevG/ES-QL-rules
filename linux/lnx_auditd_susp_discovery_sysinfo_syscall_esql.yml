@@ -1,6 +1,16 @@
 rule_id: ceddb539-bcef-40fd-b17e-f76afdba04f9
-name: "System Info Discovery via sysinfo Syscall"
-description: |
+name_uz: "sysinfo syscall orqali tizim ma'lumotlarini aniqlash"
+name_ru: "Разведка сведений о системе через системный вызов sysinfo"
+name_en: "System Info Discovery via sysinfo Syscall"
+description_uz: |
+  sysinfo tizim chaqiruvidan foydalanishni aniqlaydi.
+  Zararli dastur nishonga olish yoki aniqlashdan qochish maqsadida muhit statistikasini to'plash uchun sysinfo'dan foydalanishi mumkin.
+  auditd qoidasi talab qilinadi: -S sysinfo.
+description_ru: |
+  Обнаруживает использование системного вызова sysinfo.
+  Вредоносное ПО может использовать sysinfo для сбора статистики об окружении в целях выбора цели или уклонения от обнаружения.
+  Требуется правило auditd: -S sysinfo.
+description_en: |
   Detects use of the sysinfo system call.
   Malware may use sysinfo to gather environment statistics for targeting or evasion.
   Requires auditd rule: -S sysinfo.

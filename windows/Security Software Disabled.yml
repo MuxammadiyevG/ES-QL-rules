@@ -8,8 +8,24 @@ rule_id: 82b2cbec-094f-4636-af38-78bd3e57f3ba
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Maintain list of protected security services, allowlist legitimate maintenance
 
-name: "Security Software Disabled"
-description: |
+name_uz: "Xavfsizlik dasturi o'chirildi"
+name_ru: "Отключение защитного ПО"
+name_en: "Security Software Disabled"
+description_uz: |
+  Xavfsizlik xizmatlarining (AV, EDR, logging) to'xtatilishi, o'chirilishi yoki tugatilishini aniqlaydi.
+  Hujumchilar odatda malware joylashtirish yoki ma'lumot o'g'irlashdan oldin xavfsizlik nazoratini o'chiradi.
+  Windows Defender, CrowdStrike, Carbon Black, Sysmon xizmatlarining to'xtashi qamrab olinadi.
+  False positive: qonuniy dasturiy yangilanishlar, rejalashtirilgan texnik xizmat, tizimning qayta yuklanishi.
+  Triage: harakat maintenance oynasida bajarilganini tekshiring, u agent_id, vakolatli admin tomonidan bajarilganini tekshiring,
+  xavfsizlik xizmati to'xtaganidan keyingi malware joylashtirilishini qidiring, himoyani darhol qayta yoqing.
+description_ru: |
+  Выявляет остановку, отключение или завершение служб безопасности (AV, EDR, logging).
+  Атакующие обычно отключают средства защиты перед развёртыванием вредоносного ПО или кражей данных.
+  Фиксируются остановки служб Windows Defender, CrowdStrike, Carbon Black, Sysmon.
+  Ложные срабатывания: легитимные обновления ПО, плановое обслуживание, перезагрузки системы.
+  Triage: проверьте, выполнено ли действие в окне обслуживания, проверьте, выполнено ли оно agent_id, авторизованным администратором,
+  ищите развёртывание вредоносного ПО после остановки службы безопасности, немедленно включите защиту обратно.
+description_en: |
   Detects stopping, disabling, or termination of security services (AV, EDR, logging).
   Attackers commonly disable security controls before malware deployment or data theft.
   Service stops for Windows Defender, CrowdStrike, Carbon Black, Sysmon captured.

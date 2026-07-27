@@ -1,6 +1,8 @@
 rule_id: c3ca3211-0f96-4825-a058-bcde7573c0b3
-name: AD Kerberos Pre-Authentication Failure Spike (4771)
-description: |
+name_uz: "AD Kerberos Pre-Authentication Xatolarining Keskin Oshishi (4771)"
+name_ru: "Всплеск ошибок предварительной аутентификации Kerberos в AD (4771)"
+name_en: "AD Kerberos Pre-Authentication Failure Spike (4771)"
+description_uz: |
   Ushbu qoida credential access (brute-force/password spray) faoliyatini aniqlash uchun Kerberos pre-auth xatolarining keskin oshishini kuzatadi.
   4771 ko'payishi hujumchining parollarni taxmin qilish yoki foydalanuvchi enumeratsiyasi orqali AD hisoblarini nishonga olayotganini anglatishi mumkin.
   Qonuniy holatlar: noto'g'ri saqlangan credentiallar, parol almashinuvidan keyingi servis nosozligi, vaqt sinxronizatsiyasi muammolari.
@@ -10,6 +12,26 @@ description: |
   - Manba `src_ip` tarmoq joylashuvi va oldingi xavf indikatorlarini tekshiring.
   - Nishonga olingan akkauntlarning guruh a'zoligi hamda Tier-0 ta'sirini baholang.
   - Hujum tasdiqlansa manbani bloklash, akkaunt reset va qo'shimcha himoya siyosatlarini joriy eting.
+description_ru: |
+  Это правило отслеживает резкий рост ошибок pre-auth Kerberos для обнаружения активности получения учётных данных (перебор паролей (brute force)/password spray).
+  Рост числа 4771 может означать, что атакующий нацелен на учётные записи AD через подбор паролей или перечисление пользователей.
+  Легитимные случаи: некорректно сохранённые учётные данные, сбой сервиса после смены пароля, проблемы синхронизации времени.
+  Шаги SOC triage:
+  - Определите `src_ip`, `actor` и затронутые `target_user`.
+  - Проверьте по change ticket, был ли в этом временном интервале деплой, связанный с аутентификацией.
+  - Проверьте сетевое расположение исходного `src_ip` и прежние индикаторы угроз.
+  - Оцените членство атакуемых учётных записей в группах, а также влияние на Tier-0.
+  - При подтверждении атаки заблокируйте источник, выполните сброс учётных записей и внедрите дополнительные защитные политики.
+description_en: |
+  This rule monitors a sharp increase in Kerberos pre-auth failures in order to detect credential access (brute-force/password spray) activity.
+  An increase in 4771 may mean that an attacker is targeting AD accounts through password guessing or user enumeration.
+  Legitimate cases: incorrectly stored credentials, a service failure after a password change, time synchronization problems.
+  SOC triage steps:
+  - Identify the `src_ip`, `actor` and the affected `target_user` accounts.
+  - Check via change ticket whether there was an auth-related deployment in that time window.
+  - Check the network location of the source `src_ip` and previous threat indicators.
+  - Assess the group membership of the targeted accounts as well as the Tier-0 impact.
+  - If the attack is confirmed, block the source, reset the accounts and put additional protective policies in place.
 type: esql
 params: '{}'
 schedule_interval: 10m

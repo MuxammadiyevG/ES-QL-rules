@@ -1,8 +1,16 @@
 rule_id: 00cec6ef-aec1-4cb1-ac1b-be2bfca8931c
-name: UniFi Device Updated
-description: |
+name_uz: "UniFi qurilmasi yangilandi"
+name_ru: "Устройство UniFi обновлено"
+name_en: "UniFi Device Updated"
+description_uz: |
   Ushbu qoida UniFi qurilmasi firmware yangilanishini kuzatadi.
   Oldingi/yangi versiya va update trigger change ticket bilan tekshiriladi.
+description_ru: |
+  Это правило отслеживает обновление firmware устройства UniFi.
+  Предыдущая/новая версия и update trigger проверяются по change ticket.
+description_en: |
+  This rule tracks firmware updates of a UniFi device.
+  The previous/new version and the update trigger are checked against a change ticket.
 type: esql
 params: "{}"
 schedule_interval: 10m

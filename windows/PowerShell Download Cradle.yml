@@ -1,11 +1,25 @@
 rule_id: efae638d-1569-4622-9c3e-00f91f11bc0a
-name: PowerShell Download Cradle
-description: |
+name_uz: "PowerShell Download Cradle"
+name_ru: "PowerShell Download Cradle"
+name_en: "PowerShell Download Cradle"
+description_uz: |
   Ushbu qoida PowerShell orqali masofadan kod yuklab ijro etishni (download cradle) aniqlaydi:
   `Net.WebClient`, `DownloadString/DownloadFile`, `Invoke-WebRequest/iwr`, `Invoke-RestMethod`,
   `Start-BitsTransfer` + ko'pincha `IEX`. T1105 (Ingress Tool Transfer) + T1059.001.
   SOC triage:
   - `sample_script` da qaysi URL/domen? `user`/`host` kim?
+description_ru: |
+  Это правило обнаруживает загрузку и выполнение удалённого кода через PowerShell (download cradle):
+  `Net.WebClient`, `DownloadString/DownloadFile`, `Invoke-WebRequest/iwr`, `Invoke-RestMethod`,
+  `Start-BitsTransfer` + часто `IEX`. T1105 (Ingress Tool Transfer) + T1059.001.
+  SOC triage:
+  - Какой URL/домен в `sample_script`? Кто `user`/`host`?
+description_en: |
+  This rule detects downloading and executing remote code via PowerShell (download cradle):
+  `Net.WebClient`, `DownloadString/DownloadFile`, `Invoke-WebRequest/iwr`, `Invoke-RestMethod`,
+  `Start-BitsTransfer` + often `IEX`. T1105 (Ingress Tool Transfer) + T1059.001.
+  SOC triage:
+  - Which URL/domain is in `sample_script`? Who is the `user`/`host`?
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,16 @@
 rule_id: 7411234a-ea51-4bb5-8a36-500d6886a63e
-name: "Systemd Service Creation Detection"
-description: |
+name_uz: "Systemd xizmati yaratilishini aniqlash"
+name_ru: "Обнаружение создания службы systemd"
+name_en: "Systemd Service Creation Detection"
+description_uz: |
+  Zararli kodni bajarish uchun agent_id, tajovuzkorlar tomonidan ishlatilishi mumkin bo'lgan systemd xizmatlari yaratilishini aniqlaydi.
+  Yangi .service fayllari uchun systemd xizmat kataloglarini kuzatadi.
+  Tajovuzkorlar mustahkamlanish (persistence) o'rnatish uchun systemd xizmatlarini yaratishi yoki o'zgartirishi mumkin.
+description_ru: |
+  Обнаруживает создание служб systemd, которые могут быть использованы agent_id, злоумышленниками для выполнения вредоносного кода.
+  Отслеживает каталоги служб systemd на появление новых файлов .service.
+  Злоумышленники могут создавать или изменять службы systemd для закрепления.
+description_en: |
   Detects creation of systemd services which could be used by agent_id, adversaries to execute malicious code.
   Monitors systemd service directories for new .service files.
   Adversaries may create or modify systemd services to establish persistence.

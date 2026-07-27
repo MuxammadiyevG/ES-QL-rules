@@ -1,6 +1,8 @@
 rule_id: 0b598591-84d1-46a8-b7f8-5fedf5a79775
-name: "Agent FIM: Linux SSH Authorized Keys or Config File Modified"
-description: |
+name_uz: "Agent FIM: Linux SSH authorized_keys yoki konfiguratsiya fayli o'zgartirildi"
+name_ru: "Agent FIM: изменение SSH authorized_keys или файла конфигурации в Linux"
+name_en: "Agent FIM: Linux SSH Authorized Keys or Config File Modified"
+description_uz: |
   Ushbu qoida Persistence texnikasiga bog'liq bo'lib, SSH authorized_keys fayllari
   yoki SSH konfiguratsiya fayllarining o'zgarishini aniqlaydi.
   Hujumchi o'z SSH public kalitini qo'shib, tizimga parolsiz kirish imkoniyatini
@@ -13,6 +15,32 @@ description: |
   - Yangi qo'shilgan SSH kalitni tekshiring: `cat ~/.ssh/authorized_keys`.
   - `/etc/ssh/sshd_config` da `PermitRootLogin`, `PasswordAuthentication` o'zgarganmi.
   - Noqonuniy bo'lsa: ruxsatsiz kalitni o'chiring, SSH serverni restart qiling.
+description_ru: |
+  Данное правило связано с техникой Persistence и обнаруживает изменение файлов
+  SSH authorized_keys или файлов конфигурации SSH.
+  Атакующий может добавить свой публичный ключ SSH и обеспечить себе беспарольный
+  доступ к системе — это одна из самых распространённых техник закрепления.
+  Легитимные случаи: системный администратор добавляет новый ключ SSH, initial server setup.
+  Этапы SOC-триажа:
+  - Определите домашний каталог пользователя в `file.path` — чей ключ был изменён.
+  - Сопоставьте время изменения (`file.mtime`) и то, кто выполнял вход (логи `user_login`).
+  - Сравните `file.hash.sha1` с baseline.
+  - Проверьте вновь добавленный ключ SSH: `cat ~/.ssh/authorized_keys`.
+  - Изменились ли `PermitRootLogin`, `PasswordAuthentication` в `/etc/ssh/sshd_config`.
+  - Если нелегитимно: удалите несанкционированный ключ, перезапустите сервер SSH.
+description_en: |
+  This rule is related to the Persistence technique and detects modification of SSH
+  authorized_keys files or SSH configuration files.
+  An attacker may add their own SSH public key and thereby obtain passwordless access
+  to the system — this is one of the most common persistence techniques.
+  Legitimate cases: a system administrator adding a new SSH key, initial server setup.
+  SOC triage steps:
+  - Identify the user home directory in `file.path` — whose key was changed.
+  - Correlate the modification time (`file.mtime`) with who logged in (`user_login` logs).
+  - Compare `file.hash.sha1` against the baseline.
+  - Check the newly added SSH key: `cat ~/.ssh/authorized_keys`.
+  - Whether `PermitRootLogin`, `PasswordAuthentication` changed in `/etc/ssh/sshd_config`.
+  - If illegitimate: remove the unauthorized key, restart the SSH server.
 type: esql
 params: '{}'
 schedule_interval: 5m

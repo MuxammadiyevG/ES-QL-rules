@@ -1,11 +1,25 @@
 rule_id: ad03bebd-ca42-4252-b8e3-71b5e2911774
-name: COM Hijacking via InprocServer32
-description: |
+name_uz: "InprocServer32 orqali COM hijacking"
+name_ru: "COM Hijacking через InprocServer32"
+name_en: "COM Hijacking via InprocServer32"
+description_uz: |
   Ushbu qoida user-hive COM obyekti (CLSID\...\InprocServer32) registriga yozishni aniqlaydi
   (Sysmon 13) — COM hijacking orqali persistence/execution (T1546.015). Hujumchi mavjud
   CLSID'ga o'z DLL'ini ulaydi.
   SOC triage:
   - `details` (DLL yo'li) shubhali joydami (temp/appdata)? Qaysi CLSID?
+description_ru: |
+  Это правило выявляет запись в реестр COM-объекта в user-hive (CLSID\...\InprocServer32)
+  (Sysmon 13) — закрепление/выполнение через COM hijacking (T1546.015). Злоумышленник подключает
+  к существующему CLSID свою DLL.
+  Триаж SOC:
+  - Находится ли `details` (путь к DLL) в подозрительном месте (temp/appdata)? Какой CLSID?
+description_en: |
+  This rule detects writes to the registry of a user-hive COM object (CLSID\...\InprocServer32)
+  (Sysmon 13) — persistence/execution via COM hijacking (T1546.015). The attacker attaches
+  their own DLL to an existing CLSID.
+  SOC triage:
+  - Is `details` (the DLL path) in a suspicious location (temp/appdata)? Which CLSID?
 type: esql
 params: '{}'
 schedule_interval: 10m

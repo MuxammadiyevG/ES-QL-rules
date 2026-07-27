@@ -1,10 +1,19 @@
 rule_id: d4192931-586c-4edf-ba45-11d384708e49
-name: "Persistence: SSH Authorized Keys Edit via Process Execution"
-description: |
+name_uz: "Persistence: SSH authorized_keys process bajarilishi orqali tahrirlandi"
+name_ru: "Persistence: редактирование SSH authorized_keys через запуск процесса"
+name_en: "Persistence: SSH Authorized Keys Edit via Process Execution"
+description_uz: |
   Ushbu qoida `.ssh/authorized_keys` faylini editor yoki boshqa process orqali
   ochish/tahrirlash holatini aniqlaydi. Bu yangi SSH kalit qo‘shish orqali
   persistence o‘rnatish belgisi bo‘lishi mumkin.
-
+description_ru: |
+  Данное правило выявляет открытие/редактирование файла `.ssh/authorized_keys`
+  через редактор или другой процесс. Это может быть признаком закрепления путём
+  добавления нового SSH-ключа.
+description_en: |
+  This rule detects the opening/editing of the `.ssh/authorized_keys` file via an
+  editor or another process. This may be a sign of establishing persistence by
+  adding a new SSH key.
 type: esql
 params: "{}"
 schedule_interval: 10m

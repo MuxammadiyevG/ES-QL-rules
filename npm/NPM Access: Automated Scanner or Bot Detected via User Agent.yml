@@ -1,6 +1,8 @@
 rule_id: 76d3c33c-1ab0-4241-a93c-c8358cd846a1
-name: "NPM Access: Automated Scanner or Bot Detected via User Agent"
-description: |
+name_uz: "NPM Access: User Agent orqali avtomatlashtirilgan skaner yoki bot aniqlandi"
+name_ru: "NPM Access: обнаружен автоматизированный сканер или бот по User Agent"
+name_en: "NPM Access: Automated Scanner or Bot Detected via User Agent"
+description_uz: |
   Ushbu qoida taniqli web scanner, vulnerability scanner va bot user agentlarini
   aniqlaydi. sqlmap, nikto, nmap, masscan, nuclei, burpsuite, dirbuster kabi
   toollar.
@@ -10,6 +12,26 @@ description: |
   - Client IP — ruxsatli pentest IP si bilan solishtiring.
   - Skanerlangan endpoint lar nima — admin panel, login, API.
   - Noqonuniy bo'lsa: IP ni bloklang, IT xavfsizlik jamoasiga xabarlang.
+description_ru: |
+  Это правило обнаруживает user agent известных web-сканеров, сканеров уязвимостей
+  и ботов. Такие инструменты, как sqlmap, nikto, nmap, masscan, nuclei, burpsuite,
+  dirbuster.
+  Легитимные случаи: разрешённый pentest.
+  Этапы SOC-триажа:
+  - event.original — какие URL проверяет сканер.
+  - Client IP — сопоставьте с IP разрешённого pentest.
+  - Какие endpoint сканируются — админ-панель, login, API.
+  - Если несанкционированно: заблокируйте IP, уведомите команду ИТ-безопасности.
+description_en: |
+  This rule detects the user agents of well-known web scanners, vulnerability scanners
+  and bots. Tools such as sqlmap, nikto, nmap, masscan, nuclei, burpsuite,
+  dirbuster.
+  Legitimate cases: an authorized pentest.
+  SOC triage steps:
+  - event.original — which URLs the scanner is probing.
+  - Client IP — compare with the authorized pentest IP.
+  - What endpoints are being scanned — admin panel, login, API.
+  - If unauthorized: block the IP, notify the IT security team.
 type: esql
 params: '{}'
 schedule_interval: 5m

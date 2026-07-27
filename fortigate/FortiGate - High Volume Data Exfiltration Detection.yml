@@ -1,14 +1,34 @@
 rule_id: 1a54cdb3-3774-4802-9c78-4f3fe9168686
-name: FortiGate - High Volume Data Exfiltration Detection
-description: |
+name_uz: "FortiGate - Katta hajmli ma'lumot eksfiltratsiyasini aniqlash"
+name_ru: "FortiGate - Обнаружение эксфильтрации данных большого объёма"
+name_en: "FortiGate - High Volume Data Exfiltration Detection"
+description_uz: |
   Ushbu qoida FortiGate trafik loglari asosida tashqi tarmoqqa yuborilayotgan ma'lumotlar hajmini nazorat qiladi.
   'total_sent' (yuborilgan jami baytlar) miqdorining keskin ortishi maxfiy ma'lumotlarning o'g'irlanishi yoki botnet faoliyati belgisi bo'lishi mumkin.
-  
+
   SOC triage bosqichlari:
   - 'source.ip' qurilmasi qaysi foydalanuvchiga tegishli ekanligini aniqlang.
   - 'total_sent' miqdorini odatdagi kunlik trafik bilan solishtiring (Baseline).
   - 'destination.ip' va 'event.action' orqali ulanish muvaffaqiyatli bo'lgan-bo'lmaganini tekshiring.
   - Agar 'total_sent' MB yoki GB darajasida bo'lsa va manzil shubhali bo'lsa, qurilmani tarmoqdan uzing.
+description_ru: |
+  Данное правило контролирует объём данных, отправляемых во внешнюю сеть, на основе логов трафика FortiGate.
+  Резкий рост значения 'total_sent' (общее число отправленных байтов) может быть признаком кражи конфиденциальных данных или активности ботнета.
+
+  Этапы SOC-триажа:
+  - Определите, какому пользователю принадлежит устройство 'source.ip'.
+  - Сравните значение 'total_sent' с обычным дневным трафиком (Baseline).
+  - По 'destination.ip' и 'event.action' проверьте, было ли соединение успешным.
+  - Если 'total_sent' измеряется в MB или GB, а адрес назначения подозрителен, отключите устройство от сети.
+description_en: |
+  This rule monitors the volume of data being sent to external networks based on FortiGate traffic logs.
+  A sharp increase in 'total_sent' (total bytes sent) may be a sign of confidential data theft or botnet activity.
+
+  SOC triage steps:
+  - Determine which user the 'source.ip' device belongs to.
+  - Compare the 'total_sent' value with normal daily traffic (Baseline).
+  - Use 'destination.ip' and 'event.action' to check whether the connection was successful.
+  - If 'total_sent' is in the MB or GB range and the destination is suspicious, disconnect the device from the network.
 type: esql
 params: '{}'
 schedule_interval: 10m

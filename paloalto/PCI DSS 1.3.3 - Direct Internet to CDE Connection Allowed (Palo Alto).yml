@@ -1,6 +1,30 @@
 rule_id: 2a9c9955-7cda-49a9-8e19-daa985766486
-name: "PCI DSS 1.3.3 - Direct Internet to CDE Connection Allowed (Palo Alto)"
-description: |
+name_uz: "PCI DSS 1.3.3 - Internetdan CDE'ga to'g'ridan-to'g'ri ulanishga ruxsat berilgan (Palo Alto)"
+name_ru: "PCI DSS 1.3.3 - разрешено прямое подключение из Интернета в CDE (Palo Alto)"
+name_en: "PCI DSS 1.3.3 - Direct Internet to CDE Connection Allowed (Palo Alto)"
+description_uz: |
+  Internet zonasidan ichki CDE tarmog'iga DMZ'ni chetlab o'tib to'g'ridan-to'g'ri ALLOW qilingan
+  trafikni aniqlaydi - bu PCI DSS 1.3.3 talabining jiddiy buzilishi bo'lib, u Internet va CDE o'rtasida
+  kirish yoki chiqish yo'nalishidagi har qanday to'g'ridan-to'g'ri ulanishni taqiqlaydi.
+  Agar ishonchsiz zonalardan to'g'ridan-to'g'ri CDE tegiga ega manzillarga trafik ALLOW qilinayotgan bo'lsa,
+  bu noto'g'ri sozlangan yoki haddan tashqari ruxsat beruvchi firewall qoidasidan darak beradi.
+  Trigger: internet/untrust zonasidan ma'lum CDE manziliga har qanday ALLOW harakati.
+  False positive: CDE sifatida noto'g'ri zonalashtirilgan, DMZ'da joylashgan qonuniy servislar.
+  Triage: ushbu trafikka ruxsat bergan firewall qoidasini DARHOL ko'rib chiqing,
+  manzil haqiqatan ham CDE tizimi ekanligini aniqlang, firewall administratoriga eskalatsiya qiling.
+  ESLATMA: maqsad CDE zonalari nomlarini o'zingizning haqiqiy zona konfiguratsiyangizga moslang.
+description_ru: |
+  Обнаруживает трафик, РАЗРЕШЁННЫЙ (ALLOWED) напрямую из зоны Интернета во внутреннюю сеть CDE,
+  в обход DMZ - критическое нарушение требования PCI DSS 1.3.3, которое запрещает
+  любые прямые входящие или исходящие соединения между Интернетом и CDE.
+  Если трафик из недоверенных зон РАЗРЕШАЕТСЯ напрямую к назначениям с тегом CDE,
+  это указывает на некорректно настроенное или чрезмерно разрешительное правило firewall.
+  Trigger: любое действие ALLOW из зоны internet/untrust к известному назначению CDE.
+  False positives: легитимные сервисы, размещённые в DMZ, но ошибочно отнесённые к зоне CDE.
+  Triage: НЕМЕДЛЕННО проверьте правило firewall, разрешившее этот трафик,
+  определите, действительно ли назначение является системой CDE, эскалируйте администратору firewall.
+  ПРИМЕЧАНИЕ: обновите имена зон назначения CDE в соответствии с вашей реальной конфигурацией зон.
+description_en: |
   Detects traffic ALLOWED directly from Internet zone to internal CDE network,
   bypassing DMZ - a critical violation of PCI DSS Requirement 1.3.3 which prohibits
   any direct connections inbound or outbound between Internet and CDE.

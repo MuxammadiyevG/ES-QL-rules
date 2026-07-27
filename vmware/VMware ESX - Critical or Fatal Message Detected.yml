@@ -1,6 +1,8 @@
 rule_id: 3fce9ead-fe87-46ec-908c-b1e1b42eed32
-name: VMware ESX - Critical or Fatal Message Detected
-description: |
+name_uz: "VMware ESX - critical yoki fatal xabar aniqlandi"
+name_ru: "VMware ESX - обнаружено сообщение уровня critical или fatal"
+name_en: "VMware ESX - Critical or Fatal Message Detected"
+description_uz: |
   VMware ESX tizimidan critical yoki fatal darajadagi xabar qayd etildi.
   Bu tizim nosozligi, hardware muammosi yoki jiddiy xato belgisi bo'lishi mumkin.
   SOC triage bosqichlari:
@@ -8,6 +10,22 @@ description: |
   - Qaysi host va process tomonidan kelganini aniqlang
   - Boshqa error/warn xabarlar bilan korrelyatsiya qiling
   - VMware vCenter yoki vSphere konsolini tekshiring
+description_ru: |
+  Зафиксировано сообщение уровня critical или fatal от системы VMware ESX.
+  Это может быть признаком сбоя системы, проблемы hardware или серьёзной ошибки.
+  Шаги SOC-триажа:
+  - Проанализируйте текст сообщения critical
+  - Определите, от какого host и process оно поступило
+  - Скоррелируйте с другими сообщениями error/warn
+  - Проверьте консоль VMware vCenter или vSphere
+description_en: |
+  A message of critical or fatal level was recorded from the VMware ESX system.
+  This may indicate a system failure, a hardware issue or a serious error.
+  SOC triage steps:
+  - Analyze the text of the critical message
+  - Determine which host and process it came from
+  - Correlate it with other error/warn messages
+  - Check the VMware vCenter or vSphere console
 type: esql
 params: '{}'
 schedule_interval: 5m

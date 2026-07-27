@@ -1,6 +1,8 @@
 rule_id: 62988312-e341-4547-b1b9-22563cb7c3c7
-name: WAF - Rotating X-Forwarded-For to Evade Rate Limiting
-description: |
+name_uz: "WAF - rate limiting dan qochish uchun X-Forwarded-For ni aylantirish"
+name_ru: "WAF - ротация X-Forwarded-For для обхода rate limiting"
+name_en: "WAF - Rotating X-Forwarded-For to Evade Rate Limiting"
+description_uz: |
   Bir xil source.ip (TCP socket) va user-agent dan kelgan so'rovlarda ko'p
   sonli turli X-Forwarded-For (network.forwarded_ip) qiymatlari aniqlandi.
   Hujumchilar IP-asoslangan rate limiting va blocklist'lardan qochish uchun
@@ -16,6 +18,38 @@ description: |
     darajasida ham qo'llang.
   - `source.ip` ni va u trigger qilgan WAF qoidalarini bloklash uchun korrelyatsiya qiling.
   - Reverse proxy/WAF konfiguratsiyasida ishonchli proxy ro'yxatini (trusted XFF) tekshiring.
+description_ru: |
+  В запросах с одного и того же source.ip (TCP socket) и user-agent обнаружено
+  множество различных значений X-Forwarded-For (network.forwarded_ip).
+  Атакующие подделывают и ротируют заголовок XFF, чтобы обойти
+  rate limiting и blocklist'ы на основе IP — один физический источник проявляется
+  как множество IP (T1190, defense evasion).
+  Легитимные случаи: легитимная цепочка reverse proxy/CDN/load balancer (в этом
+  случае значения forwarded_ip находятся в стабильном диапазоне).
+  Этапы SOC-триажа:
+  - Если число `distinct_xff` высокое, а `source.ip` один — это XFF rotation.
+  - Проверьте, относятся ли значения в списке `forwarded_ips` к реальному диапазону ECMP/CDN или
+    выглядят случайными/подделанными.
+  - Применяйте rate limiting не только по XFF, но и на уровне
+    `source.ip`/сессии/fingerprint.
+  - Выполните корреляцию, чтобы заблокировать `source.ip` и сработавшие по нему правила WAF.
+  - Проверьте список доверенных прокси (trusted XFF) в конфигурации reverse proxy/WAF.
+description_en: |
+  A large number of different X-Forwarded-For (network.forwarded_ip) values were
+  detected in requests coming from the same source.ip (TCP socket) and user-agent.
+  Attackers spoof and rotate the XFF header to evade IP-based
+  rate limiting and blocklists — a single physical source appears as many
+  IPs (T1190, defense evasion).
+  Legitimate cases: a legitimate reverse proxy/CDN/load balancer chain (in this
+  case forwarded_ip values stay within a stable range).
+  SOC triage steps:
+  - If `distinct_xff` is high but `source.ip` is a single value — this is XFF rotation.
+  - Check whether the values in the `forwarded_ips` list come from a real ECMP/CDN range or
+    look random/spoofed.
+  - Apply rate limiting not only by XFF but also at the `source.ip`/session/fingerprint
+    level.
+  - Correlate in order to block `source.ip` and the WAF rules it triggered.
+  - Check the trusted proxy list (trusted XFF) in the reverse proxy/WAF configuration.
 type: esql
 params: '{}'
 schedule_interval: 5m

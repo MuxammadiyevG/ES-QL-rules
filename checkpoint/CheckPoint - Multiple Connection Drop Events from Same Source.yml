@@ -1,6 +1,8 @@
 rule_id: 62cbf36d-bb72-4ca1-a5a5-8c63cb7bb2cd
-name: CheckPoint - Multiple Connection Drop Events from Same Source
-description: |
+name_uz: "CheckPoint - Bir xil manbadan ko'p sonli ulanish drop hodisalari"
+name_ru: "CheckPoint - множественные события drop соединений с одного источника"
+name_en: "CheckPoint - Multiple Connection Drop Events from Same Source"
+description_uz: |
   Ushbu qoida bir xil manbadan qisqa vaqt ichida ko'p connection drop hodisalarini aniqlaydi.
   Bu port scanning, network reconnaissance yoki brute force urinishi belgisi bo'lishi mumkin.
   Qonuniy holatlar: service monitoring, health checks, legitimate application behavior.
@@ -10,6 +12,26 @@ description: |
   - Source IP geo-location va reputation'ini tekshiring
   - Pattern'ni identify qiling (sequential ports, specific services)
   - Related successful connection'lar bormi tekshiring
+description_ru: |
+  Это правило выявляет множественные события connection drop с одного и того же источника за короткий промежуток времени.
+  Это может быть признаком port scanning, сетевой разведки или попытки перебора паролей (brute force).
+  Легитимные случаи: service monitoring, health checks, легитимное поведение приложения.
+  Этапы SOC-триажа:
+  - Проанализируйте причины drop (checkpoint.drop_reason)
+  - Проверьте целевые порты и сервисы
+  - Проверьте geo-location и репутацию Source IP
+  - Определите pattern (последовательные порты, конкретные сервисы)
+  - Проверьте, есть ли связанные успешные соединения
+description_en: |
+  This rule detects multiple connection drop events from the same source within a short time window.
+  This may be a sign of port scanning, network reconnaissance or a brute force attempt.
+  Legitimate cases: service monitoring, health checks, legitimate application behavior.
+  SOC triage steps:
+  - Analyze the drop reasons (checkpoint.drop_reason)
+  - Check the target ports and services
+  - Check the Source IP geo-location and reputation
+  - Identify the pattern (sequential ports, specific services)
+  - Check whether there are related successful connections
 type: esql
 params: '{}'
 schedule_interval: 10m

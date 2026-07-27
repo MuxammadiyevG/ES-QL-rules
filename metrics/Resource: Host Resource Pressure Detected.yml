@@ -1,6 +1,8 @@
 rule_id: a8504f7a-83f9-4d3f-b4e1-4c36f45b6f22
-name: "Resource: Host Resource Pressure Detected"
-description: |
+name_uz: "Resurs: Hostda resurs bosimi aniqlandi"
+name_ru: "Ресурсы: обнаружена нехватка ресурсов хоста"
+name_en: "Resource: Host Resource Pressure Detected"
+description_uz: |
   Ushbu qoida Linux yoki Windows hostda umumiy resource pressure holatini
   aniqlaydi. Agar CPU 80% dan yuqori, memory 80% dan yuqori yoki disk
   ishlatilishi 90% dan yuqori bo‘lsa alert hosil qiladi.
@@ -8,7 +10,22 @@ description: |
   Metricbeat orqali CPU, memory va filesystem metriclari tahlil qilinadi.
   Disk uchun temporary va virtual filesystem turlari false positive
   kamaytirish maqsadida chiqarib tashlanadi.
+description_ru: |
+  Это правило выявляет общее состояние нехватки ресурсов (resource pressure) на хосте
+  Linux или Windows. Оповещение создаётся, если CPU выше 80%, память выше 80% или
+  использование диска выше 90%.
 
+  С помощью Metricbeat анализируются метрики CPU, памяти и файловой системы.
+  Для диска временные и виртуальные типы файловых систем исключаются
+  с целью снижения числа ложных срабатываний.
+description_en: |
+  This rule detects an overall resource pressure condition on a Linux or Windows
+  host. It raises an alert if CPU is above 80%, memory is above 80% or disk
+  usage is above 90%.
+
+  CPU, memory and filesystem metrics are analyzed via Metricbeat.
+  For disk, temporary and virtual filesystem types are excluded
+  in order to reduce false positives.
 type: esql
 params: "{}"
 schedule_interval: 1m

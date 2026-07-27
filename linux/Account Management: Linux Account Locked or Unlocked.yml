@@ -1,6 +1,8 @@
 rule_id: fe57eb01-09e3-48a2-a893-1cec5c526cdf
-name: "Account Management: Linux Account Locked or Unlocked"
-description: |
+name_uz: "Account Management: Linux Akkaunti Bloklandi yoki Blokdan Chiqarildi"
+name_ru: "Account Management: блокировка или разблокировка учётной записи Linux"
+name_en: "Account Management: Linux Account Locked or Unlocked"
+description_uz: |
   Ushbu qoida Linux tizimida foydalanuvchi uchotkasini bloklash yoki blokdan
   chiqarish holatlarini aniqlaydi.
 
@@ -11,7 +13,28 @@ description: |
 
   Bu account management nazorati, insider activity yoki ruxsatsiz access
   o‘zgarishlarini aniqlash uchun muhim hisoblanadi.
+description_ru: |
+  Это правило выявляет случаи блокировки или разблокировки учётной записи
+  пользователя в системе Linux.
 
+  Отслеживаются следующие команды:
+  - usermod -L / usermod -U
+  - passwd -l / passwd -u
+  - изменения account expiration через chage
+
+  Это важно для контроля account management, выявления insider activity или несанкционированных
+  изменений access.
+description_en: |
+  This rule detects cases of locking or unlocking a user account
+  on a Linux system.
+
+  The following commands are monitored:
+  - usermod -L / usermod -U
+  - passwd -l / passwd -u
+  - account expiration changes via chage
+
+  This is important for account management control and for detecting insider activity or unauthorized
+  access changes.
 type: esql
 params: "{}"
 schedule_interval: 10m

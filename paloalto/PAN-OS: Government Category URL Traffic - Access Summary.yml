@@ -1,6 +1,8 @@
 rule_id: d47205c0-b0c5-46de-aabf-ba2ca9f4fe37
-name: "PAN-OS: Government Category URL Traffic - Access Summary"
-description: |
+name_uz: "PAN-OS: \"government\" kategoriyali URL trafigi - kirish xulosasi"
+name_ru: "PAN-OS: URL-трафик категории \"government\" - сводка обращений"
+name_en: "PAN-OS: Government Category URL Traffic - Access Summary"
+description_uz: |
   Ushbu qoida "government" URL kategoriyasi ostida tasniflangan barcha trafik sessiyalarini kuzatadi va kunlik kirish xaritasini yaratadi.
   Logda PassProxy-IN qoidasi orqali tashqi IP'lardan DMZ serveriga "government" kategoriyali sessiyalar qayd etilgan.
   Bu informatsion rule bo'lib, hukumat resurslariga ruxsatsiz kirish, scraping yoki credential stuffing urinishlarini erta aniqlashga yordam beradi.
@@ -10,6 +12,26 @@ description: |
   - Bir IP'dan ko'p sessiya — automated scraping yoki brute-force bo'lishi mumkin.
   - Katta hajmdagi trafik — ma'lumot yuklab olish urinishini tekshiring.
   - Sessiyalar faqat ish vaqtida sodir bo'lganmi?
+description_ru: |
+  Это правило отслеживает все сессии трафика, классифицированные в URL-категории "government", и строит ежедневную карту обращений.
+  В логе зафиксированы сессии категории "government" с внешних IP к серверу DMZ через правило PassProxy-IN.
+  Это информационное правило, помогающее раннему выявлению несанкционированного доступа к государственным ресурсам, scraping или credential stuffing.
+  Легитимные случаи: обращения граждан к порталам e-government, API-интеграция государственных сервисов.
+  Этапы SOC-триажа:
+  - Проверьте географию внешних IP — доступ из неожиданных стран аномален.
+  - Много сессий с одного IP — может быть automated scraping или перебор паролей (brute force).
+  - Большой объём трафика — проверьте на попытку выгрузки данных.
+  - Происходили ли сессии только в рабочее время?
+description_en: |
+  This rule monitors all traffic sessions classified under the "government" URL category and builds a daily access map.
+  The log records "government" category sessions from external IPs to the DMZ server via the PassProxy-IN rule.
+  This is an informational rule that helps with early detection of unauthorized access to government resources, scraping or credential stuffing attempts.
+  Legitimate cases: citizens accessing e-government portals, API integration of government services.
+  SOC triage steps:
+  - Check the geography of the external IPs — access from unexpected countries is anomalous.
+  - Many sessions from one IP — may be automated scraping or brute force.
+  - Large traffic volume — check for a data download attempt.
+  - Did the sessions occur only during working hours?
 type: esql
 params: '{}'
 schedule_interval: 15m

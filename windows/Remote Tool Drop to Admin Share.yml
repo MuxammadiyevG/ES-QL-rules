@@ -1,11 +1,25 @@
 rule_id: d40248bb-2d62-459e-b43c-4e24e4dc5ece
-name: Remote Tool Drop to Admin Share (SMB)
-description: |
+name_uz: "Admin share'ga masofaviy tool tashlash (SMB)"
+name_ru: "Сброс инструмента на административный ресурс (SMB)"
+name_en: "Remote Tool Drop to Admin Share (SMB)"
+description_uz: |
   Ushbu qoida administrativ share (C$/ADMIN$) ga masofadan bajariladigan fayl (exe/dll/bat/ps1)
   yozilishini aniqlaydi (5145 detailed file share + WriteData). Bu PsExec/lateral tool drop
   belgisidir (T1021.002/T1570).
   SOC triage:
   - `files` qaysi fayl yozildi, `accessing_user`/`src_ip` kim?
+description_ru: |
+  Это правило обнаруживает удалённую запись исполняемого файла (exe/dll/bat/ps1) на
+  административный ресурс (C$/ADMIN$) (5145 detailed file share + WriteData). Это признак
+  PsExec/lateral tool drop (T1021.002/T1570).
+  SOC triage:
+  - Какой файл записан в `files`, кто `accessing_user`/`src_ip`?
+description_en: |
+  This rule detects a remotely executable file (exe/dll/bat/ps1) being written to an
+  administrative share (C$/ADMIN$) (5145 detailed file share + WriteData). This is a sign of
+  PsExec/lateral tool drop (T1021.002/T1570).
+  SOC triage:
+  - Which file was written in `files`, who are `accessing_user`/`src_ip`?
 type: esql
 params: '{}'
 schedule_interval: 10m

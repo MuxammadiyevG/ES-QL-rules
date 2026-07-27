@@ -1,6 +1,8 @@
 rule_id: 2a70f516-edc2-4faa-9389-6d124b6e2235
-name: "Database user or group changes"
-description: |
+name_uz: "Ma'lumotlar bazasi foydalanuvchi yoki guruh o'zgarishlari"
+name_ru: "Изменения пользователей или групп базы данных"
+name_en: "Database user or group changes"
+description_uz: |
   Ushbu qoida Persistence texnikasiga bog'liq bo'lib, `Database user or group changes` kontekstida ma'lumotlar bazasidagi foydalanuvchi yoki guruh o'zgarishlarini aniqlaydi.
   DDL changes rule dan farqli o'laroq, bu rule faqat User va Role bilan bog'liq DDL operatsiyalarini kuzatadi: CREATE USER, ALTER USER, DROP USER, CREATE ROLE, ALTER ROLE, DROP ROLE, GRANT, REVOKE.
   Bu turdagi hodisa hujumchi database ga yangi backdoor akkaunt yaratish, mavjud akkaunt huquqlarini oshirish yoki muhim foydalanuvchini o'chirish maqsadida faoliyat yuritayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
@@ -12,6 +14,30 @@ description: |
   - `DROP USER` yoki `REVOKE` operatsiyalari ayniqsa xavfli — muhim akkauntlar o'chirilishi mumkin.
   - Hostda boshqa shubhali hodisalar borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: yangi akkauntni o'chiring, huquqlarni qaytaring va foydalanuvchi sessiyasini to'xtating.
+description_ru: |
+  Данное правило связано с техникой Persistence (закрепление) и в контексте `Database user or group changes` выявляет изменения пользователей или групп в базе данных.
+  В отличие от правила DDL changes, это правило отслеживает только операции DDL, связанные с User и Role: CREATE USER, ALTER USER, DROP USER, CREATE ROLE, ALTER ROLE, DROP ROLE, GRANT, REVOKE.
+  Событие такого типа считается опасным, поскольку может указывать на то, что злоумышленник действует с целью создания в базе данных нового backdoor-аккаунта, повышения привилегий существующего аккаунта или удаления важного пользователя.
+  В качестве легитимных случаев могут встречаться плановое управление пользователями, процессы IAM или изменения прав, выполненные администратором.
+  Шаги SOC-триажа:
+  - Точно идентифицируйте `user.name`, `db.name` и `postgresql.log.sql_operation` в событии.
+  - Проверьте, есть ли для изменения утверждённый change ticket или запись IAM.
+  - Проверьте права (`GRANT`, `SUPERUSER`) вновь созданного или изменённого пользователя.
+  - Операции `DROP USER` и `REVOKE` особенно опасны — могут быть удалены важные аккаунты.
+  - Проверьте, есть ли на хосте другие подозрительные события.
+  - При подтверждении нелегитимной активности выполните оперативный containment: удалите новый аккаунт, верните права и завершите сессию пользователя.
+description_en: |
+  This rule is related to the Persistence technique and, in the context of `Database user or group changes`, detects user or group changes in the database.
+  Unlike the DDL changes rule, this rule tracks only the DDL operations related to User and Role: CREATE USER, ALTER USER, DROP USER, CREATE ROLE, ALTER ROLE, DROP ROLE, GRANT, REVOKE.
+  An event of this type is considered dangerous because it may indicate that an attacker is acting with the purpose of creating a new backdoor account in the database, escalating the privileges of an existing account or deleting an important user.
+  Legitimate cases may include planned user management, IAM processes or privilege changes performed by an administrator.
+  SOC triage steps:
+  - Precisely identify `user.name`, `db.name` and `postgresql.log.sql_operation` in the event.
+  - Check whether there is an approved change ticket or IAM record for the change.
+  - Check the privileges (`GRANT`, `SUPERUSER`) of the newly created or modified user.
+  - `DROP USER` and `REVOKE` operations are especially dangerous — important accounts may be deleted.
+  - Check whether there are other suspicious events on the host.
+  - If illegitimate activity is confirmed, perform rapid containment: delete the new account, revert the privileges and terminate the user session.
 type: esql
 params: '{}'
 schedule_interval: 5m

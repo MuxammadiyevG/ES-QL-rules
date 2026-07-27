@@ -1,6 +1,34 @@
 rule_id: f07abf8c-9698-4152-b6e2-119dff0baea9
-name: "GDPR Art.32(1)(d) - Security Controls Effectiveness Degradation"
-description: |
+name_uz: "GDPR Art.32(1)(d) - Xavfsizlik nazorat vositalari samaradorligining pasayishi"
+name_ru: "GDPR Art.32(1)(d) - Снижение эффективности мер безопасности"
+name_en: "GDPR Art.32(1)(d) - Security Controls Effectiveness Degradation"
+description_uz: |
+  Muntazam sinovdan o'tkazilishi va baholanishi kerak bo'lgan xavfsizlik nazorat vositalarining
+  buzilishi yoki ishdan chiqishini GDPR 32(1)(d)-moddasiga muvofiq aniqlaydi; ushbu modda qayta ishlash
+  xavfsizligini ta'minlovchi texnik va tashkiliy choralar samaradorligini muntazam sinash,
+  tekshirish va baholash jarayonini talab qiladi.
+  Kuzatadi: antivirus/EDR jimib qolishi, IDS/IPS to'xtashi, firewall siyosati xatoliklari,
+  log yig'ish muammosidan darak beruvchi audit log hajmining pasayishi va Windows Defender
+  real vaqt himoyasi o'chirilgan hodisalari (Event 5001, 5010, 5012).
+  Trigger: Kritik xavfsizlik vositasi o'chirilgan yoki kutilgan oynada nol hodisa qaytarmoqda.
+  False positive: Vosita yangilanishi, agent qayta ishga tushishi, GPO orqali qonuniy konfiguratsiya o'zgarishlari.
+  Triage: Xavfsizlik vositasidagi o'zgarish change management orqali tasdiqlanganini tekshiring,
+  boshqaruv konsolida agent holatini tekshiring, ruxsatsiz bo'lsa nazoratni darhol tiklang,
+  Art.32(1)(d) muvofiqlik dalili sifatida bo'shliqni hujjatlashtiring.
+description_ru: |
+  Обнаруживает деградацию или отказ мер безопасности, которые должны регулярно тестироваться
+  и оцениваться согласно статье 32(1)(d) GDPR, требующей наличия процесса регулярного
+  тестирования, оценки и анализа эффективности технических и организационных
+  мер обеспечения безопасности обработки.
+  Отслеживает: замолкание antivirus/EDR, остановку IDS/IPS, сбои политик firewall,
+  падение объёма журналов аудита, указывающее на проблемы сбора логов, и события
+  отключения защиты в реальном времени Windows Defender (Event 5001, 5010, 5012).
+  Триггер: Критическое средство защиты отключено или не присылает события в ожидаемом окне.
+  Ложные срабатывания: Обновления средств защиты, перезапуски агентов, легитимные изменения конфигурации через GPO.
+  Разбор: Проверьте, было ли изменение средства защиты санкционировано через управление изменениями,
+  проверьте состояние агента в консоли управления, немедленно восстановите меры защиты при отсутствии санкции,
+  задокументируйте пробел как свидетельство соответствия Art.32(1)(d).
+description_en: |
   Detects degradation or failure of security controls that should be regularly tested
   and evaluated per GDPR Article 32(1)(d), which requires a process for regularly
   testing, assessing and evaluating the effectiveness of technical and organisational

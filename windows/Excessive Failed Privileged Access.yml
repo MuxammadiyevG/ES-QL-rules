@@ -8,8 +8,22 @@ rule_id: 339ec88b-9d24-4d3b-8819-83dca8ab6ee4
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Adjust threshold per environment (5-10 failures/5min), allowlist monitoring tools
 
-name: "Excessive Failed Privileged Access"
-description: |
+name_uz: "Imtiyozli kirishdagi haddan ziyod muvaffaqiyatsiz urinishlar"
+name_ru: "Чрезмерное количество неудачных привилегированных доступов"
+name_en: "Excessive Failed Privileged Access"
+description_uz: |
+  Imtiyozli fayllar, registry kalitlariga kirish yoki imtiyozli jarayonlarni ishga tushirishdagi bir nechta muvaffaqiyatsiz urinishlarni aniqlaydi.
+  Ruxsatsiz imtiyozlarni oshirish yoki lateral harakat urinishlari ehtimolini bildiradi.
+  Nostandart foydalanuvchi akkauntlari yoki g'ayrioddiy kirish patternlari bilan birga kelganda ishonch darajasi yuqori.
+  False positive: noto'g'ri sozlangan ilovalar, qonuniy troubleshooting.
+  Triage: foydalanuvchining odatiy xatti-harakat baseline'ini ko'rib chiqing, bir vaqtda sodir bo'lgan autentifikatsiya xatolarini tekshiring, source IP ni tasdiqlang.
+description_ru: |
+  Выявляет множественные неудачные попытки доступа к привилегированным файлам, ключам реестра или запуска привилегированных процессов.
+  Указывает на возможные попытки несанкционированного повышения привилегий или горизонтального перемещения.
+  Высокая достоверность в сочетании с нестандартными учётными записями пользователей или необычными паттернами доступа.
+  False positives: неверно настроенные приложения, легитимный troubleshooting.
+  Triage: изучите базовый профиль типичного поведения пользователя, проверьте одновременные сбои аутентификации, подтвердите source IP.
+description_en: |
   Detects multiple failed attempts to access privileged files, registry keys, or execute privileged processes.
   Indicates potential unauthorized privilege escalation or lateral movement attempts.
   High confidence when combined with non-standard user accounts or unusual access patterns.

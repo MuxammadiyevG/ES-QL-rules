@@ -1,9 +1,19 @@
 rule_id: 9b26cc92-ad72-4c79-badb-1c9fcf05111a
-name: "Chain: Linux Container Privileged Escape — Stage 2: Host-Level Suspicious Process Post-Escape"
-description: |
+name_uz: "Zanjir: Linux konteynerdan imtiyozli chiqish (escape) — 2-bosqich: escape'dan keyin host darajasidagi shubhali jarayon"
+name_ru: "Цепочка: привилегированный побег из контейнера Linux — Этап 2: подозрительный процесс на уровне хоста после побега"
+name_en: "Chain: Linux Container Privileged Escape — Stage 2: Host-Level Suspicious Process Post-Escape"
+description_uz: |
   Linux Container Privileged Escape zanjiri — 2-bosqich (2 dan).
   Host-Level Suspicious Process Post-Escape.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка привилегированного побега из контейнера Linux — Этап 2 (из 2).
+  Подозрительный процесс на уровне хоста после побега.
+  Связан с предыдущим этапом (stage 1).
+description_en: |
+  Linux Container Privileged Escape chain — Stage 2 (of 2).
+  Host-Level Suspicious Process Post-Escape.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

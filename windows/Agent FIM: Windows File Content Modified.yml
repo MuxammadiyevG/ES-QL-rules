@@ -1,6 +1,8 @@
 rule_id: 85d1c03a-f5a5-4f87-88c0-c39cc482935a
-name: "Agent FIM: Windows File Content Modified"
-description: |
+name_uz: "Agent FIM: Windows fayl mazmuni o'zgartirildi"
+name_ru: "Agent FIM: изменено содержимое файла Windows"
+name_en: "Agent FIM: Windows File Content Modified"
+description_uz: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File Content Modified` kontekstida FortiSIEM Windows Agent FIM tomonidan fayl mazmunining o'zgartirilganligini aniqlaydi.
   Linux baseline change dan farqli o'laroq, bu rule to'g'ridan-to'g'ri fayl yozish va o'zgartirish operatsiyalarini kuzatadi hamda qaysi process orqali o'zgartirilganligini ham qayd etadi.
   Hujumchi tizim fayllarini, konfiguratsiya fayllarini yoki log fayllarini o'zgartirish orqali iz qoldirmaslik yoki persistence maqsadida faoliyat yuritayotgan bo'lishi mumkin.
@@ -12,6 +14,30 @@ description: |
   - O'zgarishni amalga oshirgan foydalanuvchining roli va huquqlarini tekshiring.
   - Tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: faylni tiklang, processni to'xtating va hostni izolyatsiya qiling.
+description_ru: |
+  Это правило относится к техникам Defense Evasion и Impact и в контексте `Agent FIM: Windows File Content Modified` обнаруживает изменение содержимого файла, зафиксированное FortiSIEM Windows Agent FIM.
+  В отличие от Linux baseline change, это правило отслеживает непосредственно операции записи и изменения файла, а также фиксирует, каким process было выполнено изменение.
+  Злоумышленник может изменять системные файлы, файлы конфигурации или log-файлы с целью скрыть следы или обеспечить закрепление.
+  Легитимными случаями могут быть плановый Windows Update, patch management, установка программ или изменения конфигурации администратором.
+  Шаги SOC triage:
+  - Точно идентифицируйте `winlog.computer_name`, `winlog.event_data.SubjectUserName` и изменённый `winlog.event_data.ObjectName` в событии.
+  - Проверьте `winlog.event_data.ProcessName`, выполнивший изменение — если это неизвестный или подозрительный process, рассмотрите его в приоритетном порядке.
+  - Если изменённый файл является критичным файлом Windows (`System32`, `SysWOW64`, `hosts`), рассмотрите его в приоритетном порядке.
+  - Проверьте роль и полномочия пользователя, выполнившего изменение.
+  - Проверьте, есть ли утверждённый change ticket или запись о deployment.
+  - При подтверждении вредоносной активности выполните немедленный containment: восстановите файл, остановите process и изолируйте хост.
+description_en: |
+  This rule relates to Defense Evasion and Impact techniques and, in the context of `Agent FIM: Windows File Content Modified`, detects that file content has been modified as reported by FortiSIEM Windows Agent FIM.
+  Unlike the Linux baseline change, this rule tracks file write and modification operations directly and also records which process performed the modification.
+  An attacker may be modifying system files, configuration files or log files in order to cover tracks or to achieve persistence.
+  Legitimate cases may include scheduled Windows Update, patch management, software installation or administrator configuration changes.
+  SOC triage steps:
+  - Precisely identify `winlog.computer_name`, `winlog.event_data.SubjectUserName` and the changed `winlog.event_data.ObjectName` in the event.
+  - Check the `winlog.event_data.ProcessName` that made the modification — if it is an unknown or suspicious process, review it as a priority.
+  - If the changed file is a critical Windows file (`System32`, `SysWOW64`, `hosts`), review it as a priority.
+  - Check the role and privileges of the user who made the change.
+  - Check whether there is an approved change ticket or deployment record.
+  - If malicious activity is confirmed, perform immediate containment: restore the file, stop the process and isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

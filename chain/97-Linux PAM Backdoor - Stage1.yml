@@ -1,7 +1,15 @@
 rule_id: ac72d119-6878-48fa-9fa8-eb5e4877a025
-name: "Chain: Linux PAM Backdoor — Stage 1: PAM Config File Modified"
-description: |
+name_uz: "Zanjir: Linux PAM backdoor — 1-bosqich: PAM konfiguratsiya fayli o'zgartirildi"
+name_ru: "Цепочка: PAM-бэкдор в Linux — Этап 1: изменён конфигурационный файл PAM"
+name_en: "Chain: Linux PAM Backdoor — Stage 1: PAM Config File Modified"
+description_uz: |
   Linux PAM Backdoor zanjiri — 1-bosqich (2 dan).
+  PAM Config File Modified.
+description_ru: |
+  Цепочка PAM-бэкдора в Linux — Этап 1 (из 2).
+  Изменён конфигурационный файл PAM.
+description_en: |
+  Linux PAM Backdoor chain — Stage 1 (of 2).
   PAM Config File Modified.
 type: esql
 enabled: true

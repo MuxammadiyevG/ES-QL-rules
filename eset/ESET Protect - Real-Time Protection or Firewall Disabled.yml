@@ -1,6 +1,8 @@
 rule_id: 070190d1-be8a-4a02-8383-f170a82b672b
-name: ESET Protect - Real-Time Protection or Firewall Disabled
-description: |
+name_uz: "ESET Protect - real-time protection yoki firewall o'chirilgan"
+name_ru: "ESET Protect - отключены real-time protection или firewall"
+name_en: "ESET Protect - Real-Time Protection or Firewall Disabled"
+description_uz: |
   Ushbu qoida ESET Protect endpoint himoya moduli (real-time protection, firewall,
   web/HIPS) o'chirilganini aniqlaydi. Himoya modulining o'chirilishi defense evasion
   texnikasiga (T1562.001 - Disable or Modify Tools) ishora qiladi va ko'pincha keyingi
@@ -11,6 +13,28 @@ description: |
   - Change ticket yoki maintenance oynasi borligini tekshiring.
   - O'chirilgan host da keyingi threat detection borligini ko'ring.
   - Noqonuniy faoliyat tasdiqlansa: modulni qayta yoqing, host ni izolyatsiya qiling.
+description_ru: |
+  Это правило выявляет отключение модуля защиты endpoint ESET Protect (real-time protection, firewall,
+  web/HIPS). Отключение модуля защиты указывает на технику обхода защиты
+  (T1562.001 - Disable or Modify Tools) и часто выполняется перед последующим
+  запуском вредоносного ПО.
+  Легитимные случаи: плановое административное обслуживание, переустановка программы.
+  Шаги SOC triage:
+  - Определите, какой модуль был отключён и кем.
+  - Проверьте наличие change ticket или окна обслуживания.
+  - Посмотрите, есть ли на этом хосте последующие обнаружения угроз.
+  - Если нелегитимная активность подтверждена: включите модуль обратно, изолируйте хост.
+description_en: |
+  This rule detects that an ESET Protect endpoint protection module (real-time protection, firewall,
+  web/HIPS) has been disabled. Disabling a protection module points to the defense evasion
+  technique (T1562.001 - Disable or Modify Tools) and is often carried out before subsequent
+  malware execution.
+  Legitimate cases: planned administrative maintenance, reinstallation of the software.
+  SOC triage steps:
+  - Determine which module was disabled and by whom.
+  - Check whether a change ticket or maintenance window exists.
+  - See whether there are subsequent threat detections on the affected host.
+  - If illegitimate activity is confirmed: re-enable the module, isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 10m

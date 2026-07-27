@@ -1,6 +1,8 @@
 rule_id: 32aea9db-f83f-4b18-b057-d7cb3601537a
-name: "Agent FIM: Windows System File or Log Modified"
-description: |
+name_uz: "Agent FIM: Windows tizim fayli yoki log o'zgartirildi"
+name_ru: "Agent FIM: изменение системного файла или журнала Windows"
+name_en: "Agent FIM: Windows System File or Log Modified"
+description_uz: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, Windows tizim
   kataloglaridagi (System32, SysWOW64, Windows\) fayl o'zgarishlarini aniqlaydi.
   Hujumchi DLL hijacking, log tampering yoki system binary almashtirish orqali
@@ -14,6 +16,34 @@ description: |
   - `error.message` mavjud bo'lsa — fayl boshqa process tomonidan lock qilingan.
   - Windows Event Log bilan korrelatsiya qiling (4663, 4670 event IDs).
   - Noqonuniy bo'lsa: faylni karantinga oling, binary hash ni tekshiring, system restore bajaring.
+description_ru: |
+  Данное правило связано с техниками Defense Evasion и Impact и обнаруживает изменения файлов
+  в системных каталогах Windows (System32, SysWOW64, Windows\).
+  Атакующий может скрытно оставаться в системе через DLL hijacking, log tampering
+  или подмену system binary.
+  Легитимные случаи: Windows Update, обновление сигнатур антивируса, системные службы.
+  Этапы SOC-триажа:
+  - Проверьте `file.path` — неожиданное изменение внутри System32 подозрительно.
+  - `file.owner` и `file.uid` — владелец, отличный от SYSTEM (S-1-5-18), подозрителен.
+  - Проверьте разницу между `file.mtime` и `file.ctime`.
+  - Если `file.size` больше или меньше ожидаемого размера — возможна подмена.
+  - Если присутствует `error.message` — файл заблокирован другим процессом.
+  - Сопоставьте с Windows Event Log (4663, 4670 event IDs).
+  - Если нелегитимно: поместите файл в карантин, проверьте hash бинарного файла, выполните system restore.
+description_en: |
+  This rule is related to Defense Evasion and Impact techniques and detects file changes
+  in Windows system directories (System32, SysWOW64, Windows\).
+  An attacker may remain hidden in the system through DLL hijacking, log tampering,
+  or replacement of a system binary.
+  Legitimate cases: Windows Update, antivirus signature updates, system services.
+  SOC triage steps:
+  - Check `file.path` — an unexpected change inside System32 is suspicious.
+  - `file.owner` and `file.uid` — an owner other than SYSTEM (S-1-5-18) is suspicious.
+  - Check the difference between `file.mtime` and `file.ctime`.
+  - If `file.size` is larger or smaller than the expected size — a replacement may have occurred.
+  - If `error.message` is present — the file is locked by another process.
+  - Correlate with the Windows Event Log (4663, 4670 event IDs).
+  - If illegitimate: quarantine the file, check the binary hash, perform a system restore.
 type: esql
 params: '{}'
 schedule_interval: 5m

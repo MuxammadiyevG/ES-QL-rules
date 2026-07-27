@@ -1,11 +1,25 @@
 rule_id: b0ae1c14-9495-4b0a-9b47-cc19e9cde8eb
-name: Downloaded Executable / Alternate Data Stream
-description: |
+name_uz: "Yuklab olingan bajariluvchi fayl / Alternate Data Stream"
+name_ru: "Загруженный исполняемый файл / Alternate Data Stream"
+name_en: "Downloaded Executable / Alternate Data Stream"
+description_uz: |
   Ushbu qoida internet'dan yuklangan bajariladigan fayllarni (Mark-of-the-Web Zone.Identifier
   ADS) yoki bajariluvchi faylga yozilgan alternate data stream'ni aniqlaydi (Sysmon 15).
   Yuklab olingan exe/script ko'pincha boshlang'ich ijro vektori (T1553.005/T1059).
   SOC triage:
   - `files` qaysi exe/script, `contents` (zone)? `images` kim yozdi?
+description_ru: |
+  Это правило выявляет исполняемые файлы, загруженные из интернета (Mark-of-the-Web Zone.Identifier
+  ADS), или alternate data stream, записанный в исполняемый файл (Sysmon 15).
+  Загруженный exe/script часто является начальным вектором исполнения (T1553.005/T1059).
+  SOC triage:
+  - Какой exe/script в `files`, какой `contents` (zone)? Кто записал по `images`?
+description_en: |
+  This rule detects executable files downloaded from the internet (Mark-of-the-Web Zone.Identifier
+  ADS) or an alternate data stream written to an executable file (Sysmon 15).
+  A downloaded exe/script is often an initial execution vector (T1553.005/T1059).
+  SOC triage:
+  - Which exe/script is in `files`, what is `contents` (zone)? Who wrote it per `images`?
 type: esql
 params: '{}'
 schedule_interval: 10m
