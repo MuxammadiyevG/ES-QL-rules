@@ -1,6 +1,8 @@
 rule_id: 8d62abce-91c0-41dc-b17a-8d2e6b9211ca
-name: "NPM Access: XSS Attack Pattern in Request"
-description: |
+name_uz: "NPM Access: So'rovda XSS Hujum Patterni"
+name_ru: "NPM Access: паттерн XSS-атаки в запросе"
+name_en: "NPM Access: XSS Attack Pattern in Request"
+description_uz: |
   Ushbu qoida HTTP request URL yoki parametrlarda Cross-Site Scripting (XSS)
   payloadlarini aniqlaydi. script tag, javascript:, onerror, onload kabi
   klassik XSS vektorlari.
@@ -10,6 +12,26 @@ description: |
   - Response status 200 bo'lsa — payload qabul qilingan.
   - Backend XSS sanitization mavjudligini tekshiring.
   - WAF rule qo'shing.
+description_ru: |
+  Данное правило выявляет payload'ы Cross-Site Scripting (XSS) в URL или параметрах
+  HTTP-запроса. Классические векторы XSS вида script tag, javascript:, onerror,
+  onload.
+  Легитимные случаи: тестирование на проникновение (с разрешения).
+  Шаги SOC-триажа:
+  - event.original — проверьте полный URL и параметры.
+  - Если response status 200 — payload был принят.
+  - Проверьте наличие санитизации XSS на backend.
+  - Добавьте правило WAF.
+description_en: |
+  This rule detects Cross-Site Scripting (XSS) payloads in the HTTP request URL
+  or parameters. Classic XSS vectors such as script tag, javascript:, onerror,
+  onload.
+  Legitimate cases: penetration testing (with authorization).
+  SOC triage steps:
+  - event.original — check the full URL and the parameters.
+  - If the response status is 200 — the payload was accepted.
+  - Check whether backend XSS sanitization is in place.
+  - Add a WAF rule.
 type: esql
 params: '{}'
 schedule_interval: 5m

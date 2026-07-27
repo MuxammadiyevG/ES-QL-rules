@@ -1,6 +1,16 @@
 rule_id: a271d0d3-927c-469c-b04c-fe6a5f581f52
-name: "System Information Discovery via /proc Files"
-description: |
+name_uz: "/proc fayllari orqali tizim ma'lumotlarini aniqlash"
+name_ru: "Разведка сведений о системе через файлы /proc"
+name_en: "System Information Discovery via /proc Files"
+description_uz: |
+  Tizim ma'lumotlarini aniqlash uchun /proc fayl tizimidagi fayllarga murojaatni aniqlaydi.
+  Tajovuzkorlar agent_id, /proc fayllarini o'qish orqali tizim ma'lumotlarini sanab chiqishi mumkin.
+  CPU, xotira va versiya ma'lumotlari fayllariga murojaatni kuzatadi.
+description_ru: |
+  Обнаруживает обращения к файлам файловой системы /proc для сбора сведений о системе.
+  Злоумышленники могут перечислять сведения о системе с помощью agent_id, чтения файлов /proc.
+  Отслеживает обращения к файлам со сведениями о CPU, памяти и версии.
+description_en: |
   Detects access to /proc filesystem files for system information discovery.
   Adversaries may enumerate system information by agent_id, reading /proc files.
   Monitors access to CPU, memory, and version information files.

@@ -1,8 +1,16 @@
 rule_id: f49ed9ca-1791-4327-8695-68cc688df113
-name: UniFi Multiple Devices Offline
-description: |
+name_uz: "Bir nechta UniFi qurilmasi offline"
+name_ru: "Несколько устройств UniFi недоступны (offline)"
+name_en: "UniFi Multiple Devices Offline"
+description_uz: |
   Ushbu qoida bir nechta UniFi qurilmasi bir vaqtda offline bo'lganini aniqlaydi.
   Bu switch/uplink uzilishi, elektr ta'minoti muammosi, controller nosozligi yoki DoS belgisi bo'lishi mumkin.
+description_ru: |
+  Это правило обнаруживает одновременный переход нескольких устройств UniFi в offline.
+  Это может быть признаком обрыва switch/uplink, проблемы электропитания, сбоя контроллера или DoS.
+description_en: |
+  This rule detects multiple UniFi devices going offline at the same time.
+  This may indicate a switch/uplink outage, a power supply issue, a controller failure or a DoS.
 type: esql
 params: "{}"
 schedule_interval: 5m

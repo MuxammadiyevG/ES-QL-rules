@@ -1,6 +1,8 @@
 rule_id: b8d6fff3-3cb6-4af5-a9df-8726bc923bc6
-name: PostgreSQL - Connection from Unusual Host
-description: |
+name_uz: "PostgreSQL - Noodatiy Hostdan Ulanish"
+name_ru: "PostgreSQL - подключение с необычного хоста"
+name_en: "PostgreSQL - Connection from Unusual Host"
+description_uz: |
   Ushbu qoida PostgreSQL log (logs-postgresql.log-*) ichida muvaffaqiyatli
   autentifikatsiyalarni `source.ip` bo'yicha guruhlab, bitta foydalanuvchi yoki host
   ko'p sonli turli manba IP manzillaridan ulanayotganini aniqlaydi. Noodatiy yoki yangi
@@ -11,6 +13,28 @@ description: |
   - Manba IP odatdagi ilova/app server diapazonida ekanligini tasdiqlang.
   - Kirish vaqti business hours ichida ekanligini ko'ring.
   - Noqonuniy faoliyat tasdiqlansa: IP ni bloklang, credentiallarni rotatsiya qiling.
+description_ru: |
+  Данное правило группирует успешные аутентификации в журнале PostgreSQL
+  (logs-postgresql.log-*) по `source.ip` и выявляет, что один пользователь или хост
+  подключается с большого числа разных исходных IP-адресов. Вход с необычного или нового
+  источника может быть признаком захвата учётной записи (T1078 - Valid Accounts).
+  Легитимные случаи: connection pooler, многоинстансное приложение, клиенты за NAT.
+  Шаги SOC-триажа:
+  - Проверьте, с каких адресов `source.ip` входит `actor` (user.name).
+  - Подтвердите, что исходный IP находится в обычном диапазоне приложения/app-сервера.
+  - Посмотрите, попадает ли время входа в business hours.
+  - При подтверждении нелегитимной активности: заблокируйте IP, произведите ротацию учётных данных.
+description_en: |
+  This rule groups successful authentications inside the PostgreSQL log
+  (logs-postgresql.log-*) by `source.ip` and detects a single user or host
+  connecting from a large number of different source IP addresses. Access from an unusual or new
+  source may be a sign of account takeover (T1078 - Valid Accounts).
+  Legitimate cases: connection pooler, multi-instance application, clients behind NAT.
+  SOC triage steps:
+  - Check which `source.ip` addresses `actor` (user.name) is connecting from.
+  - Confirm that the source IP is in the usual application/app server range.
+  - See whether the access time falls within business hours.
+  - If illegitimate activity is confirmed: block the IP, rotate the credentials.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,11 +1,25 @@
 rule_id: eff58afe-03e2-4565-9d99-54b490e4649b
-name: DNS Query to Suspicious TLD / Dynamic DNS
-description: |
+name_uz: "Shubhali TLD / dynamic DNS ga DNS so'rovi"
+name_ru: "DNS-запрос к подозрительному TLD / dynamic DNS"
+name_en: "DNS Query to Suspicious TLD / Dynamic DNS"
+description_uz: |
   Ushbu qoida xavf bilan bog'liq TLD yoki dynamic-DNS provayderlariga DNS so'rovini aniqlaydi
   (Sysmon EventID 22): .top/.xyz/.gq/.tk/.ml/.cf, duckdns, ngrok, no-ip, hopto, serveo,
   trycloudflare, workers.dev va h.k. — C2/exfil uchun ko'p ishlatiladi (T1071.004).
   SOC triage:
   - `domains` qaysi, `images` qaysi jarayon so'ragan? Reputatsiyani tekshiring.
+description_ru: |
+  Это правило выявляет DNS-запросы к связанным с риском TLD или к провайдерам dynamic-DNS
+  (Sysmon EventID 22): .top/.xyz/.gq/.tk/.ml/.cf, duckdns, ngrok, no-ip, hopto, serveo,
+  trycloudflare, workers.dev и т.д. — часто используются для C2/exfil (T1071.004).
+  Триаж SOC:
+  - Какие `domains` и какой процесс в `images` выполнил запрос? Проверьте репутацию.
+description_en: |
+  This rule detects DNS queries to risk-associated TLDs or dynamic-DNS providers
+  (Sysmon EventID 22): .top/.xyz/.gq/.tk/.ml/.cf, duckdns, ngrok, no-ip, hopto, serveo,
+  trycloudflare, workers.dev etc. — widely used for C2/exfil (T1071.004).
+  SOC triage:
+  - Which `domains`, and which process in `images` made the query? Check the reputation.
 type: esql
 params: '{}'
 schedule_interval: 10m

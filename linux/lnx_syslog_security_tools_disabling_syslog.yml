@@ -1,6 +1,16 @@
 rule_id: 488ffb3c-d833-4389-96c6-41821eb0d1a5
-name: "Disabling Security Tools - Builtin"
-description: |
+name_uz: "Xavfsizlik vositalarini o'chirish - Builtin"
+name_ru: "Отключение средств защиты - Builtin"
+name_en: "Disabling Security Tools - Builtin"
+description_uz: |
+  Linux tizimlarida o'rnatilgan yoki qo'shimcha xavfsizlik vositalarini o'chirishga urinishlarni aniqlaydi.
+  Tajovuzkorlar himoyadan qochish uchun firewall'lar yoki endpoint xavfsizlik agentlarini to'xtatishi mumkin.
+  Xavfsizlik bilan bog'liq xizmatlarning to'xtatilishini ko'rsatuvchi auditd hodisalarini kuzatadi.
+description_ru: |
+  Обнаруживает попытки отключения встроенных или установленных средств защиты в системах Linux.
+  Злоумышленники могут останавливать межсетевые экраны или агенты защиты конечных точек, чтобы обойти защиту.
+  Отслеживает события auditd, указывающие на остановку служб, связанных с безопасностью.
+description_en: |
   Detects attempts to disable built-in or installed security tools on Linux systems.
   Adversaries may stop firewalls or endpoint security agents to evade defenses.
   Monitors auditd events indicating stopping of security-related services.

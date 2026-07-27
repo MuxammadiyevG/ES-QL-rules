@@ -1,11 +1,25 @@
 rule_id: 1a28f905-901b-4136-bc13-4897d6f110e0
-name: Guest Account Usage
-description: |
+name_uz: "Guest akkauntdan foydalanish"
+name_ru: "Использование учётной записи Guest"
+name_en: "Guest Account Usage"
+description_uz: |
   Ushbu qoida Guest akkaunt orqali autentifikatsiya (4624/4625) urinishlarini aniqlaydi.
   Guest odatda o'chirilgan bo'lishi kerak; undan foydalanish ruxsatsiz kirish belgisi
   (T1078.001).
   SOC triage:
   - Guest yoqilganmi? `src_ips` qayerdan? Darhol Guest'ni o'chiring.
+description_ru: |
+  Это правило обнаруживает попытки аутентификации (4624/4625) через учётную запись Guest.
+  Guest обычно должна быть отключена; её использование — признак несанкционированного доступа
+  (T1078.001).
+  SOC triage:
+  - Включена ли Guest? Откуда `src_ips`? Немедленно отключите Guest.
+description_en: |
+  This rule detects authentication (4624/4625) attempts via the Guest account.
+  Guest should normally be disabled; its use is an indicator of unauthorized access
+  (T1078.001).
+  SOC triage:
+  - Is Guest enabled? Where are the `src_ips` from? Disable Guest immediately.
 type: esql
 params: '{}'
 schedule_interval: 10m

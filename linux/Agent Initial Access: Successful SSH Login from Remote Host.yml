@@ -1,6 +1,8 @@
 rule_id: 59e0fb02-3eee-418a-b313-75884704faad
-name: "Agent Initial Access: Successful SSH Login from Remote Host"
-description: |
+name_uz: "Agent Initial Access: Masofaviy hostdan muvaffaqiyatli SSH login"
+name_ru: "Agent Initial Access: Успешный вход по SSH с удалённого хоста"
+name_en: "Agent Initial Access: Successful SSH Login from Remote Host"
+description_uz: |
   Ushbu qoida Initial Access texnikasiga bog'liq bo'lib, tashqi IP manzildan SSH orqali
   muvaffaqiyatli login hodisalarini aniqlaydi. Hujumchi o'g'irlangan credentials, brute force
   yoki valid SSH kaliti yordamida tizimga kirishi mumkin.
@@ -13,6 +15,32 @@ description: |
   - Login vaqti (`@timestamp`) ish soatlaridan tashqarida bo'lsa — yuqori xavf.
   - Bir IP dan bir necha foydalanuvchi login qilsa — credential stuffing urinishi bo'lishi mumkin.
   - Noqonuniy bo'lsa: SSH sessiyani to'xtating, IP ni bloklang, credentials rotatsiya qiling.
+description_ru: |
+  Это правило связано с техникой Initial Access и выявляет события успешного входа по SSH
+  с внешнего IP-адреса. Злоумышленник может войти в систему с помощью украденных credentials, перебора паролей (brute force)
+  или валидного SSH-ключа.
+  Легитимные случаи: удалённое управление администратором, операции развёртывания DevOps.
+  Шаги SOC-триажа:
+  - Проверьте адрес `source.ip` — подозрительно, если он вне корпоративной сети.
+  - `user.name` и `user.audit.name` — определите, какая учётная запись выполнила вход.
+  - `auditd.data.terminal` — `/dev/pts/X` означает интерактивную SSH-сессию.
+  - Скоррелируйте номер `auditd.session` с последующими событиями execve и sudo.
+  - Если время входа (`@timestamp`) вне рабочих часов — высокий риск.
+  - Если с одного IP входят несколько пользователей — возможна попытка credential stuffing.
+  - Если нелегитимно: завершите SSH-сессию, заблокируйте IP, выполните ротацию credentials.
+description_en: |
+  This rule is related to the Initial Access technique and detects successful SSH login
+  events from an external IP address. An attacker may access the system using stolen credentials, brute force
+  or a valid SSH key.
+  Legitimate cases: administrator remote management, DevOps deploy operations.
+  SOC triage steps:
+  - Check the `source.ip` address — suspicious if it is outside the corporate network.
+  - `user.name` and `user.audit.name` — determine which account logged in.
+  - `auditd.data.terminal` — `/dev/pts/X` is an interactive SSH session.
+  - Correlate the `auditd.session` number with subsequent execve and sudo events.
+  - If the login time (`@timestamp`) is outside business hours — high risk.
+  - If several users log in from a single IP — this may be a credential stuffing attempt.
+  - If illegitimate: terminate the SSH session, block the IP, rotate the credentials.
 type: esql
 params: '{}'
 schedule_interval: 5m

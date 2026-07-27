@@ -1,6 +1,8 @@
 rule_id: 315309dd-2e97-49bb-b13f-3178f3e4df5a
-name: "Agent FIM: Windows File or Directory Deleted"
-description: |
+name_uz: "Agent FIM: Windows fayl yoki katalog o'chirildi"
+name_ru: "Agent FIM: удалён файл или каталог Windows"
+name_en: "Agent FIM: Windows File or Directory Deleted"
+description_uz: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Agent FIM: Windows File or Directory Deleted` kontekstida FortiSIEM Windows Agent FIM tomonidan fayl yoki directory o'chirilganligini aniqlaydi.
   Bu turdagi hodisa hujumchi iz qoldirmaslik, forensic tahlilni qiyinlashtirish, log fayllarini yo'q qilish yoki muhim tizim fayllarini o'chirish maqsadida faoliyat yuritayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida rejalashtirilgan tozalash ishlari, administrator tomonidan bajarilgan maintenance, dastur o'chirish yoki temp fayllarni tozalash jarayonlari uchrashi mumkin.
@@ -11,6 +13,28 @@ description: |
   - O'zgarishni amalga oshirgan foydalanuvchining roli va huquqlarini tekshiring.
   - Tasdiqlangan change ticket yoki deployment yozuvi borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: faylni backup dan tiklang, processni to'xtating va hostni izolyatsiya qiling.
+description_ru: |
+  Это правило относится к техникам Defense Evasion и Impact и в контексте `Agent FIM: Windows File or Directory Deleted` обнаруживает удаление файла или directory, зафиксированное FortiSIEM Windows Agent FIM.
+  Событие такого типа считается опасным, поскольку может указывать на то, что злоумышленник действует с целью скрыть следы, затруднить forensic-анализ, уничтожить log-файлы или удалить важные системные файлы.
+  Легитимными случаями могут быть плановые работы по очистке, maintenance, выполненный администратором, удаление программ или процессы очистки temp-файлов.
+  Шаги SOC triage:
+  - Точно идентифицируйте `winlog.computer_name`, `winlog.event_data.SubjectUserName` и удалённый `winlog.event_data.ObjectName` в событии.
+  - Проверьте `winlog.event_data.ProcessName`, выполнивший удаление — если это неизвестный или подозрительный process, рассмотрите его в приоритетном порядке.
+  - Если удалённый файл является критичным файлом Windows или log-файлом, рассмотрите его в приоритетном порядке.
+  - Проверьте роль и полномочия пользователя, выполнившего изменение.
+  - Проверьте, есть ли утверждённый change ticket или запись о deployment.
+  - При подтверждении вредоносной активности выполните немедленный containment: восстановите файл из backup, остановите process и изолируйте хост.
+description_en: |
+  This rule relates to Defense Evasion and Impact techniques and, in the context of `Agent FIM: Windows File or Directory Deleted`, detects that a file or directory has been deleted as reported by FortiSIEM Windows Agent FIM.
+  This type of event is considered dangerous because it may indicate that an attacker is acting to cover tracks, complicate forensic analysis, destroy log files or delete important system files.
+  Legitimate cases may include scheduled cleanup work, maintenance performed by an administrator, software uninstallation or temp file cleanup processes.
+  SOC triage steps:
+  - Precisely identify `winlog.computer_name`, `winlog.event_data.SubjectUserName` and the deleted `winlog.event_data.ObjectName` in the event.
+  - Check the `winlog.event_data.ProcessName` that performed the deletion — if it is an unknown or suspicious process, review it as a priority.
+  - If the deleted file is a critical Windows file or a log file, review it as a priority.
+  - Check the role and privileges of the user who made the change.
+  - Check whether there is an approved change ticket or deployment record.
+  - If malicious activity is confirmed, perform immediate containment: restore the file from backup, stop the process and isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

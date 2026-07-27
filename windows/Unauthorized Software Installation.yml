@@ -8,8 +8,24 @@ rule_id: 5ee93082-005c-46eb-9827-700f37559f3d
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Requires approved software catalog, allowlist enterprise deployment tools
 
-name: "Unauthorized Software Installation"
-description: |
+name_uz: "Ruxsatsiz dasturiy ta'minot o'rnatilishi"
+name_ru: "Неавторизованная установка программного обеспечения"
+name_en: "Unauthorized Software Installation"
+description_uz: |
+  Dasturiy ta'minot o'rnatuvchilari yoki paket menejerlarining agent_id bo'yicha, administrativ bo'lmagan foydalanuvchilar tomonidan ishga tushirilishini aniqlaydi.
+  MSI o'rnatuvchilar, apt/yum/dnf paket o'rnatishlari yoki bevosita bajariluvchi fayl yuklab olishlari siyosat buzilishini bildiradi.
+  Boshqariladigan deployment tizimlaridan (SCCM, Intune) tashqarida foydalanuvchi tomonidan boshlangan o'rnatishlarga e'tibor bering.
+  False positive: ruxsat etilgan self-service dasturiy ta'minot portallari, dasturchi ish stansiyalari, admin texnik xizmati.
+  Triage: foydalanuvchida dasturiy ta'minot o'rnatish imtiyozi bor-yo'qligini tasdiqlang, dasturiy ta'minotni tasdiqlangan katalog bilan solishtiring, 
+  ma'lum zararli dasturiy ta'minot imzolarini ko'rib chiqing.
+description_ru: |
+  Выявляет запуск установщиков ПО или пакетных менеджеров по agent_id пользователями без административных прав.
+  Установщики MSI, установка пакетов apt/yum/dnf или прямая загрузка исполняемых файлов указывают на нарушение политики.
+  Обратите внимание на инициированные пользователем установки вне управляемых систем развёртывания (SCCM, Intune).
+  Ложные срабатывания: авторизованные self-service порталы ПО, рабочие станции разработчиков, обслуживание администраторами.
+  Triage: проверьте, есть ли у пользователя привилегии на установку ПО, сверьте ПО с утверждённым каталогом, 
+  проверьте наличие известных сигнатур вредоносного ПО.
+description_en: |
   Detects execution of software installers or package managers by agent_id, non-administrative users.
   MSI installers, apt/yum/dnf package installations, or direct executable downloads indicate policy violation.
   Focus on user-initiated installs outside of managed deployment systems (SCCM, Intune).

@@ -1,6 +1,8 @@
 rule_id: 7dead04c-a37d-4a8a-912f-ff372abbcd67
-name: "Kerio: DHCP Broadcast DROP (Informational)"
-description: |
+name_uz: "Kerio: DHCP broadcast DROP (Informational)"
+name_ru: "Kerio: DROP широковещательных DHCP-пакетов (Informational)"
+name_en: "Kerio: DHCP Broadcast DROP (Informational)"
+description_uz: |
   Ushbu qoida Kerio tomonidan bloklangan DHCP broadcast paketlarini qayd etadi.
   0.0.0.0:68 → 255.255.255.255:67 pattern — DHCP discovery/request.
   Kerio bu paketlarni "Block other traffic" rule bilan bloklaydi.
@@ -8,6 +10,22 @@ description: |
   SOC triage bosqichlari:
   - Juda ko'p bo'lsa — DHCP server bilan muammo yoki yangi ruxsatsiz qurilma.
   - VLAN nomini tekshiring — kutilmagan VLAN dan kelayotgan bo'lsa shubhali.
+description_ru: |
+  Это правило фиксирует широковещательные DHCP-пакеты, заблокированные Kerio.
+  Шаблон 0.0.0.0:68 → 255.255.255.255:67 — DHCP discovery/request.
+  Kerio блокирует эти пакеты правилом "Block other traffic".
+  Легитимные ситуации: новое устройство получает IP, обновление DHCP lease.
+  Этапы SOC-триажа:
+  - Если их слишком много — проблема с DHCP-сервером или новое несанкционированное устройство.
+  - Проверьте имя VLAN — если трафик идёт из неожиданного VLAN, это подозрительно.
+description_en: |
+  This rule records DHCP broadcast packets blocked by Kerio.
+  The 0.0.0.0:68 → 255.255.255.255:67 pattern — DHCP discovery/request.
+  Kerio blocks these packets with the "Block other traffic" rule.
+  Legitimate cases: a new device requesting an IP, DHCP lease renewal.
+  SOC triage steps:
+  - If there are too many — a problem with the DHCP server or a new unauthorized device.
+  - Check the VLAN name — traffic coming from an unexpected VLAN is suspicious.
 type: esql
 params: '{}'
 schedule_interval: 15m

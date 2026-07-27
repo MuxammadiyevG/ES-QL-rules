@@ -1,6 +1,8 @@
 rule_id: e21b4c9d-5a41-4b65-8a59-41820845454d
-name: "Audited file or directory content modified in SVN"
-description: |
+name_uz: "SVN'da audit qilinadigan fayl yoki katalog mazmuni o'zgartirildi"
+name_ru: "Изменено содержимое аудируемого файла или каталога в SVN"
+name_en: "Audited file or directory content modified in SVN"
+description_uz: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, `Audited file or directory content modified in SVN` kontekstida FortiSIEM agentless fayl monitoringi orqali SSH ulanishi yordamida SVN repozitoriyasidagi fayl yoki directory mazmunining o'zgartirilganligini aniqlaydi.
   Bu turdagi hodisa hujumchi source code, konfiguratsiya fayllari yoki muhim loyiha fayllarini ruxsatsiz o'zgartirish orqali supply chain hujumi, backdoor kiritish yoki ma'lumot manipulyatsiyasi maqsadida faoliyat yuritayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida rejalashtirilgan kod o'zgarishlari, tasdiqlangan commit operatsiyalari yoki deployment jarayonlari uchrashi mumkin.
@@ -11,6 +13,28 @@ description: |
   - O'zgarishni amalga oshirgan foydalanuvchining SVN commit huquqlari borligini tasdiqlang.
   - O'zgarish uchun tasdiqlangan change ticket yoki code review yozuvi borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: SVN commitni revert qiling, foydalanuvchi SSH sessiyasini to'xtating va hostni izolyatsiya qiling.
+description_ru: |
+  Данное правило связано с техниками Defense Evasion и Impact и в контексте `Audited file or directory content modified in SVN` выявляет изменение содержимого файла или directory в репозитории SVN через SSH-подключение с помощью безагентного файлового мониторинга FortiSIEM.
+  Событие такого типа считается опасным, поскольку может указывать на то, что злоумышленник действует с целью атаки на цепочку поставок (supply chain), внедрения backdoor или манипуляции данными посредством несанкционированного изменения source code, конфигурационных файлов или важных файлов проекта.
+  Легитимными случаями могут быть плановые изменения кода, утверждённые операции commit или процессы deployment.
+  Шаги SOC-триажа:
+  - Точно идентифицируйте `host.hostname`, `user.name` в событии и изменённый `auditd.paths.name`.
+  - Изучите добавленные (`added_item`) и удалённые (`deleted_item`) элементы.
+  - Проверьте номера версий SVN (`old_svn_version`, `new_svn_version`).
+  - Подтвердите, что пользователь, внёсший изменение, имеет права на commit в SVN.
+  - Проверьте наличие утверждённого change ticket или записи code review для этого изменения.
+  - При подтверждении нелегитимной активности выполните оперативный containment: откатите SVN commit, завершите SSH-сессию пользователя и изолируйте хост.
+description_en: |
+  This rule is related to Defense Evasion and Impact techniques and, in the context of `Audited file or directory content modified in SVN`, detects modification of the content of a file or directory in an SVN repository over an SSH connection by means of FortiSIEM agentless file monitoring.
+  An event of this type is considered dangerous because it may indicate that an attacker is acting with the aim of a supply chain attack, backdoor insertion or data manipulation through unauthorized modification of source code, configuration files or important project files.
+  Legitimate cases may include planned code changes, approved commit operations or deployment processes.
+  SOC triage steps:
+  - Precisely identify the `host.hostname`, `user.name` in the event and the modified `auditd.paths.name`.
+  - Review the added (`added_item`) and deleted (`deleted_item`) items.
+  - Check the SVN version numbers (`old_svn_version`, `new_svn_version`).
+  - Confirm that the user who made the change has SVN commit rights.
+  - Check whether there is an approved change ticket or code review record for the change.
+  - If malicious activity is confirmed, perform rapid containment: revert the SVN commit, terminate the user's SSH session and isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,10 +1,22 @@
 rule_id: 1dea38dd-09b2-48db-9709-7448009fc1fc
-name: "Chain: Web Path Probing / Scanner (Nginx)"
-description: |
+name_uz: "Zanjir: Veb path probing / skaner (Nginx)"
+name_ru: "Цепочка: Зондирование веб-путей / сканер (Nginx)"
+name_en: "Chain: Web Path Probing / Scanner (Nginx)"
+description_uz: |
   Veb hujum zanjiri — 1-bosqich.
   Bitta source.ip qisqa vaqtda ko'p turli url.path ga XATO (4xx) javob olsa (scanner/recon path enumeration).
   Korrelyatsiya dvigateli source.ip bo'yicha url.path noyobligini hisoblaydi (different_field).
   FP kamaytirish: status_code >= 400 sharti normal browsing'ni (200/30x) chiqarib tashlaydi; faqat probing qoladi.
+description_ru: |
+  Цепочка веб-атаки — этап 1.
+  Если один source.ip за короткое время получает ОШИБОЧНЫЕ (4xx) ответы по множеству разных url.path (scanner/recon path enumeration).
+  Корреляционный движок считает уникальность url.path по source.ip (different_field).
+  Снижение FP: условие status_code >= 400 исключает нормальный browsing (200/30x); остаётся только probing.
+description_en: |
+  Web attack chain — stage 1.
+  When a single source.ip receives ERROR (4xx) responses for many different url.path values within a short time (scanner/recon path enumeration).
+  The correlation engine counts url.path uniqueness by source.ip (different_field).
+  FP reduction: the status_code >= 400 condition excludes normal browsing (200/30x); only probing remains.
 type: esql
 enabled: true
 params: "{}"

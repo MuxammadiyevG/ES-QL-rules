@@ -8,8 +8,24 @@ rule_id: f254e86c-a479-43fd-9fdf-675ae8227e1a
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Adjust pattern matching for application-specific parameters, allowlist scanners
 
-name: "Web Application Attack Detection"
-description: |
+name_uz: "Veb-ilovaga hujumlarni aniqlash"
+name_ru: "Обнаружение атак на веб-приложения"
+name_en: "Web Application Attack Detection"
+description_uz: |
+  HTTP so'rovlarida SQLi, XSS, command injection yoki path traversal'ni ko'rsatuvchi zararli payload'larni aniqlaydi.
+  SQL kalit so'zlari, script teglari, shell buyruqlari yoki katalog traversal ketma-ketliklarini o'z ichiga olgan URL parametrlari flagga olinadi.
+  Shubhali payload yoki g'ayrioddiy user-agent'ga ega POST/PUT so'rovlariga e'tibor qaratiladi.
+  False positive: ilovaning qonuniy funksionali, xavfsizlik skanerlari, penetration testing.
+  Triage: so'rovning to'liq tafsilotlarini ko'rib chiqing, manba IP tanilgan skaner ekanligini tekshiring,
+  ilova aniqlangan hujum turiga zaifligini tasdiqlang, zararli manbalarni bloklang.
+description_ru: |
+  Обнаруживает вредоносные payload в HTTP-запросах, указывающие на SQLi, XSS, command injection или path traversal.
+  Помечаются параметры URL, содержащие ключевые слова SQL, теги script, команды shell или последовательности обхода каталогов.
+  Фокус на POST/PUT-запросах с подозрительными payload или необычными user-agent.
+  Ложные срабатывания: легитимная функциональность приложения, сканеры безопасности, тестирование на проникновение.
+  Triage: изучите полные детали запроса, проверьте, не является ли IP-источник известным сканером,
+  убедитесь, уязвимо ли приложение к обнаруженному типу атаки, заблокируйте вредоносные источники.
+description_en: |
   Detects malicious payloads in HTTP requests indicating SQLi, XSS, command injection, or path traversal.
   URL parameters containing SQL keywords, script tags, shell commands, or directory traversal sequences flagged.
   Focus on POST/PUT requests with suspicious payloads or unusual user-agents.

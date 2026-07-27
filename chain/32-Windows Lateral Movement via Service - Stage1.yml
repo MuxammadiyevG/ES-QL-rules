@@ -1,7 +1,15 @@
 rule_id: 0b6dc3bc-30db-462f-aa81-a990b6b04402
-name: "Chain: Windows Lateral Movement via Service — Stage 1: Inbound Network Logon"
-description: |
+name_uz: "Zanjir: Windows Lateral Movement via Service — 1-bosqich: Kiruvchi tarmoq logon'i"
+name_ru: "Цепочка: Windows Lateral Movement via Service — Этап 1: Входящий сетевой вход"
+name_en: "Chain: Windows Lateral Movement via Service — Stage 1: Inbound Network Logon"
+description_uz: |
   Windows Lateral Movement via Service zanjiri — 1-bosqich (3 dan).
+  Inbound Network Logon.
+description_ru: |
+  Цепочка Windows Lateral Movement via Service — этап 1 (из 3).
+  Входящий сетевой вход.
+description_en: |
+  Windows Lateral Movement via Service chain — stage 1 (of 3).
   Inbound Network Logon.
 type: esql
 enabled: true

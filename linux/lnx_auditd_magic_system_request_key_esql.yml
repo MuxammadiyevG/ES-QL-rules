@@ -1,6 +1,16 @@
 rule_id: efd908ff-1195-4821-9b66-3c7d6ca3f441
-name: "Magic SysRq Key Configuration Access"
-description: |
+name_uz: "Magic SysRq kaliti konfiguratsiyasiga murojaat"
+name_ru: "Доступ к конфигурации Magic SysRq"
+name_en: "Magic SysRq Key Configuration Access"
+description_uz: |
+  /proc/sys/kernel/sysrq konfiguratsiya fayliga murojaatni aniqlaydi.
+  Magic SysRq kaliti kernelga to'g'ridan-to'g'ri quyi darajali buyruqlar berish imkonini beradi.
+  Tajovuzkorlar tizimni manipulyatsiya qilish yoki xizmat ko'rsatishdan voz kechtirish uchun uni yoqishi mumkin.
+description_ru: |
+  Обнаруживает доступ к конфигурационному файлу /proc/sys/kernel/sysrq.
+  Клавиша Magic SysRq позволяет передавать ядру низкоуровневые команды напрямую.
+  Злоумышленники могут включать её для манипуляций с системой или отказа в обслуживании.
+description_en: |
   Detects access to /proc/sys/kernel/sysrq configuration file.
   The magic SysRq key allows direct low-level commands to the kernel.
   Adversaries may enable it for system manipulation or denial of service.

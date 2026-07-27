@@ -1,8 +1,16 @@
 rule_id: 32bdc8f2-aec7-4662-96e7-d26e7b726cc3
-name: UniFi Device Reconnected
-description: |
+name_uz: "UniFi qurilmasi qayta ulandi"
+name_ru: "Устройство UniFi переподключилось"
+name_en: "UniFi Device Reconnected"
+description_uz: |
   Ushbu qoida UniFi AP yoki switch qayta ulanganini aniqlaydi.
   Oldingi offline davomiyligi, uplink switch va port ma'lumotlari chiqariladi.
+description_ru: |
+  Это правило обнаруживает повторное подключение UniFi AP или switch.
+  Выводятся длительность предыдущего offline, uplink switch и данные порта.
+description_en: |
+  This rule detects that a UniFi AP or switch has reconnected.
+  The previous offline duration, uplink switch and port details are reported.
 type: esql
 params: "{}"
 schedule_interval: 10m

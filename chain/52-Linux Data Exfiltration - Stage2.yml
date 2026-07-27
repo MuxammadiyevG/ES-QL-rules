@@ -1,9 +1,19 @@
 rule_id: b3d148e3-9368-4fc7-bfad-c79670b4e2fb
-name: "Chain: Linux Data Exfiltration — Stage 2: Outbound Data Transfer"
-description: |
+name_uz: "Zanjir: Linux Data Exfiltration — 2-bosqich: Chiquvchi ma'lumot uzatilishi"
+name_ru: "Цепочка: Linux Data Exfiltration — Этап 2: Исходящая передача данных"
+name_en: "Chain: Linux Data Exfiltration — Stage 2: Outbound Data Transfer"
+description_uz: |
   Linux Data Exfiltration zanjiri — 2-bosqich (2 dan).
   Outbound Data Transfer.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Linux Data Exfiltration — этап 2 (из 2).
+  Исходящая передача данных.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Linux Data Exfiltration chain — stage 2 (of 2).
+  Outbound Data Transfer.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

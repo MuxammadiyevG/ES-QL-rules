@@ -1,6 +1,8 @@
 rule_id: 9c22613f-4ffc-4418-a934-7a2a03a6cbca
-name: Active Directory Schema Modification Detected
-description: |
+name_uz: "Active Directory schema o'zgarishi aniqlandi"
+name_ru: "Обнаружено изменение схемы Active Directory"
+name_en: "Active Directory Schema Modification Detected"
+description_uz: |
   Ushbu qoida AD schema partition'idagi o'zgarishni aniqlaydi: 5136/5137 da `ObjectName`
   ichida "CN=Schema,CN=Configuration" bo'lsa. Schema o'zgarishi juda kam va Schema Admins
   talab qiladi.
@@ -9,6 +11,24 @@ description: |
   SOC triage:
   - `modifier` Schema Admins a'zosimi? `objects` da nima o'zgargan?
   - Tasdiqlanmasa: o'zgarishni va Schema Admins a'zoligini auditdan o'tkazing.
+description_ru: |
+  Данное правило выявляет изменение в schema partition AD: если в 5136/5137 внутри `ObjectName`
+  присутствует "CN=Schema,CN=Configuration". Изменение схемы происходит очень редко и требует
+  Schema Admins.
+  ПРИМЕЧАНИЕ: в вашем индексе `ObjectDN`/`ObjectClass` ОТСУТСТВУЮТ — для DN использован `ObjectName`.
+  Если 5136 не записывает DN в ObjectName, правило ничего не вернёт (ошибки не будет).
+  SOC triage:
+  - Является ли `modifier` участником Schema Admins? Что изменилось в `objects`?
+  - Если не подтверждено: проведите аудит изменения и членства в Schema Admins.
+description_en: |
+  This rule detects a change in the AD schema partition: when 5136/5137 contains "CN=Schema,CN=Configuration"
+  inside `ObjectName`. A schema change is very rare and requires Schema
+  Admins.
+  NOTE: your index does NOT have `ObjectDN`/`ObjectClass` — `ObjectName` was used for the DN.
+  If 5136 does not write the DN into ObjectName, the rule returns nothing (it does not error).
+  SOC triage:
+  - Is the `modifier` a member of Schema Admins? What changed in `objects`?
+  - If not confirmed: audit the change and the Schema Admins membership.
 type: esql
 params: '{}'
 schedule_interval: 10m

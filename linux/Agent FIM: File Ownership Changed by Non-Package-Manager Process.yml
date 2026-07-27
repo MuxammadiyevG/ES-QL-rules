@@ -1,6 +1,8 @@
 rule_id: cb04ba73-b1c0-453d-b2df-f34ceb4831d1
-name: "Agent FIM: File Ownership Changed by Non-Package-Manager Process"
-description: |
+name_uz: "Agent FIM: fayl egaligi paket menejeri bo'lmagan jarayon tomonidan o'zgartirildi"
+name_ru: "Agent FIM: владелец файла изменён процессом, не являющимся пакетным менеджером"
+name_en: "Agent FIM: File Ownership Changed by Non-Package-Manager Process"
+description_uz: |
   Ushbu qoida Impact va Defense Evasion texnikalariga bog'liq bo'lib, dpkg/apt/rpm kabi
   paket menejerlari tomonidan EMAS, balki boshqa processlar tomonidan amalga oshirilgan
   fayl ownership o'zgarishlarini aniqlaydi.
@@ -12,6 +14,30 @@ description: |
   - `auditd.data.tty` interaktiv terminalmi yoki daemon ekanligini tekshiring.
   - Syscall argumentlarini (`auditd.data.a1`, `a2`) decode qilib yangi UID/GID ni aniqlang.
   - Noqonuniy bo'lsa: fayl ownership ni qaytaring, process ni to'xtating.
+description_ru: |
+  Это правило связано с техниками Impact и Defense Evasion и выявляет изменения владельца файлов,
+  выполненные НЕ пакетными менеджерами вроде dpkg/apt/rpm, а другими
+  процессами.
+  Злоумышленник может изменить владельца важных файлов через syscall fchown/chown.
+  Легитимные случаи: процесс установки через dpkg, apt, rpm, pip, npm.
+  Шаги SOC-триажа:
+  - Проверьте `process.executable` — это пакетный менеджер (dpkg, apt) или другой процесс.
+  - Определите inode (`auditd.paths.inode`) и mode (`auditd.paths.mode`) изменённого файла.
+  - Проверьте, `auditd.data.tty` — это интерактивный терминал или демон.
+  - Декодируйте аргументы syscall (`auditd.data.a1`, `a2`) и определите новые UID/GID.
+  - Если активность нелегитимна: верните владельца файла, остановите процесс.
+description_en: |
+  This rule is related to Impact and Defense Evasion techniques and detects file ownership
+  changes performed NOT by package managers such as dpkg/apt/rpm, but by other
+  processes.
+  An attacker may change the owner of important files via the fchown/chown syscall.
+  Legitimate cases: installation process run by dpkg, apt, rpm, pip, npm.
+  SOC triage steps:
+  - Check `process.executable` — a package manager (dpkg, apt) or another process.
+  - Identify the inode (`auditd.paths.inode`) and mode (`auditd.paths.mode`) of the changed file.
+  - Check whether `auditd.data.tty` is an interactive terminal or a daemon.
+  - Decode the syscall arguments (`auditd.data.a1`, `a2`) to determine the new UID/GID.
+  - If illegitimate: restore the file ownership, stop the process.
 type: esql
 params: '{}'
 schedule_interval: 5m

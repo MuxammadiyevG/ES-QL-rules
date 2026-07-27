@@ -1,11 +1,25 @@
 rule_id: 64ac091c-ac68-4bfa-9967-4079212f1599
-name: Mass / Anomalous Computer Account Changes (4742)
-description: |
+name_uz: "Ommaviy / anomal computer account o'zgarishlari (4742)"
+name_ru: "Массовые / аномальные изменения учётных записей компьютеров (4742)"
+name_en: "Mass / Anomalous Computer Account Changes (4742)"
+description_uz: |
   Ushbu qoida qisqa vaqtda ko'p computer account o'zgarishini (4742) aniqlaydi — ommaviy
   parol reset, MachineAccountQuota suiiste'mol yoki Zerologon-uslubidagi hujum belgisi
   bo'lishi mumkin. Oddiy holatda 4742 kam uchraydi.
   SOC triage:
   - `actors` kim o'zgartiryapti, `targets` qaysi mashinalar? DC$ akkaunti bormi (Zerologon)?
+description_ru: |
+  Это правило обнаруживает множество изменений учётных записей компьютеров (4742) за короткое
+  время — признак массового сброса паролей, злоупотребления MachineAccountQuota или атаки
+  в стиле Zerologon. В обычных условиях 4742 встречается редко.
+  SOC triage:
+  - `actors` кто вносит изменения, `targets` какие машины? Есть ли учётная запись DC$ (Zerologon)?
+description_en: |
+  This rule detects many computer account changes (4742) in a short time — it may indicate mass
+  password resets, MachineAccountQuota abuse or a Zerologon-style attack.
+  Normally 4742 is rare.
+  SOC triage:
+  - `actors` who is making the changes, `targets` which machines? Is a DC$ account involved (Zerologon)?
 type: esql
 params: '{}'
 schedule_interval: 10m

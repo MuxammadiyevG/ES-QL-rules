@@ -1,11 +1,25 @@
 rule_id: 366fa119-5e46-418d-a614-077684021ee7
-name: Shadow Copy / Backup Deletion (Ransomware Prep)
-description: |
+name_uz: "Shadow copy / backup o'chirilishi (ransomware tayyorgarligi)"
+name_ru: "Удаление shadow copy / резервных копий (подготовка к ransomware)"
+name_en: "Shadow Copy / Backup Deletion (Ransomware Prep)"
+description_uz: |
   Ushbu qoida shadow copy yoki backup'larni o'chirishni aniqlaydi: `vssadmin delete shadows`,
   `wmic shadowcopy delete`, `wbadmin delete`, `bcdedit recoveryenabled no` — ransomware oldidan
   tiklanishni bloklash uchun klassik (T1490). Sysmon 1.
   SOC triage:
   - DARHOL javob — `command_lines` ni tekshiring, host'ni izolyatsiya qiling.
+description_ru: |
+  Это правило выявляет удаление shadow copy или резервных копий: `vssadmin delete shadows`,
+  `wmic shadowcopy delete`, `wbadmin delete`, `bcdedit recoveryenabled no` — классика перед ransomware
+  для блокировки восстановления (T1490). Sysmon 1.
+  SOC triage:
+  - Реагируйте НЕМЕДЛЕННО — проверьте `command_lines`, изолируйте хост.
+description_en: |
+  This rule detects deletion of shadow copies or backups: `vssadmin delete shadows`,
+  `wmic shadowcopy delete`, `wbadmin delete`, `bcdedit recoveryenabled no` — a classic step before
+  ransomware to block recovery (T1490). Sysmon 1.
+  SOC triage:
+  - Respond IMMEDIATELY — check `command_lines`, isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 10m

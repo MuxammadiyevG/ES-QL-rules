@@ -1,6 +1,8 @@
 rule_id: 8d18b5cc-f1a2-408d-8916-033620f2a2cd
-name: WMI Event Subscription for Persistence
-description: |
+name_uz: "Persistence uchun WMI Event Subscription"
+name_ru: "Подписка на события WMI для закрепления"
+name_en: "WMI Event Subscription for Persistence"
+description_uz: |
   Ushbu qoida WMI event subscription persistence'ni aniqlaydi: 5861 (va 5859/5860)
   "Microsoft-Windows-WMI-Activity/Operational" kanalida. Permanent WMI consumer + filter
   binding fileless, reboot'ga chidamli persistence beradi.
@@ -9,6 +11,24 @@ description: |
   SOC triage:
   - `operations`/`consumers`/`namespaces` — qanday consumer (CommandLine/ActiveScript)?
   - Tasdiqlanmasa: __EventConsumer/__FilterToConsumerBinding'ni o'chiring, IR.
+description_ru: |
+  Это правило выявляет закрепление через WMI event subscription: 5861 (и 5859/5860)
+  в канале "Microsoft-Windows-WMI-Activity/Operational". Постоянный WMI consumer + filter
+  binding даёт бесфайловое, устойчивое к перезагрузке закрепление.
+  Примечание: поля WMI в вашем индексе находятся под `winlog.user_data.*` (Operation,
+  Namespace, User, CONSUMER, PossibleCause, Query).
+  SOC-триаж:
+  - `operations`/`consumers`/`namespaces` — какой это consumer (CommandLine/ActiveScript)?
+  - Если не подтверждено: удалите __EventConsumer/__FilterToConsumerBinding, IR.
+description_en: |
+  This rule detects WMI event subscription persistence: 5861 (and 5859/5860)
+  in the "Microsoft-Windows-WMI-Activity/Operational" channel. A permanent WMI consumer + filter
+  binding provides fileless, reboot-resistant persistence.
+  Note: in your index the WMI fields are under `winlog.user_data.*` (Operation,
+  Namespace, User, CONSUMER, PossibleCause, Query).
+  SOC triage:
+  - `operations`/`consumers`/`namespaces` — what kind of consumer (CommandLine/ActiveScript)?
+  - If not confirmed: delete the __EventConsumer/__FilterToConsumerBinding, IR.
 type: esql
 params: '{}'
 schedule_interval: 10m

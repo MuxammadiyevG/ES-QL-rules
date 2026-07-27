@@ -1,9 +1,19 @@
 rule_id: e94635c3-913f-47c1-b4a3-696ac313be87
-name: "Chain: Linux SUID/SGID Privilege Escalation — Stage 2: Unusual SUID Binary Executed"
-description: |
+name_uz: "Zanjir: Linux SUID/SGID Privilege Escalation — 2-bosqich: G'ayrioddiy SUID binar bajarilishi"
+name_ru: "Цепочка: Linux SUID/SGID Privilege Escalation — Этап 2: Запуск необычного SUID-бинарника"
+name_en: "Chain: Linux SUID/SGID Privilege Escalation — Stage 2: Unusual SUID Binary Executed"
+description_uz: |
   Linux SUID/SGID Privilege Escalation zanjiri — 2-bosqich (2 dan).
   Unusual SUID Binary Executed.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Linux SUID/SGID Privilege Escalation — этап 2 (из 2).
+  Запуск необычного SUID-бинарника.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Linux SUID/SGID Privilege Escalation chain — stage 2 (of 2).
+  Unusual SUID Binary Executed.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

@@ -1,14 +1,34 @@
 rule_id: 02669e62-c69a-4676-9953-be09ca73fd1a
-name: FortiGate - Administrative Configuration Change
-description: |
+name_uz: "FortiGate - Administrativ konfiguratsiya o'zgarishi"
+name_ru: "FortiGate - Изменение административной конфигурации"
+name_en: "FortiGate - Administrative Configuration Change"
+description_uz: |
   Ushbu qoida FortiGate qurilmalarida admin sessiyasi orqali amalga oshirilgan har qanday konfiguratsiya o'zgarishlarini aniqlaydi. 
   Bunga login/logout vaqtidagi status o'zgarishlari va sessiya davomidagi bevosita tahrirlashlar kiradi.
-  
+
   SOC triage bosqichlari:
   - 'Device' va 'Nima' (o'zgarish turi) maydonlari orqali hodisa ko'lamini aniqlang.
   - 'message' ichidan o'zgarishni amalga oshirgan admin foydalanuvchi nomini qidiring.
   - O'zgarish kutilgan va tasdiqlangan vaqtda bo'lganini (Maintenance window) tekshiring.
   - Bir vaqtning o'zida ko'p sonli o'zgarishlar bo'lishi tizimga ruxsatsiz kirib olinganidan (Account Compromise) darak berishi mumkin.
+description_ru: |
+  Данное правило выявляет любые изменения конфигурации, выполненные на устройствах FortiGate в рамках admin-сессии. 
+  Сюда входят изменения статуса во время login/logout и непосредственные правки в ходе сессии.
+
+  Этапы SOC triage:
+  - Определите охват события по полям 'Device' и 'Nima' (тип изменения).
+  - Найдите внутри 'message' имя администратора, выполнившего изменение.
+  - Проверьте, было ли изменение выполнено в ожидаемое и согласованное время (Maintenance window).
+  - Большое количество изменений за короткий промежуток времени может указывать на несанкционированный доступ к системе (Account Compromise).
+description_en: |
+  This rule detects any configuration changes made on FortiGate devices through an admin session. 
+  This includes status changes at login/logout time and direct edits made during the session.
+
+  SOC triage steps:
+  - Determine the scope of the event via the 'Device' and 'Nima' (change type) fields.
+  - Look inside 'message' for the name of the admin user who made the change.
+  - Check whether the change happened during an expected and approved time (Maintenance window).
+  - A large number of changes at the same time may indicate unauthorized access to the system (Account Compromise).
 type: esql
 params: '{}'
 schedule_interval: 10m

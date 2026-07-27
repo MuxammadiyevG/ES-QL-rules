@@ -1,6 +1,8 @@
 rule_id: 272e1d51-c8f9-48a0-aa28-48787b8ce1eb
-name: Account Locked - Domain
-description: |
+name_uz: "Akkaunt bloklandi - Domain"
+name_ru: "Учётная запись заблокирована - Domain"
+name_en: "Account Locked - Domain"
+description_uz: |
   Ushbu qoida Credential Access texnikalariga bog'liq bo'lib, `Account Locked: Domain` kontekstidagi haddan tashqari noto'g'ri kirish urinishlari natijasida domain akkauntning bloklanishini aniqlaydi.
   Bu turdagi hodisa AD muhitida hujumchi brute force yoki password spraying orqali foydalanuvchi akkauntini egallashga urinayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida foydalanuvchi parolini unutganligi, boshqa tizimda keshlangan eski credential, servis akkauntidagi noto'g'ri parol konfiguratsiyasi yoki avtomatik skriptlardagi muammolar uchrashi mumkin.
@@ -11,6 +13,28 @@ description: |
   - Manba hostda boshqa shubhali hodisalar (malware, lateral movement) borligini tekshiring.
   - Manba va manzil hostlarda zaifliklar borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, credentiallarni yangilang va ta'sir doirasini izolyatsiya qiling.
+description_ru: |
+  Данное правило связано с техниками Credential Access и выявляет блокировку доменной учётной записи в результате чрезмерного количества неверных попыток входа в контексте `Account Locked: Domain`.
+  Событие такого типа считается опасным, поскольку может указывать на то, что в среде AD атакующий пытается захватить учётную запись пользователя через brute force или password spraying.
+  В качестве легитимных случаев могут встречаться забытый пользователем пароль, старые учётные данные, закешированные в другой системе, неверная конфигурация пароля в служебной учётной записи или проблемы в автоматических скриптах.
+  Этапы SOC triage:
+  - Точно идентифицируйте `actor` (заблокированного пользователя) и `src_ip` (исходный IP) в событии.
+  - Проверьте источник блокировки — с какого хоста или IP она пришла.
+  - Проверьте наличие закешированных учётных данных пользователя в других системах.
+  - Проверьте наличие других подозрительных событий (malware, горизонтальное перемещение) на исходном хосте.
+  - Проверьте наличие уязвимостей на исходном и целевом хостах.
+  - При подтверждении нелегитимной активности выполните оперативный containment: заблокируйте исходный IP, обновите учётные данные и изолируйте область воздействия.
+description_en: |
+  This rule is related to Credential Access techniques and detects the lockout of a domain account caused by an excessive number of incorrect logon attempts in the `Account Locked: Domain` context.
+  This type of event is considered dangerous because it may indicate that in an AD environment an attacker is trying to take over a user account through brute force or password spraying.
+  Legitimate cases may include a user forgetting the password, old credentials cached on another system, an incorrect password configuration in a service account or problems in automated scripts.
+  SOC triage steps:
+  - Precisely identify the `actor` (the locked-out user) and the `src_ip` (source IP) in the event.
+  - Check the source of the lockout — which host or IP it came from.
+  - Check whether the user has cached credentials on other systems.
+  - Check whether there are other suspicious events (malware, lateral movement) on the source host.
+  - Check whether there are vulnerabilities on the source and destination hosts.
+  - If illegitimate activity is confirmed, perform rapid containment: block the source IP, rotate the credentials and isolate the scope of impact.
 type: esql
 params: '{}'
 schedule_interval: 10m

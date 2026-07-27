@@ -1,9 +1,19 @@
 rule_id: 3560e6dd-5b28-49dd-9419-1e18fe1e7680
-name: "Chain: Windows Kerberos TGT Abuse — Stage 2: Privileged Logon After TGT Burst"
-description: |
+name_uz: "Zanjir: Windows Kerberos TGT suiiste'moli — 2-bosqich: TGT seriyasidan keyingi imtiyozli kirish"
+name_ru: "Цепочка: злоупотребление Kerberos TGT в Windows — Этап 2: привилегированный вход после всплеска TGT"
+name_en: "Chain: Windows Kerberos TGT Abuse — Stage 2: Privileged Logon After TGT Burst"
+description_uz: |
   Windows Kerberos TGT Abuse zanjiri — 2-bosqich (2 dan).
   Privileged Logon After TGT Burst.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка злоупотребления Kerberos TGT в Windows — Этап 2 (из 2).
+  Привилегированный вход после всплеска TGT.
+  Связан с предыдущим этапом (stage 1).
+description_en: |
+  Windows Kerberos TGT Abuse chain — Stage 2 (of 2).
+  Privileged Logon After TGT Burst.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

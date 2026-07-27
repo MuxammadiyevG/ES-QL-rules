@@ -1,6 +1,8 @@
 rule_id: ebfefa1b-33a8-4582-8cb6-a2b8353228ab
-name: Windows Account Targeted From Multiple Sources (Distributed Brute Force)
-description: |
+name_uz: "Windows Akkaunti Bir Nechta Manbadan Nishonga Olindi (Taqsimlangan Brute Force)"
+name_ru: "Атака на учётную запись Windows с нескольких источников (распределённый brute force)"
+name_en: "Windows Account Targeted From Multiple Sources (Distributed Brute Force)"
+description_uz: |
   Ushbu qoida bitta akkauntga BIR NECHA xil manbadan (`src_ip`) muvaffaqiyatsiz logon (4625)
   urinishlarini aniqlaydi — taqsimlangan brute force / credential stuffing belgisi. Bitta
   akkauntning qisqa vaqtda 3+ xil IP'dan ko'p marta xato kirishi shubhali.
@@ -8,6 +10,22 @@ description: |
   - `username` nishon akkaunt, `source_ips` qaysi manbalar (reputatsiya/geolokatsiya)?
   - Akkaunt imtiyozlimi (Domain Admins)?
   - Tasdiqlansa: manbalarni bloklang, akkauntni himoyalang (MFA/reset), monitoringni kuchaytiring.
+description_ru: |
+  Это правило выявляет неуспешные попытки входа (4625) к одной учётной записи с НЕСКОЛЬКИХ разных источников (`src_ip`)
+  — признак распределённого перебора паролей (brute force) / credential stuffing. Многократные
+  неудачные входы одной учётной записи с 3+ разных IP за короткое время подозрительны.
+  SOC-триаж:
+  - `username` — целевая учётная запись, какие источники в `source_ips` (репутация/геолокация)?
+  - Является ли учётная запись привилегированной (Domain Admins)?
+  - При подтверждении: заблокируйте источники, защитите учётную запись (MFA/сброс), усильте мониторинг.
+description_en: |
+  This rule detects failed logon (4625) attempts against a single account from MULTIPLE different sources (`src_ip`)
+  — an indicator of distributed brute force / credential stuffing. Many failed
+  logons for a single account from 3+ different IPs in a short time are suspicious.
+  SOC triage:
+  - `username` is the target account, which sources are in `source_ips` (reputation/geolocation)?
+  - Is the account privileged (Domain Admins)?
+  - If confirmed: block the sources, protect the account (MFA/reset), increase monitoring.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: 26bab139-1c3a-4e75-aa92-1e7c1d684194
-name: Nginx - Webshell / Suspicious Script Upload or Access
-description: |
+name_uz: "Nginx - Webshell / shubhali skript yuklash yoki unga murojaat"
+name_ru: "Nginx - Webshell / загрузка подозрительного скрипта или доступ к нему"
+name_en: "Nginx - Webshell / Suspicious Script Upload or Access"
+description_uz: |
   Ushbu qoida Nginx access log'da webshell yoki shubhali script fayllariga so'rovlarni aniqlaydi.
   .php, .phtml, .php5, .asp, .aspx, .jsp, .jspx, .cgi kabi kengaytmalar odatda statik fayllar
   joylashadigan kataloglarda (/uploads, /tmp, /images) so'ralganda flagga olinadi.
@@ -12,6 +14,30 @@ description: |
   - HTTP response code — fayl mavjud va ishlatilganmi aniqlang
   - Fayl tizimida shubhali fayllar bormi forensic tekshiring
   - Containment va malware removal zarurligini baholang
+description_ru: |
+  Это правило обнаруживает запросы к webshell или подозрительным файлам скриптов в access log Nginx.
+  Расширения вида .php, .phtml, .php5, .asp, .aspx, .jsp, .jspx, .cgi помечаются, когда они запрашиваются
+  в каталогах, где обычно размещаются статические файлы (/uploads, /tmp, /images).
+  Это признак развёртывания web shell или выполнения кода на стороне сервера (T1505.003).
+  Легитимные случаи: легитимный динамический контент в необычных путях, некорректно настроенное приложение.
+  Этапы SOC triage:
+  - Проанализируйте запрошенный файл скрипта и каталог
+  - Проверьте, была ли сначала загрузка через POST, а затем доступ через GET
+  - HTTP response code — определите, существует ли файл и был ли он использован
+  - Проведите форензик-проверку файловой системы на наличие подозрительных файлов
+  - Оцените необходимость сдерживания (containment) и удаления вредоносного ПО
+description_en: |
+  This rule detects requests to webshell or suspicious script files in the Nginx access log.
+  Extensions such as .php, .phtml, .php5, .asp, .aspx, .jsp, .jspx, .cgi are flagged when they are requested
+  in directories where static files are normally located (/uploads, /tmp, /images).
+  This is an indicator of web shell deployment or server-side execution (T1505.003).
+  Legitimate cases: legitimate dynamic content in unusual paths, misconfigured app.
+  SOC triage steps:
+  - Analyze the requested script file and directory
+  - Check whether there was a POST upload first and a GET access afterwards
+  - HTTP response code — determine whether the file exists and was used
+  - Forensically check the file system for suspicious files
+  - Assess whether containment and malware removal are required
 type: esql
 params: '{}'
 schedule_interval: 10m

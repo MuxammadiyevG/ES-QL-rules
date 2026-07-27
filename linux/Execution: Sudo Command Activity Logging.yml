@@ -1,6 +1,8 @@
 rule_id: 842cd6d3-5559-4415-ae83-63deb572ac88
-name: "Execution: Sudo Command Activity Logging"
-description: |
+name_uz: "Execution: sudo buyruqlari faoliyatini jurnallash"
+name_ru: "Execution: журналирование активности команд sudo"
+name_en: "Execution: Sudo Command Activity Logging"
+description_uz: |
   Ushbu qoida sudo orqali bajarilgan barcha commandlarni aniqlaydi.
 
   Bu foydalanuvchilarning privilege escalation orqali qanday buyruqlarni
@@ -11,7 +13,28 @@ description: |
   - `sudo_command` (process.title) ni analiz qiling
   - Xavfli buyruqlarni aniqlang (useradd, chmod, curl, wget, bash va h.k.)
   - Session kontekstini (`session_id`) tekshiring
+description_ru: |
+  Данное правило выявляет все команды, выполненные через sudo.
 
+  Оно используется для мониторинга того, какие команды пользователи выполняют
+  с повышением привилегий.
+
+  SOC-триаж:
+  - проверьте, кем является `actor_user`
+  - проанализируйте `sudo_command` (process.title)
+  - выявите опасные команды (useradd, chmod, curl, wget, bash и т.д.)
+  - проверьте контекст сессии (`session_id`)
+description_en: |
+  This rule detects all commands executed via sudo.
+
+  It is used to monitor which commands users are running through privilege
+  escalation.
+
+  SOC triage:
+  - check who `actor_user` is
+  - analyse `sudo_command` (process.title)
+  - identify dangerous commands (useradd, chmod, curl, wget, bash, etc.)
+  - check the session context (`session_id`)
 type: esql
 params: "{}"
 schedule_interval: 10m

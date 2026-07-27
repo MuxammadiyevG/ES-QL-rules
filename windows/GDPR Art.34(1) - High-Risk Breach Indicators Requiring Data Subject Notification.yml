@@ -1,6 +1,42 @@
 rule_id: 7e61625e-023b-4946-a899-172daa8d8c6c
-name: "GDPR Art.34(1) - High-Risk Breach Indicators Requiring Data Subject Notification"
-description: |
+name_uz: "GDPR Art.34(1) - Ma'lumot subyektlarini xabardor qilishni talab qiluvchi yuqori xavfli buzilish indikatorlari"
+name_ru: "GDPR Art.34(1) - Индикаторы утечки высокого риска, требующие уведомления субъектов данных"
+name_en: "GDPR Art.34(1) - High-Risk Breach Indicators Requiring Data Subject Notification"
+description_uz: |
+  Jismoniy shaxslarning huquq va erkinliklari uchun yuqori xavf keltirib chiqarish ehtimoli yuqori bo'lgan
+  eng yuqori jiddiylikdagi buzilish indikatorlarini aniqlaydi — bu GDPR 34(1)-moddasi bo'yicha buzilish haqida
+  ta'sirlangan ma'lumot subyektlariga kechiktirmasdan xabar berish majburiyatini keltirib chiqaradi.
+  Art.34 Art.33 chegarasi bajarilganda VA buzilish shaxslar uchun YUQORI XAVF tug'dirganda qo'llaniladi:
+  moliyaviy zarar, kamsitish, shaxsni o'g'irlash, obro'ga putur yetkazish yoki ma'lumot subyektlari uchun
+  sezilarli ijtimoiy/iqtisodiy noqulaylik.
+  Kuzatadi: (1) ommaviy akkaunt kompromatatsiyasi indikatorlari, (2) ommaviy ma'lumotga kirish anomaliyalari,
+  (3) tarmoq orqali shifrlanmagan shaxsiy ma'lumotlarni eksfiltratsiya qilish urinishlari, (4) shaxsiy ma'lumotlar
+  omborlarida ransomware'ga o'xshash fayl o'zgartirish shablonlari.
+  Trigger: >50 ta turli foydalanuvchi akkaunti kompromatatsiya qilingan YOKI bitta sessiyadan ommaviy ma'lumotga kirish
+  YOKI ma'lumotlar bazasi hostlaridan katta hajmli chiquvchi uzatma.
+  False positive: Ruxsat etilgan ommaviy ma'lumot eksportlari, ETL jarayonlari, backup ishlari.
+  Triage: DARHOL C-level va DPO darajasiga eskalatsiya talab qilinadi. Aniqlang: (1) buzilgan ma'lumotlarga
+  shifrlash qo'llanilganmi (Art.34(3)(a) istisnosi)?, (2) qancha ma'lumot subyekti ta'sirlangan?,
+  (3) shaxsiy ma'lumotlarning qaysi toifalari (maxsus toifalar = yuqoriroq xavf)?,
+  (4) Art.34(2) bo'yicha aniq va sodda tilda ma'lumot subyektlariga xabarnoma tayyorlang.
+description_ru: |
+  Обнаруживает индикаторы утечки наивысшей серьёзности, которые с высокой вероятностью влекут высокий риск
+  для прав и свобод физических лиц, что порождает обязанность по статье 34(1) GDPR
+  сообщить об утечке затронутым субъектам данных без неоправданной задержки.
+  Art.34 применяется, когда достигнут порог Art.33 И утечка создаёт ВЫСОКИЙ РИСК для физических лиц:
+  финансовые потери, дискриминация, кража личности, репутационный ущерб или существенные
+  социальные/экономические неблагоприятные последствия для субъектов данных.
+  Отслеживает: (1) индикаторы массовой компрометации учётных записей, (2) аномалии массового доступа к данным,
+  (3) попытки эксфильтрации незашифрованных персональных данных по сети, (4) характерные для ransomware
+  шаблоны модификации файлов в хранилищах персональных данных.
+  Триггер: >50 различных учётных записей скомпрометировано ИЛИ массовый доступ к данным из одной сессии
+  ИЛИ крупная исходящая передача с хостов баз данных.
+  Ложные срабатывания: Санкционированные массовые выгрузки данных, ETL-процессы, задания резервного копирования.
+  Разбор: Требуется НЕМЕДЛЕННАЯ эскалация на уровень C-level и DPO. Определите: (1) применено ли шифрование
+  к скомпрометированным данным (исключение Art.34(3)(a))?, (2) сколько субъектов данных затронуто?,
+  (3) какие категории персональных данных (специальные категории = более высокий риск)?,
+  (4) подготовьте уведомление субъектов данных на ясном и простом языке согласно Art.34(2).
+description_en: |
   Detects breach indicators of the highest severity that are likely to result in high risk
   to the rights and freedoms of natural persons, triggering GDPR Article 34(1) obligation
   to communicate the breach to affected data subjects without undue delay.

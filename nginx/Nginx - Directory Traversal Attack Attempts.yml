@@ -1,6 +1,8 @@
 rule_id: f7970315-6b55-4379-967a-7235a8fcd945
-name: Nginx - Directory Traversal Attack Attempts
-description: |
+name_uz: "Nginx - Directory Traversal hujum urinishlari"
+name_ru: "Nginx - попытки атаки Directory Traversal"
+name_en: "Nginx - Directory Traversal Attack Attempts"
+description_uz: |
   Ushbu qoida Nginx access log'da directory/path traversal pattern'larni aniqlaydi.
   Bu unauthorized file access urinishi belgisi (T1083).
   Qonuniy holatlar: legitimate relative paths, misconfigured applications.
@@ -10,6 +12,26 @@ description: |
   - Web server configuration va file permissions'ni review qiling
   - Sensitive file'larga access bo'lganmi aniqlang
   - Containment va remediation action'lar zarurligini baholang
+description_ru: |
+  Это правило обнаруживает шаблоны directory/path traversal в access log Nginx.
+  Это признак попытки несанкционированного доступа к файлам (T1083).
+  Легитимные случаи: легитимные относительные пути, неверно настроенные приложения.
+  Этапы SOC-триажа:
+  - Проанализируйте путь traversal и целевой файл
+  - Проверьте код ответа HTTP - был ли доступ к файлу успешным
+  - Проверьте конфигурацию веб-сервера и права доступа к файлам
+  - Выясните, был ли получен доступ к чувствительным файлам
+  - Оцените необходимость мер по сдерживанию и устранению
+description_en: |
+  This rule detects directory/path traversal patterns in the Nginx access log.
+  This is a sign of an unauthorized file access attempt (T1083).
+  Legitimate cases: legitimate relative paths, misconfigured applications.
+  SOC triage steps:
+  - Analyze the traversal path and the target file
+  - Check the HTTP response code - whether the file access was successful
+  - Review the web server configuration and file permissions
+  - Determine whether sensitive files were accessed
+  - Assess whether containment and remediation actions are needed
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,14 @@
 rule_id: 230af9ee-51b3-4605-b77f-4a37a8190b61
-name: "Suspicious Filename with Embedded Base64 Commands"
-description: |
+name_uz: "Base64 buyruqlari joylashtirilgan shubhali fayl nomi"
+name_ru: "Подозрительное имя файла со встроенными Base64-командами"
+name_en: "Suspicious Filename with Embedded Base64 Commands"
+description_uz: |
+  Fayl nomlarida bash/base64 payloadlari joylashtirilgan fayllarning yaratilishini aniqlaydi.
+  VShell zararli dasturida shell expansion xususiyatlari orqali bajarilishni ishga tushirish uchun kuzatilgan.
+description_ru: |
+  Обнаруживает создание файлов, в именах которых встроены bash/base64-полезные нагрузки.
+  Наблюдалось во вредоносном ПО VShell для запуска выполнения через особенности раскрытия (expansion) shell.
+description_en: |
   Detects creation of files with filenames containing embedded bash/base64 payloads.
   Seen in VShell malware to trigger execution via shell expansion quirks.
 type: esql

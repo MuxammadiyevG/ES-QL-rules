@@ -1,9 +1,19 @@
 rule_id: 3b1aba27-788a-457b-be00-844292f214a7
-name: "Windows File Server: File Deletion via NTFS Audit"
-description: |
+name_uz: "Windows File Server: NTFS Audit orqali Fayl O'chirilishi"
+name_ru: "Windows File Server: удаление файла по данным NTFS Audit"
+name_en: "Windows File Server: File Deletion via NTFS Audit"
+description_uz: |
   Ushbu qoida Windows File Server share ostidagi fayl o‘chirilganini aniqlaydi.
   Fayl o‘chirish uchun 5145 access check foydali bo‘lsa ham, aniqroq signal
   4663 DELETE access yoki 4660 object deleted hodisasidan olinadi.
+description_ru: |
+  Это правило выявляет удаление файла под шарой Windows File Server.
+  Хотя проверка доступа 5145 полезна при удалении файла, более точный сигнал
+  даёт доступ DELETE в 4663 или событие 4660 object deleted.
+description_en: |
+  This rule detects that a file under a Windows File Server share has been deleted.
+  Although the 5145 access check is useful for file deletion, a more precise signal
+  comes from the 4663 DELETE access or the 4660 object deleted event.
 type: esql
 params: "{}"
 schedule_interval: 5m

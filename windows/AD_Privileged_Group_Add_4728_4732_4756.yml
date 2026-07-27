@@ -1,6 +1,8 @@
 rule_id: 88c322c7-b8ef-48d4-9e4e-d1cbaa5cc4f7
-name: AD Privileged Group Membership Added (4728/4732/4756)
-description: |
+name_uz: "AD imtiyozli guruhga a'zo qo'shildi (4728/4732/4756)"
+name_ru: "Добавление участника в привилегированную группу AD (4728/4732/4756)"
+name_en: "AD Privileged Group Membership Added (4728/4732/4756)"
+description_uz: |
   Ushbu qoida privilege escalation va persistence texnikalariga to'g'ridan-to'g'ri bog'liq bo'lib, imtiyozli guruhlarga yangi a'zo qo'shilishini aniqlaydi.
   Domain Admins, Enterprise Admins yoki Administrators kabi guruhlarga qo'shilish hujumchiga butun AD ustidan nazorat berishi mumkin, shuning uchun bu eng kritik indikatorlardan biridir.
   Qonuniy holatlar: rejalashtirilgan admin tayinlovi, emergency access berish, migration paytidagi vaqtinchalik rol o'zgarishi.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manzilining administrativ segmentdan ekanini tekshiring.
   - Target akkauntning boshqa imtiyozli guruhlardagi a'zoligini ham tekshirib, chain-escalation ehtimolini baholang.
   - Tasdiqlanmasa darhol a'zolikni olib tashlang, aktor sessiyalarini uzing va Tier-0 containment protsedurasini ishga tushiring.
+description_ru: |
+  Данное правило напрямую связано с техниками повышения привилегий и закрепления и выявляет добавление нового участника в привилегированные группы.
+  Добавление в такие группы, как Domain Admins, Enterprise Admins или Administrators, может дать атакующему контроль над всем AD, поэтому это один из самых критичных индикаторов.
+  Легитимные случаи: запланированное назначение администратора, выдача emergency access, временное изменение роли во время миграции.
+  Этапы SOC triage:
+  - Определите `actor`, добавленный субъект (`target_user`) и `group_name`.
+  - Проверьте наличие change ticket или утверждённого разрешения на это изменение членства.
+  - Проверьте, относится ли адрес `src_ip` к административному сегменту.
+  - Проверьте также членство целевой учётной записи в других привилегированных группах и оцените вероятность chain-escalation.
+  - Если не подтверждено, немедленно удалите членство, завершите сессии актора и запустите процедуру Tier-0 containment.
+description_en: |
+  This rule is directly related to privilege escalation and persistence techniques and detects a new member being added to privileged groups.
+  Being added to groups such as Domain Admins, Enterprise Admins or Administrators can give an attacker control over the entire AD, which makes this one of the most critical indicators.
+  Legitimate cases: a planned admin assignment, granting emergency access, a temporary role change during migration.
+  SOC triage steps:
+  - Identify the `actor`, the added subject (`target_user`) and the `group_name`.
+  - Check whether a change ticket or an approved authorization exists for this membership change.
+  - Check that the `src_ip` address belongs to the administrative segment.
+  - Also check the target account's membership in other privileged groups and assess the likelihood of chain-escalation.
+  - If not confirmed, remove the membership immediately, terminate the actor's sessions and start the Tier-0 containment procedure.
 type: esql
 params: '{}'
 schedule_interval: 10m

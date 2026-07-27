@@ -1,9 +1,19 @@
 rule_id: 98bafac4-f3ae-4b19-b874-7d0089cf8923
-name: RDP Successful Logon - Baseline
-description: |
+name_uz: "Muvaffaqiyatli RDP logon - baseline"
+name_ru: "Успешный вход по RDP - baseline"
+name_en: "RDP Successful Logon - Baseline"
+description_uz: |
   Baseline/monitoring: muvaffaqiyatli RDP logon (4624 Type 10) larni host/user/manba bo'yicha
   yig'adi. Yangi yoki noodatiy RDP kirishlarini aniqlash uchun normal darajani belgilaydi
   (alert emas, kontekst).
+description_ru: |
+  Baseline/мониторинг: собирает успешные входы по RDP (4624 Type 10) по хосту/пользователю/источнику.
+  Задаёт нормальный уровень для выявления новых или необычных RDP-подключений
+  (не алерт, контекст).
+description_en: |
+  Baseline/monitoring: aggregates successful RDP logons (4624 Type 10) by host/user/source.
+  Establishes the normal level for spotting new or unusual RDP access
+  (not an alert, context).
 type: esql
 params: '{}'
 schedule_interval: 10m

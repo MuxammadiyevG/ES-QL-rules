@@ -1,6 +1,8 @@
 rule_id: 01b63d35-2658-44c2-99e1-9c9d75878d02
-name: CheckPoint - Multiple Connection Reject Events
-description: |
+name_uz: "CheckPoint - Ko'p sonli ulanish reject hodisalari"
+name_ru: "CheckPoint - множественные события reject соединений"
+name_en: "CheckPoint - Multiple Connection Reject Events"
+description_uz: |
   Ushbu qoida CheckPoint firewall'da bir xil manbadan ko'p reject hodisalarini aniqlaydi.
   Reject action ICMP destination-unreachable xabarini yuboradi va bu non-standard communication belgisi bo'lishi mumkin (T1095).
   Qonuniy holatlar: tarmoq konfiguratsiya muammolari, service discovery, legitimate connection attempts.
@@ -10,6 +12,26 @@ description: |
   - Pattern va frequency'ni tekshiring
   - Network policy bilan mos kelishini tekshiring
   - Scanning yoki reconnaissance faoliyat belgisi bormi aniqlang
+description_ru: |
+  Это правило выявляет множественные события reject с одного и того же источника на CheckPoint firewall.
+  Действие reject отправляет сообщение ICMP destination-unreachable, и это может быть признаком non-standard communication (T1095).
+  Легитимные случаи: проблемы сетевой конфигурации, service discovery, легитимные попытки соединения.
+  Этапы SOC-триажа:
+  - Идентифицируйте исходные и destination IP
+  - Проанализируйте отклонённые порты и сервисы
+  - Проверьте pattern и частоту
+  - Проверьте соответствие сетевой политике
+  - Определите, есть ли признаки сканирования или разведывательной активности
+description_en: |
+  This rule detects multiple reject events from the same source on the CheckPoint firewall.
+  The reject action sends an ICMP destination-unreachable message, and this may be a sign of non-standard communication (T1095).
+  Legitimate cases: network configuration issues, service discovery, legitimate connection attempts.
+  SOC triage steps:
+  - Identify the source and destination IPs
+  - Analyze the rejected ports and services
+  - Check the pattern and frequency
+  - Check whether it complies with the network policy
+  - Determine whether there are signs of scanning or reconnaissance activity
 type: esql
 params: '{}'
 schedule_interval: 10m

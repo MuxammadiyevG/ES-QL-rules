@@ -1,6 +1,14 @@
 rule_id: 58ef1815-0a23-41c3-a860-256a677d4ef9
-name: "Doas Configuration File Creation"
-description: |
+name_uz: "Doas konfiguratsiya faylining yaratilishi"
+name_ru: "Создание конфигурационного файла doas"
+name_en: "Doas Configuration File Creation"
+description_uz: |
+  doas.conf faylining yaratilishini aniqlaydi.
+  Doas — sudo ga muqobil vosita; uning konfiguratsiyasi yaratilishini kuzatish imtiyozlarni oshirish urinishlari yoki ruxsatsiz konfiguratsiyadan darak berishi mumkin.
+description_ru: |
+  Обнаруживает создание файла doas.conf.
+  Doas — альтернатива sudo; отслеживание создания его конфигурации может указывать на попытки повышения привилегий или несанкционированную настройку.
+description_en: |
   Detects the creation of doas.conf file.
   Doas is a sudo alternative; checking for its config creation can indicate privilege escalation attempts or unauthorized configuration.
 type: esql

@@ -1,6 +1,8 @@
 rule_id: 49ed6f4b-3d83-4e1b-a0a9-a63922e27574
-name: "Agent FIM: Linux File Changed From Baseline"
-description: |
+name_uz: "Agent FIM: Linux fayli baseline dan o'zgardi"
+name_ru: "Agent FIM: файл Linux изменён относительно baseline"
+name_en: "Agent FIM: Linux File Changed From Baseline"
+description_uz: |
   Ushbu qoida Defense Evasion va Impact texnikalariga bog'liq bo'lib, faylning baseline dan o'zgarganligini aniqlaydi.
   Hujumchi tizim fayllarini, konfiguratsiya fayllarini yoki binary fayllarni o'zgartirishi orqali persistence yoki anti-forensics maqsadida faoliyat yuritayotgan bo'lishi mumkin.
   Qonuniy holatlar: rejalashtirilgan tizim yangilanishlari, patch management, dastur o'rnatish.
@@ -9,6 +11,24 @@ description: |
   - Fayl hash qiymatini (`auditd.paths.cap_fp`) baseline bilan solishtiring.
   - O'zgarish uchun tasdiqlangan change ticket borligini tekshiring.
   - Noqonuniy bo'lsa: faylni tiklang, sessiyani to'xtating, hostni izolyatsiya qiling.
+description_ru: |
+  Это правило связано с техниками Defense Evasion и Impact и выявляет отклонение файла от baseline.
+  Злоумышленник может действовать с целью закрепления или анти-форензики, изменяя системные файлы, конфигурационные файлы или бинарные файлы.
+  Легитимные случаи: плановые обновления системы, patch management, установка программ.
+  Шаги SOC-триажа:
+  - Идентифицируйте `host.hostname`, `user.name` и изменённый файл `auditd.paths.name`.
+  - Сравните хеш файла (`auditd.paths.cap_fp`) с baseline.
+  - Проверьте наличие утверждённой заявки на изменение.
+  - Если активность нелегитимна: восстановите файл, остановите сессию, изолируйте хост.
+description_en: |
+  This rule is related to Defense Evasion and Impact techniques and detects that a file has changed from the baseline.
+  An attacker may be operating for persistence or anti-forensics purposes by modifying system files, configuration files, or binary files.
+  Legitimate cases: scheduled system updates, patch management, software installation.
+  SOC triage steps:
+  - Identify `host.hostname`, `user.name` and the changed file `auditd.paths.name`.
+  - Compare the file hash value (`auditd.paths.cap_fp`) with the baseline.
+  - Check whether an approved change ticket exists for the change.
+  - If illegitimate: restore the file, terminate the session, isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

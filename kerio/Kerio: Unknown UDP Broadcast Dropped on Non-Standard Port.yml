@@ -1,6 +1,8 @@
 rule_id: ec4d6e31-1902-492a-b86b-238cfb122172
-name: "Kerio: Unknown UDP Broadcast Dropped on Non-Standard Port"
-description: |
+name_uz: "Kerio: Standart bo'lmagan portda noma'lum UDP broadcast bloklandi"
+name_ru: "Kerio: Заблокирован неизвестный широковещательный UDP на нестандартном порту"
+name_en: "Kerio: Unknown UDP Broadcast Dropped on Non-Standard Port"
+description_uz: |
   Ushbu qoida Kerio tomonidan bloklangan noma'lum UDP broadcast paketlarini
   aniqlaydi. Logda ko'ringan: 10.80.240.x:5050 → 255.255.255.255:5050 va
   10.1.27.97:5678 → 255.255.255.255:5678 kabi patternlar.
@@ -9,6 +11,24 @@ description: |
   - destination.port — bu port qaysi dasturga tegishli ekanini aniqlang.
   - source.ip — qaysi host yuborayapti, ruxsatli qurilmami.
   - Ko'p hostdan kelsa — broadcast storm yoki discovery protocol.
+description_ru: |
+  Это правило выявляет неизвестные широковещательные UDP-пакеты, заблокированные
+  Kerio. Замечено в логе: шаблоны вида 10.80.240.x:5050 → 255.255.255.255:5050 и
+  10.1.27.97:5678 → 255.255.255.255:5678.
+  Порт 5050 — Telegram desktop или другой мессенджер; 5678 — Mikrotik discovery.
+  Этапы SOC-триажа:
+  - destination.port — определите, какому приложению принадлежит этот порт.
+  - source.ip — какой хост отправляет, санкционированное ли это устройство.
+  - Если приходит со многих хостов — broadcast storm или протокол обнаружения.
+description_en: |
+  This rule detects unknown UDP broadcast packets blocked by
+  Kerio. Seen in the log: patterns such as 10.80.240.x:5050 → 255.255.255.255:5050 and
+  10.1.27.97:5678 → 255.255.255.255:5678.
+  Port 5050 — Telegram desktop or another messenger; 5678 — Mikrotik discovery.
+  SOC triage steps:
+  - destination.port — determine which application this port belongs to.
+  - source.ip — which host is sending, whether it is an authorized device.
+  - If it comes from many hosts — a broadcast storm or a discovery protocol.
 type: esql
 params: '{}'
 schedule_interval: 15m

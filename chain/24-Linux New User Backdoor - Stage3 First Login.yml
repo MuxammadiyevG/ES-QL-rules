@@ -1,9 +1,19 @@
 rule_id: a21b529a-b380-49eb-8354-e88ad98deaeb
-name: "Chain: Login by New Linux Account"
-description: |
+name_uz: "Zanjir: Yangi Linux hisobi bilan kirish"
+name_ru: "Цепочка: Вход под новой учётной записью Linux"
+name_en: "Chain: Login by New Linux Account"
+description_uz: |
   Linux yangi-foydalanuvchi backdoor zanjiri — 3-bosqich.
   Yangi yaratilgan hisob bilan o'sha host'ga kirish (user_start success).
   2-bosqichga bog'langan.
+description_ru: |
+  Цепочка Linux new-user backdoor — этап 3.
+  Вход на тот же host под вновь созданной учётной записью (user_start success).
+  Связано с этапом 2.
+description_en: |
+  Linux new-user backdoor chain — stage 3.
+  Login to the same host with the newly created account (user_start success).
+  Linked to stage 2.
 type: esql
 enabled: true
 params: "{}"

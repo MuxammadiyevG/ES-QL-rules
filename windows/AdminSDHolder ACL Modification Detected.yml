@@ -1,6 +1,8 @@
 rule_id: a8c047ab-fd43-4f05-953a-19750f2c0756
-name: AdminSDHolder ACL Modification Detected
-description: |
+name_uz: "AdminSDHolder ACL o'zgartirilishi aniqlandi"
+name_ru: "Обнаружено изменение ACL объекта AdminSDHolder"
+name_en: "AdminSDHolder ACL Modification Detected"
+description_uz: |
   Ushbu qoida AdminSDHolder obyektiga o'zgarishni aniqlaydi: 5136/5137 da `ObjectName`
   ichida "AdminSDHolder" bo'lsa. AdminSDHolder ACL'ini o'zgartirish SDProp orqali barcha
   Tier-0 akkauntlarga yashirin doimiy huquq beradi.
@@ -11,6 +13,28 @@ description: |
   SOC triage:
   - `modifier` kim, `objects` da AdminSDHolder o'zgarganmi?
   - Tasdiqlanmasa: ACL'ni tiklang, Tier-0 IR.
+description_ru: |
+  Это правило обнаруживает изменение объекта AdminSDHolder: если в 5136/5137 внутри `ObjectName`
+  содержится "AdminSDHolder". Изменение ACL объекта AdminSDHolder через SDProp даёт всем
+  учётным записям Tier-0 скрытые постоянные права.
+  ПРИМЕЧАНИЕ: в вашем индексе `ObjectDN`/`AttributeLDAPDisplayName` ОТСУТСТВУЮТ — для DN
+  использовано `ObjectName`. Если 5136 не записывает DN объекта в ObjectName, это правило
+  ничего не вернёт (ошибки не будет). Для полноценной работы включите подкатегорию "Audit Directory Service
+  Changes" и парсинг DN/атрибутов.
+  SOC triage:
+  - Кто такой `modifier`, изменился ли AdminSDHolder в `objects`?
+  - Если не подтверждено: восстановите ACL, Tier-0 IR.
+description_en: |
+  This rule detects a modification of the AdminSDHolder object: when `ObjectName`
+  in 5136/5137 contains "AdminSDHolder". Modifying the AdminSDHolder ACL grants hidden
+  permanent rights to all Tier-0 accounts via SDProp.
+  NOTE: `ObjectDN`/`AttributeLDAPDisplayName` DO NOT EXIST in your index — `ObjectName`
+  was used for the DN. If 5136 does not write the object DN into ObjectName, this rule
+  returns nothing (it does not error). For full operation, enable the "Audit Directory Service
+  Changes" subcategory and DN/attribute parsing.
+  SOC triage:
+  - Who is `modifier`, did AdminSDHolder change in `objects`?
+  - If not confirmed: restore the ACL, Tier-0 IR.
 type: esql
 params: '{}'
 schedule_interval: 10m

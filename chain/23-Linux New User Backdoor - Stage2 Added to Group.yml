@@ -1,9 +1,19 @@
 rule_id: cd82f399-d441-42ec-be61-c19cc80d5c82
-name: "Chain: Linux User Added to Group"
-description: |
+name_uz: "Zanjir: Linux foydalanuvchisi guruhga qo'shildi"
+name_ru: "Цепочка: Пользователь Linux добавлен в группу"
+name_en: "Chain: Linux User Added to Group"
+description_uz: |
   Linux yangi-foydalanuvchi backdoor zanjiri — 2-bosqich.
   Hisob guruhga (sudo/wheel/admin) qo'shilishi.
   1-bosqichga bog'langan.
+description_ru: |
+  Цепочка Linux new-user backdoor — этап 2.
+  Добавление учётной записи в группу (sudo/wheel/admin).
+  Связано с этапом 1.
+description_en: |
+  Linux new-user backdoor chain — stage 2.
+  Account added to a group (sudo/wheel/admin).
+  Linked to stage 1.
 type: esql
 enabled: true
 params: "{}"

@@ -1,9 +1,19 @@
 rule_id: d7d37ee5-97e6-4698-bb1d-5146e199b2d9
-name: "Windows File Server: Possible File Move"
-description: |
+name_uz: "Windows File Server: Ehtimoliy Fayl Ko'chirish"
+name_ru: "Windows File Server: возможное перемещение файла"
+name_en: "Windows File Server: Possible File Move"
+description_uz: |
   Ushbu qoida Windows File Server share ichida fayl ko‘chirilgan bo‘lishi
   mumkin bo‘lgan holatlarni aniqlaydi. Move odatda source path delete/delete
   request va destination path write/create ko‘rinishida loglanadi.
+description_ru: |
+  Это правило выявляет случаи, когда файл, возможно, был перемещён внутри
+  шары Windows File Server. Move обычно логируется как delete/delete
+  request по source path и write/create по destination path.
+description_en: |
+  This rule detects cases where a file may have been moved inside a
+  Windows File Server share. A move is usually logged as a delete/delete
+  request on the source path and a write/create on the destination path.
 type: esql
 params: "{}"
 schedule_interval: 5m

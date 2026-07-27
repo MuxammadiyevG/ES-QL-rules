@@ -1,9 +1,19 @@
 rule_id: 4b590ae5-f575-45df-a005-afdeb5c7a427
-name: "Chain: Sensitive API Access After Login (Nginx)"
-description: |
+name_uz: "Zanjir: Login'dan keyin maxfiy API'ga kirish (Nginx)"
+name_ru: "Цепочка: Доступ к чувствительным API после входа (Nginx)"
+name_en: "Chain: Sensitive API Access After Login (Nginx)"
+description_uz: |
   Veb auth brute zanjiri — 3-bosqich.
   Muvaffaqiyatli login'dan keyin o'sha source.ip dan maxfiy API'larga kirish (contract/system/law-enforcement).
   2-bosqichga bog'langan.
+description_ru: |
+  Цепочка Web auth brute — этап 3.
+  Доступ к чувствительным API (contract/system/law-enforcement) с того же source.ip после успешного входа.
+  Связано с этапом 2.
+description_en: |
+  Web auth brute chain — stage 3.
+  Access to sensitive APIs (contract/system/law-enforcement) from the same source.ip after a successful login.
+  Linked to stage 2.
 type: esql
 enabled: true
 params: "{}"

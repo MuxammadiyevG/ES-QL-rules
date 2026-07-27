@@ -1,8 +1,16 @@
 rule_id: 035e8386-dbfc-4a81-b454-7d00252c4e49
-name: "Switch STP: Port Blocking holatida"
-description: |
+name_uz: "Switch STP: Port Blocking holatida"
+name_ru: "Switch STP: Порт в состоянии Blocking"
+name_en: "Switch STP: Port in Blocking State"
+description_uz: |
   Spanning Tree Protocol port ni Blocking holatiga o'tkazdi.
   Loop oldini olish uchun odatiy holat, lekin tez-tez bo'lsa shubhali.
+description_ru: |
+  Spanning Tree Protocol перевёл порт в состояние Blocking.
+  Это обычное состояние для предотвращения loop, но при частом повторении подозрительно.
+description_en: |
+  Spanning Tree Protocol moved the port into the Blocking state.
+  This is normal for loop prevention, but frequent occurrences are suspicious.
 type: esql
 params: '{}'
 schedule_interval: 5m

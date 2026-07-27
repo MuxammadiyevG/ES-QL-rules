@@ -1,6 +1,8 @@
 rule_id: 21a08aff-af78-410f-aba3-9c1e0d4a8caf
-name: ESET Protect - Critical or High Severity Threat Detection
-description: |
+name_uz: "ESET Protect - critical yoki high severity tahdid aniqlanishi"
+name_ru: "ESET Protect - обнаружение угрозы критической или высокой серьёзности"
+name_en: "ESET Protect - Critical or High Severity Threat Detection"
+description_uz: |
   Ushbu qoida ESET tomonidan critical yoki high severity threat detection'larni monitoring qiladi.
   Bu advanced threat, targeted attack yoki severe compromise belgisi.
   Qonuniy holatlar: rare false positives, aggressive PUA detection.
@@ -10,6 +12,28 @@ description: |
   - Response effectiveness (cleaned, quarantined, blocked) tekshiring
   - System-wide compromise indicators qidiring
   - Immediate incident response zarurligini baholang
+  - Executive notification consideration
+description_ru: |
+  Это правило отслеживает обнаружения угроз критической или высокой серьёзности со стороны ESET.
+  Это признак advanced threat, целевой атаки или серьёзной компрометации.
+  Легитимные случаи: редкие false positive, агрессивное детектирование PUA.
+  Шаги SOC triage:
+  - Сопоставьте threat name и тип с threat intelligence
+  - Контекст обнаружения - файл, процесс, сетевое взаимодействие
+  - Проверьте эффективность реакции (cleaned, quarantined, blocked)
+  - Ищите индикаторы компрометации в масштабах всей системы
+  - Оцените необходимость немедленного реагирования на инцидент
+  - Рассмотрение уведомления руководства
+description_en: |
+  This rule monitors critical or high severity threat detections by ESET.
+  This is a sign of an advanced threat, targeted attack or severe compromise.
+  Legitimate cases: rare false positives, aggressive PUA detection.
+  SOC triage steps:
+  - Correlate the threat name and type with threat intelligence
+  - Detection context - file, process, network communication
+  - Check the response effectiveness (cleaned, quarantined, blocked)
+  - Look for system-wide compromise indicators
+  - Assess whether immediate incident response is required
   - Executive notification consideration
 type: esql
 params: '{}'

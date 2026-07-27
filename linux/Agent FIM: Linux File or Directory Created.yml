@@ -1,6 +1,8 @@
 rule_id: 339061a0-b9ac-4887-944b-f0e57983caf5
-name: "Agent FIM: Linux File or Directory Created"
-description: |
+name_uz: "Agent FIM: Linux fayl yoki katalog yaratildi"
+name_ru: "Agent FIM: создан файл или каталог в Linux"
+name_en: "Agent FIM: Linux File or Directory Created"
+description_uz: |
   Ushbu qoida Impact va Collection texnikalariga bog'liq bo'lib, yangi fayl yoki directory yaratilganligini aniqlaydi.
   Hujumchi tizimda yangi zararli fayl, backdoor yoki ma'lumot to'plash uchun saqlash joyi yaratayotgan bo'lishi mumkin.
   Qonuniy holatlar: dastur o'rnatish, administrator konfiguratsiya o'zgarishlari, deployment jarayonlari.
@@ -10,6 +12,26 @@ description: |
   - Faylni yaratgan foydalanuvchining roli va huquqlarini tekshiring.
   - Tasdiqlangan change ticket borligini tekshiring.
   - Noqonuniy bo'lsa: faylni o'chiring, sessiyani to'xtating, hostni izolyatsiya qiling.
+description_ru: |
+  Это правило связано с техниками Impact и Collection и выявляет создание нового файла или каталога.
+  Злоумышленник может создавать в системе новый вредоносный файл, бэкдор или место хранения для сбора данных.
+  Легитимные случаи: установка программ, изменения конфигурации администратором, процессы развёртывания.
+  Шаги SOC-триажа:
+  - В приоритетном порядке разбирайте случай, если расположение созданного файла или каталога опасно (`/tmp`, `/dev/shm`, `/etc`).
+  - Сравните хеш файла с базой данных вредоносного ПО.
+  - Проверьте роль и привилегии пользователя, создавшего файл.
+  - Проверьте наличие утверждённой заявки на изменение.
+  - Если активность нелегитимна: удалите файл, остановите сессию, изолируйте хост.
+description_en: |
+  This rule is related to Impact and Collection techniques and detects that a new file or directory has been created.
+  An attacker may be creating a new malicious file, a backdoor, or a storage location for collecting data on the system.
+  Legitimate cases: software installation, administrator configuration changes, deployment processes.
+  SOC triage steps:
+  - Prioritize review if the location of the created file or directory is dangerous (`/tmp`, `/dev/shm`, `/etc`).
+  - Compare the file hash value with a malware database.
+  - Check the role and privileges of the user who created the file.
+  - Check whether an approved change ticket exists.
+  - If illegitimate: delete the file, terminate the session, isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 5m

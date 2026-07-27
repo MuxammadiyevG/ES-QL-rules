@@ -1,11 +1,25 @@
 rule_id: e7b7463c-65a3-4dfc-ae66-4af6e1457a1e
-name: RDP Brute Force - Failed Interactive Logons
-description: |
+name_uz: "RDP brute force - muvaffaqiyatsiz interaktiv logonlar"
+name_ru: "RDP brute force - неудачные интерактивные входы"
+name_en: "RDP Brute Force - Failed Interactive Logons"
+description_uz: |
   Ushbu qoida RDP (LogonType 10) bo'yicha bitta manbadan ko'p muvaffaqiyatsiz logon (4625)
   urinishlarini aniqlaydi — RDP parol brute force belgisidir.
   SOC triage:
   - `src_ip` manbasi (reputatsiya/geo), `users` nishonlar; tashqi IP bo'lsa darhol bloklang.
   - Keyin shu IP'dan muvaffaqiyatli 4624 Type 10 bo'lganini tekshiring (egallab olingan?).
+description_ru: |
+  Это правило обнаруживает множество неудачных попыток входа (4625) по RDP (LogonType 10) с одного
+  источника — это признак перебора паролей (brute force) RDP.
+  SOC triage:
+  - Источник `src_ip` (репутация/гео), `users` — цели; если IP внешний, немедленно заблокируйте.
+  - Затем проверьте, был ли с этого IP успешный 4624 Type 10 (учётная запись захвачена?).
+description_en: |
+  This rule detects many failed logon (4625) attempts over RDP (LogonType 10) from a single
+  source — a sign of RDP password brute force.
+  SOC triage:
+  - The `src_ip` source (reputation/geo), `users` the targets; if it is an external IP, block it immediately.
+  - Then check whether a successful 4624 Type 10 came from that IP (compromised?).
 type: esql
 params: '{}'
 schedule_interval: 10m

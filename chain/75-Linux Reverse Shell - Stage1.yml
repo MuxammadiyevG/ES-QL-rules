@@ -1,7 +1,15 @@
 rule_id: b5073576-a7f0-439a-837b-719f5884cfd3
-name: "Chain: Linux Reverse Shell — Stage 1: Reverse Shell Command Executed"
-description: |
+name_uz: "Zanjir: Linux Reverse Shell — 1-bosqich: Reverse shell buyrug'i bajarildi"
+name_ru: "Цепочка: Linux Reverse Shell — Этап 1: Выполнена команда reverse shell"
+name_en: "Chain: Linux Reverse Shell — Stage 1: Reverse Shell Command Executed"
+description_uz: |
   Linux Reverse Shell zanjiri — 1-bosqich (2 dan).
+  Reverse Shell Command Executed.
+description_ru: |
+  Цепочка Linux Reverse Shell — этап 1 (из 2).
+  Выполнена команда reverse shell.
+description_en: |
+  Linux Reverse Shell chain — stage 1 (of 2).
   Reverse Shell Command Executed.
 type: esql
 enabled: true

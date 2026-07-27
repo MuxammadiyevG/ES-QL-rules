@@ -1,14 +1,34 @@
 rule_id: 23895252-667b-4f6e-b718-68ad97381224
-name: FortiGate - Firewall Policy Attribute Edited
-description: |
-  Ushbu qoida FortiGate qurilmalarida mavjud firewall polisyalarining atributlari o'zgartirilganini aniqlaydi.
+name_uz: "FortiGate - Firewall siyosati atributi o'zgartirildi"
+name_ru: "FortiGate - Изменён атрибут политики firewall"
+name_en: "FortiGate - Firewall Policy Attribute Edited"
+description_uz: |
+  Ushbu qoida FortiGate qurilmalarida mavjud firewall siyosatlarining atributlari o'zgartirilganini aniqlaydi.
   `firewall.policy` yo'lidagi o'zgarishlar tarmoq xavfsizligi darajasining pasayishiga yoki ruxsatsiz trafik oqimiga sabab bo'lishi mumkin.
-  
+
   SOC triage bosqichlari:
   - 'Device' (qurilma nomi) va log ichidagi 'user' (o'zgartirishni qilgan shaxs)ni aniqlang.
   - O'zgarish qaysi 'policyid' ustida amalga oshirilganini 'message' maydonidan qidiring.
   - Ushbu o'zgarish tasdiqlangan 'Change Management' (rejaviy ishlar) hujjatlariga mosligini tekshiring.
   - Agar o'zgarish shubhali bo'lsa, tezda avvalgi konfiguratsiyaga qayting (rollback) va audit o'tkazing.
+description_ru: |
+  Данное правило выявляет изменение атрибутов существующих политик firewall на устройствах FortiGate.
+  Изменения по пути `firewall.policy` могут привести к снижению уровня сетевой безопасности или к несанкционированному потоку трафика.
+
+  Этапы SOC-триажа:
+  - Определите 'Device' (имя устройства) и 'user' в логе (лицо, внёсшее изменение).
+  - Найдите в поле 'message', над каким 'policyid' было выполнено изменение.
+  - Проверьте, соответствует ли это изменение утверждённой документации 'Change Management' (плановые работы).
+  - Если изменение подозрительно, быстро вернитесь к предыдущей конфигурации (rollback) и проведите аудит.
+description_en: |
+  This rule detects changes to the attributes of existing firewall policies on FortiGate devices.
+  Changes under the `firewall.policy` path may lower the network security level or lead to unauthorized traffic flow.
+
+  SOC triage steps:
+  - Identify the 'Device' (device name) and the 'user' in the log (the person who made the change).
+  - Search the 'message' field for which 'policyid' the change was performed on.
+  - Check whether this change matches approved 'Change Management' (scheduled work) documentation.
+  - If the change is suspicious, quickly revert to the previous configuration (rollback) and run an audit.
 type: esql
 params: '{}'
 schedule_interval: 15m

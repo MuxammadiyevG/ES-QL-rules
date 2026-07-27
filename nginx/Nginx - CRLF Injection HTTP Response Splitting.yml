@@ -1,6 +1,8 @@
 rule_id: 54935f54-2239-4faa-ae54-7d7e42ef6e32
-name: Nginx - CRLF Injection / HTTP Response Splitting
-description: |
+name_uz: "Nginx - CRLF Injection / HTTP Response Splitting"
+name_ru: "Nginx - CRLF Injection / HTTP Response Splitting"
+name_en: "Nginx - CRLF Injection / HTTP Response Splitting"
+description_uz: |
   Ushbu qoida Nginx access log'da CRLF injection va HTTP response splitting urinishlarini aniqlaydi.
   URL ichida encoded carriage return / line feed (%0d%0a, \r\n) pattern'lari yuboriladi.
   Bu header injection, cache poisoning yoki XSS uchun ishlatiladi (T1190).
@@ -11,6 +13,28 @@ description: |
   - Cache poisoning yoki open redirect bilan bog'liqlikni baholang
   - Application input validation'ni review qiling
   - WAF rule update zarurligini baholang
+description_ru: |
+  Это правило обнаруживает попытки CRLF injection и HTTP response splitting в access log Nginx.
+  В URL передаются закодированные шаблоны carriage return / line feed (%0d%0a, \r\n).
+  Это используется для header injection, отравления кэша или XSS (T1190).
+  Легитимные случаи: неверно настроенный клиент, легитимные закодированные параметры.
+  Этапы SOC-триажа:
+  - Проанализируйте внедрённую CRLF-нагрузку и целевой параметр
+  - Проверьте, есть ли аномалии в заголовках ответа
+  - Оцените связь с отравлением кэша или open redirect
+  - Проверьте валидацию входных данных приложения
+  - Оцените необходимость обновления правил WAF
+description_en: |
+  This rule detects CRLF injection and HTTP response splitting attempts in the Nginx access log.
+  Encoded carriage return / line feed (%0d%0a, \r\n) patterns are sent inside the URL.
+  This is used for header injection, cache poisoning or XSS (T1190).
+  Legitimate cases: misconfigured client, legitimate encoded parameters.
+  SOC triage steps:
+  - Analyze the injected CRLF payload and the target parameter
+  - Check whether there are anomalies in the response headers
+  - Assess any link with cache poisoning or open redirect
+  - Review the application input validation
+  - Assess whether a WAF rule update is needed
 type: esql
 params: '{}'
 schedule_interval: 10m

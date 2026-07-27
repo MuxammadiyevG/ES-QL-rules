@@ -1,7 +1,13 @@
 rule_id: b917fceb-7b72-440b-976a-adfd0532a4ed
-name: Nginx - Potential Command Injection Attempt
-description: |
+name_uz: "Nginx - Ehtimoliy Command Injection urinishi"
+name_ru: "Nginx - Возможная попытка Command Injection"
+name_en: "Nginx - Potential Command Injection Attempt"
+description_uz: |
   URL yoki User-Agent orqali tizim buyruqlarini (ls, cat, whoami, /bin/sh) yuborish urinishlarini aniqlaydi.
+description_ru: |
+  Обнаруживает попытки отправки системных команд (ls, cat, whoami, /bin/sh) через URL или User-Agent.
+description_en: |
+  Detects attempts to send system commands (ls, cat, whoami, /bin/sh) via the URL or User-Agent.
 type: esql
 params: '{}'
 schedule_interval: 5m

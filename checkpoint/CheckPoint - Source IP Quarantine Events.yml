@@ -1,6 +1,8 @@
 rule_id: 05b0e564-aadf-4205-941d-e35879bf57fe
-name: CheckPoint - Source IP Quarantine Events
-description: |
+name_uz: "CheckPoint - Source IP karantin hodisalari"
+name_ru: "CheckPoint - События помещения source IP в карантин"
+name_en: "CheckPoint - Source IP Quarantine Events"
+description_uz: |
   Ushbu qoida CheckPoint tomonidan quarantine qilingan source IP'larni monitoring qiladi.
   Quarantine action malicious behavior tufayli qo'llaniladi va jiddiy xavf belgisi.
   Qonuniy holatlar: compromised host, infected endpoint, policy violation.
@@ -11,6 +13,28 @@ description: |
   - Host isolation va remediation zarurligini baholang
   - IOC'lar va related artifacts'ni to'plang
   - Incident response jarayonini aktivlashtiring
+description_ru: |
+  Это правило отслеживает source IP, помещённые CheckPoint в карантин.
+  Действие quarantine применяется из-за вредоносного поведения и является признаком серьёзной угрозы.
+  Легитимные ситуации: скомпрометированный хост, заражённая рабочая станция, нарушение политики.
+  Этапы SOC-триажа:
+  - Определите причину помещения в карантин
+  - Идентифицируйте владельца и устройство source IP
+  - Проверьте, какая атака или заражение послужило триггером
+  - Оцените необходимость изоляции хоста и мер по устранению
+  - Соберите IOC и связанные артефакты
+  - Активируйте процесс реагирования на инциденты
+description_en: |
+  This rule monitors source IPs quarantined by CheckPoint.
+  The quarantine action is applied due to malicious behavior and is a sign of serious risk.
+  Legitimate cases: compromised host, infected endpoint, policy violation.
+  SOC triage steps:
+  - Determine the quarantine reason
+  - Identify the source IP owner and device
+  - Check which attack or infection triggered it
+  - Assess the need for host isolation and remediation
+  - Collect IOCs and related artifacts
+  - Activate the incident response process
 type: esql
 params: '{}'
 schedule_interval: 5m

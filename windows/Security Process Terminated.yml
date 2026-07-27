@@ -1,11 +1,25 @@
 rule_id: 19eb467d-89df-4f91-9735-7aa5791bf094
-name: Security / AV Process Terminated
-description: |
+name_uz: "Xavfsizlik / AV jarayoni to'xtatildi"
+name_ru: "Завершение процесса безопасности / AV"
+name_en: "Security / AV Process Terminated"
+description_uz: |
   Ushbu qoida xavfsizlik/AV jarayonining to'xtatilishini aniqlaydi (Sysmon 5): MsMpEng,
   MsSense, SecurityHealthService, Sysmon, yoki uchinchi tomon EDR (CrowdStrike/Cylance/
   CarbonBlack). Bu himoyani o'chirish belgisi (T1562.001).
   SOC triage:
   - `images` qaysi himoya jarayoni to'xtadi? Reboot/update emasmi? Kim sababchi?
+description_ru: |
+  Это правило выявляет завершение процесса безопасности/AV (Sysmon 5): MsMpEng,
+  MsSense, SecurityHealthService, Sysmon или сторонний EDR (CrowdStrike/Cylance/
+  CarbonBlack). Это признак отключения защиты (T1562.001).
+  SOC triage:
+  - `images` какой процесс защиты остановлен? Не перезагрузка/обновление ли это? Кто причина?
+description_en: |
+  This rule detects termination of a security/AV process (Sysmon 5): MsMpEng,
+  MsSense, SecurityHealthService, Sysmon, or third-party EDR (CrowdStrike/Cylance/
+  CarbonBlack). This is a sign of disabling protection (T1562.001).
+  SOC triage:
+  - `images` which protection process stopped? Isn't it a reboot/update? Who caused it?
 type: esql
 params: '{}'
 schedule_interval: 10m

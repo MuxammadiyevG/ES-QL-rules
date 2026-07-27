@@ -1,7 +1,15 @@
 rule_id: 1c53e95b-fdf1-4ecd-ad0d-1f5fb3408ba3
-name: "Chain: Linux Defense Evasion: Log Clearing Followed by Firewall Flush — Stage 1: Log or Shell History Cleared"
-description: |
+name_uz: "Zanjir: Linux Defense Evasion: Log Clearing Followed by Firewall Flush — 1-bosqich: Log yoki shell tarixi tozalanishi"
+name_ru: "Цепочка: Linux Defense Evasion: Log Clearing Followed by Firewall Flush — Этап 1: Очистка логов или истории shell"
+name_en: "Chain: Linux Defense Evasion: Log Clearing Followed by Firewall Flush — Stage 1: Log or Shell History Cleared"
+description_uz: |
   Linux Defense Evasion: Log Clearing Followed by Firewall Flush zanjiri — 1-bosqich (2 dan).
+  Log or Shell History Cleared.
+description_ru: |
+  Цепочка Linux Defense Evasion: Log Clearing Followed by Firewall Flush — этап 1 (из 2).
+  Очистка логов или истории shell.
+description_en: |
+  Linux Defense Evasion: Log Clearing Followed by Firewall Flush chain — stage 1 (of 2).
   Log or Shell History Cleared.
 type: esql
 enabled: true

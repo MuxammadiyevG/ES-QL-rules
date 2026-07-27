@@ -8,8 +8,24 @@ rule_id: 8c7dd623-ed35-4148-91ab-543908b2e32a
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Baseline normal administrative activity, adjust command-line pattern matching
 
-name: "Suspicious Process Execution Pattern"
-description: |
+name_uz: "Shubhali jarayon ishga tushirish patterni"
+name_ru: "Подозрительный шаблон запуска процессов"
+name_en: "Suspicious Process Execution Pattern"
+description_uz: |
+  Shubhali buyruq qatori argumentlari yoki ota-bola munosabatlariga ega jarayonlarning ishga tushishini aniqlaydi.
+  Keng tarqalgan hujum patternlari: PowerShell download cradle'lari, wscript/cscript ishga tushishi, g'ayrioddiy ota jarayonlar.
+  Living-off-the-land binarlari (LOLBins) suiiste'moli qamrab olinadi: certutil, bitsadmin, regsvr32, rundll32.
+  False positive: qonuniy administrativ skriptlar, dasturiy ta'minotni tarqatish, avtomatlashtirish vositalari.
+  Triage: to'liq buyruq qatorini zararli maqsad borligi uchun ko'rib chiqing, jarayon imzosini tekshiring,
+  ota jarayon legitimligini tekshiring, tarmoq ulanishlari bilan korrelyatsiya qiling.
+description_ru: |
+  Выявляет запуск процессов с подозрительными аргументами командной строки или связями родитель-потомок.
+  Распространённые шаблоны атак: PowerShell download cradles, запуск wscript/cscript, необычные родительские процессы.
+  Охватывается злоупотребление living-off-the-land binaries (LOLBins): certutil, bitsadmin, regsvr32, rundll32.
+  Ложные срабатывания: легитимные административные скрипты, развёртывание ПО, средства автоматизации.
+  Triage: изучите полную командную строку на предмет вредоносного намерения, проверьте подпись процесса,
+  исследуйте легитимность родительского процесса, сопоставьте с сетевыми подключениями.
+description_en: |
   Detects execution of processes with suspicious command-line arguments or parent-child relationships.
   Common attack patterns: PowerShell download cradles, wscript/cscript execution, unusual parent processes.
   Living-off-the-land binaries (LOLBins) abuse captured: certutil, bitsadmin, regsvr32, rundll32.

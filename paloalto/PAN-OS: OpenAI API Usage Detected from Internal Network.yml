@@ -1,16 +1,40 @@
 rule_id: 451e526c-5023-446f-a8e5-e0e251ebdcbb
-name: "PAN-OS: OpenAI API Usage Detected from Internal Network"
-description: |
+name_uz: "PAN-OS: ichki tarmoqdan OpenAI API'dan foydalanish aniqlandi"
+name_ru: "PAN-OS: обнаружено использование OpenAI API из внутренней сети"
+name_en: "PAN-OS: OpenAI API Usage Detected from Internal Network"
+description_uz: |
   Ushbu qoida ichki tarmoqdagi (192.168.x.x) qurilmalardan OpenAI API ga ulanishni aniqlaydi.
   Palo Alto "openai-base" application sifatida tasniflagan va "artificial-intelligence" kategoriyasida qayd etilgan.
   Bu holat xodimlarning ruxsatsiz AI vositalaridan foydalanishini, korporativ ma'lumotlarni AI'ga yuborishini yoki shadow IT mavjudligini ko'rsatishi mumkin.
-  DLP (Data Loss Prevention) nuqtai nazaridan: korporativ maxfiy ma'lumotlar AI modellariga yuborilishi ma'lumot sızıntısına olib kelishi mumkin.
+  DLP (Data Loss Prevention) nuqtai nazaridan: korporativ maxfiy ma'lumotlar AI modellariga yuborilishi ma'lumot sizib chiqishiga olib kelishi mumkin.
   Qonuniy holatlar: ruxsat etilgan AI vositalaridan foydalanish, IT/Dev jamoaning ishchi vositalari.
   SOC triage bosqichlari:
   - Manbaning (192.168.213.36) kim ekanligini, bo'lim va foydalanuvchini aniqlang.
   - OpenAI'ga yuborilgan ma'lumot hajmini tekshiring (82 KB server'dan, 36 KB client'dan).
   - Korporativ AI foydalanish siyosati mavjudligini tekshiring.
   - Ruxsatsiz bo'lsa: foydalanuvchini ogohlantiring, HR/Compliance'ga xabarlang.
+description_ru: |
+  Это правило выявляет подключения к OpenAI API с устройств внутренней сети (192.168.x.x).
+  Palo Alto классифицировал их как application "openai-base" и зафиксировал в категории "artificial-intelligence".
+  Это может указывать на использование сотрудниками несанкционированных AI-инструментов, отправку корпоративных данных в AI или наличие shadow IT.
+  С точки зрения DLP (Data Loss Prevention): отправка корпоративных конфиденциальных данных в AI-модели может привести к утечке данных.
+  Легитимные случаи: использование разрешённых AI-инструментов, рабочие инструменты команды IT/Dev.
+  Этапы SOC-триажа:
+  - Определите, кому принадлежит источник (192.168.213.36), его подразделение и пользователя.
+  - Проверьте объём данных, отправленных в OpenAI (82 KB от сервера, 36 KB от клиента).
+  - Проверьте наличие корпоративной политики использования AI.
+  - Если несанкционировано: предупредите пользователя, сообщите HR/Compliance.
+description_en: |
+  This rule detects connections to the OpenAI API from internal network (192.168.x.x) devices.
+  Palo Alto classified them as the "openai-base" application and recorded them in the "artificial-intelligence" category.
+  This may indicate employees using unauthorized AI tools, sending corporate data to AI or the presence of shadow IT.
+  From a DLP (Data Loss Prevention) perspective: sending corporate confidential data to AI models may lead to data leakage.
+  Legitimate cases: use of approved AI tools, working tools of the IT/Dev team.
+  SOC triage steps:
+  - Identify who the source (192.168.213.36) is, the department and the user.
+  - Check the volume of data sent to OpenAI (82 KB from the server, 36 KB from the client).
+  - Check whether a corporate AI usage policy exists.
+  - If unauthorized: warn the user, notify HR/Compliance.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,8 +1,16 @@
 rule_id: 8a848f3a-fa6b-43ce-b645-c1141f1160c1
-name: UniFi Network Application Updated
-description: |
+name_uz: "UniFi Network ilovasi yangilandi"
+name_ru: "Приложение UniFi Network обновлено"
+name_en: "UniFi Network Application Updated"
+description_uz: |
   Ushbu qoida UniFi Network ilovasining versiyasi yangilanganini aniqlaydi.
   O'zgarish ruxsat etilgan change ticket bilan mosligi va rollback ehtiyoji tekshirilishi kerak.
+description_ru: |
+  Это правило обнаруживает обновление версии приложения UniFi Network.
+  Необходимо проверить соответствие изменения утверждённому change ticket и потребность в rollback.
+description_en: |
+  This rule detects that the version of the UniFi Network application has been updated.
+  The change must be checked for a match with an approved change ticket and for the need of a rollback.
 type: esql
 params: "{}"
 schedule_interval: 10m

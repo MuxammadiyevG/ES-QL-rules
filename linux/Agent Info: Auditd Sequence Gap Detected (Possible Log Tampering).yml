@@ -1,9 +1,19 @@
 rule_id: 51dfbecd-8075-478b-b0d3-0c3afcc97d28
-name: "Agent Info: Auditd Sequence Gap Detected (Possible Log Tampering)"
-description: |
+name_uz: "Agent Info: Auditd sequence uzilishi aniqlandi (loglarni buzish ehtimoli)"
+name_ru: "Agent Info: Обнаружен разрыв последовательности auditd (возможная подмена логов)"
+name_en: "Agent Info: Auditd Sequence Gap Detected (Possible Log Tampering)"
+description_uz: |
   Auditd sequence raqamlarida uzilish yoki ortiqcha oshish aniqlanganda qayd etadi.
   Log fayllarini o'chirish yoki audit daemonini to'xtatish sequence gap hosil qiladi.
   Bu Defense Evasion urinishi belgisi bo'lishi mumkin.
+description_ru: |
+  Фиксирует обнаружение разрыва или избыточного скачка в номерах последовательности auditd.
+  Удаление файлов логов или остановка audit daemon приводит к появлению sequence gap.
+  Это может быть признаком попытки Defense Evasion.
+description_en: |
+  Records when a gap or an excessive jump is detected in auditd sequence numbers.
+  Deleting log files or stopping the audit daemon produces a sequence gap.
+  This may be a sign of a Defense Evasion attempt.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,10 +1,19 @@
 rule_id: 95e0dc67-5df3-41b7-8418-ceb584c43548
-name: "Execution: Wget/Curl Download Followed by File Execution"
-description: |
+name_uz: "Execution: Wget/Curl orqali yuklab olingandan keyin fayl bajarilishi"
+name_ru: "Execution: загрузка через Wget/Curl с последующим запуском файла"
+name_en: "Execution: Wget/Curl Download Followed by File Execution"
+description_uz: |
   Ushbu qoida Linux tizimida wget yoki curl orqali fayl yuklab olinib,
   keyin qisqa vaqt ichida yuklab olingan fayl yoki vaqtinchalik katalogdagi
   fayl ishga tushirilishini aniqlaydi.
-
+description_ru: |
+  Данное правило выявляет загрузку файла через wget или curl в системе Linux
+  и последующий за короткое время запуск загруженного файла или файла во
+  временном каталоге.
+description_en: |
+  This rule detects a file being downloaded via wget or curl on a Linux system
+  and, within a short period of time afterwards, the downloaded file or a file
+  in a temporary directory being executed.
 type: esql
 params: "{}"
 schedule_interval: 10m

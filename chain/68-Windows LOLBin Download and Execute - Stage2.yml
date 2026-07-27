@@ -1,9 +1,19 @@
 rule_id: 5c317a10-3fa1-44a4-b67c-b8d57d591ad1
-name: "Chain: Windows LOLBin Download and Execute — Stage 2: LOLBin Outbound Network Connection"
-description: |
+name_uz: "Zanjir: Windows LOLBin Download and Execute — 2-bosqich: LOLBin'ning chiquvchi tarmoq ulanishi"
+name_ru: "Цепочка: Windows LOLBin Download and Execute — Этап 2: Исходящее сетевое соединение LOLBin"
+name_en: "Chain: Windows LOLBin Download and Execute — Stage 2: LOLBin Outbound Network Connection"
+description_uz: |
   Windows LOLBin Download and Execute zanjiri — 2-bosqich (2 dan).
   LOLBin Outbound Network Connection.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows LOLBin Download and Execute — этап 2 (из 2).
+  Исходящее сетевое соединение LOLBin.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows LOLBin Download and Execute chain — stage 2 (of 2).
+  LOLBin Outbound Network Connection.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

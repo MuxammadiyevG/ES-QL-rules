@@ -1,6 +1,32 @@
 rule_id: 9d8371cf-bd56-45a9-804f-c41668425164
-name: "PCI DSS 8.3 - Remote Access Without MFA / Single-Factor Auth (Windows)"
-description: |
+name_uz: "PCI DSS 8.3 - MFA'siz masofaviy kirish / bir faktorli autentifikatsiya (Windows)"
+name_ru: "PCI DSS 8.3 - Удалённый доступ без MFA / однофакторная аутентификация (Windows)"
+name_en: "PCI DSS 8.3 - Remote Access Without MFA / Single-Factor Auth (Windows)"
+description_uz: |
+  Faqat bitta faktorli autentifikatsiya ishlatilgani ko'rinadigan muvaffaqiyatli masofaviy
+  tarmoq kirishini (RDP/VPN/Network logon) aniqlaydi — bu barcha masofaviy kirish uchun
+  ikki faktorli autentifikatsiyani talab qiluvchi PCI DSS 8.3 talabini buzadi.
+  Tashqi/ichki bo'lmagan IP diapazonlaridan logon turi 3 (Network) va 10
+  (RemoteInteractive/RDP) bilan 4624 hodisasini kuzatadi. Mos MFA token hodisalarisiz
+  bunday kirishlarning katta hajmi MFA bypass yoki noto'g'ri sozlamadan darak berishi mumkin.
+  Trigger: non-RFC1918 IP'lardan masofaviy logon hodisalari (potensial tashqi kirish).
+  False positive: RFC1918 diapazonlaridan ichki tarmoq kirishlari (agent_id, filter orqali chiqarilgan),
+  oldindan taqsimlangan kalitli site-to-site VPN tunnellari (siyosat muammosi, false positive emas).
+  Triage: bu akkauntlar uchun MFA yechimi (Duo, Azure MFA va h.k.) sozlanganini tekshiring,
+  manba IP tasdiqlangan masofaviy kirish whitelist'ida ekanini tekshiring, VPN gateway loglarini ko'rib chiqing.
+description_ru: |
+  Обнаруживает успешный удалённый сетевой доступ (RDP/VPN/Network logon), при котором,
+  судя по всему, использовалась только однофакторная аутентификация, что нарушает
+  требование 8.3 PCI DSS, предписывающее двухфакторную аутентификацию для любого удалённого доступа.
+  Отслеживает событие 4624 с типами входа 3 (Network) и 10 (RemoteInteractive/RDP)
+  из внешних/невнутренних диапазонов IP. Большой объём таких входов без
+  соответствующих событий MFA-токена может указывать на обход MFA или ошибку конфигурации.
+  Trigger: события удалённого входа с IP вне RFC1918 (потенциальный внешний доступ).
+  False positives: входы из внутренней сети из диапазонов RFC1918 (исключены через agent_id, filter),
+  site-to-site VPN-туннели с предварительно распределёнными ключами (вопрос политики, не ложное срабатывание).
+  Triage: проверьте, настроено ли решение MFA (Duo, Azure MFA и т.д.) для этих учётных записей,
+  проверьте, входит ли исходный IP в утверждённый белый список удалённого доступа, просмотрите логи VPN-шлюза.
+description_en: |
   Detects successful remote network access (RDP/VPN/Network logon) where only
   single-factor authentication appears to have been used, violating PCI DSS
   Requirement 8.3 which mandates two-factor authentication for all remote access.

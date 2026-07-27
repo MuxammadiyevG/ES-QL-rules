@@ -1,6 +1,8 @@
 rule_id: f6e40dea-4cf5-4bd8-ab1a-3b0c92993759
-name: "Kerio: High Volume DROP from Single Internal Host"
-description: |
+name_uz: "Kerio: Bitta ichki hostdan yuqori hajmli DROP"
+name_ru: "Kerio: Большой объём DROP с одного внутреннего хоста"
+name_en: "Kerio: High Volume DROP from Single Internal Host"
+description_uz: |
   Ushbu qoida bitta ichki hostdan qisqa vaqt ichida ko'p sonli DROP hodisalarini
   aniqlaydi. Bu host infected bo'lib, C2 ulanish yoki scanning urinishi qilayotgan
   bo'lishi mumkin.
@@ -8,6 +10,22 @@ description: |
   - source.ip hostni tekshiring va zarur bo'lsa izolyatsiya qiling.
   - rule.name VALUES ni ko'ring — qaysi rule bloklayapti.
   - Destination IP larni tekshiring.
+description_ru: |
+  Это правило выявляет большое количество событий DROP с одного внутреннего хоста
+  за короткий промежуток времени. Хост может быть заражён и пытаться установить C2-соединение
+  или выполнять сканирование.
+  Этапы SOC-триажа:
+  - Проверьте хост source.ip и при необходимости изолируйте его.
+  - Посмотрите VALUES поля rule.name — какое правило блокирует.
+  - Проверьте destination IP.
+description_en: |
+  This rule detects a large number of DROP events from a single internal host
+  within a short time window. The host may be infected and attempting a C2 connection
+  or scanning.
+  SOC triage steps:
+  - Check the source.ip host and isolate it if necessary.
+  - Look at the rule.name VALUES — which rule is blocking.
+  - Check the destination IPs.
 type: esql
 params: '{}'
 schedule_interval: 5m

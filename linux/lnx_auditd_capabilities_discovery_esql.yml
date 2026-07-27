@@ -1,6 +1,14 @@
 rule_id: dbd5115c-af4e-4667-969e-97ba96a92e0e
-name: "Linux Capabilities Discovery"
-description: |
+name_uz: "Linux capabilities razvedkasi"
+name_ru: "Разведка Linux capabilities"
+name_en: "Linux Capabilities Discovery"
+description_uz: |
+  Jarayon capabilities larini aniqlash uchun getcap buyrug'idan foydalanishni aniqlaydi.
+  Tajovuzkorlar imtiyozlarni oshirishning potensial yo'llarini aniqlash uchun capacity discovery o'tkazishi mumkin.
+description_ru: |
+  Обнаруживает использование команды getcap для выявления capabilities процессов.
+  Злоумышленники могут выполнять capacity discovery для выявления потенциальных путей повышения привилегий.
+description_en: |
   Detects usage of getcap command to discover process capabilities.
   Adversaries may perform capacity discovery to identify potential privilege escalation paths.
 type: esql

@@ -1,6 +1,8 @@
 rule_id: f1979e85-e6da-4dff-8c94-2f108262c19b
-name: Nginx - Suspicious or Malicious User Agents
-description: |
+name_uz: "Nginx - Shubhali yoki zararli User Agent'lar"
+name_ru: "Nginx - Подозрительные или вредоносные User Agent"
+name_en: "Nginx - Suspicious or Malicious User Agents"
+description_uz: |
   Ushbu qoida Nginx access log'da suspicious yoki malicious user agent'larni aniqlaydi.
   Bu automated scanning tools, malware, yoki attacker reconnaissance belgisi.
   Qonuniy holatlar: security scanning tools, monitoring services, legitimate bots.
@@ -10,6 +12,26 @@ description: |
   - Request pattern va behavior tahlil qiling
   - Known scanning tools yoki malware signature bormi aniqlang
   - Blocking yoki monitoring intensification zarurligini baholang
+description_ru: |
+  Это правило обнаруживает подозрительные или вредоносные user agent в access log Nginx.
+  Это признак автоматизированных инструментов сканирования, вредоносного ПО или разведки атакующего.
+  Легитимные случаи: инструменты сканирования безопасности, сервисы мониторинга, легитимные боты.
+  Этапы SOC triage:
+  - Сравните строку user agent с данными threat intelligence
+  - Проверьте репутацию связанного IP
+  - Проанализируйте паттерн запросов и поведение
+  - Определите, есть ли известные инструменты сканирования или сигнатуры вредоносного ПО
+  - Оцените необходимость блокировки или усиления мониторинга
+description_en: |
+  This rule detects suspicious or malicious user agents in the Nginx access log.
+  This is an indicator of automated scanning tools, malware, or attacker reconnaissance.
+  Legitimate cases: security scanning tools, monitoring services, legitimate bots.
+  SOC triage steps:
+  - Compare the user agent string against threat intelligence
+  - Check the reputation of the associated IP
+  - Analyze the request pattern and behavior
+  - Determine whether known scanning tools or malware signatures are present
+  - Assess whether blocking or intensified monitoring is required
 type: esql
 params: '{}'
 schedule_interval: 15m

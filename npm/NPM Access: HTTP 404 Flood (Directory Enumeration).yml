@@ -1,6 +1,8 @@
 rule_id: e356d546-0e9b-40a7-a613-5acab7c4ea9d
-name: "NPM Access: HTTP 404 Flood (Directory Enumeration)"
-description: |
+name_uz: "NPM Access: HTTP 404 oqimi (directory enumeration)"
+name_ru: "NPM Access: поток HTTP 404 (directory enumeration)"
+name_en: "NPM Access: HTTP 404 Flood (Directory Enumeration)"
+description_uz: |
   Ushbu qoida qisqa vaqt ichida ko'p sonli 404 xatoliklarini aniqlaydi.
   Bu directory/file enumeration scanning belgisi — hujumchi mavjud
   endpoint larni aniqlashga urinmoqda.
@@ -10,6 +12,26 @@ description: |
   - Bitta Client IP dan kelayotgan bo'lsa — automated scanner.
   - Pattern — sequential path lar (admin1, admin2...) shubhali.
   - Client IP ni WAF da bloklang.
+description_ru: |
+  Это правило обнаруживает большое количество ошибок 404 за короткое время.
+  Это признак directory/file enumeration scanning — атакующий пытается
+  определить существующие endpoint.
+  Легитимные случаи: неверно сконфигурированное приложение, устаревшая ссылка.
+  Этапы SOC-триажа:
+  - event.original — какие URL сканируются.
+  - Если запросы идут с одного Client IP — это automated scanner.
+  - Паттерн — последовательные пути (admin1, admin2...) подозрительны.
+  - Заблокируйте Client IP на WAF.
+description_en: |
+  This rule detects a large number of 404 errors within a short time.
+  This is a sign of directory/file enumeration scanning — the attacker is trying
+  to identify existing endpoints.
+  Legitimate cases: a misconfigured application, an outdated link.
+  SOC triage steps:
+  - event.original — which URLs are being scanned.
+  - If the requests come from a single Client IP — automated scanner.
+  - Pattern — sequential paths (admin1, admin2...) are suspicious.
+  - Block the Client IP on the WAF.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,11 +1,25 @@
 rule_id: f2adca4d-93bb-44b4-86fd-1874948dac81
-name: Outbound Lateral Movement Protocols (SMB/WinRM/WMI/SSH)
-description: |
+name_uz: "Chiquvchi lateral harakat protokollari (SMB/WinRM/WMI/SSH)"
+name_ru: "Исходящие протоколы горизонтального перемещения (SMB/WinRM/WMI/SSH)"
+name_en: "Outbound Lateral Movement Protocols (SMB/WinRM/WMI/SSH)"
+description_uz: |
   Ushbu qoida bitta hostdan ichki tarmoqdagi KO'P hostga lateral protokollar bo'yicha chiquvchi
   ulanishni aniqlaydi: 445 (SMB), 5985/5986 (WinRM), 135 (WMI/DCOM), 22 (SSH). Bitta manba
   ko'p nishonga ulansa — lateral sweep/movement (T1021).
   SOC triage:
   - Manba host odatda admin/management hostmi? `dest_ports`/`unique_dests` ni ko'ring.
+description_ru: |
+  Это правило обнаруживает исходящие подключения с одного хоста ко МНОГИМ хостам внутренней сети по
+  lateral-протоколам: 445 (SMB), 5985/5986 (WinRM), 135 (WMI/DCOM), 22 (SSH). Если один источник
+  подключается ко многим целям — lateral sweep/перемещение (T1021).
+  SOC triage:
+  - Является ли исходный хост обычно admin/management хостом? Посмотрите `dest_ports`/`unique_dests`.
+description_en: |
+  This rule detects outbound connections from a single host to MANY internal hosts over lateral
+  protocols: 445 (SMB), 5985/5986 (WinRM), 135 (WMI/DCOM), 22 (SSH). When one source
+  connects to many targets — lateral sweep/movement (T1021).
+  SOC triage:
+  - Is the source host normally an admin/management host? Review `dest_ports`/`unique_dests`.
 type: esql
 params: '{}'
 schedule_interval: 10m

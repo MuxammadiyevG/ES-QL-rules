@@ -1,9 +1,19 @@
 rule_id: 7eccc9a0-a91f-40ff-bcac-bd700e57e349
-name: "Chain: Linux PAM Backdoor — Stage 2: Successful Authentication After PAM Change"
-description: |
+name_uz: "Zanjir: Linux PAM backdoor — 2-bosqich: PAM o'zgarishidan keyin muvaffaqiyatli autentifikatsiya"
+name_ru: "Цепочка: PAM-бэкдор в Linux — Этап 2: успешная аутентификация после изменения PAM"
+name_en: "Chain: Linux PAM Backdoor — Stage 2: Successful Authentication After PAM Change"
+description_uz: |
   Linux PAM Backdoor zanjiri — 2-bosqich (2 dan).
   Successful Authentication After PAM Change.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка PAM-бэкдора в Linux — Этап 2 (из 2).
+  Успешная аутентификация после изменения PAM.
+  Связан с предыдущим этапом (stage 1).
+description_en: |
+  Linux PAM Backdoor chain — Stage 2 (of 2).
+  Successful Authentication After PAM Change.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

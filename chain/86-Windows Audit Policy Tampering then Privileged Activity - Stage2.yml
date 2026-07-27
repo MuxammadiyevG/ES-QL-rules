@@ -1,9 +1,19 @@
 rule_id: 359bb8d7-5758-4bb6-8c21-3d6b7cd0eeb5
-name: "Chain: Windows Audit Policy Tampering then Privileged Activity — Stage 2: Privileged Activity After Audit Evasion"
-description: |
+name_uz: "Zanjir: Windows audit siyosatini buzish, so'ng imtiyozli faoliyat — 2-bosqich: audit'dan qochishdan keyingi imtiyozli faoliyat"
+name_ru: "Цепочка: подмена политики аудита Windows, затем привилегированная активность — Этап 2: привилегированная активность после обхода аудита"
+name_en: "Chain: Windows Audit Policy Tampering then Privileged Activity — Stage 2: Privileged Activity After Audit Evasion"
+description_uz: |
   Windows Audit Policy Tampering then Privileged Activity zanjiri — 2-bosqich (2 dan).
   Privileged Activity After Audit Evasion.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка подмены политики аудита Windows с последующей привилегированной активностью — Этап 2 (из 2).
+  Привилегированная активность после обхода аудита.
+  Связан с предыдущим этапом (stage 1).
+description_en: |
+  Windows Audit Policy Tampering then Privileged Activity chain — Stage 2 (of 2).
+  Privileged Activity After Audit Evasion.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

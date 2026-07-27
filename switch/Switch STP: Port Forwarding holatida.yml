@@ -1,8 +1,16 @@
 rule_id: 4b681da1-0d67-455c-bc95-aa4b78c0e6a3
-name: "Switch STP: Port Forwarding holatida"
-description: |
+name_uz: "Switch STP: Port Forwarding holatida"
+name_ru: "Switch STP: Порт в состоянии Forwarding"
+name_en: "Switch STP: Port in Forwarding State"
+description_uz: |
   Spanning Tree Protocol port ni Forwarding holatiga o'tkazdi.
   Bu odatiy holat — port traffic uzatishga tayyor.
+description_ru: |
+  Spanning Tree Protocol перевёл порт в состояние Forwarding.
+  Это обычное состояние — порт готов передавать traffic.
+description_en: |
+  Spanning Tree Protocol moved the port into the Forwarding state.
+  This is a normal state — the port is ready to pass traffic.
 type: esql
 params: '{}'
 schedule_interval: 5m

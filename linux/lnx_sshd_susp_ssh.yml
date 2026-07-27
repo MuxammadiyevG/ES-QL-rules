@@ -1,6 +1,14 @@
 rule_id: c405e5ad-7a98-486f-99cc-acdc9152922f
-name: "Suspicious OpenSSH Daemon Error"
-description: |
+name_uz: "Shubhali OpenSSH demoni xatosi"
+name_ru: "Подозрительная ошибка демона OpenSSH"
+name_en: "Suspicious OpenSSH Daemon Error"
+description_uz: |
+  Halokatli yoki g'ayrioddiy xatodan darak beruvchi shubhali SSH / SSHD xato xabarlarini aniqlaydi.
+  Bunday xatolar agent_id, ekspluatatsiya urinishlari yoki noto'g'ri sozlangan/zararli mijozlar sabab yuzaga kelishi mumkin.
+description_ru: |
+  Обнаруживает подозрительные сообщения об ошибках SSH / SSHD, указывающие на фатальную или необычную ошибку.
+  Такие ошибки могут быть вызваны agent_id, попытками эксплуатации либо неверно настроенными/вредоносными клиентами.
+description_en: |
   Detects suspicious SSH / SSHD error messages that indicate a fatal or unusual error.
   Such errors may be caused by agent_id, exploitation attempts or misconfigured/malicious clients.
 type: esql

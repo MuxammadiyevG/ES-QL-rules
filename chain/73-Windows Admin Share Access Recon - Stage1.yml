@@ -1,9 +1,19 @@
 rule_id: 64d28de7-af7e-4529-a433-030e56f013db
-name: "Chain: Windows Admin Share Access Recon — Stage 1: Admin Share Access Burst"
-description: |
+name_uz: "Zanjir: Windows Admin Share Access Recon — 1-bosqich: Admin share'ga kirish to'lqini"
+name_ru: "Цепочка: Windows Admin Share Access Recon — Этап 1: Всплеск обращений к административным share"
+name_en: "Chain: Windows Admin Share Access Recon — Stage 1: Admin Share Access Burst"
+description_uz: |
   Windows Admin Share Access Recon zanjiri — 1-bosqich (2 dan).
   Admin Share Access Burst (C$/ADMIN$).
   FP kamaytirish: IPC$ chiqarib tashlandi — u har bir normal SMB sessiyada (named pipe) ochiladi, recon signali emas.
+description_ru: |
+  Цепочка Windows Admin Share Access Recon — этап 1 (из 2).
+  Всплеск обращений к административным share (C$/ADMIN$).
+  Снижение FP: IPC$ исключён — он открывается в каждой нормальной SMB-сессии (named pipe) и не является признаком разведки.
+description_en: |
+  Windows Admin Share Access Recon chain — stage 1 (of 2).
+  Admin Share Access Burst (C$/ADMIN$).
+  FP reduction: IPC$ was excluded — it is opened in every normal SMB session (named pipe) and is not a recon signal.
 type: esql
 enabled: true
 params: "{}"

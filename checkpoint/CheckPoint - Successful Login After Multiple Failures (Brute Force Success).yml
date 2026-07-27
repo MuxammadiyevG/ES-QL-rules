@@ -1,6 +1,8 @@
 rule_id: e0f903ff-0f72-4330-bb3b-71b38052b6f0
-name: CheckPoint - Successful Login After Multiple Failures (Brute Force Success)
-description: |
+name_uz: "CheckPoint - Ko'p muvaffaqiyatsiz urinishdan keyin muvaffaqiyatli login (Brute Force Success)"
+name_ru: "CheckPoint - Успешный вход после множества неудачных попыток (Brute Force Success)"
+name_en: "CheckPoint - Successful Login After Multiple Failures (Brute Force Success)"
+description_uz: |
   Ushbu qoida bir xil source/user uchun qisqa vaqt ichida ko'p sonli authentication
   failure'dan keyin muvaffaqiyatli login bo'lganligini aniqlaydi.
   Bu brute force yoki credential stuffing hujumi muvaffaqiyatli yakunlangani belgisi
@@ -13,6 +15,32 @@ description: |
   - Login type va auth method'ni tekshiring (VPN, admin, portal)
   - Account compromise va credential reset zarurligini baholang
   - Keyingi suspicious faoliyatni (lateral movement) qidiring
+description_ru: |
+  Это правило выявляет успешный вход после большого числа неудачных попыток
+  аутентификации для одного и того же source/user за короткий промежуток времени.
+  Это признак успешно завершённого перебора паролей (brute force) или credential stuffing
+  (T1110 - Brute Force, T1078 - Valid Accounts).
+  Легитимные ситуации: пользователь несколько раз ввёл пароль неверно, а затем ввёл его правильно.
+  Этапы SOC-триажа:
+  - Проверьте геолокацию и репутацию source IP
+  - Идентифицируйте учётную запись, под которой выполнен успешный вход
+  - Проанализируйте интервал времени между неудачами и успехом (автоматизированная атака?)
+  - Проверьте тип входа и метод аутентификации (VPN, admin, портал)
+  - Оцените компрометацию учётной записи и необходимость сброса учётных данных
+  - Найдите последующую подозрительную активность (горизонтальное перемещение)
+description_en: |
+  This rule detects a successful login after a large number of authentication
+  failures for the same source/user within a short time window.
+  This is a sign of a successfully completed brute force or credential stuffing attack
+  (T1110 - Brute Force, T1078 - Valid Accounts).
+  Legitimate cases: the user mistyped the password several times and then entered it correctly.
+  SOC triage steps:
+  - Check the source IP geo-location and reputation
+  - Identify the user account that logged in successfully
+  - Analyze the time gap between the failures and the success (automated attack?)
+  - Check the login type and auth method (VPN, admin, portal)
+  - Assess account compromise and the need for a credential reset
+  - Look for subsequent suspicious activity (lateral movement)
 type: esql
 params: '{}'
 schedule_interval: 10m

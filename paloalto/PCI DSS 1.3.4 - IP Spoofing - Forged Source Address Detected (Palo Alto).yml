@@ -1,6 +1,30 @@
 rule_id: 38402529-1a5c-4ec1-8e8a-2f657640aea3
-name: "PCI DSS 1.3.4 - IP Spoofing / Forged Source Address Detected (Palo Alto)"
-description: |
+name_uz: "PCI DSS 1.3.4 - IP Spoofing / soxta manba manzili aniqlandi (Palo Alto)"
+name_ru: "PCI DSS 1.3.4 - IP Spoofing / обнаружен поддельный адрес источника (Palo Alto)"
+name_en: "PCI DSS 1.3.4 - IP Spoofing / Forged Source Address Detected (Palo Alto)"
+description_uz: |
+  agent_id, Palo Alto firewall tomonidan bloklangan IP spoofing va soxta manba manzili urinishlarini aniqlaydi.
+  PCI DSS 1.3.4 talabi tarmoqqa kirayotgan soxta manba IP manzillarini aniqlash va bloklash uchun
+  anti-spoofing choralarini majburiy qiladi.
+  IP spoofing bo'yicha zone protection profile harakatlarini va manba IP anomaliyalari bo'yicha
+  threat loglarini kuzatadi. Shuningdek, tashqi interfeyslarga kelayotgan RFC1918 (xususiy IP)
+  manzillarini aniqlaydi - bu soxta paketlarning aniq indikatori.
+  Trigger: har qanday anti-spoofing harakati yoki tashqi/DMZ interfeysga kelayotgan xususiy IP.
+  False positive: noto'g'ri sozlangan NAT, murakkab topologiyalardagi asimmetrik routing.
+  Triage: anti-spoofing zone protection profile'lari yoqilganligini tasdiqlang,
+  voqea uchun ingress interfeysni tekshiring, doimiy takrorlansa tarmoq jamoasini xabardor qiling.
+description_ru: |
+  Обнаруживает попытки IP spoofing и подделки адреса источника, заблокированные agent_id, Palo Alto firewall.
+  Требование PCI DSS 1.3.4 предписывает меры anti-spoofing для обнаружения и блокировки
+  поддельных исходных IP-адресов, попадающих в сеть.
+  Отслеживает действия zone protection profile по IP spoofing, а также threat-логи
+  на предмет аномалий исходных IP. Также обнаруживает адреса RFC1918 (приватные IP), приходящие
+  на внешние интерфейсы - явный индикатор поддельных пакетов.
+  Trigger: любое действие anti-spoofing или приватный IP, приходящий на внешний/DMZ интерфейс.
+  False positives: некорректно настроенный NAT, асимметричная маршрутизация в сложных топологиях.
+  Triage: убедитесь, что профили anti-spoofing zone protection включены,
+  проверьте ingress-интерфейс для события, уведомите сетевую команду при повторяемости.
+description_en: |
   Detects IP spoofing and forged source address attempts blocked by agent_id, Palo Alto firewall.
   PCI DSS Requirement 1.3.4 mandates anti-spoofing measures to detect and block
   forged source IP addresses entering the network.

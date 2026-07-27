@@ -1,6 +1,14 @@
 rule_id: 585229ea-10cc-4ac2-bf20-cd293c86d71a
-name: "Wget File Download in Temp Directory"
-description: |
+name_uz: "Wget orqali vaqtinchalik katalogga fayl yuklab olish"
+name_ru: "Загрузка файла через wget во временный каталог"
+name_en: "Wget File Download in Temp Directory"
+description_uz: |
+  wget tomonidan /tmp yoki /var/tmp kataloglarida fayllar yaratilishini aniqlaydi.
+  Tajovuzkorlar ko'pincha vositalar/zararli dasturlarni vaqtinchalik kataloglarga yuklab oladi.
+description_ru: |
+  Обнаруживает создание файлов утилитой wget в каталогах /tmp или /var/tmp.
+  Злоумышленники часто загружают инструменты/вредоносное ПО во временные каталоги.
+description_en: |
   Detects wget creating files in /tmp or /var/tmp directories.
   Adversaries often download tools/malware to temporary directories.
 type: esql

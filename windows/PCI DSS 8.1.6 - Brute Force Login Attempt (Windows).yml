@@ -1,6 +1,24 @@
 rule_id: 908ede2b-3e7e-4aff-99fc-0859b7778c9c
-name: "PCI DSS 8.1.6 - Brute Force Login Attempt (Windows)"
-description: |
+name_uz: "PCI DSS 8.1.6 - Brute force kirish urinishi (Windows)"
+name_ru: "PCI DSS 8.1.6 - Попытка входа перебором паролей (brute force) (Windows)"
+name_en: "PCI DSS 8.1.6 - Brute Force Login Attempt (Windows)"
+description_uz: |
+  Windows tizimlariga qarshi haddan tashqari ko'p muvaffaqiyatsiz kirish urinishlarini aniqlaydi — bu
+  karta egalari ma'lumotlari tizimlariga qaratilgan brute force yoki credential stuffing hujumlaridan darak berishi mumkin.
+  PCI DSS Req 8.1.6 6 tadan ko'p bo'lmagan muvaffaqiyatsiz urinishdan keyin qulflashni talab qiladi.
+  Trigger: 5 daqiqa ichida bitta manbadan bitta hostga 6+ muvaffaqiyatsiz kirish.
+  False positive: noto'g'ri sozlangan servis akkauntlari, parol resetdan keyin parolni unutgan foydalanuvchilar.
+  Triage: manba IP ichki yoki tashqi ekanini tekshiring, nishon akkaunt imtiyozli ekanini tekshiring,
+  kompromis belgilari uchun atrofdagi muvaffaqiyatli kirishlarni ko'rib chiqing, lockout siyosati qo'llanayotganini tekshiring.
+description_ru: |
+  Обнаруживает чрезмерное число неудачных попыток входа в системы Windows, что может указывать
+  на перебор паролей (brute force) или атаки credential stuffing против систем с данными держателей карт.
+  PCI DSS Req 8.1.6 требует блокировки не более чем после 6 неудачных попыток.
+  Trigger: 6+ неудачных входов с одного источника на один хост в течение 5 минут.
+  False positives: неверно настроенные сервисные учётные записи, пользователи, забывшие пароль после сброса.
+  Triage: проверьте, внутренний или внешний исходный IP, проверьте, является ли целевая учётная запись привилегированной,
+  просмотрите соседние успешные входы на предмет компрометации, проверьте, применяется ли политика блокировки.
+description_en: |
   Detects excessive failed login attempts against Windows systems which may indicate
   brute force or credential stuffing attacks targeting cardholder data systems.
   PCI DSS Req 8.1.6 requires lockout after no more than 6 failed attempts.

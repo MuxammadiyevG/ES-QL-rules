@@ -1,6 +1,8 @@
 rule_id: d4fdd285-d7a4-436a-aeb8-244a60745068
-name: "Agent Initial Access: New Login Session Established"
-description: |
+name_uz: "Agent Initial Access: Yangi login sessiyasi o'rnatildi"
+name_ru: "Agent Initial Access: Установлена новая сессия входа"
+name_en: "Agent Initial Access: New Login Session Established"
+description_uz: |
   Ushbu qoida Initial Access va Persistence texnikalariga bog'liq bo'lib, tizimda yangi login
   sessiyasining boshlanishini aniqlaydi. Hujumchi o'g'irlangan credentials yoki valid account
   orqali kirish huquqini qo'lga kiritib yangi sessiya ochishi mumkin.
@@ -12,6 +14,30 @@ description: |
   - `auditd.data.old-ses` = 4294967295 bo'lsa — bu yangi sessiya (hech qanday oldingi yo'q).
   - Login vaqti ish soatlaridan tashqarida bo'lsa — shubhali.
   - Noqonuniy bo'lsa: sessiyani darhol to'xtating, credentialsni o'zgartiring.
+description_ru: |
+  Это правило связано с техниками Initial Access и Persistence и выявляет начало новой сессии
+  входа в систему. Злоумышленник может получить право доступа по украденным учётным данным или
+  через валидную учётную запись и открыть новую сессию.
+  Легитимные случаи: задания cron, вход по SSH, сессии service daemon.
+  Шаги SOC-триажа:
+  - `user.effective.name` и `user.audit.name` — определите, какой пользователь выполнил вход.
+  - Проверьте значение `auditd.data.tty`: (none) = автоматически, pts/X = интерактивный SSH/консоль.
+  - Сравните новый ID сессии `auditd.session` с предыдущими логами.
+  - Если `auditd.data.old-ses` = 4294967295 — это новая сессия (предыдущей не было).
+  - Если время входа вне рабочих часов — подозрительно.
+  - Если нелегитимно: немедленно завершите сессию, смените credentials.
+description_en: |
+  This rule is related to Initial Access and Persistence techniques and detects the start of a new login
+  session on the system. An attacker may gain access using stolen credentials or a valid account
+  and open a new session.
+  Legitimate cases: cron jobs, SSH login, service daemon sessions.
+  SOC triage steps:
+  - `user.effective.name` and `user.audit.name` — determine which user logged in.
+  - Check the `auditd.data.tty` value: (none) = automated, pts/X = interactive SSH/console.
+  - Compare the new session ID `auditd.session` with previous logs.
+  - If `auditd.data.old-ses` = 4294967295 — this is a new session (there was no previous one).
+  - If the login time is outside business hours — suspicious.
+  - If illegitimate: terminate the session immediately, change the credentials.
 type: esql
 params: '{}'
 schedule_interval: 5m

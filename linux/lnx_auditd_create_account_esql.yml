@@ -1,6 +1,16 @@
 rule_id: ef0b7528-598e-4fe1-ade8-34e70915b52e
-name: "User Account Creation Detection"
-description: |
+name_uz: "Foydalanuvchi hisobi yaratilishini aniqlash"
+name_ru: "Обнаружение создания учётной записи пользователя"
+name_en: "User Account Creation Detection"
+description_uz: |
+  Yangi foydalanuvchi hisobi yaratilishini aniqlaydi.
+  Tajovuzkorlar mustahkamlanish (persistence) uchun yangi hisoblar yaratishi mumkin.
+  useradd buyrug'ining ishga tushirilishini yoki ADD_USER audit hodisalarini kuzatadi.
+description_ru: |
+  Обнаруживает создание новой учётной записи пользователя.
+  Злоумышленники могут создавать новые учётные записи для закрепления.
+  Отслеживает запуск команды useradd или события аудита ADD_USER.
+description_en: |
   Detects the creation of a new user account.
   Adversaries may create new accounts for persistence.
   Monitors execution of useradd command or ADD_USER audit events.

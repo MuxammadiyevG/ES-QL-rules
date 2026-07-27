@@ -1,6 +1,8 @@
 rule_id: aa70f6ee-c9d4-4ef0-bf71-4b8a72f0a4d7
-name: AD Special Privileges Assigned to New Logon (4672)
-description: |
+name_uz: "AD'da yangi logon'ga maxsus imtiyozlar berildi (4672)"
+name_ru: "Назначение специальных привилегий новому входу в AD (4672)"
+name_en: "AD Special Privileges Assigned to New Logon (4672)"
+description_uz: |
   Ushbu qoida privilege escalation hamda lateral movement xavfini ifodalovchi 4672 hodisalarini aniqlaydi.
   SeDebugPrivilege, SeTcbPrivilege kabi maxsus huquqlar bilan logon bo'lish hujumchiga credential dumping, token manipulation va DC ustidan chuqur nazorat imkonini beradi.
   Qonuniy holatlar: Domain Admin logonlari, zaxira agentlari, ayrim monitoring/EDR xizmat hisoblari.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manbasi va logon boshlangan hostni tekshiring.
   - Akkauntning imtiyozli guruhlardagi a'zoligini va yangi huquqlar zarurligini tekshiring.
   - Tasdiqlanmagan holatda sessiyani tugating, akkauntni cheklang va komprometatsiya doirasini keng tekshiring.
+description_ru: |
+  Данное правило выявляет события 4672, отражающие риск повышения привилегий и горизонтального перемещения.
+  Вход с такими специальными правами, как SeDebugPrivilege, SeTcbPrivilege, даёт атакующему возможность credential dumping, token manipulation и глубокого контроля над DC.
+  Легитимные случаи: входы Domain Admin, агенты резервного копирования, отдельные служебные учётные записи monitoring/EDR.
+  Этапы SOC triage:
+  - Определите `actor` и контекст входа, которому выданы права (`target_user`).
+  - Подтвердите наличие change ticket или разрешённой административной работы.
+  - Проверьте источник `src_ip` и хост, с которого начался вход.
+  - Проверьте членство учётной записи в привилегированных группах и необходимость новых прав.
+  - Если подтверждения нет, завершите сессию, ограничьте учётную запись и широко проверьте область компрометации.
+description_en: |
+  This rule detects 4672 events that represent the risk of privilege escalation and lateral movement.
+  Logging on with special rights such as SeDebugPrivilege, SeTcbPrivilege gives an attacker the ability to perform credential dumping, token manipulation and deep control over the DC.
+  Legitimate cases: Domain Admin logons, backup agents, certain monitoring/EDR service accounts.
+  SOC triage steps:
+  - Identify the `actor` and the logon context the privileges were granted to (`target_user`).
+  - Confirm that a change ticket or authorized administrative work exists.
+  - Check the `src_ip` source and the host where the logon started.
+  - Check the account's membership in privileged groups and whether the new privileges are necessary.
+  - If unconfirmed, terminate the session, restrict the account and broadly check the scope of compromise.
 type: esql
 params: '{}'
 schedule_interval: 10m

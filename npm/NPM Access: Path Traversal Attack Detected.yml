@@ -1,6 +1,8 @@
 rule_id: 79cfe185-6526-4022-a3d6-4e9606620cc2
-name: "NPM Access: Path Traversal Attack Detected"
-description: |
+name_uz: "NPM Access: Path Traversal Hujumi Aniqlandi"
+name_ru: "NPM Access: обнаружена атака path traversal"
+name_en: "NPM Access: Path Traversal Attack Detected"
+description_uz: |
   Ushbu qoida HTTP request URL da path traversal pattern larini aniqlaydi.
   ../../../etc/passwd, ..%2F, %2e%2e kabi URL encoded traversal payloadlari.
   Qonuniy holatlar: yo'q, bu har doim shubhali.
@@ -9,6 +11,24 @@ description: |
   - Response status 200 bo'lsa — fayl o'qilgan bo'lishi mumkin.
   - Client IP ni darhol bloklang.
   - Backend server fayllarini tekshiring.
+description_ru: |
+  Данное правило выявляет паттерны path traversal в URL HTTP-запроса.
+  URL-кодированные traversal-payload'ы вида ../../../etc/passwd, ..%2F, %2e%2e.
+  Легитимные случаи: отсутствуют, это всегда подозрительно.
+  Шаги SOC-триажа:
+  - event.original — проверьте полный URL.
+  - Если response status 200 — файл мог быть прочитан.
+  - Немедленно заблокируйте Client IP.
+  - Проверьте файлы backend-сервера.
+description_en: |
+  This rule detects path traversal patterns in the HTTP request URL.
+  URL-encoded traversal payloads such as ../../../etc/passwd, ..%2F, %2e%2e.
+  Legitimate cases: none, this is always suspicious.
+  SOC triage steps:
+  - event.original — check the full URL.
+  - If the response status is 200 — a file may have been read.
+  - Block the Client IP immediately.
+  - Check the backend server files.
 type: esql
 params: '{}'
 schedule_interval: 5m

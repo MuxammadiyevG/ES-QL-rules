@@ -1,10 +1,22 @@
 rule_id: c56b5f58-cd47-47c9-bb4f-16723335d960
-name: "Windows File Server: File Owner Changed"
-description: |
+name_uz: "Windows File Server: Fayl Egasi O'zgartirildi"
+name_ru: "Windows File Server: изменение владельца файла"
+name_en: "Windows File Server: File Owner Changed"
+description_uz: |
   Ushbu qoida Windows File Server share ostidagi fayl yoki papka egasi
   o‘zgartirilganini aniqlaydi. `WRITE_OWNER`, `TakeOwnership` yoki `0x80000`
   accesslari owner change urinishini bildiradi. 4670 hodisasi permission/security
   descriptor o‘zgarishini ham ko‘rsatishi mumkin.
+description_ru: |
+  Это правило выявляет изменение владельца файла или папки под шарой
+  Windows File Server. Доступы `WRITE_OWNER`, `TakeOwnership` или `0x80000`
+  означают попытку owner change. Событие 4670 может также указывать на изменение
+  permission/security descriptor.
+description_en: |
+  This rule detects that the owner of a file or folder under a Windows File Server
+  share has been changed. The `WRITE_OWNER`, `TakeOwnership`, or `0x80000`
+  accesses indicate an owner change attempt. The 4670 event may also indicate a permission/security
+  descriptor change.
 type: esql
 params: "{}"
 schedule_interval: 5m

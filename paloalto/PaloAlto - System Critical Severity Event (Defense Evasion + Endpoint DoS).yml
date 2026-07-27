@@ -1,6 +1,8 @@
 rule_id: c4a2490b-b96c-4c40-93cd-f2fa29f5412c
-name: PaloAlto - System Critical Severity Event (Defense Evasion + Endpoint DoS)
-description: |
+name_uz: "PaloAlto - Tizimning CRITICAL darajadagi voqeasi (Defense Evasion + Endpoint DoS)"
+name_ru: "PaloAlto - системное событие уровня CRITICAL (Defense Evasion + Endpoint DoS)"
+name_en: "PaloAlto - System Critical Severity Event (Defense Evasion + Endpoint DoS)"
+description_uz: |
   Palo Alto NGFW tizimidan CRITICAL darajadagi system xabari aniqlandi.
   Bu jiddiy tizim nosozligi, qurilmaga hujum yoki xizmatni to'xtatish
   urinishining belgisi bo'lishi mumkin (T1089, T1499).
@@ -11,6 +13,28 @@ description: |
   - Parallel ravishda boshqa SIEM manbalaridan korrelyatsiya qiling
   - Qurilma backup/failover holatini tekshiring
   - Barcha admin sessiyalarini audit qiling
+description_ru: |
+  Обнаружено системное сообщение уровня CRITICAL от Palo Alto NGFW.
+  Это может быть признаком серьёзного сбоя системы, атаки на устройство или попытки
+  отказа в обслуживании (T1089, T1499).
+  Легитимные случаи: аппаратный сбой, проблема в датацентре.
+  Этапы SOC-триажа:
+  - Немедленно уведомите команду NOC/NetOps
+  - Проверьте возможность физического или удалённого доступа к устройству
+  - Параллельно проведите корреляцию с другими источниками SIEM
+  - Проверьте состояние backup/failover устройства
+  - Проведите аудит всех админских сессий
+description_en: |
+  A CRITICAL severity system message was detected from the Palo Alto NGFW.
+  This may be a sign of a serious system failure, an attack on the device or a denial-of-service
+  attempt (T1089, T1499).
+  Legitimate cases: hardware failure, datacenter issue.
+  SOC triage steps:
+  - Immediately notify the NOC/NetOps team
+  - Check whether physical or remote access to the device is possible
+  - In parallel, correlate with other SIEM sources
+  - Check the backup/failover state of the device
+  - Audit all admin sessions
 type: esql
 params: '{}'
 schedule_interval: 2m

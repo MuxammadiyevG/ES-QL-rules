@@ -1,6 +1,8 @@
 rule_id: 0e956d08-484f-469f-97b9-67e2c452acf4
-name: "Brute Force"
-description: |
+name_uz: "Brute Force"
+name_ru: "Перебор паролей (Brute Force)"
+name_en: "Brute Force"
+description_uz: |
   Ushbu qoida Credential Access texnikasiga bog'liq bo'lib, `Brute Force` kontekstida Windows qurilmalarida qisqa vaqt ichida ko'p marta muvaffaqiyatsiz kirish urinishlarini aniqlaydi.
   Bu turdagi hodisa hujumchi avtomatlashtirilgan brute force yoki password spraying hujumi orqali foydalanuvchi akkauntini egallashga urinayotganligini ko'rsatishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida foydalanuvchi parolini unutganligi, noto'g'ri saqlangan credential, servis akkauntidagi konfiguratsiya muammosi uchrashi mumkin.
@@ -10,6 +12,26 @@ description: |
   - Urinishlar bir xil IP dan kelayaptimi yoki turli IP lardan (password spraying) kelayaptimi tekshiring.
   - Muvaffaqiyatsiz urinishlardan so'ng muvaffaqiyatli kirish bo'ldimi tekshiring (Event ID 4624).
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: manba IP ni bloklang, akkauntni vaqtincha o'chiring va credentiallarni yangilang.
+description_ru: |
+  Это правило связано с техникой Credential Access и выявляет в контексте `Brute Force` многократные неудачные попытки входа на устройствах Windows за короткий промежуток времени.
+  Событие такого типа считается опасным, поскольку оно может указывать на то, что злоумышленник пытается захватить учётную запись пользователя с помощью автоматизированного перебора паролей (brute force) или password spraying.
+  В качестве легитимных случаев могут встречаться забытый пользователем пароль, неверно сохранённые учётные данные, проблема конфигурации сервисной учётной записи.
+  Этапы SOC-триажа:
+  - Точно идентифицируйте `winlog.event_data.TargetUserName` (целевой пользователь) и `winlog.computer_name` в событии.
+  - Пять и более неудачных попыток за 300 секунд — признак brute force.
+  - Проверьте, идут ли попытки с одного и того же IP или с разных IP (password spraying).
+  - Проверьте, был ли после неудачных попыток успешный вход (Event ID 4624).
+  - При подтверждении нелегитимной активности выполните оперативное сдерживание (containment): заблокируйте исходный IP, временно отключите учётную запись и смените учётные данные.
+description_en: |
+  This rule is related to the Credential Access technique and detects, in the `Brute Force` context, multiple failed logon attempts on Windows devices within a short period of time.
+  An event of this type is considered dangerous because it may indicate that an attacker is trying to take over a user account through an automated brute force or password spraying attack.
+  Legitimate cases may include a user forgetting their password, incorrectly stored credentials, or a configuration problem with a service account.
+  SOC triage steps:
+  - Precisely identify the `winlog.event_data.TargetUserName` (target user) and `winlog.computer_name` in the event.
+  - Five or more failed attempts within 300 seconds is a sign of brute force.
+  - Check whether the attempts come from the same IP or from different IPs (password spraying).
+  - Check whether a successful logon occurred after the failed attempts (Event ID 4624).
+  - If malicious activity is confirmed, perform immediate containment: block the source IP, temporarily disable the account, and rotate credentials.
 type: esql
 params: '{}'
 schedule_interval: 5m

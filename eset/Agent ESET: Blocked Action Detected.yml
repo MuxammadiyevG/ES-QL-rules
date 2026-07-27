@@ -1,9 +1,19 @@
 rule_id: a128687b-3c5b-40d1-abbc-4514ae7e1714
-name: "Agent ESET: Blocked Action Detected"
-description: |
+name_uz: "Agent ESET: bloklangan harakat aniqlandi"
+name_ru: "Agent ESET: обнаружено заблокированное действие"
+name_en: "Agent ESET: Blocked Action Detected"
+description_uz: |
   Ushbu qoida ESET Protect tomonidan bloklangan barcha hodisalarni aniqlaydi.
   event.action == "Blocked" bo'lgan har qanday hodisa potensial xavf sifatida
   qayd etiladi — ARP spoofing, firewall block, malware block va boshqalar.
+description_ru: |
+  Это правило выявляет все события, заблокированные ESET Protect.
+  Любое событие с event.action == "Blocked" фиксируется как потенциальная
+  угроза — ARP spoofing, firewall block, malware block и другие.
+description_en: |
+  This rule detects all events blocked by ESET Protect.
+  Any event with event.action == "Blocked" is recorded as a potential
+  threat — ARP spoofing, firewall block, malware block and others.
 type: esql
 params: '{}'
 schedule_interval: 5m

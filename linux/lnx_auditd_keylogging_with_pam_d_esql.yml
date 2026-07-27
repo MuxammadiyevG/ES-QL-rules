@@ -1,6 +1,16 @@
 rule_id: 642dd105-733e-43bf-a10a-19b424586464
-name: "Keylogging via PAM Configuration"
-description: |
+name_uz: "PAM konfiguratsiyasi orqali keylogging"
+name_ru: "Кейлоггинг через конфигурацию PAM"
+name_en: "Keylogging via PAM Configuration"
+description_uz: |
+  PAM konfiguratsiyasi orqali TTY auditini yoqishga urinishlarni aniqlaydi.
+  Tajovuzkorlar tugma bosishlarini yozib olish (keylogging) uchun TTY auditini yoqishi mumkin.
+  Ham /etc/pam.d/ fayllaridagi o'zgarishlarni, ham TTY/USER_TTY hodisalarini kuzatadi.
+description_ru: |
+  Обнаруживает попытки включения аудита TTY через конфигурацию PAM.
+  Злоумышленники могут включать аудит TTY для записи нажатий клавиш (кейлоггинг).
+  Отслеживает как изменения файлов /etc/pam.d/, так и события TTY/USER_TTY.
+description_en: |
   Detects attempts to enable TTY auditing via PAM configuration.
   Adversaries may enable TTY auditing to record keystrokes (keylogging).
   Monitors both modifications to /etc/pam.d/ files and TTY/USER_TTY events.

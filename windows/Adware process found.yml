@@ -1,6 +1,8 @@
 rule_id: 06964e19-f55e-499a-92e1-d975955a3ed5
-name: Adware process found
-description: |
+name_uz: "Adware jarayoni aniqlandi"
+name_ru: "Обнаружен процесс adware"
+name_en: "Adware process found"
+description_uz: |
   Ushbu qoida endpoint monitoring texnikalariga bog'liq bo'lib, `Adware process found` kontekstida hostda shubhali adware jarayonining aniqlanishini kuzatadi.
   Bu turdagi hodisa hostda ruxsatsiz reklama dasturi ishlab turganligini ko'rsatishi mumkin bo'lib, ma'lumot o'g'irlash, brauzer session hijacking yoki boshqa zararli faoliyat uchun dastlabki qadam bo'lishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlar sifatida administrator tomonidan o'rnatilgan test dasturlari, noto'g'ri klassifikatsiyalangan legitimate software yoki AV false positive holatlari uchrashi mumkin.
@@ -10,6 +12,26 @@ description: |
   - Jarayonning hash, path va digital signature ni tekshiring.
   - Hostda boshqa shubhali jarayonlar yoki tarmoq ulanishlari borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: jarayonni to'xtating, hostni izolyatsiya qiling va to'liq malware scan bajaring.
+description_ru: |
+  Это правило относится к техникам endpoint monitoring и в контексте `Adware process found` отслеживает обнаружение подозрительного adware-процесса на хосте.
+  Событие такого типа может указывать на то, что на хосте работает несанкционированная рекламная программа, и считается опасным, поскольку может быть первым шагом к краже данных, перехвату сессии браузера (session hijacking) или иной вредоносной активности.
+  Легитимными случаями могут быть тестовые программы, установленные администратором, неверно классифицированное legitimate software или ложные срабатывания AV.
+  Шаги SOC triage:
+  - Точно идентифицируйте `host.name` и `process.name` в событии.
+  - Проверьте, каким пользователем был запущен процесс.
+  - Проверьте hash, path и digital signature процесса.
+  - Проверьте, есть ли на хосте другие подозрительные процессы или сетевые соединения.
+  - При подтверждении вредоносной активности выполните немедленный containment: остановите процесс, изолируйте хост и выполните полное malware scan.
+description_en: |
+  This rule relates to endpoint monitoring techniques and, in the context of `Adware process found`, tracks the detection of a suspicious adware process on a host.
+  This type of event may indicate that unauthorized advertising software is running on the host and is considered dangerous because it may be an initial step towards data theft, browser session hijacking or other malicious activity.
+  Legitimate cases may include test software installed by an administrator, misclassified legitimate software or AV false positive cases.
+  SOC triage steps:
+  - Precisely identify `host.name` and `process.name` in the event.
+  - Check which user launched the process.
+  - Check the process hash, path and digital signature.
+  - Check whether there are other suspicious processes or network connections on the host.
+  - If malicious activity is confirmed, perform immediate containment: stop the process, isolate the host and run a full malware scan.
 type: esql
 params: '{}'
 schedule_interval: 5m

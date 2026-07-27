@@ -1,11 +1,25 @@
 rule_id: 4e3c5760-df96-43d8-b4ee-3c52451124f0
-name: LSA Security / Authentication Package Injection
-description: |
+name_uz: "LSA Security / Authentication Package injeksiyasi"
+name_ru: "Внедрение LSA Security / Authentication Package"
+name_en: "LSA Security / Authentication Package Injection"
+description_uz: |
   Ushbu qoida LSA "Security Packages" / "Authentication Packages" / "Notification Packages"
   registriga yozishni aniqlaydi (Sysmon 13) — SSP/AP DLL injection orqali credential
   o'g'irlash va persistence (T1547.005 / T1556.002).
   SOC triage:
   - `details` da yangi DLL nomi bormi (standart ro'yxatdan tashqari)? Juda kam o'zgaradi.
+description_ru: |
+  Это правило обнаруживает запись в реестр LSA "Security Packages" / "Authentication Packages" / "Notification Packages"
+  (Sysmon 13) — кража учётных данных и закрепление через внедрение SSP/AP DLL
+  (T1547.005 / T1556.002).
+  SOC triage:
+  - Есть ли в `details` новое имя DLL (вне стандартного списка)? Меняется очень редко.
+description_en: |
+  This rule detects writes to the LSA "Security Packages" / "Authentication Packages" / "Notification Packages"
+  registry keys (Sysmon 13) — credential theft and persistence via SSP/AP DLL injection
+  (T1547.005 / T1556.002).
+  SOC triage:
+  - Is there a new DLL name in `details` (outside the standard list)? It changes very rarely.
 type: esql
 params: '{}'
 schedule_interval: 10m

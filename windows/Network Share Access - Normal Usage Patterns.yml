@@ -1,9 +1,19 @@
 rule_id: c5cd759e-b746-47a4-a1f9-ce2c2681d46c
-name: Network Share Access - Normal Usage Patterns
-description: |
+name_uz: "Network share kirishi - normal foydalanish shakllari"
+name_ru: "Доступ к сетевым ресурсам - нормальные шаблоны использования"
+name_en: "Network Share Access - Normal Usage Patterns"
+description_uz: |
   Baseline/monitoring qoidasi: oddiy (administrativ BO'LMAGAN) network share kirishini (5140)
   yig'adi. C$/ADMIN$/IPC$ administrativ sharelari chiqariladi (ular alohida "Administrative
   Share Access" rule'ida). Fayl-resurs kirishining normal darajasini kuzatish uchun.
+description_ru: |
+  Правило baseline/мониторинга: собирает обычный (НЕ административный) доступ к сетевым ресурсам (5140).
+  Административные ресурсы C$/ADMIN$/IPC$ исключаются (они покрываются отдельным правилом "Administrative
+  Share Access"). Служит для наблюдения за нормальным уровнем доступа к файловым ресурсам.
+description_en: |
+  Baseline/monitoring rule: collects ordinary (NON-administrative) network share access (5140).
+  The administrative shares C$/ADMIN$/IPC$ are excluded (they are covered by the separate "Administrative
+  Share Access" rule). Used to observe the normal level of file-share access.
 type: esql
 params: '{}'
 schedule_interval: 10m

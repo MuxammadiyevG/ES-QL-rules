@@ -1,8 +1,16 @@
 rule_id: 2c98b1bc-9244-48c0-b105-14a14f114899
-name: FortiGate - Potential DNS Tunneling Detected
-description: |
+name_uz: "FortiGate - Potensial DNS tunneling aniqlandi"
+name_ru: "FortiGate - Обнаружен потенциальный DNS tunneling"
+name_en: "FortiGate - Potential DNS Tunneling Detected"
+description_uz: |
   Bitta ichki IPdan haddan tashqari ko'p (1000 dan ortiq) DNS so'rovlari yuborilishini aniqlaydi.
   Hujumchilar ma'lumotlarni tashqaridagi C2 serveriga DNS protokoli orqali yashirincha yuborishda ushbu usuldan foydalanadilar.
+description_ru: |
+  Выявляет отправку чрезмерно большого числа DNS-запросов (более 1000) с одного внутреннего IP.
+  Атакующие используют этот метод для скрытной передачи данных на внешний C2-сервер по протоколу DNS.
+description_en: |
+  Detects an excessive number of DNS queries (more than 1000) being sent from a single internal IP.
+  Attackers use this technique to covertly send data to an external C2 server over the DNS protocol.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: 6f30c059-6818-41a8-aebb-53a0d960c8e3
-name: "Agent Privilege Escalation: sudo Authentication Attempt"
-description: |
+name_uz: "Agent Privilege Escalation: sudo autentifikatsiya urinishi"
+name_ru: "Agent Privilege Escalation: Попытка аутентификации sudo"
+name_en: "Agent Privilege Escalation: sudo Authentication Attempt"
+description_uz: |
   Ushbu qoida Privilege Escalation texnikasiga bog'liq bo'lib, sudo orqali PAM autentifikatsiya
   hodisalarini aniqlaydi. Hujumchi to'g'ri password yordamida yoki sudoers misconfiguratsiyasi
   orqali root huquqlarini qo'lga kiritmoqchi bo'lishi mumkin.
@@ -12,6 +14,30 @@ description: |
   - Bir foydalanuvchi tomonidan qisqa vaqtda ko'p sudo urinishlari — brute force belgisi.
   - `auditd.result` failure bo'lsa — muvaffaqiyatsiz urinishlar sonini kuzating.
   - Noqonuniy bo'lsa: foydalanuvchi sudo huquqini olib tashlang, sessiyani to'xtating.
+description_ru: |
+  Это правило связано с техникой Privilege Escalation и выявляет события PAM-аутентификации
+  через sudo. Злоумышленник может попытаться получить права root с помощью верного пароля
+  или из-за ошибки конфигурации sudoers.
+  Легитимные случаи: администрирование системы администратором, операции DevOps.
+  Шаги SOC-триажа:
+  - `user.name` и `user.audit.name` — определите, кто использовал sudo.
+  - `auditd.data.terminal` — с какого терминала выполнено (pts/X — интерактивный).
+  - `auditd.session` — скоррелируйте номер сессии с другими событиями.
+  - Много попыток sudo от одного пользователя за короткое время — признак перебора паролей (brute force).
+  - Если `auditd.result` = failure — отслеживайте количество неудачных попыток.
+  - Если нелегитимно: снимите с пользователя право sudo, завершите сессию.
+description_en: |
+  This rule is related to the Privilege Escalation technique and detects PAM authentication
+  events via sudo. An attacker may try to obtain root privileges using a correct password
+  or through a sudoers misconfiguration.
+  Legitimate cases: administrator system management, DevOps operations.
+  SOC triage steps:
+  - `user.name` and `user.audit.name` — determine who used sudo.
+  - `auditd.data.terminal` — from which terminal it was run (pts/X is interactive).
+  - `auditd.session` — correlate the session number with other events.
+  - Many sudo attempts by a single user in a short time — a sign of brute force.
+  - If `auditd.result` is failure — track the number of failed attempts.
+  - If illegitimate: remove the user's sudo rights, terminate the session.
 type: esql
 params: '{}'
 schedule_interval: 5m

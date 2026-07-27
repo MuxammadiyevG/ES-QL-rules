@@ -1,8 +1,16 @@
 rule_id: 7af02f66-75eb-4b3b-aaae-5bdfff266990
-name: "Resource Anomaly: CPU Usage Above 90 Percent for More Than 10 Minutes"
-description: |
+name_uz: "Resurs anomaliyasi: CPU ishlatilishi 10 daqiqadan ortiq 90 foizdan yuqori"
+name_ru: "Аномалия ресурсов: загрузка CPU выше 90 процентов более 10 минут"
+name_en: "Resource Anomaly: CPU Usage Above 90 Percent for More Than 10 Minutes"
+description_uz: |
   Ushbu qoida tizimda CPU yuklanishi 10 daqiqadan ortiq vaqt davomida
   90% dan yuqori bo‘lishini aniqlaydi.
+description_ru: |
+  Это правило выявляет, что загрузка CPU в системе на протяжении более 10 минут
+  превышает 90%.
+description_en: |
+  This rule detects that the system CPU load stays above
+  90% for more than 10 minutes.
 type: esql
 params: "{}"
 schedule_interval: 5m

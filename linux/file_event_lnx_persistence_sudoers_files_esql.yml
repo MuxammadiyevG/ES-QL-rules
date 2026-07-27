@@ -1,6 +1,14 @@
 rule_id: 442ab540-3396-409c-bf12-8e031124bc7e
-name: "Persistence via Sudoers Files"
-description: |
+name_uz: "Sudoers fayllari orqali mustahkamlanish (persistence)"
+name_ru: "Закрепление через файлы sudoers"
+name_en: "Persistence via Sudoers Files"
+description_uz: |
+  /etc/sudoers.d/ ichida sudoers fayllari yaratilishini aniqlaydi.
+  Tajovuzkorlar imtiyozlarni oshirish yoki mustahkamlanish uchun sudoers fayllarini qo'shishi mumkin.
+description_ru: |
+  Обнаруживает создание файлов sudoers в /etc/sudoers.d/.
+  Злоумышленники могут добавлять файлы sudoers для повышения привилегий или закрепления.
+description_en: |
   Detects creation of sudoers files in /etc/sudoers.d/.
   Adversaries may add sudoers files to escalate privileges or persist.
 type: esql

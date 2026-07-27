@@ -1,6 +1,32 @@
 rule_id: 2558a8a5-490a-4191-9d9d-2f88514ca1cb
-name: "GDPR Art.5(1)(f) - Unauthorized Access to Personal Data Systems"
-description: |
+name_uz: "GDPR Art.5(1)(f) - Shaxsiy ma'lumotlar tizimlariga ruxsatsiz kirish"
+name_ru: "GDPR Art.5(1)(f) - Несанкционированный доступ к системам персональных данных"
+name_en: "GDPR Art.5(1)(f) - Unauthorized Access to Personal Data Systems"
+description_uz: |
+  Shaxsiy ma'lumotlarni qayta ishlaydigan tizimlarga ruxsatsiz yoki anomal kirish urinishlarini aniqlaydi,
+  bu bevosita GDPR 5(1)(f)-moddasini buzadi; ushbu modda ma'lumotlar tegishli xavfsizlik bilan, jumladan
+  ruxsatsiz yoki noqonuniy qayta ishlashdan himoyalangan holda qayta ishlanishini talab qiladi.
+  Ham Windows (Event 4625), ham Linux (auditd) muvaffaqiyatsiz autentifikatsiya hodisalarini
+  va ulardan keyingi, akkaunt kompromatatsiyasidan darak berishi mumkin bo'lgan muvaffaqiyatli kirishlarni kuzatadi.
+  Trigger: >10 muvaffaqiyatsiz urinish, so'ngra agent_id, 10 daqiqa ichida o'sha manbadan muvaffaqiyat
+  (potensial muvaffaqiyatli brute force), yoki bitta IP'dan bir nechta host bo'ylab >30 muvaffaqiyatsizlik.
+  False positive: Noto'g'ri sozlangan servis akkauntlari, parol reset'idan keyingi sinxronizatsiya muammolari.
+  Triage: Muvaffaqiyatli kirish muvaffaqiyatsizliklardan keyin bo'lganini tekshiring (kompromatatsiya belgisi),
+  source IP geolokatsiyasini tekshiring, akkaunt qaysi ma'lumotlarga kirish huquqiga ega ekanini ko'rib chiqing,
+  kirishdan keyin shaxsiy ma'lumotlarga murojaat qilinganini baholang, Art.33 buzilish baholashini boshlang.
+description_ru: |
+  Обнаруживает несанкционированные или аномальные попытки доступа к системам, обрабатывающим персональные данные,
+  что напрямую нарушает статью 5(1)(f) GDPR, требующую обработки данных с надлежащей
+  безопасностью, включая защиту от несанкционированной или незаконной обработки.
+  Отслеживает события неудачной аутентификации как в Windows (Event 4625), так и в Linux (auditd)
+  в сочетании с последующими успешными входами, которые могут указывать на компрометацию учётной записи.
+  Триггер: >10 неудачных попыток, за которыми следует agent_id, успех с того же источника в течение 10 минут
+  (потенциально успешный перебор паролей (brute force)), или >30 неудач с одного IP на нескольких хостах.
+  Ложные срабатывания: Неверно настроенные служебные учётные записи, проблемы синхронизации паролей после сброса.
+  Разбор: Проверьте, был ли успешный вход после неудач (индикатор компрометации),
+  проверьте геолокацию source IP, изучите, к каким данным имеет доступ учётная запись,
+  оцените, был ли получен доступ к персональным данным после входа, инициируйте оценку утечки по Art.33.
+description_en: |
   Detects unauthorized or anomalous access attempts against systems that process personal data,
   directly violating GDPR Article 5(1)(f) which requires data to be processed with appropriate
   security including protection against unauthorised or unlawful processing.

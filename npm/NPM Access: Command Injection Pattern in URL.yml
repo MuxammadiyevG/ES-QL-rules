@@ -1,6 +1,8 @@
 rule_id: 834cff1e-dbac-4310-8c70-d9135c0d44b2
-name: "NPM Access: Command Injection Pattern in URL"
-description: |
+name_uz: "NPM Access: URL da command injection patterni"
+name_ru: "NPM Access: шаблон command injection в URL"
+name_en: "NPM Access: Command Injection Pattern in URL"
+description_uz: |
   Ushbu qoida HTTP request URL da OS command injection pattern larini aniqlaydi.
   ;ls, |whoami, `id`, $(cmd) kabi shell injection payloadlari.
   Qonuniy holatlar: yo'q.
@@ -8,6 +10,22 @@ description: |
   - Response status 200 bo'lsa — command execution bo'lgan bo'lishi mumkin.
   - Backend server loglarini tekshiring — g'ayriodatiy process ishga tushganmi.
   - Darhol: incident oching, backend serverni izolyatsiya qiling.
+description_ru: |
+  Это правило обнаруживает паттерны OS command injection в URL HTTP-запроса.
+  Shell injection payload'ы вида ;ls, |whoami, `id`, $(cmd).
+  Легитимные случаи: отсутствуют.
+  Этапы SOC-триажа:
+  - Если response status 200 — возможно, произошло command execution.
+  - Проверьте логи backend-сервера — не был ли запущен необычный процесс.
+  - Немедленно: откройте инцидент, изолируйте backend-сервер.
+description_en: |
+  This rule detects OS command injection patterns in the HTTP request URL.
+  Shell injection payloads such as ;ls, |whoami, `id`, $(cmd).
+  Legitimate cases: none.
+  SOC triage steps:
+  - If the response status is 200 — command execution may have occurred.
+  - Check the backend server logs — whether an unusual process was started.
+  - Immediately: open an incident, isolate the backend server.
 type: esql
 params: '{}'
 schedule_interval: 5m

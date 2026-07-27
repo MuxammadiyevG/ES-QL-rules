@@ -1,6 +1,8 @@
 rule_id: 09486d9d-c41a-4582-bfd8-26c77eaf5353
-name: ESET Protect - Multiple Device Shutdown or Reboot Tasks
-description: |
+name_uz: "ESET Protect - bir nechta qurilmaga shutdown yoki reboot tasklari"
+name_ru: "ESET Protect - несколько задач выключения или перезагрузки устройств"
+name_en: "ESET Protect - Multiple Device Shutdown or Reboot Tasks"
+description_uz: |
   Ushbu qoida ESET device management orqali bir nechta device'larga shutdown/reboot task'larni aniqlaydi.
   Bu unauthorized management action yoki insider threat belgisi bo'lishi mumkin (T1529).
   Qonuniy holatlar: scheduled maintenance, patch deployment, legitimate administrative tasks.
@@ -10,6 +12,26 @@ description: |
   - Task description va trigger time'ni review qiling
   - Change management approval borligini tekshiring
   - Unauthorized access yoki credential compromise belgilari
+description_ru: |
+  Это правило выявляет задачи shutdown/reboot, отправленные на несколько устройств через device management ESET.
+  Это может быть признаком несанкционированного управляющего действия или инсайдерской угрозы (T1529).
+  Легитимные случаи: плановое обслуживание, развёртывание патчей, легитимные административные задачи.
+  Шаги SOC triage:
+  - Проверьте личность создателя задачи и его авторизацию
+  - Оцените список целевых устройств и влияние на бизнес
+  - Просмотрите описание задачи и время запуска
+  - Проверьте наличие согласования change management
+  - Признаки несанкционированного доступа или компрометации учётных данных
+description_en: |
+  This rule detects shutdown/reboot tasks sent to multiple devices via ESET device management.
+  This may be a sign of an unauthorized management action or insider threat (T1529).
+  Legitimate cases: scheduled maintenance, patch deployment, legitimate administrative tasks.
+  SOC triage steps:
+  - Verify the task creator identity and authorization
+  - Assess the target device list and business impact
+  - Review the task description and trigger time
+  - Check whether change management approval exists
+  - Signs of unauthorized access or credential compromise
 type: esql
 params: '{}'
 schedule_interval: 15m

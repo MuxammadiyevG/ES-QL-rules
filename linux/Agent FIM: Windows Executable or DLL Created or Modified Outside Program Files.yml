@@ -1,6 +1,8 @@
 rule_id: 46a89ffd-f2ff-442a-9fb3-5fce565c6d09
-name: "Agent FIM: Windows Executable or DLL Created or Modified Outside Program Files"
-description: |
+name_uz: "Agent FIM: Program Files tashqarisida Windows bajariluvchi fayl yoki DLL yaratildi yoki o'zgartirildi"
+name_ru: "Agent FIM: создание или изменение исполняемого файла или DLL Windows вне Program Files"
+name_en: "Agent FIM: Windows Executable or DLL Created or Modified Outside Program Files"
+description_uz: |
   Ushbu qoida Persistence va Execution texnikalariga bog'liq bo'lib, Windows tizimida
   kutilmagan joylarda (.exe, .dll, .bat, .ps1, .vbs) fayl yaratilishi yoki o'zgartirilishini
   aniqlaydi. Hujumchi temp katalog, user profile yoki boshqa yozish mumkin bo'lgan
@@ -13,6 +15,32 @@ description: |
   - `file.created` vs `file.mtime` — yangi yaratilgan fayl yoki mavjud fayl ustiga yozilgan.
   - Faylni AV/sandbox orqali tekshiring.
   - Noqonuniy bo'lsa: faylni karantinga oling, process tree ni tekshiring.
+description_ru: |
+  Данное правило связано с техниками Persistence и Execution и обнаруживает создание
+  или изменение файлов (.exe, .dll, .bat, .ps1, .vbs) в неожиданных местах
+  в системе Windows. Атакующий может разместить вредоносный файл во временном каталоге,
+  в профиле пользователя или в других доступных для записи местах и обеспечить закрепление.
+  Легитимные случаи: установка программ, процессы обновления, деятельность разработчиков.
+  Этапы SOC-триажа:
+  - `file.path` — exe/dll в каталогах Temp, AppData, Users — высокий риск.
+  - `file.owner` — если это не SYSTEM или Administrator, а обычный user — подозрительно.
+  - `file.size` — очень маленький PE-файл (< 10KB) может быть packed/obfuscated.
+  - `file.created` vs `file.mtime` — файл создан заново или записан поверх существующего.
+  - Проверьте файл через AV/sandbox.
+  - Если нелегитимно: поместите файл в карантин, проверьте process tree.
+description_en: |
+  This rule is related to Persistence and Execution techniques and detects the creation
+  or modification of files (.exe, .dll, .bat, .ps1, .vbs) in unexpected locations
+  on a Windows system. An attacker may place a malicious file in a temp directory,
+  a user profile, or other writable locations to establish persistence.
+  Legitimate cases: software installation, update processes, developer activity.
+  SOC triage steps:
+  - `file.path` — an exe/dll in the Temp, AppData, or Users directory is high risk.
+  - `file.owner` — if it is not SYSTEM or Administrator but a regular user, it is suspicious.
+  - `file.size` — a very small PE file (< 10KB) may be packed/obfuscated.
+  - `file.created` vs `file.mtime` — a newly created file or an overwrite of an existing file.
+  - Check the file with AV/sandbox.
+  - If illegitimate: quarantine the file, inspect the process tree.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,8 @@
 rule_id: ffe32351-ecbe-4604-9816-7190f8629ac8
-name: Kerberos Service Ticket Request - Kerberoasting
-description: |
+name_uz: "Kerberos servis tiketi so'rovi - Kerberoasting"
+name_ru: "Запрос сервисного билета Kerberos - Kerberoasting"
+name_en: "Kerberos Service Ticket Request - Kerberoasting"
+description_uz: |
   Ushbu qoida credential access texnikasi Kerberoasting'ni aniqlaydi: bitta foydalanuvchi
   qisqa vaqt ichida ko'p sonli xil SPN (service) uchun TGS (4769) so'rashi, ayniqsa zaif
   RC4 (0x17) shifrlash bilan — bu hujumchi service akkaunt parol-hashlarini offline crack
@@ -11,6 +13,28 @@ description: |
   - `rc4_count > 0` bo'lsa: domen AES'da bo'lsa RC4 so'rovi shubhali.
   - So'rov manbasini (`src_ips`) va requestor odatdagi xulqini tekshiring.
   - Tasdiqlansa: service akkaunt parolini rotatsiya qiling (uzun, AES), manbani cheklang.
+description_ru: |
+  Это правило обнаруживает технику credential access Kerberoasting: один пользователь
+  за короткое время запрашивает TGS (4769) для большого числа различных SPN (service), особенно
+  со слабым шифрованием RC4 (0x17) — это означает, что атакующий собирает парольные хеши
+  служебных учётных записей для offline-взлома.
+  Легитимные случаи: серверы приложений/интеграции, подключающиеся ко многим сервисам, сканер уязвимостей.
+  SOC triage:
+  - Кто такой `requestor` (запрашивающая учётная запись), какие `services` запрошены?
+  - Если `rc4_count > 0`: при домене на AES запрос RC4 подозрителен.
+  - Проверьте источник запроса (`src_ips`) и обычное поведение requestor.
+  - При подтверждении: смените пароль служебной учётной записи (длинный, AES), ограничьте источник.
+description_en: |
+  This rule detects the credential access technique Kerberoasting: a single user requesting
+  TGS (4769) for a large number of distinct SPNs (service) in a short time, especially with
+  weak RC4 (0x17) encryption — this indicates that an attacker is collecting service account
+  password hashes for offline cracking.
+  Legitimate cases: application/integration servers connecting to many services, vulnerability scanners.
+  SOC triage:
+  - Who is the `requestor` (requesting account), which `services` were requested?
+  - If `rc4_count > 0`: an RC4 request is suspicious when the domain is on AES.
+  - Check the request source (`src_ips`) and the requestor's usual behavior.
+  - If confirmed: rotate the service account password (long, AES), restrict the source.
 type: esql
 params: '{}'
 schedule_interval: 10m

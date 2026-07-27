@@ -1,6 +1,8 @@
 rule_id: 0cd409c0-6feb-497b-b7b4-5aa27c130ff6
-name: Fortigate - Multiple Configuration Changes from Same Source
-description: |
+name_uz: "Fortigate - Bir manbadan ko'plab konfiguratsiya o'zgarishlari"
+name_ru: "Fortigate - Множественные изменения конфигурации из одного источника"
+name_en: "Fortigate - Multiple Configuration Changes from Same Source"
+description_uz: |
   Ushbu qoida Fortigate firewall'da bir xil manbadan qisqa vaqt ichida ko'p konfiguratsiya o'zgarishlarini aniqlaydi.
   Bu defense evasion (T1562.001) belgisi bo'lishi mumkin.
   Qonuniy holatlar: rejalashtirilgan maintenance, bulk configuration deployment.
@@ -10,6 +12,26 @@ description: |
   - Qanday konfiguratsiyalar o'zgartirilganini aniqlang
   - O'zgarishlar vaqti va tezligini tahlil qiling
   - Kritik security policy o'zgarishlari bo'lganmi tekshiring
+description_ru: |
+  Данное правило выявляет множественные изменения конфигурации на Fortigate firewall из одного и того же источника за короткое время.
+  Это может быть признаком defense evasion (T1562.001).
+  Легитимные случаи: плановое обслуживание, массовое развёртывание конфигурации.
+  Этапы SOC-триажа:
+  - Идентифицируйте admin user, выполнившего изменения
+  - Проверьте наличие change ticket
+  - Определите, какие конфигурации были изменены
+  - Проанализируйте время и скорость изменений
+  - Проверьте, были ли изменения критичных security policy
+description_en: |
+  This rule detects multiple configuration changes on a Fortigate firewall from the same source within a short time.
+  This may be a sign of defense evasion (T1562.001).
+  Legitimate cases: planned maintenance, bulk configuration deployment.
+  SOC triage steps:
+  - Identify the admin user who made the changes
+  - Check whether a change ticket exists
+  - Determine which configurations were changed
+  - Analyze the timing and rate of the changes
+  - Check whether critical security policy changes occurred
 type: esql
 params: '{}'
 schedule_interval: 10m

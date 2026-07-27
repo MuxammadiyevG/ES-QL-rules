@@ -1,9 +1,19 @@
 rule_id: f9b18240-53f6-4dfc-ae26-abf5aa4e7d18
-name: "Access: SSH Session Login — user_start Event"
-description: |
+name_uz: "Access: SSH Sessiyasiga Kirish — user_start Hodisasi"
+name_ru: "Access: вход в SSH-сессию — событие user_start"
+name_en: "Access: SSH Session Login — user_start Event"
+description_uz: |
   Ushbu qoida auditd loglarida SSH sessiya boshlanishini aniqlaydi.
   `user_start` va `PAM:session_open` hodisasi foydalanuvchi SSH orqali
   sessiyaga kirganini bildiradi.
+description_ru: |
+  Это правило выявляет начало SSH-сессии в логах auditd.
+  События `user_start` и `PAM:session_open` означают, что пользователь вошёл
+  в сессию через SSH.
+description_en: |
+  This rule detects the start of an SSH session in auditd logs.
+  The `user_start` and `PAM:session_open` events indicate that a user has logged
+  into a session via SSH.
 type: esql
 params: "{}"
 schedule_interval: 5m

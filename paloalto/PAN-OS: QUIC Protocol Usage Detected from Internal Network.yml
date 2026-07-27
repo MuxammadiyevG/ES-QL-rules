@@ -1,6 +1,8 @@
 rule_id: a49b822d-2576-4f2b-869e-bb002d38aff2
-name: "PAN-OS: QUIC Protocol Usage Detected from Internal Network"
-description: |
+name_uz: "PAN-OS: ichki tarmoqdan QUIC protokolidan foydalanish aniqlandi"
+name_ru: "PAN-OS: обнаружено использование протокола QUIC из внутренней сети"
+name_en: "PAN-OS: QUIC Protocol Usage Detected from Internal Network"
+description_uz: |
   Ushbu qoida ichki tarmoqdagi qurilmalardan QUIC protokoli orqali tashqi manzillarga ulanishni kuzatadi.
   QUIC (UDP/443) Google va Cloudflare xizmatlari tomonidan ishlatiladigan zamonaviy transport protokoli.
   QUIC trafigi an'anaviy SSL inspeksiyasini chetlab o'tishi mumkin, shu sababli monitoring qilish muhim.
@@ -10,6 +12,26 @@ description: |
   - Manzil IP'larini tekshiring — faqat ma'lum CDN/provayderlarmi?
   - QUIC orqali tunnel yaratish (quic-tunnel) urinishlari borligini tekshiring.
   - Korporativ siyosat QUIC'ni ruxsat etadimi — aks holda bloklashni baholang.
+description_ru: |
+  Это правило отслеживает подключения к внешним адресам по протоколу QUIC с устройств внутренней сети.
+  QUIC (UDP/443) — современный транспортный протокол, используемый сервисами Google и Cloudflare.
+  Трафик QUIC может обходить традиционную SSL-инспекцию, поэтому его мониторинг важен.
+  Легитимные случаи: браузеры Chrome/Edge, YouTube, Google Workspace, сервисы Cloudflare.
+  Этапы SOC-триажа:
+  - Сравните список устройств, использующих QUIC, с baseline.
+  - Проверьте IP-адреса назначения — только ли это известные CDN/провайдеры?
+  - Проверьте наличие попыток создания туннеля через QUIC (quic-tunnel).
+  - Разрешает ли корпоративная политика QUIC — иначе оцените блокировку.
+description_en: |
+  This rule monitors connections to external addresses over the QUIC protocol from internal network devices.
+  QUIC (UDP/443) is a modern transport protocol used by Google and Cloudflare services.
+  QUIC traffic can bypass traditional SSL inspection, which is why monitoring it is important.
+  Legitimate cases: Chrome/Edge browsers, YouTube, Google Workspace, Cloudflare services.
+  SOC triage steps:
+  - Compare the list of devices using QUIC with the baseline.
+  - Check the destination IPs — are they only known CDNs/providers?
+  - Check for tunneling attempts over QUIC (quic-tunnel).
+  - Does corporate policy allow QUIC — otherwise assess blocking.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,8 @@
 rule_id: d25b8928-7218-430e-b9a3-b229f1e9839f
-name: Nginx - Open Redirect Attempt
-description: |
+name_uz: "Nginx - Open Redirect urinishi"
+name_ru: "Nginx - попытка Open Redirect"
+name_en: "Nginx - Open Redirect Attempt"
+description_uz: |
   Ushbu qoida Nginx access log'da open redirect urinishlarini aniqlaydi.
   redirect=, url=, next=, return=, dest= kabi parametrlar absolute yoki offsite URL (http://, https://, //)
   qiymatiga ega bo'lganda flagga olinadi.
@@ -12,6 +14,30 @@ description: |
   - Phishing campaign bilan bog'liqlikni baholang
   - Application redirect allowlist mavjudligini review qiling
   - WAF yoki application fix zarurligini baholang
+description_ru: |
+  Это правило обнаруживает попытки open redirect в access log Nginx.
+  Параметры вроде redirect=, url=, next=, return=, dest= помечаются, когда содержат абсолютный или внешний URL (http://, https://, //)
+  в качестве значения.
+  Это признак фишинга, кражи учётных данных или эксплуатации с участием пользователя (T1204).
+  Легитимные случаи: легитимный поток редиректов, SSO callback, OAuth redirect.
+  Этапы SOC-триажа:
+  - Проанализируйте домен цели редиректа — определите, доверенный он или чужой
+  - Проверьте затронутый эндпоинт и валидацию параметров
+  - Оцените связь с фишинговой кампанией
+  - Проверьте наличие allowlist редиректов в приложении
+  - Оцените необходимость исправления в WAF или приложении
+description_en: |
+  This rule detects open redirect attempts in the Nginx access log.
+  Parameters such as redirect=, url=, next=, return=, dest= are flagged when they carry an absolute or offsite URL (http://, https://, //)
+  value.
+  This is a sign of phishing, credential theft or user-driven exploitation (T1204).
+  Legitimate cases: legitimate redirect flow, SSO callback, OAuth redirect.
+  SOC triage steps:
+  - Analyze the redirect target domain — determine whether it is trusted or foreign
+  - Check the affected endpoint and parameter validation
+  - Assess any link with a phishing campaign
+  - Review whether an application redirect allowlist exists
+  - Assess whether a WAF or application fix is needed
 type: esql
 params: '{}'
 schedule_interval: 10m

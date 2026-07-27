@@ -1,8 +1,16 @@
 rule_id: 664d27b3-12c2-450a-8848-e45dbd332184
-name: UniFi Wired Client Connected
-description: |
+name_uz: "UniFi kabel klienti ulandi"
+name_ru: "Проводной клиент UniFi подключился"
+name_en: "UniFi Wired Client Connected"
+description_uz: |
   Ushbu qoida kabel orqali yangi klient ulanishini switch, port, MAC, link speed va VLAN bilan kuzatadi.
   Noma'lum MAC yoki ruxsatsiz switch portiga ulanish fizik kirish xavfini ko'rsatishi mumkin.
+description_ru: |
+  Это правило отслеживает подключение нового клиента по кабелю вместе со switch, портом, MAC, link speed и VLAN.
+  Неизвестный MAC или подключение к неавторизованному порту switch может указывать на риск физического доступа.
+description_en: |
+  This rule tracks new wired client connections together with the switch, port, MAC, link speed and VLAN.
+  An unknown MAC or a connection to an unauthorized switch port may indicate a physical access risk.
 type: esql
 params: "{}"
 schedule_interval: 10m

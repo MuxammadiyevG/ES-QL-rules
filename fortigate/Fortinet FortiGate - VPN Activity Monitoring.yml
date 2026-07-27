@@ -1,6 +1,8 @@
 rule_id: 92ae011b-1cc2-4996-9e68-414346a70a0e
-name: Fortinet FortiGate - VPN Activity Monitoring
-description: |
+name_uz: "Fortinet FortiGate - VPN faoliyatini monitoring qilish"
+name_ru: "Fortinet FortiGate - Мониторинг VPN-активности"
+name_en: "Fortinet FortiGate - VPN Activity Monitoring"
+description_uz: |
   Ushbu qoida FortiGate VPN hodisalarini kuzatadi.
   Noodatiy VPN ulanishlari, muvaffaqiyatsiz autentifikatsiya yoki
   ruxsatsiz kirish urinishlari credential access va initial access
@@ -10,8 +12,32 @@ description: |
   - `actor` (user.name) va `src_ip` (remip) ni tekshiring.
   - GeoIP ma'lumotlarini tekshiring — noodatiy mamlakat/shahardan kirish bormi.
   - VPN ulanish vaqtini tekshiring — ish soatlaridan tashqarimi.
-  - Muvaffaqiyatsiz uricnishlar soni ortib borayotgan bo'lsa brute-force ehtimolini ko'rib chiqing.
+  - Muvaffaqiyatsiz urinishlar soni ortib borayotgan bo'lsa brute-force ehtimolini ko'rib chiqing.
   - Noqonuniy faoliyat tasdiqlansa: VPN akkauntini bloklang, credentiallarni yangilang.
+description_ru: |
+  Данное правило отслеживает события FortiGate VPN.
+  Необычные VPN-подключения, неудачная аутентификация или
+  попытки несанкционированного доступа могут указывать на техники
+  credential access и initial access (T1078, T1133).
+  Легитимные случаи: удалённые сотрудники, site-to-site VPN, IT-администраторы.
+  Этапы SOC-триажа:
+  - Проверьте `actor` (user.name) и `src_ip` (remip).
+  - Проверьте данные GeoIP — нет ли входа из необычной страны/города.
+  - Проверьте время VPN-подключения — не вне ли рабочих часов.
+  - Если число неудачных попыток растёт, рассмотрите вероятность brute-force.
+  - При подтверждении нелегитимной активности: заблокируйте VPN-аккаунт, обновите учётные данные.
+description_en: |
+  This rule monitors FortiGate VPN events.
+  Unusual VPN connections, failed authentication or
+  unauthorized access attempts may point to credential access and initial access
+  techniques (T1078, T1133).
+  Legitimate cases: remote workers, site-to-site VPN, IT administrators.
+  SOC triage steps:
+  - Check `actor` (user.name) and `src_ip` (remip).
+  - Check the GeoIP data — is there a login from an unusual country/city.
+  - Check the VPN connection time — is it outside business hours.
+  - If the number of failed attempts is growing, consider the possibility of brute-force.
+  - If illegitimate activity is confirmed: block the VPN account, rotate the credentials.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: c22bbc9e-5518-4edb-afe5-f5e72b42d802
-name: Nginx - Multiple Web Authentication Failures
-description: |
+name_uz: "Nginx - takroriy web autentifikatsiya xatoliklari"
+name_ru: "Nginx - множественные ошибки веб-аутентификации"
+name_en: "Nginx - Multiple Web Authentication Failures"
+description_uz: |
   Ushbu qoida Nginx web server'da bir xil manbadan ko'p marta authentication failure hodisalarini aniqlaydi.
   Bu brute force attack yoki credential stuffing urinishi belgisi (T1110).
   Qonuniy holatlar: user parol xatosi, credential expiration, misconfigured client.
@@ -10,6 +12,26 @@ description: |
   - User agent va request pattern'ini tahlil qiling
   - Muvaffaqiyatli login bo'lganmi keyinroq tekshiring
   - Rate limiting yoki IP blocking zarurligini baholang
+description_ru: |
+  Это правило обнаруживает многократные события неудачной аутентификации из одного источника на веб-сервере Nginx.
+  Это признак атаки перебором паролей (brute force) или попытки credential stuffing (T1110).
+  Легитимные случаи: ошибка пользователя в пароле, истечение срока действия учётных данных, неверно настроенный клиент.
+  Этапы SOC-триажа:
+  - Проверьте гео-расположение и репутацию IP источника
+  - Определите целевой URL и эндпоинт аутентификации
+  - Проанализируйте user agent и шаблон запросов
+  - Позже проверьте, был ли успешный вход
+  - Оцените необходимость ограничения частоты запросов или блокировки IP
+description_en: |
+  This rule detects repeated authentication failure events from the same source on the Nginx web server.
+  This is a sign of a brute force attack or credential stuffing attempt (T1110).
+  Legitimate cases: user password mistake, credential expiration, misconfigured client.
+  SOC triage steps:
+  - Check the source IP geo-location and reputation
+  - Identify the target URL and the authentication endpoint
+  - Analyze the user agent and the request pattern
+  - Check later whether a successful login occurred
+  - Assess whether rate limiting or IP blocking is needed
 type: esql
 params: '{}'
 schedule_interval: 10m

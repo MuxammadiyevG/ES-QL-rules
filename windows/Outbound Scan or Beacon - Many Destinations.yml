@@ -1,10 +1,22 @@
 rule_id: de3b0346-ab50-41db-a593-694e64882ed7
-name: Outbound Scan / Many Distinct Destinations by One Process
-description: |
+name_uz: "Chiquvchi skan / bitta jarayondan ko'p xil manzil"
+name_ru: "Исходящее сканирование / много различных назначений от одного процесса"
+name_en: "Outbound Scan / Many Distinct Destinations by One Process"
+description_uz: |
   Ushbu qoida bitta jarayon qisqa vaqtda KO'P xil tashqi IP'ga ulanishini aniqlaydi (WFP 5156)
   — tarmoq skani, beaconing yoki tarqoq C2 belgisi (T1046/T1071).
   SOC triage:
   - `application` qonuniy (brauzer/update) emasmi? `unique_dests` qancha? namuna `dest_addresses`.
+description_ru: |
+  Это правило обнаруживает подключение одного процесса ко МНОГИМ разным внешним IP за короткое время (WFP 5156)
+  — признак сетевого сканирования, beaconing или распределённого C2 (T1046/T1071).
+  SOC triage:
+  - Не является ли `application` легитимным (браузер/обновление)? Сколько `unique_dests`? Пример `dest_addresses`.
+description_en: |
+  This rule detects a single process connecting to MANY different external IPs in a short time (WFP 5156)
+  — a sign of network scanning, beaconing or scattered C2 (T1046/T1071).
+  SOC triage:
+  - Is `application` legitimate (browser/updater)? How many `unique_dests`? Sample `dest_addresses`.
 type: esql
 params: '{}'
 schedule_interval: 10m

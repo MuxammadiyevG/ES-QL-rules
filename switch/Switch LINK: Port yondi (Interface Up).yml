@@ -1,8 +1,16 @@
 rule_id: 0d4e8724-bb46-494e-9646-9237a4fd4f91
-name: "Switch LINK: Port yondi (Interface Up)"
-description: |
+name_uz: "Switch LINK: Port yondi (Interface Up)"
+name_ru: "Switch LINK: порт поднялся (Interface Up)"
+name_en: "Switch LINK: Port came up (Interface Up)"
+description_uz: |
   Switch portiga qurilma ulandi yoki port faollashdi.
   Qaysi switchda, qaysi portda yuz berganini qayd etadi.
+description_ru: |
+  К порту коммутатора подключено устройство или порт стал активным.
+  Фиксирует, на каком коммутаторе и на каком порту это произошло.
+description_en: |
+  A device was connected to the switch port or the port became active.
+  Records on which switch and on which port it happened.
 type: esql
 params: '{}'
 schedule_interval: 5m

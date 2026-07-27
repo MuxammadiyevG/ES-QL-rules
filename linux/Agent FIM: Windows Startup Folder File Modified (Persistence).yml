@@ -1,6 +1,8 @@
 rule_id: 4123fb98-059d-4520-a511-bf85d419b582
-name: "Agent FIM: Windows Startup Folder File Modified (Persistence)"
-description: |
+name_uz: "Agent FIM: Windows Startup papkasidagi fayl o'zgartirildi (Persistence)"
+name_ru: "Agent FIM: изменение файла в папке Windows Startup (Persistence)"
+name_en: "Agent FIM: Windows Startup Folder File Modified (Persistence)"
+description_uz: |
   Ushbu qoida Persistence texnikasiga bog'liq bo'lib, Windows Startup papkasidagi
   fayl o'zgarishlarini aniqlaydi. Bu eng oddiy va samarali persistence mexanizmlaridan
   biri — bu papkadagi har qanday fayl tizim yoki foydalanuvchi loginida avtomatik
@@ -12,6 +14,30 @@ description: |
   - `file.owner` — SYSTEM yoki Administrator bo'lmagan owner shubhali.
   - Startup faylni manual tekshiring: ulanish manzili, argumentlari.
   - Noqonuniy bo'lsa: faylni o'chiring, autorun ro'yxatini tekshiring.
+description_ru: |
+  Данное правило связано с техникой Persistence и обнаруживает изменения файлов
+  в папке Windows Startup. Это один из самых простых и эффективных механизмов
+  закрепления — любой файл в этой папке автоматически запускается при загрузке системы
+  или при входе пользователя.
+  Легитимные случаи: создание startup shortcut при установке программы.
+  Этапы SOC-триажа:
+  - Проверьте `file.name` и `file.path` — неожиданное имя файла подозрительно.
+  - `file.extension` — проверьте, если это exe, lnk, vbs, ps1.
+  - `file.owner` — владелец, отличный от SYSTEM или Administrator, подозрителен.
+  - Проверьте файл startup вручную: адрес ссылки, аргументы.
+  - Если нелегитимно: удалите файл, проверьте список autorun.
+description_en: |
+  This rule is related to the Persistence technique and detects file changes
+  in the Windows Startup folder. This is one of the simplest and most effective persistence
+  mechanisms — any file in this folder runs automatically at system or user
+  login.
+  Legitimate cases: creation of a startup shortcut during software installation.
+  SOC triage steps:
+  - Check `file.name` and `file.path` — an unexpected file name is suspicious.
+  - `file.extension` — check if it is exe, lnk, vbs, ps1.
+  - `file.owner` — an owner other than SYSTEM or Administrator is suspicious.
+  - Inspect the startup file manually: link target, arguments.
+  - If illegitimate: delete the file, check the autorun list.
 type: esql
 params: '{}'
 schedule_interval: 5m

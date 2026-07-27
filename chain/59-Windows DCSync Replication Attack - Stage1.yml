@@ -1,7 +1,15 @@
 rule_id: 44e284e1-91a3-44d1-9f7d-fcd2b06e3929
-name: "Chain: Windows DCSync Replication Attack — Stage 1: DS Replication Rights by Non-Machine Account"
-description: |
+name_uz: "Zanjir: Windows DCSync Replication Attack — 1-bosqich: Mashina bo'lmagan akkauntda DS Replication huquqlari"
+name_ru: "Цепочка: Windows DCSync Replication Attack — Этап 1: Права DS Replication у не-машинной учётной записи"
+name_en: "Chain: Windows DCSync Replication Attack — Stage 1: DS Replication Rights by Non-Machine Account"
+description_uz: |
   Windows DCSync Replication Attack zanjiri — 1-bosqich (2 dan).
+  DS Replication Rights by Non-Machine Account.
+description_ru: |
+  Цепочка Windows DCSync Replication Attack — этап 1 (из 2).
+  Права DS Replication у не-машинной учётной записи.
+description_en: |
+  Windows DCSync Replication Attack chain — stage 1 (of 2).
   DS Replication Rights by Non-Machine Account.
 type: esql
 enabled: true

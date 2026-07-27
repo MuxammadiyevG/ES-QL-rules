@@ -1,6 +1,12 @@
 rule_id: b7795001-e9c0-4cef-a022-3fe21dae6eaa
-name: "Screen Capture with XWD Command"
-description: |
+name_uz: "XWD buyrug'i orqali ekranni suratga olish"
+name_ru: "Захват экрана с помощью команды XWD"
+name_en: "Screen Capture with XWD Command"
+description_uz: |
+  xwd (X Window Dump) buyrug'i yordamida ekranni suratga olishni aniqlaydi.
+description_ru: |
+  Обнаруживает захват экрана с помощью команды xwd (X Window Dump).
+description_en: |
   Detects screen capture using xwd (X Window Dump) command.
 type: esql
 params: '{}'

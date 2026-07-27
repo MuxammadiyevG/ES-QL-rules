@@ -1,8 +1,16 @@
 rule_id: 56aee96e-9c05-4987-9ce0-18d3a6514a4f
-name: Nginx - Sensitive File Discovery Attempt
-description: |
+name_uz: "Nginx - Maxfiy fayllarni aniqlash urinishi"
+name_ru: "Nginx - Попытка обнаружения чувствительных файлов"
+name_en: "Nginx - Sensitive File Discovery Attempt"
+description_uz: |
   Konfiguratsiya va tizim fayllariga (.env, .git, .bak) kirish urinishlarini aniqlaydi.
   Bu ma'lumotlarni o'g'irlash (Information Disclosure) bosqichidir.
+description_ru: |
+  Обнаруживает попытки доступа к конфигурационным и системным файлам (.env, .git, .bak).
+  Это этап хищения данных (Information Disclosure).
+description_en: |
+  Detects attempts to access configuration and system files (.env, .git, .bak).
+  This is the data theft (Information Disclosure) stage.
 type: esql
 params: '{}'
 schedule_interval: 10m

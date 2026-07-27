@@ -1,8 +1,16 @@
 rule_id: 9eea1515-a4ea-4034-9ec7-dd5cf3d49a53
-name: "Agent Info: User Session Closed (Logout)"
-description: |
+name_uz: "Agent Info: Foydalanuvchi sessiyasi yopildi (logout)"
+name_ru: "Agent Info: Сессия пользователя закрыта (выход из системы)"
+name_en: "Agent Info: User Session Closed (Logout)"
+description_uz: |
   Foydalanuvchi tizimdan chiqqanda (user_end, user_logout) sessiya yopilishini qayd etadi.
   Sessiya davomiyligi va faollik vaqtini kuzatish uchun ishlatiladi.
+description_ru: |
+  Фиксирует закрытие сессии при выходе пользователя из системы (user_end, user_logout).
+  Используется для наблюдения за длительностью сессии и временем активности.
+description_en: |
+  Records session closure when a user logs out of the system (user_end, user_logout).
+  Used for monitoring session duration and activity time.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,8 @@
 rule_id: 05d0cef5-1be2-4137-a9e9-9cdbb8bba850
-name: "Agent FIM: Linux Configuration File Modified in /etc Directory"
-description: |
+name_uz: "Agent FIM: /etc katalogidagi Linux konfiguratsiya fayli o'zgartirildi"
+name_ru: "Agent FIM: изменён конфигурационный файл Linux в каталоге /etc"
+name_en: "Agent FIM: Linux Configuration File Modified in /etc Directory"
+description_uz: |
   Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib,
   /etc katalogidagi muhim konfiguratsiya fayllarining o'zgarishini aniqlaydi.
   Hujumchi /etc/passwd, /etc/shadow, /etc/sudoers, /etc/crontab kabi fayllarni
@@ -13,6 +15,32 @@ description: |
   - `file.hash.sha1` baseline bilan solishtiring.
   - O'sha vaqtda tizimda kim ishlayotganini tekshiring (user_login, sudo loglar).
   - Noqonuniy bo'lsa: faylni backup dan qaytaring, o'zgarishni audit qiling.
+description_ru: |
+  Это правило связано с техниками Persistence и Privilege Escalation и
+  выявляет изменения важных конфигурационных файлов в каталоге /etc.
+  Злоумышленник может изменить такие файлы, как /etc/passwd, /etc/shadow, /etc/sudoers, /etc/crontab,
+  и выполнить закрепление или повышение привилегий.
+  Легитимные случаи: изменения конфигурации системным администратором, установка пакетов.
+  Шаги SOC-триажа:
+  - Является ли `file.name` одним из: passwd, shadow, sudoers, crontab, hosts, sshd_config.
+  - Изменился ли `file.mode` — shadow должен быть 0640, sudoers 0440.
+  - Если `file.owner` не root — критический риск.
+  - Сравните `file.hash.sha1` с baseline.
+  - Проверьте, кто работал в системе в это время (user_login, журналы sudo).
+  - Если активность нелегитимна: восстановите файл из резервной копии, проведите аудит изменения.
+description_en: |
+  This rule is related to Persistence and Privilege Escalation techniques and
+  detects changes to important configuration files in the /etc directory.
+  An attacker may modify files such as /etc/passwd, /etc/shadow, /etc/sudoers, /etc/crontab
+  to achieve persistence or privilege escalation.
+  Legitimate cases: configuration changes by a system administrator, package installation.
+  SOC triage steps:
+  - Is `file.name` one of: passwd, shadow, sudoers, crontab, hosts, sshd_config.
+  - Has `file.mode` changed — shadow should be 0640, sudoers 0440.
+  - If `file.owner` is not root — critical risk.
+  - Compare `file.hash.sha1` with the baseline.
+  - Check who was working on the system at that time (user_login, sudo logs).
+  - If illegitimate: restore the file from backup, audit the change.
 type: esql
 params: '{}'
 schedule_interval: 5m

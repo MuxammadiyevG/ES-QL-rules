@@ -1,6 +1,16 @@
 rule_id: 0b6ba2df-d0cf-4c04-8bfd-ecc3eb10cc6b
-name: "Logging Configuration Changes Detection"
-description: |
+name_uz: "Loglash konfiguratsiyasi o'zgarishlarini aniqlash"
+name_ru: "Обнаружение изменений конфигурации логирования"
+name_en: "Logging Configuration Changes Detection"
+description_uz: |
+  syslog demonlari konfiguratsiya fayllaridagi o'zgarishlarni aniqlaydi.
+  Tajovuzkorlar aniqlanishdan qochish yoki dalil yig'ilishining oldini olish uchun loglash konfiguratsiyalarini o'zgartirishi mumkin.
+  rsyslog, syslog va syslog-ng konfiguratsiya fayllarini kuzatadi.
+description_ru: |
+  Обнаруживает изменения в конфигурационных файлах демонов syslog.
+  Злоумышленники могут изменять конфигурации логирования, чтобы обойти обнаружение или помешать сбору доказательств.
+  Отслеживает конфигурационные файлы rsyslog, syslog и syslog-ng.
+description_en: |
   Detects changes to syslog daemons configuration files.
   Adversaries may modify logging configurations to evade detection or prevent evidence collection.
   Monitors rsyslog, syslog, and syslog-ng configuration files.

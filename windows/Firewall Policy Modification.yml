@@ -1,7 +1,23 @@
 rule_id: 4dea56d0-2f44-4972-a8f4-064c42e28d20
 
-name: "Firewall Policy Modification"
-description: |
+name_uz: "Firewall siyosati o'zgartirildi"
+name_ru: "Изменение политики межсетевого экрана"
+name_en: "Firewall Policy Modification"
+description_uz: |
+  Windows Firewall yoki Linux firewall qoidalaridagi (iptables, ufw, firewalld) o'zgarishlarni aniqlaydi.
+  Ruxsat beruvchi inbound qoidalarni qo'shish yoki firewall'ni butunlay o'chirish chegara himoyasini zaiflashtiradi.
+  Windows uchun 4946/4947/4950 (qoida qo'shish/o'zgartirish), 4950 (sozlama o'zgarishi) event ID lari olinadi.
+  False positive: qonuniy administrativ o'zgarishlar, port ochishni talab qiluvchi dasturiy ta'minot o'rnatishlari.
+  Triage: qoida tafsilotlarini (portlar, protokollar, qamrov) ko'rib chiqing, o'zgarish ruxsat etilganini tasdiqlang,
+  qoida ma'lum zararli trafik patternlariga yo'l ochayotganini tekshiring.
+description_ru: |
+  Выявляет изменения правил Windows Firewall или Linux firewall (iptables, ufw, firewalld).
+  Добавление разрешающих входящих правил или полное отключение firewall ослабляет защиту периметра.
+  Для Windows собираются Event ID 4946/4947/4950 (добавление/изменение правила), 4950 (изменение настроек).
+  False positives: легитимные административные изменения, установки ПО, требующие открытия портов.
+  Triage: изучите детали правила (порты, протоколы, область действия), подтвердите авторизацию изменения,
+  проверьте, не разрешает ли правило известные вредоносные паттерны трафика.
+description_en: |
   Detects changes to Windows Firewall or Linux firewall rules (iptables, ufw, firewalld).
   Adding permissive inbound rules or disabling firewall entirely weakens boundary protection.
   Event IDs 4946/4947/4950 (rule add/change), 4950 (settings change) captured for Windows.

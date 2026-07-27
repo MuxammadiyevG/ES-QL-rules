@@ -8,8 +8,24 @@ rule_id: 07c6d069-4ca0-4a90-9714-689496fc9286
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Allowlist known service accounts, adjust concurrent login threshold
 #
-name: "Shared Account Concurrent Usage"
-description: |
+name_uz: "Umumiy akkauntdan bir vaqtda foydalanish"
+name_ru: "Одновременное использование общей учётной записи"
+name_en: "Shared Account Concurrent Usage"
+description_uz: |
+  Bir xil foydalanuvchi akkaunti ostida turli manba IP'lardan bir vaqtda bir nechta kirishni aniqlaydi.
+  Umumiy akkauntlar individual javobgarlik va non-repudiation talablarini buzadi.
+  Geografik jihatdan turli joylardan bir vaqtdagi sessiyalar credential ulashish yoki kompromentatsiyadan darak beradi.
+  False positive: qonuniy servis akkauntlar, VPN qayta ulanishlari, load-balanced ilovalar.
+  Triage: akkaunt umumiy/servis akkaunt sifatida belgilanganini tekshiring, IP'lar bir foydalanuvchiga tegishli ekanini tekshiring,
+  akkaunt faoliyatini anomaliyalar uchun ko'rib chiqing.
+description_ru: |
+  Выявляет несколько одновременных входов под одной учётной записью с разных исходных IP.
+  Общие учётные записи нарушают требования индивидуальной ответственности и non-repudiation.
+  Одновременные сессии из географически различных мест указывают на совместное использование учётных данных или компрометацию.
+  Ложные срабатывания: легитимные сервисные учётные записи, переподключения VPN, приложения с балансировкой нагрузки.
+  Triage: проверьте, обозначена ли учётная запись как общая/сервисная, проверьте, принадлежат ли IP одному пользователю,
+  изучите активность учётной записи на предмет аномалий.
+description_en: |
   Detects multiple concurrent logins from same user account from different source IPs.
   Shared accounts violate individual accountability and non-repudiation requirements.
   Concurrent sessions from geographically distinct locations indicate credential sharing or compromise.

@@ -1,6 +1,8 @@
 rule_id: 6bed2de6-2e24-457f-833c-cae47c853393
-name: AD User Account Deletion on Domain Controller (4726)
-description: |
+name_uz: "Domain Controller'da AD Foydalanuvchi Akkaunti O'chirilishi (4726)"
+name_ru: "Удаление учётной записи AD на контроллере домена (4726)"
+name_en: "AD User Account Deletion on Domain Controller (4726)"
+description_uz: |
   Ushbu qoida defense evasion va impact texnikalariga aloqador bo'lib, AD akkaunti o'chirilishini aniqlaydi.
   Hujumchi izlarni yashirish yoki tiklanishni qiyinlashtirish uchun akkauntlarni o'chirishi mumkin; bu ayniqsa imtiyozli yoki servis akkauntlarda katta xavfdir.
   Qonuniy holatlar: offboarding, test akkaunt tozalash, IAM life-cycle policy ishlari.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manzili va boshqaruv hostini tekshirib, noodatiy manbani aniqlang.
   - O'chirilgan akkauntning avvalgi guruh a'zoligi va Tier-0 huquqlarini tekshiring.
   - Shubhali holatda o'chirilgan akkauntni tiklash, tegishli credentiallarni yangilash va aktorni cheklash choralarini ko'ring.
+description_ru: |
+  Это правило относится к техникам обхода защиты (defense evasion) и воздействия (impact) и обнаруживает удаление учётной записи AD.
+  Атакующий может удалять учётные записи, чтобы скрыть следы или затруднить восстановление; это особенно опасно для привилегированных и сервисных учётных записей.
+  Легитимные случаи: offboarding, очистка тестовых учётных записей, работы по IAM life-cycle policy.
+  Шаги SOC triage:
+  - Определите `actor` и удалённую `target_user`.
+  - Проверьте наличие официального change ticket или заявки HR на удаление.
+  - Проверьте адрес `src_ip` и хост управления, чтобы выявить нетипичный источник.
+  - Проверьте прежнее членство удалённой учётной записи в группах и её права Tier-0.
+  - При подозрении рассмотрите меры по восстановлению удалённой учётной записи, смене соответствующих учётных данных и ограничению актора.
+description_en: |
+  This rule relates to defense evasion and impact techniques and detects the deletion of an AD account.
+  An attacker may delete accounts to hide traces or hinder recovery; this is especially dangerous for privileged or service accounts.
+  Legitimate cases: offboarding, test account cleanup, IAM life-cycle policy work.
+  SOC triage steps:
+  - Identify the `actor` and the deleted `target_user`.
+  - Check for a formal change ticket or HR request for the deletion.
+  - Check the `src_ip` address and the management host to identify an unusual source.
+  - Review the deleted account's previous group membership and Tier-0 rights.
+  - If suspicious, consider restoring the deleted account, rotating the relevant credentials and restricting the actor.
 type: esql
 params: '{}'
 schedule_interval: 10m

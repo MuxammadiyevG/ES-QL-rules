@@ -1,11 +1,25 @@
 rule_id: 7549d4de-0793-4dbd-9ad0-be109d7575f7
-name: UAC Bypass via Auto-Elevated Process
-description: |
+name_uz: "Auto-elevated jarayon orqali UAC bypass"
+name_ru: "Обход UAC через auto-elevated процесс"
+name_en: "UAC Bypass via Auto-Elevated Process"
+description_uz: |
   Ushbu qoida UAC bypass'ni aniqlaydi: auto-elevate qiluvchi tizim binarlari (fodhelper,
   eventvwr, sdclt, computerdefaults, silentcleanup, wsreset, slui) shell/skript ishga
   tushirsa — bu yuqori integrity'ga ko'tarilish uchun ishlatiladi (T1548.002). Sysmon 1.
   SOC triage:
   - `parent` (auto-elevated) → `child` zanjiri; `integrity` High/System bo'lsa tasdiq.
+description_ru: |
+  Данное правило выявляет UAC bypass: если системные бинарные файлы с auto-elevate (fodhelper,
+  eventvwr, sdclt, computerdefaults, silentcleanup, wsreset, slui) запускают shell/скрипт
+  — это используется для повышения до высокого integrity (T1548.002). Sysmon 1.
+  SOC triage:
+  - цепочка `parent` (auto-elevated) → `child`; если `integrity` High/System — подтверждение.
+description_en: |
+  This rule detects UAC bypass: when auto-elevating system binaries (fodhelper,
+  eventvwr, sdclt, computerdefaults, silentcleanup, wsreset, slui) launch a shell/script
+  — this is used to elevate to high integrity (T1548.002). Sysmon 1.
+  SOC triage:
+  - `parent` (auto-elevated) → `child` chain; if `integrity` is High/System, that is confirmation.
 type: esql
 params: '{}'
 schedule_interval: 10m

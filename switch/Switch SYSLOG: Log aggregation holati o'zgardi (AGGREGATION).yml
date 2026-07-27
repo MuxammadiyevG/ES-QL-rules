@@ -1,8 +1,16 @@
 rule_id: 52444a44-5623-4957-bd6c-a36c378e5378
-name: "Switch SYSLOG: Log aggregation holati o'zgardi (AGGREGATION)"
-description: |
+name_uz: "Switch SYSLOG: Log aggregation holati o'zgardi (AGGREGATION)"
+name_ru: "Switch SYSLOG: Изменено состояние log aggregation (AGGREGATION)"
+name_en: "Switch SYSLOG: Log Aggregation State Changed (AGGREGATION)"
+description_uz: |
   Switch log aggregation rejimi o'zgardi.
   Aggregation o'chirilsa ayrim loglar yo'qolishi mumkin.
+description_ru: |
+  Режим log aggregation на switch изменился.
+  При отключении aggregation часть логов может быть потеряна.
+description_en: |
+  The switch log aggregation mode changed.
+  If aggregation is disabled, some logs may be lost.
 type: esql
 params: '{}'
 schedule_interval: 5m

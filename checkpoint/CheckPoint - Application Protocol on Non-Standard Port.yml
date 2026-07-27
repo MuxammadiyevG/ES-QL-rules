@@ -1,6 +1,8 @@
 rule_id: 61444a9d-9766-4b04-8259-51f947c7258c
-name: CheckPoint - Application Protocol on Non-Standard Port
-description: |
+name_uz: "CheckPoint - Nostandart portdagi application protocol"
+name_ru: "CheckPoint - прикладной протокол на нестандартном порту"
+name_en: "CheckPoint - Application Protocol on Non-Standard Port"
+description_uz: |
   Ushbu qoida ruxsat berilgan trafikda aniqlangan application protocol port'ga
   mos kelmaydigan holatlarni aniqlaydi (masalan, HTTP 443'da emas balki 8081'da,
   DNS 53'da emas balki yuqori portda). Bu C2 callback yoki protocol tunneling
@@ -12,6 +14,30 @@ description: |
   - Destination IP'ni threat intel bilan solishtiring
   - Trafik pattern (beaconing interval, hajm) tahlil qiling
   - Ruxsat etilgan ichki application ekanligini tasdiqlang yoki rad eting
+description_ru: |
+  Это правило выявляет случаи, когда в разрешённом трафике определённый application protocol
+  не соответствует порту (например, HTTP не на 443, а на 8081,
+  DNS не на 53, а на высоком порту). Это может быть признаком C2 callback или protocol tunneling
+  (T1571 - Non-Standard Port).
+  Легитимные случаи: внутренние приложения, работающие на нестандартных портах, dev/test-среды.
+  Этапы SOC-триажа:
+  - Проверьте соответствие определённого application/service и destination.port
+  - Идентифицируйте хост Source IP и процесс на нём
+  - Сопоставьте Destination IP с threat intel
+  - Проанализируйте pattern трафика (интервал beaconing, объём)
+  - Подтвердите или опровергните, что это разрешённое внутреннее приложение
+description_en: |
+  This rule detects cases in permitted traffic where the identified application protocol
+  does not match the port (for example, HTTP not on 443 but on 8081,
+  DNS not on 53 but on a high port). This may be a sign of a C2 callback or protocol tunneling
+  (T1571 - Non-Standard Port).
+  Legitimate cases: internal applications running on non-standard ports, dev/test environments.
+  SOC triage steps:
+  - Check whether the identified application/service matches destination.port
+  - Identify the Source IP host and the process on it
+  - Compare the Destination IP against threat intel
+  - Analyze the traffic pattern (beaconing interval, volume)
+  - Confirm or rule out that this is a permitted internal application
 type: esql
 params: '{}'
 schedule_interval: 10m

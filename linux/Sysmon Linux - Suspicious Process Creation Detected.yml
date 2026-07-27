@@ -1,6 +1,8 @@
 rule_id: 77e202c3-bc17-453a-add3-9a714c5bcd70
-name: Linux Auth - Suspicious Command via sudo/SSH session
-description: |
+name_uz: "Linux Auth - sudo/SSH sessiyasi orqali shubhali buyruq"
+name_ru: "Linux Auth - подозрительная команда через sudo/SSH-сессию"
+name_en: "Linux Auth - Suspicious Command via sudo/SSH session"
+description_uz: |
   Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi sudo komandalari va SSH
   sessiyalaridagi shubhali buyruqlarni kuzatadi (shell spawn, nc/curl/wget, xavfli
   chmod rejimlari, foydalanuvchi qo'shish va h.k.). Bu execution yoki priv-esc
@@ -11,6 +13,28 @@ description: |
   - Buyruq qaysi sessiya/manbadan ishga tushganini tahlil qiling.
   - `source.ip` legitimligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa: manbani cheklang, credentiallarni yangilang.
+description_ru: |
+  Это правило отслеживает подозрительные команды в командах sudo и в SSH-
+  сессиях в Linux auth.log (logs-linux.auth-*) (запуск shell, nc/curl/wget, опасные
+  режимы chmod, добавление пользователя и т.д.). Это может указывать на технику выполнения (execution)
+  или повышения привилегий (priv-esc, T1204).
+  Легитимные случаи: плановые скрипты, процессы развёртывания, обновления сервисов.
+  Этапы SOC triage:
+  - Проверьте `actor` (user.name) и `process.command_line` (cmd).
+  - Проанализируйте, из какой сессии/источника была запущена команда.
+  - Проверьте легитимность `source.ip`.
+  - При подтверждении вредоносной активности: ограничьте источник, смените учётные данные.
+description_en: |
+  This rule monitors suspicious commands in sudo commands and SSH
+  sessions in the Linux auth.log (logs-linux.auth-*) (shell spawn, nc/curl/wget, dangerous
+  chmod modes, user creation, etc.). This may point to an execution or priv-esc
+  technique (T1204).
+  Legitimate cases: scheduled scripts, deployment processes, service updates.
+  SOC triage steps:
+  - Check `actor` (user.name) and `process.command_line` (cmd).
+  - Analyze from which session/source the command was launched.
+  - Verify the legitimacy of `source.ip`.
+  - If malicious activity is confirmed: restrict the source, rotate credentials.
 type: esql
 params: '{}'
 schedule_interval: 10m

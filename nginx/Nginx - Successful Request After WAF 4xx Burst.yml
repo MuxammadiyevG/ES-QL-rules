@@ -1,6 +1,8 @@
 rule_id: d503f6d9-7d27-474e-b253-3fcc8e89281f
-name: Nginx - Successful Request After WAF/4xx Burst (Possible Bypass)
-description: |
+name_uz: "Nginx - WAF/4xx seriyasidan keyin muvaffaqiyatli so'rov (Bypass ehtimoli)"
+name_ru: "Nginx - Успешный запрос после всплеска WAF/4xx (возможный обход)"
+name_en: "Nginx - Successful Request After WAF/4xx Burst (Possible Bypass)"
+description_uz: |
   Ushbu qoida bitta source.ip dan qisqa vaqt ichida ko'p 4xx (WAF/access-denied) javoblardan keyin
   attack-looking path'ga muvaffaqiyatli 2xx javob kelganini aniqlaydi.
   Bu WAF yoki access control bypass urinishi muvaffaqiyatga erishganini bildiradi (T1190).
@@ -11,6 +13,28 @@ description: |
   - WAF yoki application access control sozlamalarini review qiling
   - Bypass aniqlansa — manba IP ni bloklang va WAF rule yangilang
   - Data access yoki exfiltration bo'lganmi tekshiring
+description_ru: |
+  Это правило обнаруживает, что с одного source.ip за короткое время после множества ответов 4xx (WAF/access-denied)
+  на attack-looking path пришёл успешный ответ 2xx.
+  Это означает, что попытка обхода WAF или контроля доступа увенчалась успехом (T1190).
+  Легитимные случаи: пользователь после серии broken-link попадает на нужную страницу, crawler.
+  Этапы SOC triage:
+  - Проанализируйте паттерн всплеска 4xx и последующий запрос с 200
+  - Проверьте, является ли успешно запрошенный path attack-looking
+  - Изучите настройки WAF или контроля доступа приложения
+  - При подтверждении обхода — заблокируйте IP-источник и обновите правило WAF
+  - Проверьте, был ли доступ к данным или их экспорт (exfiltration)
+description_en: |
+  This rule detects that from a single source.ip, within a short time after many 4xx (WAF/access-denied) responses,
+  a successful 2xx response was returned for an attack-looking path.
+  This means that a WAF or access control bypass attempt succeeded (T1190).
+  Legitimate cases: a user reaching the correct page after a broken-link burst, crawler.
+  SOC triage steps:
+  - Analyze the 4xx burst pattern and the subsequent 200 request
+  - Check whether the successfully requested path is attack-looking
+  - Review the WAF or application access control settings
+  - If a bypass is confirmed — block the source IP and update the WAF rule
+  - Check whether data access or exfiltration occurred
 type: esql
 params: '{}'
 schedule_interval: 10m

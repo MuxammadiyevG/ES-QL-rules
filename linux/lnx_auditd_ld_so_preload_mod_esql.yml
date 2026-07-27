@@ -1,6 +1,18 @@
 rule_id: 68fd378f-fd24-4280-ae76-0cb310c4e5dc
-name: "LD_SO_PRELOAD Modification Detection"
-description: |
+name_uz: "LD_SO_PRELOAD o'zgartirilishini aniqlash"
+name_ru: "Обнаружение изменения LD_SO_PRELOAD"
+name_en: "LD_SO_PRELOAD Modification Detection"
+description_uz: |
+  Shared object inyeksiyasi uchun /etc/ld.so.preload o'zgartirilishini aniqlaydi.
+  Bu texnika agent_id, hujumchilar tomonidan jarayonlarga ixtiyoriy kod yuklash uchun ishlatiladi.
+  ld.so.preload dinamik linkerni boshqa barcha kutubxonalardan oldin ko'rsatilgan kutubxonalarni yuklashga majbur qiladi.
+  Bu Linux da keng tarqalgan mustahkamlanish (persistence) va imtiyozlarni oshirish texnikasi.
+description_ru: |
+  Выявляет изменение /etc/ld.so.preload для инъекции разделяемых объектов (shared object).
+  Эта техника используется agent_id, злоумышленниками для загрузки произвольного кода в процессы.
+  ld.so.preload заставляет динамический компоновщик загружать указанные библиотеки раньше всех остальных.
+  Это распространённая техника закрепления и повышения привилегий в Linux.
+description_en: |
   Identifies modification of /etc/ld.so.preload for shared object injection.
   This technique is used by agent_id, attackers to load arbitrary code into processes.
   ld.so.preload forces the dynamic linker to load specified libraries before any others.

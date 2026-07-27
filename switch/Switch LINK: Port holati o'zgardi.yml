@@ -1,8 +1,16 @@
 rule_id: 8182f81f-f6e9-4aa6-9cd8-e823163bc14a
-name: "Switch LINK: Port holati o'zgardi"
-description: |
+name_uz: "Switch LINK: Port holati o'zgardi"
+name_ru: "Switch LINK: состояние порта изменилось"
+name_en: "Switch LINK: Port state changed"
+description_uz: |
   Switch porti holati o'zgardi, lekin Up yoki Down aniq emas.
   Ba'zi switch modellarida format farq qilishi mumkin.
+description_ru: |
+  Состояние порта коммутатора изменилось, но неясно, Up это или Down.
+  На некоторых моделях коммутаторов формат может отличаться.
+description_en: |
+  The switch port state changed, but it is not clear whether it is Up or Down.
+  On some switch models the format may differ.
 type: esql
 params: '{}'
 schedule_interval: 5m

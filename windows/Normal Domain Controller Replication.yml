@@ -1,9 +1,19 @@
 rule_id: aa9f955e-2101-42b6-bfe8-aab4a272ded5
-name: Normal Domain Controller Replication
-description: |
+name_uz: "Normal domen kontrolleri replikatsiyasi"
+name_ru: "Нормальная репликация контроллеров домена"
+name_en: "Normal Domain Controller Replication"
+description_uz: |
   Baseline/monitoring qoidasi: qonuniy DC-to-DC replikatsiyani yig'adi — 4662 `Properties`
   da replikatsiya GUID'i (1131f6aa) bo'lib, uni MASHINA akkaunti (DC$) bajaradi. DCSync
   detection'lari uchun normal replikatsiya darajasini belgilash maqsadida (alert emas).
+description_ru: |
+  Правило baseline/мониторинга: собирает легитимную репликацию DC-to-DC — в 4662 `Properties`
+  содержится GUID репликации (1131f6aa), и выполняет её МАШИННАЯ учётная запись (DC$). Служит для определения
+  нормального уровня репликации для детектов DCSync (не алерт).
+description_en: |
+  Baseline/monitoring rule: collects legitimate DC-to-DC replication — 4662 with the replication
+  GUID (1131f6aa) in `Properties`, performed by a MACHINE account (DC$). Intended to establish the
+  normal replication level for DCSync detections (not an alert).
 type: esql
 params: '{}'
 schedule_interval: 10m

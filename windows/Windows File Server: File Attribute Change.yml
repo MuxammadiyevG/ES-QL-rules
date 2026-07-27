@@ -1,9 +1,19 @@
 rule_id: 593d0b65-1082-4126-b7ea-53a58616e808
-name: "Windows File Server: File Attribute Change"
-description: |
+name_uz: "Windows File Server: Fayl Atributi O'zgarishi"
+name_ru: "Windows File Server: изменение атрибутов файла"
+name_en: "Windows File Server: File Attribute Change"
+description_uz: |
   Ushbu qoida Windows File Server share ichida fayl atributlari o‘zgartirilganini
   aniqlaydi. Hidden, readonly, archive yoki system kabi atributlar o‘zgarganda
   `WriteAttributes` yoki `WriteEA` accesslari kuzatilishi mumkin.
+description_ru: |
+  Это правило выявляет изменение атрибутов файла внутри шары
+  Windows File Server. При изменении таких атрибутов, как hidden, readonly, archive или system,
+  могут наблюдаться доступы `WriteAttributes` или `WriteEA`.
+description_en: |
+  This rule detects that file attributes have been changed inside a
+  Windows File Server share. When attributes such as hidden, readonly, archive, or system change,
+  the `WriteAttributes` or `WriteEA` accesses may be observed.
 type: esql
 params: "{}"
 schedule_interval: 5m

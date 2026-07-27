@@ -1,9 +1,19 @@
 rule_id: be8ff407-c299-4da1-b047-cf6e04c1b33e
-name: "Chain: Linux Cron Persistence — Stage 2: Suspicious Process Executed"
-description: |
+name_uz: "Zanjir: Linux Cron Persistence — 2-bosqich: Shubhali jarayon bajarilishi"
+name_ru: "Цепочка: Linux Cron Persistence — Этап 2: Запуск подозрительного процесса"
+name_en: "Chain: Linux Cron Persistence — Stage 2: Suspicious Process Executed"
+description_uz: |
   Linux Cron Persistence zanjiri — 2-bosqich (2 dan).
   Suspicious Process Executed.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Linux Cron Persistence — этап 2 (из 2).
+  Запуск подозрительного процесса.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Linux Cron Persistence chain — stage 2 (of 2).
+  Suspicious Process Executed.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

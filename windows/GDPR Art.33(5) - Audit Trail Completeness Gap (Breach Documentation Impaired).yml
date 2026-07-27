@@ -1,6 +1,36 @@
 rule_id: f91a19c4-dc3f-49c4-9852-d03114a193d6
-name: "GDPR Art.33(5) - Audit Trail Completeness Gap (Breach Documentation Impaired)"
-description: |
+name_uz: "GDPR Art.33(5) - Audit izi to'liqligidagi bo'shliq (buzilishni hujjatlashtirish buzilgan)"
+name_ru: "GDPR Art.33(5) - Пробел в полноте журнала аудита (документирование утечки нарушено)"
+name_en: "GDPR Art.33(5) - Audit Trail Completeness Gap (Breach Documentation Impaired)"
+description_uz: |
+  Audit izining to'liqligidagi bo'shliqlarni aniqlaydi — bunday bo'shliqlar GDPR 33(5)-moddasi bo'yicha barcha
+  shaxsiy ma'lumotlar buzilishlarini, jumladan xabar berishni talab qilmaydiganlarini ham hujjatlash majburiyatini buzadi.
+  Controllerlar muvofiqlik dalili sifatida buzilishlar haqida to'liq yozuvlarni yuritishi shart.
+  Ushbu qoida quyidagilarni aniqlaydi: (1) audit log tozalangan hodisalari, (2) yig'ish nosozligidan darak
+  beruvchi anomal past hodisa hajmi davrlari, (3) shaxsiy ma'lumotlarni qayta ishlash tizimlarida loglarning
+  ataylab yoki tasodifan yo'q qilinishini ko'rsatuvchi hodisa ketma-ketligidagi uzilishlar.
+  To'liq audit izlarisiz controllerlar Art.33(5) hujjatlashtirish talablarini bajara olmaydi
+  va Art.33(3) xabari mazmuni uchun buzilish xronologiyasini tiklay olmaydi.
+  Trigger: Audit log tozalangan YOKI 15 daqiqalik oynada hodisa hajmi baseline'dan >80% pasaygan.
+  False positive: Log rotatsiyasi, agent qayta ishga tushishi, disk to'lib log yo'qolishi.
+  Triage: Bo'shliq sababini aniqlang (tasodifiy yoki ataylab), qaysi hodisalar yo'qolganini baholang,
+  bo'shliqning o'zini Art.33(5) bo'yicha potensial buzilish sifatida hujjatlashtiring, loglashni darhol tiklang,
+  bo'shliq davri allaqachon aniqlangan kirish anomaliyalari bilan mos kelishini baholang.
+description_ru: |
+  Обнаруживает пробелы в полноте журнала аудита, которые препятствуют выполнению обязанности по статье 33(5) GDPR
+  документировать все утечки персональных данных, включая те, что не требуют уведомления.
+  Контролёры обязаны вести исчерпывающие записи об утечках как свидетельство соответствия.
+  Правило выявляет: (1) события очистки журнала аудита, (2) периоды с аномально низким
+  объёмом событий, указывающие на сбой сбора, (3) разрывы в последовательности событий, указывающие на
+  преднамеренное или случайное уничтожение логов в системах обработки персональных данных.
+  Без полных журналов аудита контролёры не могут выполнить требования документирования Art.33(5)
+  и не могут восстановить хронологию утечки для содержания уведомления по Art.33(3).
+  Триггер: Журнал аудита очищен ИЛИ объём событий падает >80% от базового уровня в 15-минутном окне.
+  Ложные срабатывания: Ротация логов, перезапуск агента, переполнение диска, вызывающее потерю логов.
+  Разбор: Определите причину пробела (случайная или преднамеренная), оцените, какие события были утеряны,
+  задокументируйте сам пробел как потенциальную утечку согласно Art.33(5), немедленно восстановите логирование,
+  оцените, совпадает ли период пробела с уже выявленными аномалиями доступа.
+description_en: |
   Detects gaps in audit trail completeness that would impair GDPR Article 33(5) obligation
   to document all personal data breaches, including those not requiring notification.
   Controllers must maintain comprehensive breach records as compliance evidence.

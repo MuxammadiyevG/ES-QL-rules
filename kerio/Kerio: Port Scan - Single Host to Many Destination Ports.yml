@@ -1,12 +1,28 @@
 rule_id: 69bd9644-0d9a-442b-94c8-53fafad38ece
-name: "Kerio: Port Scan - Single Host to Many Destination Ports"
-description: |
+name_uz: "Kerio: Port skanerlash - bitta hostdan ko'p destination portlarga"
+name_ru: "Kerio: Сканирование портов - один хост ко множеству destination-портов"
+name_en: "Kerio: Port Scan - Single Host to Many Destination Ports"
+description_uz: |
   Ushbu qoida bitta hostdan ko'p xil portlarga ulanish urinishlarini aniqlaydi.
   Bu port scanning faoliyatining belgisi.
   SOC triage bosqichlari:
   - source.ip — scan manbai ichkimi yoki tashqimi.
   - unique_ports 20 dan oshsa — aniq port scan.
   - IT security jamoasi bilan solishtiring — ruxsatli scan bormi.
+description_ru: |
+  Это правило выявляет попытки подключения с одного хоста ко множеству разных портов.
+  Это признак активности по сканированию портов.
+  Этапы SOC-триажа:
+  - source.ip — источник сканирования внутренний или внешний.
+  - Если unique_ports превышает 20 — это явное сканирование портов.
+  - Уточните у команды ИТ-безопасности — нет ли санкционированного сканирования.
+description_en: |
+  This rule detects connection attempts from a single host to many different ports.
+  This is a sign of port scanning activity.
+  SOC triage steps:
+  - source.ip — whether the scan source is internal or external.
+  - If unique_ports exceeds 20 — a clear port scan.
+  - Check with the IT security team — whether there is an authorized scan.
 type: esql
 params: '{}'
 schedule_interval: 5m

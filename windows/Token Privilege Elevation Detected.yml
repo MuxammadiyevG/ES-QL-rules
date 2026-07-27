@@ -1,6 +1,8 @@
 rule_id: 23399502-1bfc-43a1-8717-e0be623b6c66
-name: Token Privilege Elevation Detected
-description: |
+name_uz: "Token imtiyozining oshirilishi aniqlandi"
+name_ru: "Обнаружено повышение привилегий токена"
+name_en: "Token Privilege Elevation Detected"
+description_uz: |
   Ushbu qoida bir logon sessiyasida imtiyozli token berilishini aniqlaydi: 4624 (logon) va
   4672 (Special Privileges Assigned) bir xil `logon_id` ostida korrelyatsiya qilinadi.
   SYSTEM sessiyalari (0x3e7/0x3e4/0x3e5) chiqariladi. Bu admin/imtiyozli kirishni va token
@@ -9,6 +11,24 @@ description: |
   - `account`/`logon_id` — qaysi akkaunt imtiyozli token oldi?
   - Bu kutilgan admin sessiyasimi?
   - Tasdiqlanmasa: sessiyani tekshiring, 4673/4674 imtiyoz ishlatilishi bilan bog'lang.
+description_ru: |
+  Данное правило выявляет выдачу привилегированного токена в рамках одной сессии входа: 4624 (logon) и
+  4672 (Special Privileges Assigned) коррелируются по одинаковому `logon_id`.
+  Сессии SYSTEM (0x3e7/0x3e4/0x3e5) исключаются. Это позволяет отслеживать админский/привилегированный доступ и
+  манипуляции с токенами.
+  SOC triage:
+  - `account`/`logon_id` — какая учётная запись получила привилегированный токен?
+  - Является ли это ожидаемой админской сессией?
+  - Если не подтверждено: проверьте сессию, свяжите с использованием привилегий 4673/4674.
+description_en: |
+  This rule detects a privileged token being granted within one logon session: 4624 (logon) and
+  4672 (Special Privileges Assigned) are correlated under the same `logon_id`.
+  SYSTEM sessions (0x3e7/0x3e4/0x3e5) are excluded. This makes it possible to track admin/privileged access and token
+  manipulation.
+  SOC triage:
+  - `account`/`logon_id` — which account received the privileged token?
+  - Is this an expected admin session?
+  - If not confirmed: review the session, correlate it with 4673/4674 privilege use.
 type: esql
 params: '{}'
 schedule_interval: 10m

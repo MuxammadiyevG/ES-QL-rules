@@ -1,11 +1,25 @@
 rule_id: 6ef11743-9fe6-4d75-a81e-c7a90278a6a0
-name: PrintNightmare - Print Spooler Spawning Process
-description: |
+name_uz: "PrintNightmare - Print Spooler jarayon ishga tushirmoqda"
+name_ru: "PrintNightmare - Print Spooler порождает процесс"
+name_en: "PrintNightmare - Print Spooler Spawning Process"
+description_uz: |
   Ushbu qoida Print Spooler (`spoolsv.exe`) shell/skript yoki noodatiy jarayon ishga
   tushirishini aniqlaydi — PrintNightmare (CVE-2021-34527) va boshqa spooler suiiste'mollari
   belgisidir (T1068). Sysmon 1 (ParentImage spoolsv → Image).
   SOC triage:
   - `children`/`command_lines` nima? DLL yuklanganmi? Host'ni patch holatini tekshiring.
+description_ru: |
+  Это правило обнаруживает запуск Print Spooler (`spoolsv.exe`) шелла/скрипта или необычного
+  процесса — это признак PrintNightmare (CVE-2021-34527) и других злоупотреблений спулером
+  (T1068). Sysmon 1 (ParentImage spoolsv → Image).
+  SOC triage:
+  - Что в `children`/`command_lines`? Загружалась ли DLL? Проверьте состояние патчей на хосте.
+description_en: |
+  This rule detects the Print Spooler (`spoolsv.exe`) launching a shell/script or an unusual
+  process — a sign of PrintNightmare (CVE-2021-34527) and other spooler abuse
+  (T1068). Sysmon 1 (ParentImage spoolsv → Image).
+  SOC triage:
+  - What are `children`/`command_lines`? Was a DLL loaded? Check the host's patch status.
 type: esql
 params: '{}'
 schedule_interval: 10m

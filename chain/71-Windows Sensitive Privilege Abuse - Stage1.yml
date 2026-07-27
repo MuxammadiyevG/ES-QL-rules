@@ -1,7 +1,15 @@
 rule_id: 841fedcc-77d0-43a6-8825-fb7519b95c6a
-name: "Chain: Windows Sensitive Privilege Abuse — Stage 1: Special Privileges Assigned at Logon"
-description: |
+name_uz: "Zanjir: Windows Sensitive Privilege Abuse — 1-bosqich: Logon paytida maxsus imtiyozlar berilishi"
+name_ru: "Цепочка: Windows Sensitive Privilege Abuse — Этап 1: Назначение специальных привилегий при входе"
+name_en: "Chain: Windows Sensitive Privilege Abuse — Stage 1: Special Privileges Assigned at Logon"
+description_uz: |
   Windows Sensitive Privilege Abuse zanjiri — 1-bosqich (2 dan).
+  Special Privileges Assigned at Logon.
+description_ru: |
+  Цепочка Windows Sensitive Privilege Abuse — этап 1 (из 2).
+  Назначение специальных привилегий при входе.
+description_en: |
+  Windows Sensitive Privilege Abuse chain — stage 1 (of 2).
   Special Privileges Assigned at Logon.
 type: esql
 enabled: true

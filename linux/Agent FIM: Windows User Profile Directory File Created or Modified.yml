@@ -1,6 +1,8 @@
 rule_id: 1a4f811b-0c78-44a2-9e73-113e6b3e8d81
-name: "Agent FIM: Windows User Profile Directory File Created or Modified"
-description: |
+name_uz: "Agent FIM: Windows foydalanuvchi profili katalogida fayl yaratildi yoki o'zgartirildi"
+name_ru: "Agent FIM: Создание или изменение файла в каталоге профиля пользователя Windows"
+name_en: "Agent FIM: Windows User Profile Directory File Created or Modified"
+description_uz: |
   Ushbu qoida Persistence va Execution texnikalariga bog'liq bo'lib, foydalanuvchi
   profil kataloglarida (AppData, Desktop, Downloads) fayl o'zgarishlarini aniqlaydi.
   Hujumchi zararli fayl yoki skriptni user profile ichiga joylashtirib,
@@ -12,6 +14,30 @@ description: |
   - `file.owner` — kutilmagan foydalanuvchi nomimi.
   - `file.size` — juda kichik executable shubhali.
   - Noqonuniy bo'lsa: faylni o'chiring, foydalanuvchi sessiyasini tekshiring.
+description_ru: |
+  Это правило связано с техниками Persistence и Execution и выявляет изменения файлов
+  в каталогах профиля пользователя (AppData, Desktop, Downloads).
+  Злоумышленник может разместить вредоносный файл или скрипт внутри профиля пользователя
+  и запустить его во время активности пользователя.
+  Легитимные случаи: кэш браузера, данные приложений, файлы пользователя.
+  Шаги SOC-триажа:
+  - `file.extension` — высокий риск, если exe, dll, ps1, vbs, bat.
+  - `file.path` — критично, если AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup.
+  - `file.owner` — не является ли имя пользователя неожиданным.
+  - `file.size` — очень маленький executable подозрителен.
+  - Если нелегитимно: удалите файл, проверьте сессию пользователя.
+description_en: |
+  This rule is related to Persistence and Execution techniques and detects file
+  changes in user profile directories (AppData, Desktop, Downloads).
+  An attacker may place a malicious file or script inside the user profile
+  and run it during user activity.
+  Legitimate cases: browser cache, application data, user files.
+  SOC triage steps:
+  - `file.extension` — high risk if exe, dll, ps1, vbs, bat.
+  - `file.path` — critical if AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup.
+  - `file.owner` — is it an unexpected user name.
+  - `file.size` — a very small executable is suspicious.
+  - If illegitimate: delete the file, review the user session.
 type: esql
 params: '{}'
 schedule_interval: 5m

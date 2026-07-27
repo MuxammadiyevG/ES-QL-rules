@@ -1,7 +1,15 @@
 rule_id: 6acdfa77-44de-447b-9d10-128500013d95
-name: "Chain: Windows Process Injection — Stage 1: CreateRemoteThread Detected"
-description: |
+name_uz: "Zanjir: Windows Process Injection — 1-bosqich: CreateRemoteThread aniqlandi"
+name_ru: "Цепочка: Windows Process Injection — Этап 1: Обнаружен CreateRemoteThread"
+name_en: "Chain: Windows Process Injection — Stage 1: CreateRemoteThread Detected"
+description_uz: |
   Windows Process Injection zanjiri — 1-bosqich (2 dan).
+  CreateRemoteThread Detected.
+description_ru: |
+  Цепочка Windows Process Injection — этап 1 (из 2).
+  Обнаружен CreateRemoteThread.
+description_en: |
+  Windows Process Injection chain — stage 1 (of 2).
   CreateRemoteThread Detected.
 type: esql
 enabled: true

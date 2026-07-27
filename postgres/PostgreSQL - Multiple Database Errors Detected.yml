@@ -1,6 +1,8 @@
 rule_id: 870fae61-1576-49c2-afa6-2481f437e976
-name: PostgreSQL - Multiple Database Errors Detected
-description: |
+name_uz: "PostgreSQL - Ko'p Sonli Ma'lumotlar Bazasi Xatolari Aniqlandi"
+name_ru: "PostgreSQL - обнаружено множество ошибок базы данных"
+name_en: "PostgreSQL - Multiple Database Errors Detected"
+description_uz: |
   Ushbu qoida PostgreSQL da qisqa vaqt ichida ko'p ERROR xato hodisalarini kuzatadi (Rule 50581).
   Takroriy ERROR hodisalari SQL injection, noto'g'ri so'rovlar yoki servis ta'sirlanishiga ishora qilishi mumkin (T1499).
   Qonuniy holatlar: dastur xatosi, noto'g'ri SQL so'rovlar, schema muammolari.
@@ -9,6 +11,24 @@ description: |
   - Duplicate key, permission denied yoki syntax error ekanligini tekshiring.
   - Bir xil `actor` yoki `db.name` dan kelayotganini ko'ring.
   - SQL injection belgisi bo'lsa: WAF qoidasini yangilang, manbani cheklang.
+description_ru: |
+  Данное правило отслеживает большое количество событий ERROR в PostgreSQL за короткое время (Rule 50581).
+  Повторяющиеся события ERROR могут указывать на SQL injection, некорректные запросы или воздействие на сервис (T1499).
+  Легитимные случаи: ошибка приложения, некорректные SQL-запросы, проблемы схемы.
+  Шаги SOC-триажа:
+  - Точно определите тип ошибки в `postgresql.log.message`.
+  - Проверьте, является ли это duplicate key, permission denied или syntax error.
+  - Посмотрите, приходят ли они от одного и того же `actor` или `db.name`.
+  - При признаках SQL injection: обновите правило WAF, ограничьте источник.
+description_en: |
+  This rule tracks a large number of ERROR events in PostgreSQL within a short period of time (Rule 50581).
+  Repeated ERROR events may point to SQL injection, malformed queries or service impact (T1499).
+  Legitimate cases: application bug, malformed SQL queries, schema problems.
+  SOC triage steps:
+  - Precisely determine the error type in `postgresql.log.message`.
+  - Check whether it is a duplicate key, permission denied or syntax error.
+  - See whether they are coming from the same `actor` or `db.name`.
+  - If there is a sign of SQL injection: update the WAF rule, restrict the source.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,8 +1,16 @@
 rule_id: 41f655d5-8b83-49a7-b28e-e22eb2bef7c4
-name: UniFi Wired Client Disconnected
-description: |
+name_uz: "UniFi kabel klienti uzildi"
+name_ru: "Проводной клиент UniFi отключился"
+name_en: "UniFi Wired Client Disconnected"
+description_uz: |
   Ushbu qoida kabel klientining uzilishini switch porti, davomiylik va trafik hajmi bilan kuzatadi.
   Takroriy uzilishlar kabel, port, NIC yoki switch muammosini ko'rsatishi mumkin.
+description_ru: |
+  Это правило отслеживает отключение проводного клиента вместе с портом switch, длительностью и объёмом трафика.
+  Повторяющиеся отключения могут указывать на проблему кабеля, порта, NIC или switch.
+description_en: |
+  This rule tracks wired client disconnections together with the switch port, duration and traffic volume.
+  Repeated disconnections may indicate a cable, port, NIC or switch issue.
 type: esql
 params: "{}"
 schedule_interval: 10m

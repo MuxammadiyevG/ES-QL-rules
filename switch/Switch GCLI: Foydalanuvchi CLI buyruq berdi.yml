@@ -1,9 +1,19 @@
 rule_id: 8a788a4f-5498-4e64-a01b-4802bd86cfb6
-name: "Switch GCLI: Foydalanuvchi CLI buyruq berdi"
-description: |
+name_uz: "Switch GCLI: Foydalanuvchi CLI buyruq berdi"
+name_ru: "Switch GCLI: пользователь выполнил команду CLI"
+name_en: "Switch GCLI: User issued a CLI command"
+description_uz: |
   Switch CLI orqali istalgan buyruq bajarildi.
   Bu qoida barcha CLI harakatlarni qayd etish uchun mo'ljallangan.
   Kim, qaysi switch ga, qaysi IP dan, qanday buyruq berganini ko'rsatadi.
+description_ru: |
+  Через CLI коммутатора выполнена произвольная команда.
+  Это правило предназначено для фиксации всех действий в CLI.
+  Показывает, кто, на каком коммутаторе, с какого IP и какую команду выполнил.
+description_en: |
+  Any command was executed via the switch CLI.
+  This rule is intended to record all CLI actions.
+  Shows who issued which command, to which switch and from which IP.
 type: esql
 params: '{}'
 schedule_interval: 5m

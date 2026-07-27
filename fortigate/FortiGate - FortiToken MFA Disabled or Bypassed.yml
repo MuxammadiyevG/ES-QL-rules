@@ -1,6 +1,8 @@
 rule_id: 25ee7fc5-a192-4f00-94d6-e43ff2da5874
-name: FortiGate - FortiToken / MFA Disabled or Bypassed
-description: |
+name_uz: "FortiGate - FortiToken / MFA o'chirildi yoki chetlab o'tildi"
+name_ru: "FortiGate - FortiToken / MFA отключён или обойдён"
+name_en: "FortiGate - FortiToken / MFA Disabled or Bypassed"
+description_uz: |
   Ushbu qoida FortiGate qurilmasida admin tomonidan ikki bosqichli autentifikatsiya (2FA),
   FortiToken yoki MFA o'chirib qo'yilishi yoki chetlab o'tilishini aniqlaydi.
   MFA ni o'chirish hujumchiga akkauntdan keyinchalik erkin foydalanish imkonini beradi va
@@ -12,6 +14,30 @@ description: |
   - Qaysi foydalanuvchi yoki admin akkauntida MFA o'chirilganini `message` orqali tekshiring.
   - O'zgarish tasdiqlangan Change Management bileti bilan mos kelishini tekshiring.
   - Noqonuniy bo'lsa, MFA ni qayta yoqing va barcha admin sessiyalarini uzing.
+description_ru: |
+  Данное правило выявляет отключение или обход двухфакторной аутентификации (2FA),
+  FortiToken или MFA администратором на устройстве FortiGate.
+  Отключение MFA даёт атакующему возможность свободно пользоваться учётной записью в дальнейшем, и
+  это может быть признаком Credential Access / Account Manipulation (T1556).
+  Легитимные случаи: замена токена пользователем, плановое изменение конфигурации.
+
+  Этапы SOC-триажа:
+  - Определите администратора (`user.name`), внёсшего изменение, и IP источника (`source.ip`).
+  - Проверьте по `message`, у какого пользователя или администратора была отключена MFA.
+  - Проверьте, соответствует ли изменение утверждённому тикету Change Management.
+  - Если действие нелегитимно, включите MFA обратно и завершите все административные сессии.
+description_en: |
+  This rule detects the disabling or bypassing of two-factor authentication (2FA),
+  FortiToken or MFA by an administrator on a FortiGate device.
+  Disabling MFA gives an attacker unrestricted use of the account later on, and
+  this may be a sign of Credential Access / Account Manipulation (T1556).
+  Legitimate cases: user token replacement, scheduled configuration change.
+
+  SOC triage steps:
+  - Identify the administrator (`user.name`) who made the change and the source IP (`source.ip`).
+  - Check via `message` which user or administrator account had MFA disabled.
+  - Check whether the change matches an approved Change Management ticket.
+  - If illegitimate, re-enable MFA and terminate all administrator sessions.
 type: esql
 params: '{}'
 schedule_interval: 10m

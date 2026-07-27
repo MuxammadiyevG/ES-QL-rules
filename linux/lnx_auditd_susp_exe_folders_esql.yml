@@ -1,6 +1,14 @@
 rule_id: cbab6ec6-b60a-47b5-93ab-1b064a7e1457
-name: "Program Execution in Suspicious Folders"
-description: |
+name_uz: "Shubhali papkalarda dastur ishga tushirilishi"
+name_ru: "Запуск программ из подозрительных каталогов"
+name_en: "Program Execution in Suspicious Folders"
+description_uz: |
+  Dasturlar uchun mo'ljallanmagan shubhali papkalarda dastur ishga tushirilishini aniqlaydi.
+  Tajovuzkorlar aniqlashdan qochish uchun vositalarni vaqtinchalik yoki veb-server kataloglaridan ishga tushirishi mumkin.
+description_ru: |
+  Обнаруживает запуск программ из подозрительных каталогов, не предназначенных для программ.
+  Злоумышленники могут запускать инструменты из временных каталогов или каталогов веб-сервера, чтобы избежать обнаружения.
+description_en: |
   Detects program executions in suspicious non-program folders.
   Adversaries may execute tools from temporary or web server directories to evade detection.
 type: esql

@@ -1,11 +1,25 @@
 rule_id: b1a2ea78-4a68-401d-8431-93b85e92972e
-name: Microsoft Defender Exclusion Added
-description: |
+name_uz: "Microsoft Defender istisnosi qo'shildi"
+name_ru: "Добавлено исключение Microsoft Defender"
+name_en: "Microsoft Defender Exclusion Added"
+description_uz: |
   Ushbu qoida Defender'ga istisno (exclusion) qo'shilishini aniqlaydi (5007, `New Value` ichida
   "Exclusions"). Hujumchilar AV'dan qochish uchun o'z papkasi/jarayonini exclusion'ga qo'shadi
   (T1562.001).
   SOC triage:
   - `new_values` da qaysi yo'l/jarayon exclude qilingan? Bu ruxsatli o'zgarishmi?
+description_ru: |
+  Это правило выявляет добавление исключения (exclusion) в Defender (5007, в `New Value`
+  "Exclusions"). Злоумышленники добавляют свою папку/процесс в exclusion, чтобы уклониться от AV
+  (T1562.001).
+  SOC triage:
+  - Какой путь/процесс исключён в `new_values`? Это авторизованное изменение?
+description_en: |
+  This rule detects an exclusion being added to Defender (5007, "Exclusions" inside
+  `New Value`). Attackers add their own folder/process to the exclusions to evade AV
+  (T1562.001).
+  SOC triage:
+  - Which path/process is excluded in `new_values`? Is this an authorized change?
 type: esql
 params: '{}'
 schedule_interval: 10m

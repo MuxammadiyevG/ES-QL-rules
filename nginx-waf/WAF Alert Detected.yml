@@ -1,13 +1,15 @@
 rule_id: 19aee67b-5615-48e6-9c81-7f9d07bd128f
-name: "WAF Alert Detected"
-description: |
-  Ushbu qoida  WAF  tomonidan aniqlangan 
+name_uz: "WAF ogohlantirishi aniqlandi"
+name_ru: "Обнаружено оповещение WAF"
+name_en: "WAF Alert Detected"
+description_uz: |
+  Ushbu qoida WAF tomonidan aniqlangan
   barcha web hujumlarni kuzatadi.
-  
-  
+
+
   WAF tomonidan `event.outcome: failure` bilan qaytarilgan hodisalar
   source.ip bo'yicha guruhlanadi.
-  
+
   SOC triage bosqichlari:
   - `source.ip` ni threat intelligence bilan tekshiring.
   - `event.reason` orqali hujum turini aniqlang (LFI, SQLi, RFI va h.k.).
@@ -16,7 +18,38 @@ description: |
   - Bir xil `event.id` bilan kelgan eventlar bir hujum sessiyasiga tegishli.
   - Takroriy urinishlar bo'lsa `source.ip` ni blocklist ga qo'shing.
   - WAF logidan to'liq request tafsilotini `event.original` dan o'qing.
+description_ru: |
+  Это правило отслеживает все веб-атаки, обнаруженные
+  WAF.
 
+
+  События, возвращённые WAF с `event.outcome: failure`,
+  группируются по source.ip.
+
+  Этапы SOC-триажа:
+  - Проверьте `source.ip` по threat intelligence.
+  - Определите тип атаки по `event.reason` (LFI, SQLi, RFI и т.д.).
+  - `url.domain` (host) — какой ресурс был выбран целью.
+  - `rule.id` (ruleId) — определите, какое правило WAF сработало.
+  - События с одинаковым `event.id` относятся к одной сессии атаки.
+  - При повторных попытках добавьте `source.ip` в blocklist.
+  - Полные детали запроса из лога WAF читайте в `event.original`.
+description_en: |
+  This rule tracks all web attacks detected
+  by WAF.
+
+
+  Events returned by WAF with `event.outcome: failure`
+  are grouped by source.ip.
+
+  SOC triage steps:
+  - Check `source.ip` against threat intelligence.
+  - Determine the attack type via `event.reason` (LFI, SQLi, RFI, etc.).
+  - `url.domain` (host) — which resource was targeted.
+  - `rule.id` (ruleId) — determine which WAF rule was triggered.
+  - Events arriving with the same `event.id` belong to a single attack session.
+  - If there are repeated attempts, add `source.ip` to the blocklist.
+  - Read the full request details from the WAF log in `event.original`.
 type: esql
 params: '{}'
 schedule_interval: 5m

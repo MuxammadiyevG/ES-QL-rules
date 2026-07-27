@@ -1,6 +1,16 @@
 rule_id: 1f66ed1f-bbfa-4a51-a30f-11f27bbf8286
-name: "Suspicious Crontab Modification"
-description: |
+name_uz: "Shubhali crontab o'zgartirilishi"
+name_ru: "Подозрительное изменение crontab"
+name_en: "Suspicious Crontab Modification"
+description_uz: |
+  Linux tizimlarida crontab fayllarining shubhali o'zgartirilishini aniqlaydi.
+  Tajovuzkorlar mustahkamlanish (persistence) o'rnatish yoki zararli payload'larni bajarish uchun crontab'ni o'zgartirishi mumkin.
+  crontab almashtirilgani yoki o'zgartirilganini ko'rsatuvchi auditd hodisalarini kuzatadi.
+description_ru: |
+  Обнаруживает подозрительное изменение файлов crontab в системах Linux.
+  Злоумышленники могут изменять crontab для закрепления или выполнения вредоносной нагрузки.
+  Отслеживает события auditd, указывающие на замену или изменение crontab.
+description_en: |
   Detects suspicious modification of crontab files on Linux systems.
   Adversaries may modify crontab to establish persistence or execute malicious payloads.
   Monitors auditd events indicating crontab replacement or modification.

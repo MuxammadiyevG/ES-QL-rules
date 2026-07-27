@@ -1,9 +1,19 @@
 rule_id: 66d2461f-42e1-45f5-805c-1032cec1cd6b
-name: "Chain: Windows Lateral Movement via Service — Stage 2: Service Installed on Host"
-description: |
+name_uz: "Zanjir: Windows Lateral Movement via Service — 2-bosqich: Host'da xizmat o'rnatilishi"
+name_ru: "Цепочка: Windows Lateral Movement via Service — Этап 2: Установка службы на host"
+name_en: "Chain: Windows Lateral Movement via Service — Stage 2: Service Installed on Host"
+description_uz: |
   Windows Lateral Movement via Service zanjiri — 2-bosqich (3 dan).
   Service Installed on Host.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows Lateral Movement via Service — этап 2 (из 3).
+  Установка службы на host.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows Lateral Movement via Service chain — stage 2 (of 3).
+  Service Installed on Host.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

@@ -1,6 +1,8 @@
 rule_id: 95b5af59-7d75-4dcc-a0d2-019fdeee89bd
-name: "PAN-OS: Configuration Change by Administrator"
-description: |
+name_uz: "PAN-OS: Administrator tomonidan konfiguratsiya o'zgarishi"
+name_ru: "PAN-OS: Изменение конфигурации администратором"
+name_en: "PAN-OS: Configuration Change by Administrator"
+description_uz: |
   Ushbu qoida Palo Alto NGFW konfiguratsiyasiga administrator tomonidan
   kiritilgan o'zgarishlarni (add / edit / delete) kuzatadi (panw.config dataset).
   Konfiguratsiya o'zgarishlari xavfsizlik siyosatining zaiflashtirilishi,
@@ -13,6 +15,32 @@ description: |
   - Qaysi obyekt/yo'l o'zgartirilganini (event.action, panw.panos.type) tahlil qiling.
   - Ish vaqtidan tashqari o'zgarishlar anomal bo'lishi mumkin.
   - Kutilmagan bo'lsa: incident oching va konfiguratsiya backup'i bilan solishtiring.
+description_ru: |
+  Данное правило отслеживает изменения (add / edit / delete), внесённые администратором
+  в конфигурацию Palo Alto NGFW (dataset panw.config).
+  Изменения конфигурации могут указывать на ослабление политики безопасности,
+  добавление несанкционированных правил или попытку обхода защиты
+  (T1562 - Impair Defenses).
+  Легитимные случаи: плановый change management, операция администратора, обновление.
+  Этапы SOC-триажа:
+  - Определите, кем (admin user) и на каком устройстве было сделано изменение.
+  - Проверьте наличие соответствующего тикета в системе change management.
+  - Проанализируйте, какой объект/путь был изменён (event.action, panw.panos.type).
+  - Изменения вне рабочего времени могут быть аномальными.
+  - Если изменение неожиданное: откройте инцидент и сравните с backup конфигурации.
+description_en: |
+  This rule monitors changes (add / edit / delete) made by an administrator
+  to the Palo Alto NGFW configuration (panw.config dataset).
+  Configuration changes may indicate a weakening of the security policy,
+  the addition of unauthorized rules or an attempt to bypass protection
+  (T1562 - Impair Defenses).
+  Legitimate cases: planned change management, admin operation, update.
+  SOC triage steps:
+  - Identify who (admin user) made the change and on which device.
+  - Check whether a matching ticket exists in the change management system.
+  - Analyze which object/path was changed (event.action, panw.panos.type).
+  - Changes outside business hours may be anomalous.
+  - If unexpected: open an incident and compare with the configuration backup.
 type: esql
 params: '{}'
 schedule_interval: 5m

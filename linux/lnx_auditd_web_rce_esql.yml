@@ -1,6 +1,16 @@
 rule_id: 2b9ac96a-73d2-45e7-8b08-ba1da510bbf3
-name: "Webshell Remote Command Execution Detection"
-description: |
+name_uz: "Webshell orqali masofaviy buyruq bajarilishini aniqlash"
+name_ru: "Обнаружение удалённого выполнения команд через веб-шелл"
+name_en: "Webshell Remote Command Execution Detection"
+description_uz: |
+  agent_id, veb-server foydalanuvchisi (masalan, www-data) tomonidan buyruq bajarilishini aniqlaydi.
+  Bu webshell yoki RCE zaifligidan foydalanish belgisi bo'lishi mumkin.
+  Ma'lum UID bo'yicha execve/execveat syscall'larini kuzatadi.
+description_ru: |
+  Обнаруживает выполнение команд от agent_id, пользователя веб-сервера (например, www-data).
+  Это может указывать на веб-шелл или эксплуатацию уязвимости RCE.
+  Отслеживает системные вызовы execve/execveat от определённого UID.
+description_en: |
   Detects command execution by agent_id, web server user (e.g. www-data).
   This may indicate a webshell or RCE vulnerability exploitation.
   Monitors execve/execveat syscalls by specific UID.

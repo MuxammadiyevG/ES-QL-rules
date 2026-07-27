@@ -1,6 +1,8 @@
 rule_id: 3482a28e-c33e-4080-9c26-3e63be4e896e
-name: "NPM Access: Large Response Size (Possible Data Exfiltration)"
-description: |
+name_uz: "NPM Access: Katta Response Hajmi (Ma'lumot O'g'irlanishi Ehtimoli)"
+name_ru: "NPM Access: большой размер ответа (возможная утечка данных)"
+name_en: "NPM Access: Large Response Size (Possible Data Exfiltration)"
+description_uz: |
   Ushbu qoida NPM access logida juda katta response hajmli so'rovlarni aniqlaydi.
   Logda ko'ringan format: [Length 38789] — bu response bayt hajmi.
   10MB dan katta response — ma'lumot o'g'irlash uchun potensial belgi.
@@ -10,6 +12,26 @@ description: |
   - event.original — qaysi URL va Client IP.
   - Sent-to IP — qaysi backend serverdan kelgan.
   - Foydalanuvchi autentifikatsiyasini tekshiring.
+description_ru: |
+  Данное правило выявляет запросы с очень большим размером ответа в журнале NPM access.
+  Формат, наблюдаемый в журнале: [Length 38789] — это размер ответа в байтах.
+  Ответ больше 10MB — потенциальный признак кражи данных.
+  Легитимные случаи: скачивание файлов, генерация больших отчётов.
+  Шаги SOC-триажа:
+  - log.file.path — какой proxy-хост.
+  - event.original — какой URL и Client IP.
+  - Sent-to IP — с какого backend-сервера пришёл ответ.
+  - Проверьте аутентификацию пользователя.
+description_en: |
+  This rule detects requests with a very large response size in the NPM access log.
+  Format seen in the log: [Length 38789] — this is the response size in bytes.
+  A response larger than 10MB is a potential indicator of data exfiltration.
+  Legitimate cases: file download, large report generation.
+  SOC triage steps:
+  - log.file.path — which proxy host.
+  - event.original — which URL and Client IP.
+  - Sent-to IP — which backend server it came from.
+  - Verify the user's authentication.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,8 +1,16 @@
 rule_id: 3dd91314-3c3c-41e6-a7e7-982507baaa91
-name: "Chain: Windows Account Created (4720)"
-description: |
+name_uz: "Zanjir: Windows hisobi yaratildi (4720)"
+name_ru: "Цепочка: Создана учётная запись Windows (4720)"
+name_en: "Chain: Windows Account Created (4720)"
+description_uz: |
   Windows hisob backdoor zanjiri — 1-bosqich.
   Yangi foydalanuvchi hisobi yaratilishi (4720). Korrelyatsiya host bo'yicha.
+description_ru: |
+  Цепочка backdoor учётной записи Windows — этап 1.
+  Создание новой учётной записи пользователя (4720). Корреляция по host.
+description_en: |
+  Windows account backdoor chain — stage 1.
+  Creation of a new user account (4720). Correlation by host.
 type: esql
 enabled: true
 params: "{}"

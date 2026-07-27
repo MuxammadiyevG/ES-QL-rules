@@ -1,6 +1,8 @@
 rule_id: 662d1aa3-0ab0-4091-abeb-10bdcc10c06a
-name: AD Suspicious Successful Logon to Domain Controller (4624)
-description: |
+name_uz: "Domain Controller'ga shubhali muvaffaqiyatli AD logon (4624)"
+name_ru: "Подозрительный успешный вход в AD на контроллер домена (4624)"
+name_en: "AD Suspicious Successful Logon to Domain Controller (4624)"
+description_uz: |
   Ushbu qoida lateral movement va privilege escalation holatlarini aniqlash uchun DC'ga muvaffaqiyatli logonlarni tahlil qiladi.
   Noodatiy IP yoki kam uchraydigan akkaunt orqali DC'ga muvaffaqiyatli kirish hujumchining boshlang'ich foothold'dan Tier-0 muhitiga o'tganini ko'rsatishi mumkin.
   Qonuniy holatlar: adminlar tomonidan masofaviy boshqaruv, patch/deployment oynasi, zaxira yoki monitoring xizmatlari.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manzili odatiy admin segmentidan ekanini va oldingi faoliyatini tekshiring.
   - Akkauntning imtiyozli guruh a'zoligini tekshirib, ortiqcha huquq bor-yo'qligini baholang.
   - Shubhali bo'lsa sessiyani uzing, akkaunt credentialini yangilang va kirish manbasini izolyatsiya qiling.
+description_ru: |
+  Данное правило анализирует успешные входы на DC для выявления случаев горизонтального перемещения и повышения привилегий.
+  Успешный вход на DC с необычного IP или с редко встречающейся учётной записи может указывать на то, что атакующий перешёл с начального foothold в среду Tier-0.
+  Легитимные случаи: удалённое администрирование администраторами, окно patch/deployment, службы резервного копирования или мониторинга.
+  Этапы SOC triage:
+  - Определите `actor`, `target_user`, тип входа и `hostn`.
+  - Подтвердите через change ticket, соответствует ли вход запланированной работе.
+  - Проверьте, относится ли адрес `src_ip` к обычному административному сегменту, и его предыдущую активность.
+  - Проверьте членство учётной записи в привилегированных группах и оцените наличие избыточных прав.
+  - При подозрении завершите сессию, обновите учётные данные аккаунта и изолируйте источник входа.
+description_en: |
+  This rule analyzes successful logons to the DC in order to detect lateral movement and privilege escalation cases.
+  A successful logon to the DC from an unusual IP or with a rarely seen account may indicate that the attacker has moved from the initial foothold into the Tier-0 environment.
+  Legitimate cases: remote administration by admins, a patch/deployment window, backup or monitoring services.
+  SOC triage steps:
+  - Identify the `actor`, `target_user`, logon type and `hostn`.
+  - Confirm via a change ticket whether the logon matches planned work.
+  - Check that the `src_ip` address belongs to the usual admin segment and review its previous activity.
+  - Check the account's privileged group membership and assess whether it has excessive rights.
+  - If suspicious, terminate the session, rotate the account credential and isolate the logon source.
 type: esql
 params: '{}'
 schedule_interval: 10m

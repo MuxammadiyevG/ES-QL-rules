@@ -1,9 +1,19 @@
 rule_id: 61b93d94-29e5-4b0a-8a9c-9a42e323ffbf
-name: RDP Session Reconnect / Disconnect Tracking
-description: |
+name_uz: "RDP sessiya qayta ulanish / uzilishini kuzatish"
+name_ru: "Отслеживание переподключения / отключения RDP-сессий"
+name_en: "RDP Session Reconnect / Disconnect Tracking"
+description_uz: |
   Baseline/monitoring: RDP sessiya qayta ulanish (4778) va uzilish (4779) hodisalarini
   akkaunt va klient manzili bo'yicha yig'adi. Noodatiy klient manzilidan reconnect sessiya
   o'g'irlash (session hijack) belgisi bo'lishi mumkin — `client_addresses` ni kuzating.
+description_ru: |
+  Baseline/мониторинг: собирает события переподключения (4778) и отключения (4779) RDP-сессий
+  по учётной записи и адресу клиента. Переподключение с необычного адреса клиента может быть
+  признаком перехвата сессии (session hijack) — следите за `client_addresses`.
+description_en: |
+  Baseline/monitoring: aggregates RDP session reconnect (4778) and disconnect (4779) events
+  by account and client address. A reconnect from an unusual client address may be a sign of
+  session hijack — watch `client_addresses`.
 type: esql
 params: '{}'
 schedule_interval: 10m

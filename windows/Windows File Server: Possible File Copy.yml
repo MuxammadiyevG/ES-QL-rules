@@ -1,10 +1,22 @@
 rule_id: 526229fc-0b0f-4ad5-acf8-0e72581a7bca
-name: "Windows File Server: Possible File Copy"
-description: |
+name_uz: "Windows File Server: Ehtimoliy Fayl Nusxalash"
+name_ru: "Windows File Server: возможное копирование файла"
+name_en: "Windows File Server: Possible File Copy"
+description_uz: |
   Ushbu qoida Windows File Server share ichida fayl nusxalangan bo‘lishi
   mumkin bo‘lgan holatlarni aniqlaydi. Copy odatda source read va destination
   write/create accesslari bir user va bir source IP tomonidan qisqa vaqt ichida
   bajarilganda ko‘rinadi.
+description_ru: |
+  Это правило выявляет случаи, когда файл, возможно, был скопирован внутри
+  шары Windows File Server. Копирование обычно видно, когда доступы source read и destination
+  write/create выполняются одним user и с одного source IP за короткое
+  время.
+description_en: |
+  This rule detects cases where a file may have been copied inside a
+  Windows File Server share. A copy is usually visible when the source read and destination
+  write/create accesses are performed by the same user and the same source IP within a short
+  period of time.
 type: esql
 params: "{}"
 schedule_interval: 5m

@@ -1,11 +1,25 @@
 rule_id: 9f7e7805-30ac-4a28-b516-f68df54fa0fe
-name: WinRM / PowerShell Remoting Execution
-description: |
+name_uz: "WinRM / PowerShell Remoting orqali Ijro"
+name_ru: "Выполнение через WinRM / PowerShell Remoting"
+name_en: "WinRM / PowerShell Remoting Execution"
+description_uz: |
   Ushbu qoida WinRM (PowerShell Remoting) orqali masofadan ijroni aniqlaydi: `wsmprovhost.exe`
   yoki `winrshost.exe` bola jarayon ishga tushirsa — bu remote command execution belgisidir
   (T1021.006). Sysmon 1 (ParentImage → Image).
   SOC triage:
   - `children`/`command_lines` qanday? Manba va user kutilganmi (admin remoting)?
+description_ru: |
+  Это правило выявляет удалённое выполнение через WinRM (PowerShell Remoting): если `wsmprovhost.exe`
+  или `winrshost.exe` запускает дочерний процесс — это признак remote command execution
+  (T1021.006). Sysmon 1 (ParentImage → Image).
+  SOC-триаж:
+  - Каковы `children`/`command_lines`? Ожидаемы ли источник и user (admin remoting)?
+description_en: |
+  This rule detects remote execution via WinRM (PowerShell Remoting): if `wsmprovhost.exe`
+  or `winrshost.exe` starts a child process — this is an indicator of remote command execution
+  (T1021.006). Sysmon 1 (ParentImage → Image).
+  SOC triage:
+  - What are the `children`/`command_lines`? Are the source and the user expected (admin remoting)?
 type: esql
 params: '{}'
 schedule_interval: 10m

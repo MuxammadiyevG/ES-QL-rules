@@ -1,6 +1,8 @@
 rule_id: d4048fae-549b-4c2c-a927-610fe88e1802
-name: "Kerio: New Rule Name Seen (Firewall Policy Change Detection)"
-description: |
+name_uz: "Kerio: Yangi rule nomi aniqlandi (Firewall Policy Change Detection)"
+name_ru: "Kerio: Обнаружено новое имя правила (Firewall Policy Change Detection)"
+name_en: "Kerio: New Rule Name Seen (Firewall Policy Change Detection)"
+description_uz: |
   Ushbu qoida Kerio logida yangi, avval ko'rilmagan rule.name qiymatlarini
   aniqlaydi. Firewall policy o'zgarganda yoki yangi rule qo'shilganda bu
   hodisa qayd etiladi. Vizibiliti va change tracking uchun foydali.
@@ -9,6 +11,24 @@ description: |
   - rule.name — kutilmagan yoki tushunarsiz nom shubhali.
   - Change management tizimi bilan solishtiring.
   - Kerio admin panel logini tekshiring.
+description_ru: |
+  Это правило выявляет в логе Kerio новые, ранее не встречавшиеся значения
+  rule.name. Событие фиксируется при изменении политики firewall или добавлении
+  нового правила. Полезно для видимости и отслеживания изменений.
+  Легитимные ситуации: добавление нового правила firewall ИТ-администратором.
+  Этапы SOC-триажа:
+  - rule.name — неожиданное или непонятное имя подозрительно.
+  - Сопоставьте с системой управления изменениями.
+  - Проверьте лог админ-панели Kerio.
+description_en: |
+  This rule detects new, previously unseen rule.name values in the Kerio
+  log. The event is recorded when the firewall policy changes or a new rule is
+  added. Useful for visibility and change tracking.
+  Legitimate cases: a new firewall rule added by an IT admin.
+  SOC triage steps:
+  - rule.name — an unexpected or unclear name is suspicious.
+  - Compare against the change management system.
+  - Check the Kerio admin panel log.
 type: esql
 params: '{}'
 schedule_interval: 60m

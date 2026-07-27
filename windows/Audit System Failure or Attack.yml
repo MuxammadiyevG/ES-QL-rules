@@ -1,7 +1,21 @@
 rule_id: ba3bc20b-d956-4d52-a0bf-6b171d7eeca5
 
-name: "Audit System Failure or Attack"
-description: |
+name_uz: "Audit tizimining ishdan chiqishi yoki unga hujum"
+name_ru: "Сбой системы аудита или атака на неё"
+name_en: "Audit System Failure or Attack"
+description_uz: |
+  Muvaffaqiyatsiz audit hodisalarining noodatiy hajmini aniqlaydi — bu audit tizimiga hujum,
+  noto'g'ri konfiguratsiya yoki zararli faoliyatni yashirish uchun ataylab log to'ldirishni ko'rsatishi mumkin.
+  Muvaffaqiyatsizliklarning keskin o'sishi (5 daqiqada >100) DoS yoki audit buzib o'zgartirilganidan darak beradi.
+  False positive: patching vaqtidagi qonuniy tizim xatolari, disk to'lib qolishi, tarmoq muammolari.
+  Triage: log partitsiyasidagi disk hajmini tekshiring, bir vaqtda sodir bo'layotgan hujumlarni ko'rib chiqing, audit servisining sog'lomligini tekshiring.
+description_ru: |
+  Обнаруживает аномальный объём неудачных событий аудита, что может указывать на атаку на систему аудита,
+  ошибку конфигурации или намеренное переполнение журналов для сокрытия вредоносной активности.
+  Резкий всплеск ошибок (>100 за 5 мин) свидетельствует либо о DoS, либо о вмешательстве в аудит.
+  Ложные срабатывания: легитимные системные ошибки во время установки патчей, переполнение диска, сетевые проблемы.
+  Триаж: проверьте свободное место на разделе с журналами, просмотрите наличие параллельных атак, проверьте работоспособность службы аудита.
+description_en: |
   Detects abnormal volume of failed audit events which may indicate audit system under attack,
   misconfiguration, or deliberate log flooding to hide malicious activity.
   Sudden spike in failures (>100 in 5 min) suggests either DoS or audit tampering.

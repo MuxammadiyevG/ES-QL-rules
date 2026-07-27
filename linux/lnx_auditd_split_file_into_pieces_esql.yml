@@ -1,6 +1,14 @@
 rule_id: 5b49710e-f6ff-48fd-9eb4-84187b225558
-name: "File Splitting Detection (split command)"
-description: |
+name_uz: "Fayllarni bo'laklarga ajratishni aniqlash (split buyrug'i)"
+name_ru: "Обнаружение разбиения файлов (команда split)"
+name_en: "File Splitting Detection (split command)"
+description_uz: |
+  Fayllarni bo'laklarga ajratish uchun split buyrug'idan foydalanishni aniqlaydi.
+  Tajovuzkorlar hajmga asoslangan aniqlashdan qochish yoki eksfiltratsiyani osonlashtirish uchun fayllarni bo'laklarga ajratishi mumkin.
+description_ru: |
+  Обнаруживает использование команды split для разбиения файлов на части.
+  Злоумышленники могут разбивать файлы, чтобы обойти обнаружение по размеру или облегчить эксфильтрацию.
+description_en: |
   Detects usage of the split command to split files into pieces.
   Adversaries may split files to evade size-based detection or facilitate exfiltration.
 type: esql

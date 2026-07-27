@@ -1,6 +1,14 @@
 rule_id: eb3d6456-c321-4d2c-9ed4-aebc9ee7b04f
-name: "Suspicious Service Reload or Restart"
-description: |
+name_uz: "Shubhali xizmatni qayta yuklash yoki qayta ishga tushirish"
+name_ru: "Подозрительная перезагрузка или перезапуск службы"
+name_en: "Suspicious Service Reload or Restart"
+description_uz: |
+  Shubhali xizmatni qayta yuklash yoki qayta ishga tushirish buyruqlarini aniqlaydi.
+  Bu mustahkamlanish (persistence) mexanizmi yoki xizmatni manipulyatsiya qilish belgisi bo'lishi mumkin.
+description_ru: |
+  Обнаруживает подозрительные команды перезагрузки или перезапуска служб.
+  Может указывать на механизм закрепления или манипуляции со службами.
+description_en: |
   Detects suspicious service reload or restart commands.
   May indicate persistence mechanism or service manipulation.
 type: esql

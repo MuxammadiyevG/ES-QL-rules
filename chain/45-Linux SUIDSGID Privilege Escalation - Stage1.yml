@@ -1,7 +1,15 @@
 rule_id: 9778f73b-6d49-4f63-a3b0-acd593ca1b03
-name: "Chain: Linux SUID/SGID Privilege Escalation — Stage 1: SUID/SGID Bit Set via chmod"
-description: |
+name_uz: "Zanjir: Linux SUID/SGID Privilege Escalation — 1-bosqich: chmod orqali SUID/SGID biti o'rnatilishi"
+name_ru: "Цепочка: Linux SUID/SGID Privilege Escalation — Этап 1: Установка бита SUID/SGID через chmod"
+name_en: "Chain: Linux SUID/SGID Privilege Escalation — Stage 1: SUID/SGID Bit Set via chmod"
+description_uz: |
   Linux SUID/SGID Privilege Escalation zanjiri — 1-bosqich (2 dan).
+  SUID/SGID Bit Set via chmod.
+description_ru: |
+  Цепочка Linux SUID/SGID Privilege Escalation — этап 1 (из 2).
+  Установка бита SUID/SGID через chmod.
+description_en: |
+  Linux SUID/SGID Privilege Escalation chain — stage 1 (of 2).
   SUID/SGID Bit Set via chmod.
 type: esql
 enabled: true

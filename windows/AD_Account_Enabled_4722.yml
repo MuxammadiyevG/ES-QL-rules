@@ -1,6 +1,8 @@
 rule_id: 1573ea17-6924-4b41-9093-d11d01ed452a
-name: AD Disabled Account Enabled on Domain Controller (4722)
-description: |
+name_uz: "Domain Controller'da O'chirilgan AD Akkauntining Yoqilishi (4722)"
+name_ru: "Включение отключённой учётной записи AD на контроллере домена (4722)"
+name_en: "AD Disabled Account Enabled on Domain Controller (4722)"
+description_uz: |
   Ushbu qoida persistence va privilege escalation bilan bog'liq bo'lib, oldin o'chirilgan akkauntning qayta yoqilishini kuzatadi.
   Hujumchi yashirin yoki unutilgan akkauntni qayta faollashtirib AD ichida sezilmas kirish kanalini tiklashi mumkin, bu esa keyingi lateral movement uchun xavf tug'diradi.
   Qonuniy sabablar sifatida helpdesk tiklash ishlari, vaqtinchalik blokdan chiqarish yoki IAM sinxronizatsiyasi uchrashi mumkin.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manzilining qayerdan kelganini va u administrativ host ekanini tasdiqlang.
   - Faollashgan akkauntning mavjud guruh a'zoligini, ayniqsa Tier-0 guruhlarini tekshiring.
   - Shubhali bo'lsa akkauntni qayta disable qiling, parolni reset qiling va kirishlarni cheklang.
+description_ru: |
+  Это правило связано с закреплением (persistence) и повышением привилегий и отслеживает повторное включение ранее отключённой учётной записи.
+  Атакующий может повторно активировать скрытую или забытую учётную запись и восстановить незаметный канал доступа внутри AD, что создаёт риск для последующего горизонтального перемещения.
+  В качестве легитимных причин могут встречаться работы helpdesk по восстановлению, временная разблокировка или синхронизация IAM.
+  Шаги SOC triage:
+  - Определите `actor` и `target_user` в событии.
+  - Проверьте основание по change ticket/deployment для данной операции включения.
+  - Подтвердите, откуда пришёл адрес `src_ip` и что это административный хост.
+  - Проверьте текущее членство включённой учётной записи в группах, особенно в группах Tier-0.
+  - При подозрении снова отключите учётную запись, сбросьте пароль и ограничьте доступ.
+description_en: |
+  This rule is related to persistence and privilege escalation and monitors the re-enabling of a previously disabled account.
+  An attacker may reactivate a hidden or forgotten account and restore an inconspicuous access channel inside AD, which creates a risk for subsequent lateral movement.
+  Legitimate reasons may include helpdesk restoration work, temporary unblocking or IAM synchronization.
+  SOC triage steps:
+  - Identify the `actor` and `target_user` in the event.
+  - Check the change ticket/deployment basis for this enable action.
+  - Confirm where the `src_ip` address came from and that it is an administrative host.
+  - Review the existing group membership of the enabled account, especially Tier-0 groups.
+  - If suspicious, disable the account again, reset the password and restrict access.
 type: esql
 params: '{}'
 schedule_interval: 10m

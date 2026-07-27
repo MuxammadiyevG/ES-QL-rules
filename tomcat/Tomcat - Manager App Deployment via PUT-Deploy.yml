@@ -1,6 +1,8 @@
 rule_id: c1d69d89-7a74-4e3a-8381-1f801b636fde
-name: Tomcat - Manager App Deployment via PUT/Deploy
-description: |
+name_uz: "Tomcat - Manager App orqali PUT/Deploy bilan deploy qilish"
+name_ru: "Tomcat - развёртывание через Manager App по PUT/Deploy"
+name_en: "Tomcat - Manager App Deployment via PUT/Deploy"
+description_uz: |
   Ushbu qoida Tomcat Manager App orqali masofadan WAR deploy qilish yoki
   fayl yuklash urinishlarini aniqlaydi — /manager/text/deploy,
   /manager/html/upload yoki PUT metodi orqali. Bu zaif yoki o'g'irlangan
@@ -13,6 +15,32 @@ description: |
   - Manager hisobiga muvaffaqiyatli autentifikatsiya bo'lganini tekshiring
   - So'nggi rejalashtirilgan deploy operatsiyalari bilan solishtiring
   - Serverda yangi context/webapp paydo bo'lganligini tekshiring
+description_ru: |
+  Это правило обнаруживает попытки удалённого развёртывания WAR или
+  загрузки файла через Tomcat Manager App — по /manager/text/deploy,
+  /manager/html/upload либо методом PUT. Это может быть признаком размещения
+  вебшелла/вредоносного WAR с использованием слабых или украденных
+  учётных данных manager (T1505.003, T1190).
+  Легитимные случаи: CI/CD pipeline, DevOps-развёртывание (с авторизованных IP).
+  Шаги SOC-триажа:
+  - Сопоставьте исходный IP с авторизованной инфраструктурой развёртывания
+  - Проверьте имя развёрнутого WAR/пути и код ответа (200 = успех!)
+  - Проверьте, была ли успешная аутентификация в учётной записи manager
+  - Сопоставьте с недавними плановыми операциями развёртывания
+  - Проверьте появление нового context/webapp на сервере
+description_en: |
+  This rule detects attempts to remotely deploy a WAR or upload a file
+  through the Tomcat Manager App — via /manager/text/deploy,
+  /manager/html/upload or the PUT method. This may indicate the deployment
+  of a webshell/malicious WAR using weak or stolen
+  manager credentials (T1505.003, T1190).
+  Legitimate cases: CI/CD pipeline, DevOps deployment (from authorized IPs).
+  SOC triage steps:
+  - Compare the source IP with the authorized deployment infrastructure
+  - Check the deployed WAR/path name and the response code (200 = success!)
+  - Check whether authentication to the manager account succeeded
+  - Compare with recent scheduled deployment operations
+  - Check whether a new context/webapp appeared on the server
 type: esql
 params: '{}'
 schedule_interval: 5m

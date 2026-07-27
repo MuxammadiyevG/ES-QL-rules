@@ -1,6 +1,14 @@
 rule_id: 4b939115-7bfc-4b77-a556-5b26f5351da7
-name: "TripleCross Rootkit Persistence File"
-description: |
+name_uz: "TripleCross rootkit mustahkamlanish fayli"
+name_ru: "Файл закрепления руткита TripleCross"
+name_en: "TripleCross Rootkit Persistence File"
+description_uz: |
+  cron.d yoki sudoers.d ichida 'ebpfbackdoor' fayllarining yaratilishini aniqlaydi.
+  TripleCross rootkit uchun xos mustahkamlanish (persistence) mexanizmi.
+description_ru: |
+  Обнаруживает создание файлов 'ebpfbackdoor' в cron.d или sudoers.d.
+  Специфический механизм закрепления руткита TripleCross.
+description_en: |
   Detects creation of 'ebpfbackdoor' files in cron.d or sudoers.d.
   Specific persistence mechanism for TripleCross rootkit.
 type: esql

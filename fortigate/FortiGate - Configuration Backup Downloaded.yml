@@ -1,6 +1,8 @@
 rule_id: 06417cc9-b8df-4c95-b616-15d3a1a409e6
-name: FortiGate - Configuration Backup Downloaded
-description: |
+name_uz: "FortiGate - Konfiguratsiya zaxira nusxasi yuklab olindi"
+name_ru: "FortiGate - Загрузка резервной копии конфигурации"
+name_en: "FortiGate - Configuration Backup Downloaded"
+description_uz: |
   Ushbu qoida FortiGate qurilmasidan admin tomonidan to'liq konfiguratsiya zaxira nusxasini
   (backup) yuklab olinishini aniqlaydi. Konfiguratsiya faylida parollar, VPN kalitlari va
   boshqa maxfiy ma'lumotlar bo'lishi mumkin, shu sababli uni yuklab olish credential exposure
@@ -12,6 +14,30 @@ description: |
   - Yuklab olish vaqti rejaviy backup oynasiga mos kelishini tekshiring.
   - Bir admindan qisqa vaqt ichida bir nechta backup so'rovlari bo'lsa shubhali deb baholang.
   - Noqonuniy bo'lsa, admin akkauntini bloklang va credentiallarni yangilang.
+description_ru: |
+  Данное правило выявляет загрузку администратором полной резервной копии конфигурации
+  (backup) с устройства FortiGate. Файл конфигурации может содержать пароли, ключи VPN и
+  другие конфиденциальные данные, поэтому его загрузка может быть признаком раскрытия учётных данных
+  или кражи данных (Collection / Exfiltration) (T1602, T1567).
+  Легитимные случаи: плановые процессы резервного копирования, миграция, аудит.
+
+  Этапы SOC-триажа:
+  - Определите администратора (`user.name`), загрузившего backup, и IP источника (`source.ip`).
+  - Проверьте, соответствует ли время загрузки плановому окну резервного копирования.
+  - Считайте подозрительным несколько запросов backup от одного администратора за короткое время.
+  - Если действие нелегитимно, заблокируйте учётную запись администратора и обновите учётные данные.
+description_en: |
+  This rule detects the download of a full configuration backup from a FortiGate device by an
+  administrator. The configuration file may contain passwords, VPN keys and
+  other sensitive data, so downloading it may be a sign of credential exposure
+  or data theft (Collection / Exfiltration) (T1602, T1567).
+  Legitimate cases: scheduled backup processes, migration, audit.
+
+  SOC triage steps:
+  - Identify the administrator (`user.name`) who downloaded the backup and the source IP (`source.ip`).
+  - Check whether the download time matches the scheduled backup window.
+  - Treat several backup requests from one administrator within a short time as suspicious.
+  - If illegitimate, block the administrator account and rotate the credentials.
 type: esql
 params: '{}'
 schedule_interval: 10m

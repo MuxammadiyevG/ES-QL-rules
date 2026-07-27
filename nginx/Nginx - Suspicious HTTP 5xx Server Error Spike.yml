@@ -1,6 +1,8 @@
 rule_id: 35b369ae-eff0-49dc-a2ff-bdcf8e5b4999
-name: Nginx - Suspicious HTTP 5xx Server Error Spike
-description: |
+name_uz: "Nginx - Shubhali HTTP 5xx server xatolari keskin o'sishi"
+name_ru: "Nginx - Подозрительный всплеск серверных ошибок HTTP 5xx"
+name_en: "Nginx - Suspicious HTTP 5xx Server Error Spike"
+description_uz: |
   Ushbu qoida Nginx'da qisqa vaqt ichida ko'p 5xx server error'larni aniqlaydi.
   Bu DoS attack, application vulnerability exploitation yoki service degradation belgisi.
   Qonuniy holatlar: legitimate traffic spike, backend service outage, deployment issues.
@@ -10,6 +12,26 @@ description: |
   - Resource exhaustion (CPU, memory, connections) bormi tekshiring
   - Malicious traffic yoki legitimate load spike ekanligini aniqlang
   - Incident response va service restoration zarurligini baholang
+description_ru: |
+  Это правило обнаруживает множество серверных ошибок 5xx в Nginx за короткое время.
+  Это признак DoS-атаки, эксплуатации уязвимости приложения или деградации сервиса.
+  Легитимные случаи: легитимный всплеск трафика, недоступность backend-сервиса, проблемы деплоя.
+  Этапы SOC triage:
+  - Проанализируйте распределение типов ошибок (500, 502, 503, 504)
+  - Сопоставьте с логами backend-приложения
+  - Проверьте, есть ли исчерпание ресурсов (CPU, memory, connections)
+  - Определите, это вредоносный трафик или легитимный всплеск нагрузки
+  - Оцените необходимость реагирования на инцидент и восстановления сервиса
+description_en: |
+  This rule detects many 5xx server errors in Nginx within a short time.
+  This is an indicator of a DoS attack, application vulnerability exploitation or service degradation.
+  Legitimate cases: legitimate traffic spike, backend service outage, deployment issues.
+  SOC triage steps:
+  - Analyze the error type distribution (500, 502, 503, 504)
+  - Correlate with the backend application logs
+  - Check whether there is resource exhaustion (CPU, memory, connections)
+  - Determine whether it is malicious traffic or a legitimate load spike
+  - Assess whether incident response and service restoration are required
 type: esql
 params: '{}'
 schedule_interval: 10m

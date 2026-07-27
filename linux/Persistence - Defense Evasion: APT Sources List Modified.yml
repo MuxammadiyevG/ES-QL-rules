@@ -1,12 +1,25 @@
 rule_id: 617f1342-3f18-4747-9d59-f8a8f62137c9
-name: "Persistence / Defense Evasion: APT Sources List Modified"
-description: |
+name_uz: "Persistence / Defense Evasion: APT sources list o'zgartirildi"
+name_ru: "Persistence / Defense Evasion: изменён APT sources list"
+name_en: "Persistence / Defense Evasion: APT Sources List Modified"
+description_uz: |
   Ushbu qoida Linux tizimida APT repository konfiguratsiyasi
   (`/etc/apt/sources.list` yoki `/etc/apt/sources.list.d/`) o‘zgartirilishini aniqlaydi.
 
   Bu uchinchi tomon yoki zararli repository qo‘shilishi orqali
   supply chain attack yoki persistence o‘rnatish belgisi bo‘lishi mumkin.
+description_ru: |
+  Данное правило выявляет изменение конфигурации APT repository
+  (`/etc/apt/sources.list` или `/etc/apt/sources.list.d/`) в системе Linux.
 
+  Это может быть признаком supply chain attack или установления закрепления
+  через добавление стороннего либо вредоносного repository.
+description_en: |
+  This rule detects modification of the APT repository configuration
+  (`/etc/apt/sources.list` or `/etc/apt/sources.list.d/`) on a Linux system.
+
+  Through the addition of a third-party or malicious repository this may be a
+  sign of a supply chain attack or of establishing persistence.
 type: esql
 params: "{}"
 schedule_interval: 10m

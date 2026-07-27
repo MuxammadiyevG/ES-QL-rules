@@ -1,8 +1,16 @@
 rule_id: f31aebb0-f7de-4749-8ed2-ea0b389fe511
-name: "Switch SYSLOG: Barcha logging konfiguratsiya o'zgarishlari"
-description: |
+name_uz: "Switch SYSLOG: Barcha logging konfiguratsiya o'zgarishlari"
+name_ru: "Switch SYSLOG: Все изменения конфигурации logging"
+name_en: "Switch SYSLOG: All Logging Configuration Changes"
+description_uz: |
   SYSLOG facility ostidagi barcha hodisalar — buffer, console,
   server, aggregation va boshqa barcha o'zgarishlar.
+description_ru: |
+  Все события в рамках facility SYSLOG — buffer, console,
+  server, aggregation и все прочие изменения.
+description_en: |
+  All events under the SYSLOG facility — buffer, console,
+  server, aggregation and all other changes.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,10 +1,22 @@
 rule_id: 1a32c3f6-a66b-4eda-960f-65378017af0d
-name: "Windows File Server: File Creation via Detailed File Share"
-description: |
+name_uz: "Windows File Server: Detailed File Share orqali Fayl Yaratish"
+name_ru: "Windows File Server: создание файла через Detailed File Share"
+name_en: "Windows File Server: File Creation via Detailed File Share"
+description_uz: |
   Ushbu qoida Windows File Server SMB share ichida fayl yaratish yoki yozish
   urinishlarini aniqlaydi. 5145 Detailed File Share hodisasida `WriteData`,
   `AddFile` yoki `AppendData` accesslari fayl yaratish/yangi faylga yozish
   holatlarida kuzatiladi.
+description_ru: |
+  Это правило выявляет попытки создания или записи файла внутри SMB-шары
+  Windows File Server. В событии 5145 Detailed File Share доступы `WriteData`,
+  `AddFile` или `AppendData` наблюдаются при создании файла или записи
+  в новый файл.
+description_en: |
+  This rule detects attempts to create or write a file inside a Windows
+  File Server SMB share. In the 5145 Detailed File Share event, the `WriteData`,
+  `AddFile`, or `AppendData` accesses are observed when a file is created or
+  written to a new file.
 type: esql
 params: "{}"
 schedule_interval: 5m

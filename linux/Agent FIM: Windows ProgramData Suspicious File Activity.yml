@@ -1,6 +1,8 @@
 rule_id: 8cbb719b-2962-4cfc-879f-4319103d62a9
-name: "Agent FIM: Windows ProgramData Suspicious File Activity"
-description: |
+name_uz: "Agent FIM: Windows ProgramData'da shubhali fayl faoliyati"
+name_ru: "Agent FIM: подозрительная файловая активность в Windows ProgramData"
+name_en: "Agent FIM: Windows ProgramData Suspicious File Activity"
+description_uz: |
   Ushbu qoida Persistence va Execution texnikalariga bog'liq bo'lib, C:\ProgramData
   katalogida bajariladigan fayl turlarining yaratilishi yoki o'zgartirilishini aniqlaydi.
   ProgramData katalogi yozish uchun ochiq bo'lib, zararli dasturlar tomonidan
@@ -12,6 +14,30 @@ description: |
   - `file.owner` — SYSTEM yoki Administrator emas bo'lsa tekshiring.
   - ProgramData ichidagi yangi katalog yaratilishi ham shubhali.
   - Noqonuniy bo'lsa: faylni karantinga oling, process ni aniqlang.
+description_ru: |
+  Данное правило связано с техниками Persistence и Execution и обнаруживает в каталоге C:\ProgramData
+  создание или изменение исполняемых типов файлов.
+  Каталог ProgramData открыт для записи и широко используется вредоносными программами
+  для сокрытия файлов и закрепления.
+  Легитимные случаи: данные программ, конфигурации агентов, файлы логов.
+  Этапы SOC-триажа:
+  - `file.name` — случайное или необычное имя подозрительно.
+  - `file.extension` — если exe, dll, ps1 — высокий риск.
+  - `file.owner` — если это не SYSTEM и не Administrator, проверьте.
+  - Создание нового каталога внутри ProgramData также подозрительно.
+  - Если нелегитимно: поместите файл в карантин, определите процесс.
+description_en: |
+  This rule is related to Persistence and Execution techniques and detects the creation
+  or modification of executable file types in the C:\ProgramData directory.
+  The ProgramData directory is writable and is widely used by malware
+  to hide files and for persistence.
+  Legitimate cases: application data, agent configurations, log files.
+  SOC triage steps:
+  - `file.name` — a random or unusual name is suspicious.
+  - `file.extension` — exe, dll, ps1 means high risk.
+  - `file.owner` — check if it is not SYSTEM or Administrator.
+  - The creation of a new directory inside ProgramData is also suspicious.
+  - If illegitimate: quarantine the file, identify the process.
 type: esql
 params: '{}'
 schedule_interval: 5m

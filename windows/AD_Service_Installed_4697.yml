@@ -1,6 +1,8 @@
 rule_id: a3b9885d-5e50-4df6-b501-76b80bcc0963
-name: AD Service Installed via Security Log (4697)
-description: |
+name_uz: "AD'da Security jurnali orqali servis o'rnatildi (4697)"
+name_ru: "Установка службы AD по журналу Security (4697)"
+name_en: "AD Service Installed via Security Log (4697)"
+description_uz: |
   Ushbu qoida xavfsizlik jurnalida yangi servis yaratilishini aniqlaydi (4697 — "Security"
   kanali). Servis binari yo'li (mavjud bo'lsa) `ImagePath` da bo'ladi. Shubhali yo'l yoki
   interpretator persistence belgisi.
@@ -9,6 +11,24 @@ description: |
   SOC triage:
   - `actor` kim, `service_name`/`service_path` shubhalimi (`suspicious_hits`)?
   - Tasdiqlanmasa: servisni o'chiring, akkauntni cheklang.
+description_ru: |
+  Данное правило выявляет создание новой службы в журнале безопасности (4697 — канал
+  "Security"). Путь бинарного файла службы (если он есть) находится в `ImagePath`. Подозрительный путь или
+  интерпретатор — признак закрепления.
+  Примечание: в вашем индексе нет `ServiceFileName` — использован `ImagePath` (если 4697 его
+  не заполняет, правило работает только по имени службы).
+  SOC triage:
+  - Кто такой `actor`, подозрительны ли `service_name`/`service_path` (`suspicious_hits`)?
+  - Если не подтверждено: удалите службу, ограничьте учётную запись.
+description_en: |
+  This rule detects the creation of a new service in the security log (4697 — the "Security"
+  channel). The service binary path (if present) is in `ImagePath`. A suspicious path or
+  interpreter is a sign of persistence.
+  Note: your index has no `ServiceFileName` — `ImagePath` was used (if 4697 does not
+  populate it, the rule works by service name only).
+  SOC triage:
+  - Who is the `actor`, are `service_name`/`service_path` suspicious (`suspicious_hits`)?
+  - If not confirmed: delete the service, restrict the account.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: a7c3e9f2-1b45-4d8a-9c6e-2f0b8d4a7e3c
-name: Windows Credential Dumping Detected (SAM / NTDS / DCSync / SeDebug)
-description: |
+name_uz: "Windows'da credential dumping aniqlandi (SAM / NTDS / DCSync / SeDebug)"
+name_ru: "Обнаружен дамп учётных данных Windows (SAM / NTDS / DCSync / SeDebug)"
+name_en: "Windows Credential Dumping Detected (SAM / NTDS / DCSync / SeDebug)"
+description_uz: |
   Ushbu qoida credential dumping'ni ko'p signal orqali aniqlaydi ("Security" kanali):
   - SAM/SECURITY/SYSTEM registry hive dump (4656/4663, ObjectName)
   - NTDS.dit faylga kirish (4656/4663, ObjectName)
@@ -13,6 +15,32 @@ description: |
   SOC triage:
   - `actor` kim, `sample_target`/`sample_priv` nima? `dcsync_hits`/`ntds_hits` kombinatsiyasi?
   - Tasdiqlansa: hostni izolyatsiya qiling, akkauntlarni reset qiling, IR boshlang.
+description_ru: |
+  Данное правило выявляет credential dumping по множеству сигналов (канал "Security"):
+  - дамп registry hive SAM/SECURITY/SYSTEM (4656/4663, ObjectName)
+  - доступ к файлу NTDS.dit (4656/4663, ObjectName)
+  - право репликации DCSync (4662, Properties GUID, немашинный actor)
+  - привилегия SeDebug/SeTcb/SeBackup (4672/4673, PrivilegeList)
+  - очистка журнала Security (1102 — сокрытие следов)
+  Примечание: в вашем индексе нет полей Sysmon (TargetImage/GrantedAccess), по этой
+  причине сигнал LSASS-access (Sysmon 10) был удалён. При наличии Sysmon его можно
+  добавить отдельно.
+  SOC triage:
+  - Кто такой `actor`, что представляют собой `sample_target`/`sample_priv`? Комбинация `dcsync_hits`/`ntds_hits`?
+  - При подтверждении: изолируйте хост, сбросьте учётные записи, начните IR.
+description_en: |
+  This rule detects credential dumping through multiple signals (the "Security" channel):
+  - SAM/SECURITY/SYSTEM registry hive dump (4656/4663, ObjectName)
+  - access to the NTDS.dit file (4656/4663, ObjectName)
+  - DCSync replication right (4662, Properties GUID, non-machine actor)
+  - SeDebug/SeTcb/SeBackup privilege (4672/4673, PrivilegeList)
+  - Security log clearing (1102 — hiding traces)
+  Note: your index has no Sysmon fields (TargetImage/GrantedAccess), for this
+  reason the LSASS-access (Sysmon 10) signal was removed. If Sysmon is present, it can be
+  added separately.
+  SOC triage:
+  - Who is the `actor`, what are `sample_target`/`sample_priv`? The `dcsync_hits`/`ntds_hits` combination?
+  - If confirmed: isolate the host, reset the accounts, start IR.
 type: esql
 params: '{}'
 schedule_interval: 10m

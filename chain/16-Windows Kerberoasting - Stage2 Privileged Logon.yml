@@ -1,9 +1,19 @@
 rule_id: 6e056ab7-69c2-4951-b7bf-933148ff4be3
-name: "Chain: Privileged Access After Kerberoasting (4672)"
-description: |
+name_uz: "Zanjir: Kerberoasting'dan keyin imtiyozli kirish (4672)"
+name_ru: "Цепочка: Привилегированный доступ после Kerberoasting (4672)"
+name_en: "Chain: Privileged Access After Kerberoasting (4672)"
+description_uz: |
   Kerberoasting zanjiri — 2-bosqich.
   Service ticket spike'dan keyin o'sha hisobga maxsus imtiyozlar berilishi (4672).
   1-bosqichga bog'langan.
+description_ru: |
+  Цепочка Kerberoasting — этап 2.
+  После всплеска service ticket той же учётной записи назначаются специальные привилегии (4672).
+  Связан с этапом 1.
+description_en: |
+  Kerberoasting chain — stage 2.
+  After the service ticket spike, special privileges are assigned to the same account (4672).
+  Linked to stage 1.
 type: esql
 enabled: true
 params: "{}"

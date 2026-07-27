@@ -1,6 +1,8 @@
 rule_id: c17ab2b3-f418-4a63-b5e0-612543e3940c
-name: AD Audit Policy Changed on Domain Controller (4719)
-description: |
+name_uz: "Domain Controller'da AD Audit Siyosatining O'zgartirilishi (4719)"
+name_ru: "Изменение политики аудита AD на контроллере домена (4719)"
+name_en: "AD Audit Policy Changed on Domain Controller (4719)"
+description_uz: |
   Ushbu qoida defense evasion va persistence texnikalariga mos bo'lib, audit policy o'zgarishlarini aniqlaydi.
   Audit siyosatini o'zgartirish hujumchiga log yozuvlarini kamaytirish yoki yashirish imkonini beradi, natijada AD ichidagi zararli faoliyat kech aniqlanadi.
   Qonuniy holatlar: GPO hardening, compliance sozlamalari, audit optimizatsiyasi bo'yicha rejalashtirilgan ishlar.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manbasi va boshqaruv kanalining legitimligini tekshiring.
   - O'zgarishdan keyingi imtiyozli guruhlar monitoringi pasaymaganini tekshiring.
   - Noqonuniy bo'lsa policy'ni oldingi holatga qaytaring, aktorni cheklang va qo'shimcha audit collectionni yoqing.
+description_ru: |
+  Это правило соответствует техникам обхода защиты и закрепления и обнаруживает изменения политики аудита.
+  Изменение политики аудита позволяет атакующему сократить или скрыть записи в журналах, из-за чего вредоносная активность внутри AD обнаруживается поздно.
+  Легитимные случаи: GPO hardening, настройки compliance, плановые работы по оптимизации аудита.
+  Шаги SOC triage:
+  - Определите `actor`, выполнившего изменение, и затронутый DC (`hostn`).
+  - Подтвердите изменение политики документом change ticket/deployment.
+  - Проверьте источник `src_ip` и легитимность канала управления.
+  - Проверьте, что после изменения мониторинг привилегированных групп не был ослаблен.
+  - Если изменение нелегитимно, верните политику в прежнее состояние, ограничьте актора и включите дополнительный сбор аудита.
+description_en: |
+  This rule matches defense evasion and persistence techniques and detects audit policy changes.
+  Changing the audit policy allows an attacker to reduce or hide log records, so that malicious activity inside AD is detected late.
+  Legitimate cases: GPO hardening, compliance settings, planned work on audit optimization.
+  SOC triage steps:
+  - Identify the `actor` who made the change and the affected DC (`hostn`).
+  - Confirm the policy change with a change ticket/deployment document.
+  - Check the `src_ip` source and the legitimacy of the management channel.
+  - Verify that monitoring of privileged groups was not reduced after the change.
+  - If illegitimate, restore the policy to its previous state, restrict the actor and enable additional audit collection.
 type: esql
 params: '{}'
 schedule_interval: 10m

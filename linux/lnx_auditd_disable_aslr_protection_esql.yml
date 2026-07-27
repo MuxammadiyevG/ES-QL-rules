@@ -1,6 +1,16 @@
 rule_id: 1863d292-bb5a-4dfe-928b-0eb9136c07cf
-name: "ASLR Disabled Detection"
-description: |
+name_uz: "ASLR o'chirilishini aniqlash"
+name_ru: "Обнаружение отключения ASLR"
+name_en: "ASLR Disabled Detection"
+description_uz: |
+  Address Space Layout Randomization (ASLR) ni o'chiruvchi harakatlarni aniqlaydi.
+  Tajovuzkorlar xotira buzilishiga oid hujumlarni ishonchliroq qilish uchun ASLR ni o'chiradi.
+  Kuzatiladigan o'zgaruvchilar: sysctl o'zgarishlari, personality syscall va /proc/sys/kernel/randomize_va_space.
+description_ru: |
+  Обнаруживает действия, отключающие Address Space Layout Randomization (ASLR).
+  Злоумышленники отключают ASLR, чтобы сделать атаки на повреждение памяти более надёжными.
+  Отслеживаемые переменные: изменения sysctl, системный вызов personality и /proc/sys/kernel/randomize_va_space.
+description_en: |
   Detects actions that disable Address Space Layout Randomization (ASLR).
   Adversaries disable ASLR to make memory corruption attacks more reliable.
   Monitors variables: sysctl modifications, personality syscall, and /proc/sys/kernel/randomize_va_space.

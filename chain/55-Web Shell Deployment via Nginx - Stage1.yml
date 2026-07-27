@@ -1,7 +1,15 @@
 rule_id: 9db0b872-374b-463e-b32d-60783d5f07b3
-name: "Chain: Web Shell Deployment via Nginx — Stage 1: Script Upload Attempt"
-description: |
+name_uz: "Zanjir: Web Shell Deployment via Nginx — 1-bosqich: Skript yuklash urinishi"
+name_ru: "Цепочка: Web Shell Deployment via Nginx — Этап 1: Попытка загрузки скрипта"
+name_en: "Chain: Web Shell Deployment via Nginx — Stage 1: Script Upload Attempt"
+description_uz: |
   Web Shell Deployment via Nginx zanjiri — 1-bosqich (2 dan).
+  Script Upload Attempt.
+description_ru: |
+  Цепочка Web Shell Deployment via Nginx — этап 1 (из 2).
+  Попытка загрузки скрипта.
+description_en: |
+  Web Shell Deployment via Nginx chain — stage 1 (of 2).
   Script Upload Attempt.
 type: esql
 enabled: true

@@ -1,6 +1,16 @@
 rule_id: 8eff2893-099f-4a11-ad40-1f191bbed652
-name: "Persistence via Cron Files"
-description: |
+name_uz: "Cron fayllari orqali mustahkamlanish (persistence)"
+name_ru: "Закрепление через cron-файлы"
+name_en: "Persistence via Cron Files"
+description_uz: |
+  Cron kataloglarida cron fayllari yaratilishini aniqlaydi.
+  Tajovuzkorlar mustahkamlanish (persistence) uchun cron vazifalarini yaratishi mumkin.
+  /etc/cron.d, /etc/cron.daily va shu kabilarni kuzatadi.
+description_ru: |
+  Обнаруживает создание cron-файлов в каталогах cron.
+  Злоумышленники могут создавать задания cron для закрепления.
+  Отслеживает /etc/cron.d, /etc/cron.daily и т.д.
+description_en: |
   Detects creation of cron files in cron directories.
   Adversaries may create cron jobs to establish persistence.
   Monitors /etc/cron.d, /etc/cron.daily, etc.

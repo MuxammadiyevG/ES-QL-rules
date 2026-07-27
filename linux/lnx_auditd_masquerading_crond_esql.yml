@@ -1,6 +1,14 @@
 rule_id: d922c47c-c27f-43b7-8df1-c228c40b0bd4
-name: "Crond Masquerading Detection"
-description: |
+name_uz: "Crond niqoblanishini aniqlash"
+name_ru: "Обнаружение маскировки под crond"
+name_en: "Crond Masquerading Detection"
+description_uz: |
+  crond ning odatiy bo'lmagan joylardan ishga tushirilishini aniqlaydi.
+  Tajovuzkorlar zararli dasturni qonuniy crond jarayoni sifatida niqoblashi mumkin.
+description_ru: |
+  Обнаруживает запуск crond из необычных расположений.
+  Злоумышленники могут маскировать вредоносное ПО под легитимный процесс crond.
+description_en: |
   Detects execution of crond from unusual locations.
   Adversaries may masquerade malware as legitimate crond process.
 type: esql

@@ -1,10 +1,19 @@
 rule_id: 213823fb-9bda-445e-a210-f62b0ae9a89b
-name: "Access: SSH Session Logout — cred_disp Event"
-description: |
+name_uz: "Access: SSH Sessiyasidan Chiqish — cred_disp Hodisasi"
+name_ru: "Access: выход из SSH-сессии — событие cred_disp"
+name_en: "Access: SSH Session Logout — cred_disp Event"
+description_uz: |
   Ushbu qoida auditd loglarida SSH sessiya tugashini (logout)
   aniqlaydi. cred_disp hodisasi PAM orqali credential’lar
   tozalanganini bildiradi va bu sessiya yopilganini anglatadi.
-
+description_ru: |
+  Это правило выявляет завершение SSH-сессии (logout)
+  в логах auditd. Событие cred_disp означает, что учётные данные
+  очищены через PAM, а это значит, что сессия закрыта.
+description_en: |
+  This rule detects the end of an SSH session (logout)
+  in auditd logs. The cred_disp event indicates that credentials have been
+  cleared via PAM, which means the session has been closed.
 type: esql
 params: "{}"
 schedule_interval: 5m

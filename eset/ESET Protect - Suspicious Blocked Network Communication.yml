@@ -1,6 +1,8 @@
 rule_id: 95df86d7-557a-42e7-b8cd-61dee40d8fd0
-name: ESET Protect - Suspicious Blocked Network Communication
-description: |
+name_uz: "ESET Protect - shubhali bloklangan tarmoq aloqasi"
+name_ru: "ESET Protect - подозрительное заблокированное сетевое соединение"
+name_en: "ESET Protect - Suspicious Blocked Network Communication"
+description_uz: |
   Ushbu qoida ESET tomonidan block qilingan suspicious network communication'larni aniqlaydi.
   Bu C2 communication, data exfiltration yoki malware callback urinishi belgisi (T1071, T1095).
   Qonuniy holatlar: false positive, legitimate blocked connection, overly restrictive policy.
@@ -11,6 +13,28 @@ description: |
   - C2 framework pattern'lari bormi aniqlang
   - Host-wide compromise indicator'larini qidiring
   - Network segmentation va containment zarurligini baholang
+description_ru: |
+  Это правило выявляет подозрительные сетевые соединения, заблокированные ESET.
+  Это признак C2-коммуникации, эксфильтрации данных или попытки malware callback (T1071, T1095).
+  Легитимные случаи: false positive, легитимное заблокированное соединение, чрезмерно строгая политика.
+  Шаги SOC triage:
+  - Проверьте репутацию удалённого IP и threat intelligence
+  - Проанализируйте протокол и порт соединения
+  - Изучите локальный процесс и путь к исполняемому файлу
+  - Определите, есть ли паттерны C2-фреймворков
+  - Ищите индикаторы компрометации в масштабах хоста
+  - Оцените необходимость сегментации сети и containment
+description_en: |
+  This rule detects suspicious network communications blocked by ESET.
+  This is a sign of C2 communication, data exfiltration or a malware callback attempt (T1071, T1095).
+  Legitimate cases: false positive, legitimate blocked connection, overly restrictive policy.
+  SOC triage steps:
+  - Check the remote IP reputation and threat intelligence
+  - Analyze the communication protocol and port
+  - Examine the local process and executable path
+  - Determine whether there are C2 framework patterns
+  - Look for host-wide compromise indicators
+  - Assess whether network segmentation and containment are required
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,13 +1,28 @@
 rule_id: 2d00c25f-5379-40a2-a694-d6e40c0e8d89
-name: "Resource: High CPU and Memory Utilization Detected"
-description: |
+name_uz: "Resurs: Yuqori CPU va memory ishlatilishi aniqlandi"
+name_ru: "Ресурсы: обнаружена высокая загрузка CPU и памяти"
+name_en: "Resource: High CPU and Memory Utilization Detected"
+description_uz: |
   Ushbu qoida Linux yoki Windows hostda CPU va memory utilization bir vaqtda
   yuqori bo‘lishini aniqlaydi. Agar 5 daqiqa davomida o‘rtacha CPU 80% dan
   va o‘rtacha memory 80% dan yuqori bo‘lsa alert hosil qiladi.
 
   Metricbeat orqali system.cpu.total.norm.pct va
   system.memory.actual.used.pct fieldlari tahlil qilinadi.
+description_ru: |
+  Это правило выявляет одновременно высокую загрузку CPU и памяти на хосте
+  Linux или Windows. Оповещение создаётся, если в течение 5 минут средний CPU выше 80%
+  и средняя память выше 80%.
 
+  С помощью Metricbeat анализируются поля system.cpu.total.norm.pct и
+  system.memory.actual.used.pct.
+description_en: |
+  This rule detects simultaneously high CPU and memory utilization on a Linux or
+  Windows host. It raises an alert if over 5 minutes the average CPU is above 80%
+  and the average memory is above 80%.
+
+  The system.cpu.total.norm.pct and
+  system.memory.actual.used.pct fields are analyzed via Metricbeat.
 type: esql
 params: "{}"
 schedule_interval: 1m

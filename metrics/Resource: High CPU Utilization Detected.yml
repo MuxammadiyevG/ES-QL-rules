@@ -1,12 +1,25 @@
 rule_id: 4c2e11d9-5d5d-4ed4-9f44-0d2f2e1b7f80
-name: "Resource: High CPU Utilization Detected"
-description: |
+name_uz: "Resurs: Yuqori CPU ishlatilishi aniqlandi"
+name_ru: "Ресурсы: обнаружена высокая загрузка CPU"
+name_en: "Resource: High CPU Utilization Detected"
+description_uz: |
   Ushbu qoida Linux yoki Windows hostda CPU utilization yuqori bo‘lishini
   aniqlaydi. Agar hostda 5 daqiqa davomida o‘rtacha CPU ishlatilishi
   80% dan yuqori bo‘lsa alert hosil qiladi.
 
   Metricbeat orqali system.cpu.total.norm.pct fieldi tahlil qilinadi.
+description_ru: |
+  Это правило выявляет высокую загрузку CPU на хосте Linux или Windows.
+  Оповещение создаётся, если средняя загрузка CPU на хосте в течение 5 минут
+  превышает 80%.
 
+  С помощью Metricbeat анализируется поле system.cpu.total.norm.pct.
+description_en: |
+  This rule detects high CPU utilization on a Linux or Windows host.
+  It raises an alert if the average CPU usage on the host over 5 minutes
+  exceeds 80%.
+
+  The system.cpu.total.norm.pct field is analyzed via Metricbeat.
 type: esql
 params: "{}"
 schedule_interval: 1m

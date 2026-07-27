@@ -1,8 +1,16 @@
 rule_id: 7c76ad03-5715-48ed-b600-3d0a08e45934
-name: Nginx - Excessive 403 Forbidden Responses
-description: |
+name_uz: "Nginx - haddan ortiq ko'p 403 Forbidden javoblari"
+name_ru: "Nginx - чрезмерное количество ответов 403 Forbidden"
+name_en: "Nginx - Excessive 403 Forbidden Responses"
+description_uz: |
   Bitta IP dan qisqa vaqt ichida ko'plab 403 xatoliklar qaytishini aniqlaydi.
   Bu yashirin fayllarni brute-force qilish yoki ruxsatsiz kirishga urinish belgisidir.
+description_ru: |
+  Обнаруживает возврат большого количества ошибок 403 одному IP за короткий промежуток времени.
+  Это признак перебора (brute-force) скрытых файлов или попытки несанкционированного доступа.
+description_en: |
+  Detects a large number of 403 errors returned to a single IP within a short period of time.
+  This is a sign of brute-forcing hidden files or an unauthorized access attempt.
 type: esql
 params: '{}'
 schedule_interval: 10m

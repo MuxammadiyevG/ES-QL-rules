@@ -1,6 +1,8 @@
 rule_id: 7e3be053-8d0d-4aa2-8b05-82c5474970f5
-name: "Agent FIM: File Content or Attributes Modified (File Integrity)"
-description: |
+name_uz: "Agent FIM: fayl mazmuni yoki atributlari o'zgartirildi (fayl yaxlitligi)"
+name_ru: "Agent FIM: изменено содержимое или атрибуты файла (целостность файлов)"
+name_en: "Agent FIM: File Content or Attributes Modified (File Integrity)"
+description_uz: |
   Ushbu qoida Impact va Defense Evasion texnikalariga bog'liq bo'lib, fayl yaxlitligi monitori (FIM)
   tomonidan aniqlangan fayl o'zgarishlarini kuzatadi. Hujumchi konfiguratsiya fayllarini, binary
   fayllarni yoki log fayllarini o'zgartirishi mumkin.
@@ -12,6 +14,30 @@ description: |
   - Fayl o'zgarish vaqti (`file.mtime`) va ctime ni solishtiring.
   - O'sha paytda tizimda qaysi process ishlayotganini korrelatsiya qiling.
   - Noqonuniy bo'lsa: faylni rollback qiling, o'zgartirilgan binary ni karantinga oling.
+description_ru: |
+  Это правило связано с техниками Impact и Defense Evasion и отслеживает изменения файлов, выявленные
+  монитором целостности файлов (FIM). Злоумышленник может изменить конфигурационные файлы, бинарные
+  файлы или файлы журналов.
+  Легитимные случаи: обновления системы, развёртывание конфигураций, обновление токена агента.
+  Шаги SOC-триажа:
+  - Проверьте путь изменённого файла (`file.path`) — если это системный каталог, риск высокий.
+  - Определите значение `event.action`: updated, attributes_modified, created, deleted.
+  - Сравните изменившийся `file.hash.sha1` с предыдущим значением.
+  - Сравните время изменения файла (`file.mtime`) и ctime.
+  - Скоррелируйте, какой процесс работал в системе в этот момент.
+  - Если активность нелегитимна: откатите файл, поместите изменённый бинарный файл в карантин.
+description_en: |
+  This rule is related to Impact and Defense Evasion techniques and tracks file changes detected by
+  the file integrity monitor (FIM). An attacker may modify configuration files, binary
+  files, or log files.
+  Legitimate cases: system updates, configuration deployment, agent token renewal.
+  SOC triage steps:
+  - Check the path of the changed file (`file.path`) — high risk if it is in a system directory.
+  - Determine the `event.action` value: updated, attributes_modified, created, deleted.
+  - Compare the changed `file.hash.sha1` with the previous value.
+  - Compare the file modification time (`file.mtime`) with ctime.
+  - Correlate which process was running on the system at that time.
+  - If illegitimate: roll the file back, quarantine the modified binary.
 type: esql
 params: '{}'
 schedule_interval: 5m

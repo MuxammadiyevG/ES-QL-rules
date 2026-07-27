@@ -1,6 +1,8 @@
 rule_id: f571b8ef-8245-41aa-b34f-a21407d59c7a
-name: "Agent IAM: Linux Group Management Activity Detected"
-description: |
+name_uz: "Agent IAM: Linux guruhlarini boshqarish faoliyati aniqlandi"
+name_ru: "Agent IAM: Обнаружена активность управления группами Linux"
+name_en: "Agent IAM: Linux Group Management Activity Detected"
+description_uz: |
   Ushbu qoida Persistence va Privilege Escalation texnikalariga bog'liq bo'lib, guruh yaratish yoki o'zgartirish hodisalarini aniqlaydi.
   Hujumchi o'zini maxsus guruhga (masalan, docker, sudo, wheel) qo'shib, huquqlarini oshirishi mumkin.
   Qonuniy holatlar: tizim administratori tomonidan rejalashtirilgan IAM o'zgarishlari, deployment avtomatsiyasi.
@@ -10,6 +12,26 @@ description: |
   - O'zgarishni amalga oshirgan process (`auditd.summary.how`) ni tekshiring.
   - Terminal (`auditd.data.terminal`) interaktiv yoki avtomatik ekanligini aniqlang.
   - Noqonuniy bo'lsa: guruh o'zgarishlarini qaytaring, akkauntni tekshiring.
+description_ru: |
+  Это правило связано с техниками Persistence и Privilege Escalation и выявляет события создания или изменения групп.
+  Злоумышленник может добавить себя в особую группу (например, docker, sudo, wheel) и повысить свои привилегии.
+  Легитимные случаи: плановые изменения IAM системным администратором, автоматизация развёртывания.
+  Шаги SOC-триажа:
+  - Проверьте значение `auditd.data.op`: add-group, add-shadow-group, delete-group.
+  - Определите ID (`auditd.data.id`) и имя изменённой группы.
+  - Проверьте процесс (`auditd.summary.how`), выполнивший изменение.
+  - Определите, является ли терминал (`auditd.data.terminal`) интерактивным или автоматическим.
+  - Если нелегитимно: откатите изменения групп, проверьте учётную запись.
+description_en: |
+  This rule is related to Persistence and Privilege Escalation techniques and detects group creation or modification events.
+  An attacker may add themselves to a special group (for example, docker, sudo, wheel) and escalate their privileges.
+  Legitimate cases: planned IAM changes by a system administrator, deployment automation.
+  SOC triage steps:
+  - Check the `auditd.data.op` value: add-group, add-shadow-group, delete-group.
+  - Identify the ID (`auditd.data.id`) and the name of the modified group.
+  - Check the process (`auditd.summary.how`) that made the change.
+  - Determine whether the terminal (`auditd.data.terminal`) is interactive or automated.
+  - If illegitimate: revert the group changes, review the account.
 type: esql
 params: '{}'
 schedule_interval: 5m

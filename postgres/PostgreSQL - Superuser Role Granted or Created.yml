@@ -1,6 +1,8 @@
 rule_id: af48c35b-bb73-4ab3-86b4-36ea07c2a4ed
-name: PostgreSQL - Superuser Role Granted or Created
-description: |
+name_uz: "PostgreSQL - Superuser Roli Berildi yoki Yaratildi"
+name_ru: "PostgreSQL - выдана или создана роль superuser"
+name_en: "PostgreSQL - Superuser Role Granted or Created"
+description_uz: |
   Ushbu qoida PostgreSQL log (logs-postgresql.log-*) ichida SUPERUSER huquqi beruvchi
   yoki yangi imtiyozli rol yaratuvchi DDL buyruqlarini aniqlaydi
   (CREATE ROLE ... SUPERUSER, ALTER ROLE ... SUPERUSER, GRANT). Bu account manipulation
@@ -12,6 +14,30 @@ description: |
   - SUPERUSER huquqi berilgan rolni va sababni tekshiring.
   - Change ticket borligini tasdiqlang.
   - Noqonuniy faoliyat tasdiqlansa: rolni qaytaring, credentiallarni rotatsiya qiling.
+description_ru: |
+  Данное правило выявляет в журнале PostgreSQL (logs-postgresql.log-*) команды DDL, выдающие
+  права SUPERUSER или создающие новую привилегированную роль
+  (CREATE ROLE ... SUPERUSER, ALTER ROLE ... SUPERUSER, GRANT). Это признак account manipulation
+  (T1098) или повышения привилегий, что может привести к закреплению или к полному
+  контролю.
+  Легитимные случаи: плановое управление ролями со стороны DBA, скрипты миграции.
+  Шаги SOC-триажа:
+  - Определите, кто (`actor`) и в какой `db.name` выполнил команду.
+  - Проверьте роль, которой были выданы права SUPERUSER, и причину.
+  - Подтвердите наличие change ticket.
+  - При подтверждении нелегитимной активности: отзовите роль, произведите ротацию учётных данных.
+description_en: |
+  This rule detects, inside the PostgreSQL log (logs-postgresql.log-*), DDL commands that grant
+  SUPERUSER privileges or create a new privileged role
+  (CREATE ROLE ... SUPERUSER, ALTER ROLE ... SUPERUSER, GRANT). This is a sign of account manipulation
+  (T1098) or privilege escalation and may lead to persistence or to full
+  control.
+  Legitimate cases: role management planned by the DBA, migration scripts.
+  SOC triage steps:
+  - Determine who (`actor`) executed the command and in which `db.name`.
+  - Check the role that was granted SUPERUSER privileges and the reason.
+  - Confirm that a change ticket exists.
+  - If illegitimate activity is confirmed: revoke the role, rotate the credentials.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,9 +1,19 @@
 rule_id: ba004630-5014-4150-98fe-5e51d24b080e
-name: "Chain: Windows Special Privileges Assigned After Logon (4672)"
-description: |
+name_uz: "Zanjir: Kirishdan keyin Windows maxsus imtiyozlar berilishi (4672)"
+name_ru: "Цепочка: Назначение специальных привилегий Windows после входа (4672)"
+name_en: "Chain: Windows Special Privileges Assigned After Logon (4672)"
+description_uz: |
   Windows kirish zanjiri — 3-bosqich.
   Kirishdan keyin o'sha hisobga maxsus imtiyozlar berilishi (4672) — imtiyoz oshishi / admin sessiya.
   2-bosqichga bog'langan.
+description_ru: |
+  Цепочка входа Windows — этап 3.
+  После входа той же учётной записи назначаются специальные привилегии (4672) — повышение привилегий / админ-сессия.
+  Связан с этапом 2.
+description_en: |
+  Windows logon chain — stage 3.
+  After the logon, special privileges are assigned to the same account (4672) — privilege escalation / admin session.
+  Linked to stage 2.
 type: esql
 enabled: true
 params: "{}"

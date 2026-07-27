@@ -1,12 +1,28 @@
 rule_id: 96d56317-37cc-459d-99da-272f7f43c845
-name: UniFi WiFi Client Connected
-description: |
+name_uz: "UniFi WiFi klienti ulandi"
+name_ru: "WiFi-клиент UniFi подключился"
+name_en: "UniFi WiFi Client Connected"
+description_uz: |
   Ushbu qoida UniFi simsiz tarmog'iga yangi klient ulanishini kuzatadi.
   Hodisa klient MAC/IP, SSID, AP, kanal, RSSI va autentifikatsiya usulini alertga chiqaradi.
   SOC triage:
   - client_mac va client_ip qurilma inventariga mosligini tekshiring.
   - AP va SSID ruxsat etilganligini tasdiqlang.
   - Juda past RSSI, noma'lum MAC yoki noodatiy VLAN holatlarini tekshiring.
+description_ru: |
+  Это правило отслеживает подключение нового клиента к беспроводной сети UniFi.
+  Событие выводит в алерт MAC/IP клиента, SSID, AP, канал, RSSI и метод аутентификации.
+  SOC-триаж:
+  - Проверьте соответствие client_mac и client_ip инвентарю устройств.
+  - Подтвердите, что AP и SSID разрешены.
+  - Проверьте случаи очень низкого RSSI, неизвестного MAC или нетипичного VLAN.
+description_en: |
+  This rule tracks new client connections to the UniFi wireless network.
+  The event reports the client MAC/IP, SSID, AP, channel, RSSI and authentication method in the alert.
+  SOC triage:
+  - Check that client_mac and client_ip match the device inventory.
+  - Confirm that the AP and SSID are permitted.
+  - Check for a very low RSSI, an unknown MAC or an unusual VLAN.
 type: esql
 params: "{}"
 schedule_interval: 10m

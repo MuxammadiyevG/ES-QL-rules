@@ -1,13 +1,31 @@
 rule_id: ef97ccb5-d4f4-442f-97ca-aa952f5a4c89
-name: FortiGate - Connection Reset by Client
-description: |
+name_uz: "FortiGate - Ulanish mijoz tomonidan uzildi"
+name_ru: "FortiGate - Сброс соединения клиентом"
+name_en: "FortiGate - Connection Reset by Client"
+description_uz: |
   Ushbu qoida tarmoq ulanishining mijoz tomonidan kutilmaganda to'xtatilganini (`client-rst`) aniqlaydi. 
   Agar bitta manba IPdan juda ko'p 'client-rst' xabarlari kelsa, bu tarmoq skanerlash yoki port scanning harakatlaridan darak berishi mumkin.
-  
+
   SOC triage bosqichlari:
   - 'source.ip' (10.10.40.34) va 'destination.ip' (3.7.245.115) o'rtasidagi trafik hajmini tekshiring.
   - 'fortinet.fortigate.app' (SSL_TLSv1.2) va 'service.name' (HTTPS) legitimligini tasdiqlang.
   - Agar ushbu holat qisqa vaqt ichida juda ko'p takrorlansa, manba qurilmada zararli dastur (malware) borligini tekshiring.
+description_ru: |
+  Данное правило выявляет неожиданное прекращение сетевого соединения со стороны клиента (`client-rst`). 
+  Если с одного IP источника приходит очень много сообщений 'client-rst', это может указывать на сканирование сети или port scanning.
+
+  Этапы SOC-триажа:
+  - Проверьте объём трафика между 'source.ip' (10.10.40.34) и 'destination.ip' (3.7.245.115).
+  - Подтвердите легитимность 'fortinet.fortigate.app' (SSL_TLSv1.2) и 'service.name' (HTTPS).
+  - Если эта ситуация повторяется очень часто за короткое время, проверьте устройство-источник на наличие вредоносного ПО (malware).
+description_en: |
+  This rule detects an unexpected termination of a network connection by the client (`client-rst`). 
+  If a very large number of 'client-rst' messages come from a single source IP, this may indicate network scanning or port scanning activity.
+
+  SOC triage steps:
+  - Check the traffic volume between 'source.ip' (10.10.40.34) and 'destination.ip' (3.7.245.115).
+  - Confirm the legitimacy of 'fortinet.fortigate.app' (SSL_TLSv1.2) and 'service.name' (HTTPS).
+  - If this situation repeats very often within a short time, check the source device for malware.
 type: esql
 params: '{}'
 schedule_interval: 10m

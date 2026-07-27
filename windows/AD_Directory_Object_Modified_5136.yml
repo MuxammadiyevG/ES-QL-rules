@@ -1,6 +1,8 @@
 rule_id: c30d20ea-6cf0-4c5d-afce-a8fad2d0ae77
-name: AD Sensitive Object Modified (5136)
-description: |
+name_uz: "AD Sezgir Obyektining O'zgartirilishi (5136)"
+name_ru: "Изменение чувствительного объекта AD (5136)"
+name_en: "AD Sensitive Object Modified (5136)"
+description_uz: |
   Ushbu qoida sezgir AD obyektlariga (imtiyozli guruhlar, krbtgt, AdminSDHolder) 5136
   o'zgarishini aniqlaydi: `ObjectName` ichida shu nomlar bo'lsa, MASHINA bo'lmagan akkaunt
   tomonidan.
@@ -12,6 +14,30 @@ description: |
   SOC triage:
   - `actor` kim, `objects` qaysi sezgir obyekt, `operation` qo'shildimi/o'chirildimi?
   - Tasdiqlanmasa: o'zgarishni rollback qiling, huquqlarni qayta baholang.
+description_ru: |
+  Это правило обнаруживает изменение 5136 чувствительных объектов AD (привилегированные группы, krbtgt, AdminSDHolder):
+  если `ObjectName` содержит эти имена и изменение выполнено учётной записью, НЕ являющейся
+  машинной.
+  ПРИМЕЧАНИЕ: в вашем индексе `ObjectDN`/`AttributeLDAPDisplayName`/`AttributeValue`
+  ОТСУТСТВУЮТ — поэтому правило не может показать, какой именно атрибут изменён; в качестве DN
+  использовано `ObjectName`. Для изменений атрибутов объектов-пользователей (SPN/делегирование/
+  SID history/UAC) используйте правило `AD_Suspicious_User_Change_4738` (оно использует поля,
+  доступные у вас).
+  SOC triage:
+  - Кто такой `actor`, какой чувствительный объект в `objects`, `operation` — добавление или удаление?
+  - Если не подтверждено: откатите изменение, пересмотрите права.
+description_en: |
+  This rule detects 5136 modifications of sensitive AD objects (privileged groups, krbtgt, AdminSDHolder):
+  when `ObjectName` contains those names and the change is made by a NON-MACHINE
+  account.
+  NOTE: your index does NOT contain `ObjectDN`/`AttributeLDAPDisplayName`/`AttributeValue`
+  — therefore it cannot show exactly which attribute was changed; for the DN
+  `ObjectName` was used. For user-object attribute changes (SPN/delegation/
+  SID history/UAC) use the `AD_Suspicious_User_Change_4738` rule (it uses the fields
+  available to you).
+  SOC triage:
+  - Who is the `actor`, which sensitive object is in `objects`, was the `operation` an add or a delete?
+  - If not confirmed: roll back the change, re-evaluate the rights.
 type: esql
 params: '{}'
 schedule_interval: 10m

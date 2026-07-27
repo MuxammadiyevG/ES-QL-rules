@@ -1,9 +1,19 @@
 rule_id: e00a41c2-6aa4-4e7f-a059-9b6fe38f7e3f
-name: "Chain: Web Login Failure Burst (Nginx)"
-description: |
+name_uz: "Zanjir: Veb login xatoliklari to'lqini (Nginx)"
+name_ru: "Цепочка: Всплеск неудачных веб-входов (Nginx)"
+name_en: "Chain: Web Login Failure Burst (Nginx)"
+description_uz: |
   Veb auth brute zanjiri — 1-bosqich.
   Bitta source.ip dan login/auth endpoint'ga ko'p muvaffaqiyatsiz urinish (401/403).
   Korrelyatsiya source.ip bo'yicha.
+description_ru: |
+  Цепочка Web auth brute — этап 1.
+  Много неудачных попыток (401/403) к login/auth endpoint с одного source.ip.
+  Корреляция по source.ip.
+description_en: |
+  Web auth brute chain — stage 1.
+  Many failed attempts (401/403) against the login/auth endpoint from a single source.ip.
+  Correlation by source.ip.
 type: esql
 enabled: true
 params: "{}"

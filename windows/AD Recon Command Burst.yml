@@ -1,12 +1,28 @@
 rule_id: 164bc586-791f-429b-b4ee-18344229d336
-name: AD Recon Command Burst
-description: |
+name_uz: "AD Recon Buyruqlari Portlashi"
+name_ru: "Всплеск команд разведки AD"
+name_en: "AD Recon Command Burst"
+description_uz: |
   Ushbu qoida AD/host discovery buyruqlari to'plamini aniqlaydi: `net group/user/localgroup`,
   `nltest`, `dsquery`, `whoami /priv|/groups`, `setspn -q`, `net accounts`, `quser`,
   `systeminfo` — qisqa vaqtda ko'p turli recon buyrug'i hujumchi enumeratsiyasi belgisidir
   (T1087/T1018/T1033). Sysmon 1.
   SOC triage:
   - `command_lines` qaysi recon? `user`/`host` — qonuniy admin ishimi?
+description_ru: |
+  Это правило обнаруживает набор команд разведки AD/хоста: `net group/user/localgroup`,
+  `nltest`, `dsquery`, `whoami /priv|/groups`, `setspn -q`, `net accounts`, `quser`,
+  `systeminfo` — множество различных recon-команд за короткое время является признаком перечисления (enumeration) со стороны атакующего
+  (T1087/T1018/T1033). Sysmon 1.
+  SOC triage:
+  - `command_lines` — какая именно разведка? `user`/`host` — это легитимная работа администратора?
+description_en: |
+  This rule detects a set of AD/host discovery commands: `net group/user/localgroup`,
+  `nltest`, `dsquery`, `whoami /priv|/groups`, `setspn -q`, `net accounts`, `quser`,
+  `systeminfo` — many different recon commands in a short time are a sign of attacker enumeration
+  (T1087/T1018/T1033). Sysmon 1.
+  SOC triage:
+  - `command_lines` which recon? `user`/`host` — is this legitimate admin work?
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: e3efcc1c-d6d0-44eb-9f17-a7b9c9026f3e
-name: AD Kerberos Ticket Anomaly on Domain Controller (4768/4769)
-description: |
+name_uz: "Domain Controller'da Kerberos Ticket Anomaliyasi (4768/4769)"
+name_ru: "Аномалия Kerberos-билетов на контроллере домена (4768/4769)"
+name_en: "AD Kerberos Ticket Anomaly on Domain Controller (4768/4769)"
+description_uz: |
   Ushbu qoida credential access va lateral movement bilan bog'liq bo'lib, Kerberos TGT/TGS jarayonidagi noodatiy xatti-harakatlarni aniqlaydi.
   Juda ko'p ticket so'rovi yoki zaif shifrlash (masalan RC4) Golden/Silver ticket, Kerberoasting yoki service abuse holatlarini ko'rsatishi mumkin.
   Qonuniy holatlar: legacy tizimlar, yirik servis restarti, patchdan keyingi qayta autentikatsiya to'lqini.
@@ -10,6 +12,26 @@ description: |
   - `src_ip` manbasi va KDC so'rovlarining tarqalishini tekshiring.
   - Nishon akkaunt/service principal guruh a'zoligi hamda imtiyozlarini tekshiring.
   - Shubhali bo'lsa tegishli xizmat credentiallarini rotatsiya qiling, hujum manbasini bloklang va Kerberos auditini chuqurlashtiring.
+description_ru: |
+  Это правило связано с получением учётных данных и горизонтальным перемещением и обнаруживает нетипичное поведение в процессе Kerberos TGT/TGS.
+  Очень большое число запросов билетов или слабое шифрование (например RC4) может указывать на Golden/Silver ticket, Kerberoasting или злоупотребление сервисом.
+  Легитимные случаи: legacy-системы, перезапуск крупного сервиса, волна повторной аутентификации после установки патчей.
+  Шаги SOC triage:
+  - Определите `actor`, `target_user`, тип события и параметры билета.
+  - Проверьте на основании change ticket, было ли запланированное изменение сервиса.
+  - Проверьте источник `src_ip` и распределение запросов к KDC.
+  - Проверьте членство в группах и привилегии целевой учётной записи/service principal.
+  - При подозрении выполните ротацию учётных данных соответствующего сервиса, заблокируйте источник атаки и углубите аудит Kerberos.
+description_en: |
+  This rule is related to credential access and lateral movement and detects unusual behaviour in the Kerberos TGT/TGS process.
+  A very large number of ticket requests or weak encryption (for example RC4) may indicate Golden/Silver ticket, Kerberoasting or service abuse.
+  Legitimate cases: legacy systems, a large service restart, a re-authentication wave after patching.
+  SOC triage steps:
+  - Identify the `actor`, `target_user`, event type and ticket parameters.
+  - Check on the basis of a change ticket whether there was a planned service change.
+  - Check the `src_ip` source and the distribution of KDC requests.
+  - Review the group membership and privileges of the target account/service principal.
+  - If suspicious, rotate the relevant service credentials, block the attack source and deepen Kerberos auditing.
 type: esql
 params: '{}'
 schedule_interval: 10m

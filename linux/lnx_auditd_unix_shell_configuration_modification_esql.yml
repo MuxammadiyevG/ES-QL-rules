@@ -1,6 +1,16 @@
 rule_id: a63bfbeb-4323-412e-a28b-49c088c4f4b1
-name: "Unix Shell Configuration Modification"
-description: |
+name_uz: "Unix shell konfiguratsiyasining o'zgartirilishi"
+name_ru: "Изменение конфигурации Unix shell"
+name_en: "Unix Shell Configuration Modification"
+description_uz: |
+  Unix shell konfiguratsiya fayllarining o'zgartirilishini aniqlaydi.
+  Tajovuzkorlar mustahkamlanish (persistence) o'rnatish uchun shell konfiguratsiya fayllarini (.bashrc, .profile va h.k.) o'zgartirishi mumkin.
+  Keng tarqalgan shell konfiguratsiya fayllaridagi o'zgarishlarni kuzatadi.
+description_ru: |
+  Обнаруживает изменение конфигурационных файлов Unix shell.
+  Злоумышленники могут изменять конфигурационные файлы shell (.bashrc, .profile и т.д.) для закрепления.
+  Отслеживает изменения в распространённых конфигурационных файлах shell.
+description_en: |
   Detects modification of Unix shell configuration files.
   Adversaries may modify shell configuration files (.bashrc, .profile, etc.) to establish persistence.
   Monitors common shell configuration files for modifications.

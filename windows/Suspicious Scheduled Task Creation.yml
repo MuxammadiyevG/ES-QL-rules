@@ -8,8 +8,24 @@ rule_id: 81a83a11-d12a-4465-a129-c6c8b3f1e927
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Allowlist known deployment tools, baseline scheduled maintenance tasks
 
-name: "Suspicious Scheduled Task Creation"
-description: |
+name_uz: "Shubhali rejalashtirilgan vazifa yaratilishi"
+name_ru: "Создание подозрительной запланированной задачи"
+name_en: "Suspicious Scheduled Task Creation"
+description_uz: |
+  Shubhali xususiyatlarga ega yangi rejalashtirilgan vazifalar yoki cron job'lar yaratilishini aniqlaydi.
+  Temp kataloglaridan skript, PowerShell buyruqlari yoki g'ayrioddiy jadval bilan ishlaydigan vazifalar belgilanadi.
+  Malware va APT guruhlari uchun keng tarqalgan mustahkamlanish (persistence) mexanizmi.
+  False positive: dasturiy ta'minot o'rnatishlari, qonuniy avtomatlashtirish, tizim texnik xizmati.
+  Triage: vazifa harakatini ko'rib chiqing (qaysi buyruq bajariladi?), vazifani yaratgan akkauntni tekshiring,
+  jadval chastotasini tasdiqlang, bajariladigan binar/skript legitimligini tahlil qiling.
+description_ru: |
+  Выявляет создание новых запланированных задач или cron job с подозрительными характеристиками.
+  Отмечаются задачи, выполняющие скрипты из каталогов temp, команды PowerShell или имеющие необычное расписание.
+  Распространённый механизм закрепления для вредоносного ПО и APT-групп.
+  Ложные срабатывания: установка ПО, легитимная автоматизация, обслуживание системы.
+  Triage: изучите действие задачи (какая команда выполняется?), проверьте учётную запись создателя задачи,
+  подтвердите частоту расписания, проанализируйте легитимность исполняемого файла/скрипта.
+description_en: |
   Detects creation of new scheduled tasks or cron jobs with suspicious characteristics.
   Tasks executing scripts from temp directories, PowerShell commands, or unusual schedules flagged.
   Common persistence mechanism for malware and APT groups.

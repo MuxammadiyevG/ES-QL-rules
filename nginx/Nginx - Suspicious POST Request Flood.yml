@@ -1,6 +1,8 @@
 rule_id: a9587e41-6523-4648-832d-c149770e2fee
-name: Nginx - Suspicious POST Request Flood
-description: |
+name_uz: "Nginx - Shubhali POST so'rovlar to'foni"
+name_ru: "Nginx - Подозрительный флуд POST-запросов"
+name_en: "Nginx - Suspicious POST Request Flood"
+description_uz: |
   Ushbu qoida bir xil manbadan qisqa vaqt ichida ko'p POST request'larni aniqlaydi.
   Bu DoS/DDoS, form spam yoki application abuse urinishi belgisi.
   Qonuniy holatlar: legitimate API usage, batch processing, automated workflows.
@@ -10,6 +12,26 @@ description: |
   - Application performance impact'ini baholang
   - Bot yoki legitimate client ekanligini aniqlang
   - Rate limiting yoki CAPTCHA implementation'ni consider qiling
+description_ru: |
+  Это правило обнаруживает множество POST-запросов с одного источника за короткое время.
+  Это признак DoS/DDoS, спама форм или злоупотребления приложением.
+  Легитимные случаи: легитимное использование API, пакетная обработка, автоматизированные процессы.
+  Этапы SOC triage:
+  - Проанализируйте POST endpoint и частоту запросов
+  - Проверьте размер и паттерн тела запроса
+  - Оцените влияние на производительность приложения
+  - Определите, это бот или легитимный клиент
+  - Рассмотрите внедрение rate limiting или CAPTCHA
+description_en: |
+  This rule detects many POST requests from the same source within a short time.
+  This is an indicator of DoS/DDoS, form spam or an application abuse attempt.
+  Legitimate cases: legitimate API usage, batch processing, automated workflows.
+  SOC triage steps:
+  - Analyze the POST endpoints and frequency
+  - Check the request body size and pattern
+  - Assess the application performance impact
+  - Determine whether it is a bot or a legitimate client
+  - Consider implementing rate limiting or CAPTCHA
 type: esql
 params: '{}'
 schedule_interval: 10m

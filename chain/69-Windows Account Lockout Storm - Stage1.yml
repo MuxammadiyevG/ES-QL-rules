@@ -1,7 +1,15 @@
 rule_id: aa11bd02-6a3a-4111-bae6-471b91c00082
-name: "Chain: Windows Account Lockout Storm — Stage 1: Account Lockout Burst"
-description: |
+name_uz: "Zanjir: Windows Account Lockout Storm — 1-bosqich: Akkaunt bloklanishlari to'lqini"
+name_ru: "Цепочка: Windows Account Lockout Storm — Этап 1: Всплеск блокировок учётных записей"
+name_en: "Chain: Windows Account Lockout Storm — Stage 1: Account Lockout Burst"
+description_uz: |
   Windows Account Lockout Storm zanjiri — 1-bosqich (2 dan).
+  Account Lockout Burst.
+description_ru: |
+  Цепочка Windows Account Lockout Storm — этап 1 (из 2).
+  Всплеск блокировок учётных записей.
+description_en: |
+  Windows Account Lockout Storm chain — stage 1 (of 2).
   Account Lockout Burst.
 type: esql
 enabled: true

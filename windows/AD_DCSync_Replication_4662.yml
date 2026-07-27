@@ -1,6 +1,8 @@
 rule_id: 3535a57d-86ba-4e63-bb63-45b8385a8f92
-name: AD DCSync Replication Rights Abuse Detection (4662)
-description: |
+name_uz: "AD DCSync Replikatsiya Huquqlari Suiiste'molini Aniqlash (4662)"
+name_ru: "Обнаружение злоупотребления правами репликации DCSync в AD (4662)"
+name_en: "AD DCSync Replication Rights Abuse Detection (4662)"
+description_uz: |
   Ushbu qoida DCSync hujumini aniqlaydi: 4662 hodisasida `Properties` maydonida
   Directory Replication kengaytirilgan huquq GUID'lari (DS-Replication-Get-Changes
   1131f6aa, -All 1131f6ad, -In-Filtered-Set 89e95b76) bo'lib, buni MASHINA bo'lmagan
@@ -11,6 +13,28 @@ description: |
   - `actor` qaysi akkaunt, DC emasligini tasdiqlang; `objects`/`props_seen` ni ko'ring.
   - Ruxsat etilgan sync xizmati ro'yxatda bormi?
   - Tasdiqlanmasa: akkauntni darhol bloklang, krbtgt rotatsiya rejasini va Tier-0 containment'ni boshlang.
+description_ru: |
+  Это правило обнаруживает атаку DCSync: если в поле `Properties` события 4662 присутствуют
+  GUID расширенных прав Directory Replication (DS-Replication-Get-Changes
+  1131f6aa, -All 1131f6ad, -In-Filtered-Set 89e95b76) и это выполняет учётная запись, НЕ являющаяся
+  машинной, — это попытка удалённого получения учётных данных NTDS.
+  Легитимные случаи: взаимная репликация машинных учётных записей DC (правило исключает их по `$`),
+  сервисные учётные записи Azure AD Connect/identity-sync (внесите в whitelist).
+  SOC triage:
+  - Какая учётная запись является `actor`, подтвердите, что это не DC; посмотрите `objects`/`props_seen`.
+  - Есть ли разрешённый сервис синхронизации в списке?
+  - Если не подтверждено: немедленно заблокируйте учётную запись, запустите план ротации krbtgt и containment Tier-0.
+description_en: |
+  This rule detects the DCSync attack: when the `Properties` field of event 4662 contains
+  the Directory Replication extended right GUIDs (DS-Replication-Get-Changes
+  1131f6aa, -All 1131f6ad, -In-Filtered-Set 89e95b76) and this is performed by a NON-MACHINE
+  account — this is an attempt to remotely obtain NTDS credentials.
+  Legitimate cases: replication between DC machine accounts (the rule excludes them via `$`),
+  Azure AD Connect/identity-sync service accounts (whitelist them).
+  SOC triage:
+  - Which account is the `actor`, confirm it is not a DC; review `objects`/`props_seen`.
+  - Is the permitted sync service on the list?
+  - If not confirmed: block the account immediately, start the krbtgt rotation plan and Tier-0 containment.
 type: esql
 params: '{}'
 schedule_interval: 10m

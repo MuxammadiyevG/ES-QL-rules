@@ -1,6 +1,8 @@
 rule_id: 2bae75f6-753d-4eea-a4ef-facd3a1523e5
-name: VMware ESX - Multiple User Auth Failures via hostd/authd from Same Source (Brute Force)
-description: |
+name_uz: "VMware ESX - bir manbadan hostd/authd orqali ko'p foydalanuvchi autentifikatsiya xatoliklari (Brute Force)"
+name_ru: "VMware ESX - множественные сбои аутентификации пользователей через hostd/authd с одного источника (Brute Force)"
+name_en: "VMware ESX - Multiple User Auth Failures via hostd/authd from Same Source (Brute Force)"
+description_uz: |
   120 soniya ichida bir xil manba IP'dan vmware-hostd yoki vmware-authd orqali
   8 va undan ortiq parol rad etish holati qayd etildi (T1110, T1497).
   Bu maqsadli brute force hujumining aniq belgisi.
@@ -10,6 +12,26 @@ description: |
   - vmware-hostd vs vmware-authd qaysi daemon hujumga uchragan aniqlang
   - vmware.sid orqali sessiyani kuzating
   - Muvaffaqiyatli login urinishlari bilan korrelyatsiya qiling
+description_ru: |
+  В течение 120 секунд с одного и того же исходного IP через vmware-hostd или vmware-authd
+  зафиксировано 8 и более случаев отклонения пароля (T1110, T1497).
+  Это явный признак целенаправленной атаки перебора паролей (brute force).
+  Шаги SOC-триажа:
+  - Определите через vmware.originator исходный IP и заблокируйте его
+  - Проверьте атакуемые учётные записи пользователей
+  - Определите, какой демон подвергся атаке: vmware-hostd или vmware-authd
+  - Отслеживайте сессию через vmware.sid
+  - Скоррелируйте с успешными попытками входа
+description_en: |
+  Within 120 seconds, 8 or more password rejections from the same source IP
+  via vmware-hostd or vmware-authd were recorded (T1110, T1497).
+  This is a clear sign of a targeted brute force attack.
+  SOC triage steps:
+  - Identify the source IP via vmware.originator and block it
+  - Check the user accounts being attacked
+  - Determine which daemon was attacked, vmware-hostd vs vmware-authd
+  - Track the session via vmware.sid
+  - Correlate with successful login attempts
 type: esql
 params: '{}'
 schedule_interval: 5m

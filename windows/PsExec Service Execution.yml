@@ -1,11 +1,25 @@
 rule_id: 6c4a7c96-4197-44c2-a3dc-2b453edf3d83
-name: PsExec / Remote Service Execution
-description: |
+name_uz: "PsExec / masofaviy servis orqali ijro"
+name_ru: "PsExec / удалённое выполнение через службу"
+name_en: "PsExec / Remote Service Execution"
+description_uz: |
   Ushbu qoida PsExec va shunga o'xshash remote-exec toollarini aniqlaydi: `PSEXESVC`,
   `paexec`, `csexec`, `remcom`, `winexesvc` — target hostda servis sifatida ishga tushadi
   (T1021.002/T1569.002). Sysmon 1 (Image/CommandLine).
   SOC triage:
   - `images`/`command_lines` qaysi tool? Kim/qayerdan? Admin ishimi yoki hujum?
+description_ru: |
+  Это правило обнаруживает PsExec и подобные инструменты удалённого выполнения: `PSEXESVC`,
+  `paexec`, `csexec`, `remcom`, `winexesvc` — они запускаются как служба на целевом хосте
+  (T1021.002/T1569.002). Sysmon 1 (Image/CommandLine).
+  SOC triage:
+  - Какой инструмент в `images`/`command_lines`? Кем/откуда? Это работа админа или атака?
+description_en: |
+  This rule detects PsExec and similar remote-exec tools: `PSEXESVC`,
+  `paexec`, `csexec`, `remcom`, `winexesvc` — they run as a service on the target host
+  (T1021.002/T1569.002). Sysmon 1 (Image/CommandLine).
+  SOC triage:
+  - Which tool is in `images`/`command_lines`? By whom/from where? Admin work or an attack?
 type: esql
 params: '{}'
 schedule_interval: 10m

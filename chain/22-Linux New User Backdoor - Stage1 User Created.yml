@@ -1,9 +1,19 @@
 rule_id: a5c8653e-7c6e-4c13-af51-d5c78fa62385
-name: "Chain: Linux User Account Created"
-description: |
+name_uz: "Zanjir: Linux foydalanuvchi hisobi yaratildi"
+name_ru: "Цепочка: Создана учётная запись пользователя Linux"
+name_en: "Chain: Linux User Account Created"
+description_uz: |
   Linux yangi-foydalanuvchi backdoor zanjiri — 1-bosqich.
   Yangi Linux hisob yaratilishi (auditd added-user-account).
   Korrelyatsiya host bo'yicha.
+description_ru: |
+  Цепочка Linux new-user backdoor — этап 1.
+  Создание новой учётной записи Linux (auditd added-user-account).
+  Корреляция по host.
+description_en: |
+  Linux new-user backdoor chain — stage 1.
+  Creation of a new Linux account (auditd added-user-account).
+  Correlation by host.
 type: esql
 enabled: true
 params: "{}"

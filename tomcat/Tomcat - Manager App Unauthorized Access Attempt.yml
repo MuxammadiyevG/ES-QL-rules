@@ -1,8 +1,10 @@
 rule_id: 61419bdc-ba14-4ac3-938d-361f01cd39f2
-name: Tomcat - Manager App Unauthorized Access Attempt
-description: |
-  Ushbu qoida Tomcat Manager, Host Manager va admin interfeyslarga 
-  kirish urinishlarini aniqlaydi. Bu privilege escalation yoki 
+name_uz: "Tomcat - Manager App'ga ruxsatsiz kirish urinishi"
+name_ru: "Tomcat - попытка несанкционированного доступа к Manager App"
+name_en: "Tomcat - Manager App Unauthorized Access Attempt"
+description_uz: |
+  Ushbu qoida Tomcat Manager, Host Manager va admin interfeyslarga
+  kirish urinishlarini aniqlaydi. Bu privilege escalation yoki
   webshell deploy qilish urinishi bo'lishi mumkin (T1078, T1505.003).
   Qonuniy holatlar: DevOps deployment, app server management.
   SOC triage bosqichlari:
@@ -11,6 +13,28 @@ description: |
   - Response code'ni tekshiring (200 = juda xavfli!)
   - So'nggi deploy operatsiyalari bilan solishtiring
   - WAF yoki firewall loglarini tekshiring
+description_ru: |
+  Это правило обнаруживает попытки доступа к интерфейсам Tomcat Manager,
+  Host Manager и админ-интерфейсам. Это может быть попыткой повышения
+  привилегий или развёртывания вебшелла (T1078, T1505.003).
+  Легитимные случаи: DevOps-развёртывание, управление сервером приложений.
+  Шаги SOC-триажа:
+  - Сопоставьте исходный IP со списком авторизованных админских IP
+  - Проверьте, происходило ли это в рабочее время (business hours)
+  - Проверьте код ответа (200 = очень опасно!)
+  - Сопоставьте с недавними операциями развёртывания
+  - Проверьте логи WAF или межсетевого экрана
+description_en: |
+  This rule detects attempts to access the Tomcat Manager, Host Manager
+  and admin interfaces. This may be an attempt at privilege escalation or
+  webshell deployment (T1078, T1505.003).
+  Legitimate cases: DevOps deployment, app server management.
+  SOC triage steps:
+  - Compare the source IP with the authorized admin IP list
+  - Check whether it occurred during business hours
+  - Check the response code (200 = very dangerous!)
+  - Compare with recent deployment operations
+  - Check the WAF or firewall logs
 type: esql
 params: '{}'
 schedule_interval: 5m

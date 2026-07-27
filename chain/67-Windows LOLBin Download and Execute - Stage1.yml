@@ -1,7 +1,15 @@
 rule_id: fdff3c09-a358-4c93-9d8f-acd2709b6fa0
-name: "Chain: Windows LOLBin Download and Execute — Stage 1: LOLBin Download via URL"
-description: |
+name_uz: "Zanjir: Windows LOLBin Download and Execute — 1-bosqich: URL orqali LOLBin yuklab olish"
+name_ru: "Цепочка: Windows LOLBin Download and Execute — Этап 1: Загрузка через LOLBin по URL"
+name_en: "Chain: Windows LOLBin Download and Execute — Stage 1: LOLBin Download via URL"
+description_uz: |
   Windows LOLBin Download and Execute zanjiri — 1-bosqich (2 dan).
+  LOLBin Download via URL.
+description_ru: |
+  Цепочка Windows LOLBin Download and Execute — этап 1 (из 2).
+  Загрузка через LOLBin по URL.
+description_en: |
+  Windows LOLBin Download and Execute chain — stage 1 (of 2).
   LOLBin Download via URL.
 type: esql
 enabled: true

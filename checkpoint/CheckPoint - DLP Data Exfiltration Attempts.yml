@@ -1,6 +1,8 @@
 rule_id: 5ae04acf-c947-464c-bb1f-c2f10cf4d05b
-name: CheckPoint - DLP Data Exfiltration Attempts
-description: |
+name_uz: "CheckPoint - DLP ma'lumot eksfiltratsiyasi urinishlari"
+name_ru: "CheckPoint - попытки эксфильтрации данных по DLP"
+name_en: "CheckPoint - DLP Data Exfiltration Attempts"
+description_uz: |
   Ushbu qoida CheckPoint DLP (Data Loss Prevention) tomonidan aniqlangan data exfiltration urinishlarini monitoring qiladi.
   Sensitive data tashqariga chiqish urinishi (T1048, T1041).
   Qonuniy holatlar: authorized data transfer, business need, approved workflow.
@@ -11,6 +13,28 @@ description: |
   - DLP rule va policy violation'ni review qiling
   - Data classification va sensitivity level'ni confirm qiling
   - Incident severity va containment zarurligini baholang
+description_ru: |
+  Это правило отслеживает попытки data exfiltration, обнаруженные CheckPoint DLP (Data Loss Prevention).
+  Попытка вывода конфиденциальных данных наружу (T1048, T1041).
+  Легитимные случаи: authorized data transfer, бизнес-необходимость, утверждённый workflow.
+  Этапы SOC-триажа:
+  - Определите, какой data type и category эксфильтруются
+  - Идентифицируйте исходного пользователя и устройство
+  - Проверьте назначение и метод передачи
+  - Проведите review DLP rule и нарушения политики
+  - Подтвердите классификацию данных и уровень чувствительности
+  - Оцените severity инцидента и необходимость containment
+description_en: |
+  This rule monitors data exfiltration attempts detected by CheckPoint DLP (Data Loss Prevention).
+  An attempt to move sensitive data outside (T1048, T1041).
+  Legitimate cases: authorized data transfer, business need, approved workflow.
+  SOC triage steps:
+  - Determine which data type and category are being exfiltrated
+  - Identify the source user and device
+  - Check the destination and transfer method
+  - Review the DLP rule and the policy violation
+  - Confirm the data classification and sensitivity level
+  - Assess the incident severity and the need for containment
 type: esql
 params: '{}'
 schedule_interval: 10m

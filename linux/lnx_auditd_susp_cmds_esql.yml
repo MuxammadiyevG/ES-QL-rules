@@ -1,6 +1,16 @@
 rule_id: 225fc821-21dd-4a97-9228-8b3f522689c3
-name: "Suspicious Linux Commands Detection"
-description: |
+name_uz: "Shubhali Linux buyruqlarini aniqlash"
+name_ru: "Обнаружение подозрительных команд Linux"
+name_en: "Suspicious Linux Commands Detection"
+description_uz: |
+  Linux tizimlarida ko'pincha zararli dastur yoki xakerlik faoliyati bilan bog'liq bo'lgan tegishli buyruqlarni aniqlaydi.
+  Bunga xavfli ruxsat o'zgarishlari (chmod 777, setuid) va ko'pincha imtiyozlarni oshirishda ishlatiladigan shell nusxalash kiradi.
+  Eslatma: Qonuniy administrator faoliyati sabab false positive yuzaga kelishi mumkin. Kontekstni diqqat bilan ko'rib chiqing.
+description_ru: |
+  Обнаруживает характерные команды, часто связанные с вредоносным ПО или хакерской активностью в системах Linux.
+  Сюда входят опасные изменения прав доступа (chmod 777, setuid) и копирование shell, которое часто используется для повышения привилегий.
+  Примечание: Возможны ложные срабатывания от легитимных действий администраторов. Внимательно изучайте контекст.
+description_en: |
   Detects relevant commands often related to malware or hacking activity on Linux systems.
   This includes dangerous permission changes (chmod 777, setuid) and shell copying which are often used in privilege escalation.
   Note: May generate false positives from legitimate admin activity. Review context carefully.

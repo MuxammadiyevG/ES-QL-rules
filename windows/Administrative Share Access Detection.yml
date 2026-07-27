@@ -1,6 +1,8 @@
 rule_id: 77ceaadc-137c-45dc-a56a-556d8ac4f7dd
-name: Administrative Share Access Detection
-description: |
+name_uz: "Administrativ share'ga kirishni aniqlash"
+name_ru: "Обнаружение доступа к административным ресурсам (share)"
+name_en: "Administrative Share Access Detection"
+description_uz: |
   Ushbu qoida administrativ share (C$, ADMIN$, IPC$) ga tarmoq orqali kirishni aniqlaydi
   (5140). Admin sharelarga kirish PsExec, lateral movement va remote tool ijrosi bilan
   bog'liq. Mashina va SYSTEM/anonymous akkauntlar chiqariladi.
@@ -8,6 +10,22 @@ description: |
   - `accessing_user`/`source_ip` — kim, qayerdan, qaysi `shares`?
   - Bu admin/IT ning kutilgan masofaviy ishimi?
   - Tasdiqlanmasa: manbani izolyatsiya qiling, sessiyani uzing, hostda jarayonlarni tekshiring.
+description_ru: |
+  Это правило обнаруживает сетевой доступ к административным ресурсам (C$, ADMIN$, IPC$)
+  (5140). Доступ к админ-ресурсам связан с PsExec, горизонтальным перемещением и выполнением
+  удалённых инструментов. Машинные и SYSTEM/anonymous учётные записи исключаются.
+  SOC triage:
+  - `accessing_user`/`source_ip` — кто, откуда, какие `shares`?
+  - Является ли это ожидаемой удалённой работой admin/IT?
+  - Если не подтверждено: изолируйте источник, разорвите сессию, проверьте процессы на хосте.
+description_en: |
+  This rule detects network access to administrative shares (C$, ADMIN$, IPC$)
+  (5140). Access to admin shares is associated with PsExec, lateral movement and remote tool
+  execution. Machine and SYSTEM/anonymous accounts are excluded.
+  SOC triage:
+  - `accessing_user`/`source_ip` — who, from where, which `shares`?
+  - Is this expected remote work by admin/IT?
+  - If not confirmed: isolate the source, terminate the session, check the processes on the host.
 type: esql
 params: '{}'
 schedule_interval: 10m

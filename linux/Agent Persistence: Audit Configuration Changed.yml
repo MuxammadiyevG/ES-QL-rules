@@ -1,6 +1,8 @@
 rule_id: d9700de9-e817-4491-bc81-9ca6ad3bd27c
-name: "Agent Persistence: Audit Configuration Changed"
-description: |
+name_uz: "Agent Persistence: Audit konfiguratsiyasi o'zgartirildi"
+name_ru: "Agent Persistence: Изменена конфигурация аудита"
+name_en: "Agent Persistence: Audit Configuration Changed"
+description_uz: |
   Ushbu qoida Defense Evasion va Persistence texnikalariga bog'liq bo'lib, Linux audit tizimi konfiguratsiyasining o'zgarishini aniqlaydi.
   Hujumchi o'z faoliyatini yashirish maqsadida audit qoidalarini o'chirishi, o'zgartirishi yoki audit daemonini qayta konfiguratsiya qilishi mumkin.
   Qonuniy holatlar: auditbeat/auditd versiya yangilanishi, tizim administratori tomonidan qoida sozlamalari.
@@ -10,6 +12,26 @@ description: |
   - O'zgarish auditbeat/auditd tomonidan emas, boshqa process tomonidan amalga oshirilganligini solishtiring.
   - Agar root bo'lmagan foydalanuvchi tomonidan yoki g'ayrioddiy vaqtda amalga oshirilgan bo'lsa — yuqori prioritet.
   - Noqonuniy bo'lsa: konfiguratsiyani qaytaring va audit log izlarini ko'rib chiqing.
+description_ru: |
+  Это правило связано с техниками Defense Evasion и Persistence и выявляет изменение конфигурации системы аудита Linux.
+  Чтобы скрыть свою активность, злоумышленник может удалить или изменить правила аудита либо перенастроить audit daemon.
+  Легитимные случаи: обновление версии auditbeat/auditd, настройка правил системным администратором.
+  Шаги SOC-триажа:
+  - Определите процесс (`auditd.summary.how`), выполнивший изменение.
+  - Проверьте операцию изменения (`auditd.data.op`: set, add, remove) и её границы (`auditd.data.old`, exit).
+  - Сопоставьте, не выполнено ли изменение другим процессом, а не auditbeat/auditd.
+  - Если оно выполнено пользователем без прав root или в нетипичное время — высокий приоритет.
+  - Если нелегитимно: откатите конфигурацию и изучите следы в логах аудита.
+description_en: |
+  This rule is related to Defense Evasion and Persistence techniques and detects changes to the Linux audit system configuration.
+  To hide their activity, an attacker may delete or modify audit rules or reconfigure the audit daemon.
+  Legitimate cases: auditbeat/auditd version upgrade, rule settings made by a system administrator.
+  SOC triage steps:
+  - Identify the process (`auditd.summary.how`) that made the change.
+  - Check the change operation (`auditd.data.op`: set, add, remove) and its limits (`auditd.data.old`, exit).
+  - Compare whether the change was made by another process rather than by auditbeat/auditd.
+  - If it was made by a non-root user or at an unusual time — high priority.
+  - If illegitimate: revert the configuration and review the audit log traces.
 type: esql
 params: '{}'
 schedule_interval: 5m

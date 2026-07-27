@@ -1,8 +1,16 @@
 rule_id: 6d9a455b-4c24-4c90-b30c-2fa1bfc06ddd
-name: UniFi WAN Packet Loss Detected
-description: |
+name_uz: "UniFi WAN'da packet loss aniqlandi"
+name_ru: "Обнаружена потеря пакетов на WAN UniFi"
+name_en: "UniFi WAN Packet Loss Detected"
+description_uz: |
   Ushbu qoida WAN interfeysida packet loss aniqlanishini kuzatadi.
   ISP, uplink, routing, interface errors yoki DoS holatlari tekshirilishi kerak.
+description_ru: |
+  Это правило отслеживает обнаружение packet loss на WAN-интерфейсе.
+  Следует проверить ISP, uplink, routing, interface errors или случаи DoS.
+description_en: |
+  This rule tracks the detection of packet loss on the WAN interface.
+  ISP, uplink, routing, interface errors or DoS conditions should be checked.
 type: esql
 params: "{}"
 schedule_interval: 5m

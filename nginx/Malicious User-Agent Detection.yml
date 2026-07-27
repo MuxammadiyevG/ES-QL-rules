@@ -8,8 +8,24 @@ rule_id: 87043277-fb0b-4b0d-83f9-4d6c2f8abf03
 #//Field validation: Verify all ECS fields exist in your indices before enabling
 #//Tuning notes: Allowlist legitimate monitoring tools, adjust pattern matching for new tools
 
-name: "Malicious User-Agent Detection"
-description: |
+name_uz: "Zararli User-Agent'larni aniqlash"
+name_ru: "Обнаружение вредоносных User-Agent"
+name_en: "Malicious User-Agent Detection"
+description_uz: |
+  Hujum vositalari, skanerlar yoki shubhali pattern'lar bilan bog'liq user-agent'li so'rovlarni aniqlaydi.
+  Vosita imzolari (sqlmap, nikto, masscan), bo'sh user-agent'lar yoki maxsus skriptlar belgilanadi.
+  Shubhali user-agent'ning hujum payload'lari bilan birga kelishi ishonchlilikni oshiradi.
+  False positive: vakolatli xavfsizlik skanerlashi, penetration testing, qonuniy monitoring.
+  Triage: manba IP xavfsizlik testlari uchun vakolatli ekanligini tekshiring, so'ralgan URL'larni hujum pattern'lari uchun ko'rib chiqing,
+  rejalashtirilgan qonuniy xavfsizlik auditi bor-yo'qligini tekshiring.
+description_ru: |
+  Обнаруживает запросы с user-agent, связанными с инструментами атак, сканерами или подозрительными шаблонами.
+  Отмечаются сигнатуры инструментов (sqlmap, nikto, masscan), пустые user-agent или самописные скрипты.
+  Сочетание подозрительного user-agent с атакующей нагрузкой повышает уверенность в срабатывании.
+  Ложные срабатывания: санкционированное сканирование безопасности, тестирование на проникновение, легитимный мониторинг.
+  Triage: проверьте, авторизован ли IP источника для тестирования безопасности, изучите запрошенные URL на предмет шаблонов атак,
+  проверьте, запланирован ли легитимный аудит безопасности.
+description_en: |
   Detects requests with user-agents associated with attack tools, scanners, or suspicious patterns.
   Tool signatures (sqlmap, nikto, masscan), empty user-agents, or custom scripts flagged.
   Combination of suspicious user-agent with attack payloads increases confidence.

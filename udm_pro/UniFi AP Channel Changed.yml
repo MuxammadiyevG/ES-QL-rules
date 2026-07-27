@@ -1,8 +1,16 @@
 rule_id: 6f3fea91-4851-4f29-be47-79eb3d1ac4ce
-name: UniFi AP Channel Changed
-description: |
+name_uz: "UniFi AP kanali o'zgartirildi"
+name_ru: "Изменён канал UniFi AP"
+name_en: "UniFi AP Channel Changed"
+description_uz: |
   Ushbu qoida AP kanalining o'zgarishini kuzatadi.
   Auto-channel optimizatsiyasi qonuniy sabab bo'lishi mumkin, lekin tez-tez o'zgarish interferensiya yoki RF beqarorligini ko'rsatadi.
+description_ru: |
+  Это правило отслеживает изменение канала AP.
+  Оптимизация auto-channel может быть легитимной причиной, но частые изменения указывают на помехи или нестабильность RF.
+description_en: |
+  This rule tracks changes of the AP channel.
+  Auto-channel optimization may be a legitimate reason, but frequent changes indicate interference or RF instability.
 type: esql
 params: "{}"
 schedule_interval: 10m

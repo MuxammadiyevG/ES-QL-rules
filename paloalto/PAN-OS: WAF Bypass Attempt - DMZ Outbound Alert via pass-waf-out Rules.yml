@@ -1,6 +1,8 @@
 rule_id: ad04e0e8-3d67-4de5-8b08-b9b575130b53
-name: "PAN-OS: WAF Bypass Attempt - DMZ Outbound Alert via pass-waf-out Rules"
-description: |
+name_uz: "PAN-OS: WAF'ni chetlab o'tish urinishi - pass-waf-out qoidalari orqali DMZ chiquvchi alert"
+name_ru: "PAN-OS: попытка обхода WAF - исходящий алерт из DMZ через правила pass-waf-out"
+name_en: "PAN-OS: WAF Bypass Attempt - DMZ Outbound Alert via pass-waf-out Rules"
+description_uz: |
   Ushbu qoida "pass-waf-out" yoki "pass-waf-out-1" nomli firewall qoidalari orqali
   DMZ'dan tashqariga chiqayotgan va THREAT sifatida belgilangan barcha sessiyalarni kuzatadi.
   WAF qoidalari orqali o'tayotgan threat alertlar WAF konfiguratsiyasidagi zaiflikni,
@@ -14,6 +16,34 @@ description: |
   - rule.uuid orqali qaysi aniq qoida ishlatilganini kuzating.
   - Alert bergan URL'larning pattern'ini tahlil qiling.
   - Bir xil dst IP'ga takroriy alert — IP'ni bloklashni ko'rib chiqing.
+description_ru: |
+  Это правило отслеживает все сессии, помеченные как THREAT и выходящие из DMZ наружу
+  через правила firewall с именами "pass-waf-out" или "pass-waf-out-1".
+  Threat-алерты, проходящие через правила WAF, могут указывать на слабое место в конфигурации WAF
+  либо на попытки атакующего обойти WAF.
+  Обнаружено несколько вариантов "pass-waf-out" (pass-waf-out, pass-waf-out-1) —
+  важно понять разницу между этими правилами и какое из них даёт больше алертов.
+  Легитимные случаи: легитимный трафик, прошедший проверку WAF, обход SSL inspection.
+  Этапы SOC-триажа:
+  - Проверьте разницу между pass-waf-out и pass-waf-out-1.
+  - Проведите корреляцию с логами WAF — залогирована ли та же сессия и в WAF?
+  - По rule.uuid отследите, какое именно правило было применено.
+  - Проанализируйте pattern URL, вызвавших алерт.
+  - Повторяющиеся алерты к одному и тому же dst IP — рассмотрите блокировку этого IP.
+description_en: |
+  This rule monitors all sessions marked as THREAT that leave the DMZ outbound
+  through the firewall rules named "pass-waf-out" or "pass-waf-out-1".
+  Threat alerts passing through WAF rules may indicate a weakness in the WAF configuration,
+  or attempts by an attacker to bypass the WAF.
+  Several "pass-waf-out" variants have been observed (pass-waf-out, pass-waf-out-1) —
+  the difference between these rules and which one raises more alerts is important.
+  Legitimate cases: legitimate traffic that passed WAF inspection, SSL inspection bypass.
+  SOC triage steps:
+  - Check the difference between pass-waf-out and pass-waf-out-1.
+  - Correlate with WAF logs — was the same session also logged in the WAF?
+  - Use rule.uuid to track which exact rule was applied.
+  - Analyze the pattern of the URLs that raised the alert.
+  - Repeated alerts to the same dst IP — consider blocking that IP.
 type: esql
 params: '{}'
 schedule_interval: 5m

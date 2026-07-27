@@ -1,6 +1,8 @@
 rule_id: 5fb566bd-3753-479d-9e99-ae2533012754
-name: WAF Attack from High-Risk Geographic Region
-description: |
+name_uz: "Yuqori xavfli geografik mintaqadan WAF hujumi"
+name_ru: "WAF-атака из географического региона высокого риска"
+name_en: "WAF Attack from High-Risk Geographic Region"
+description_uz: |
   Odatda hujumlar kuzatilmagan yangi geografik mintaqadan (mamlakat yoki kontinent)
   WAF qoidalari ishga tushdi. Bu yangi hujum kampaniyasining boshlanishini yoki
   VPN/proxy orqali manzilni yashirishga urinayotgan hujumchini ko'rsatishi mumkin.
@@ -12,6 +14,30 @@ description: |
   - Ushbu mamlakatdan boshqa tizimlar (VPN gateway, email, auth) ga kirish
     urinishlari bor-yo'qligini korrelyatsiya qiling.
   - Geo-blocking policy mavjud bo'lsa, bu mintaqadan trafik WAF ga yetib kelmasligi kerak edi — policy tekshiring.
+description_ru: |
+  Правила WAF сработали из нового географического региона (страна или континент),
+  откуда обычно атаки не наблюдались. Это может указывать на начало новой кампании атак или
+  на атакующего, пытающегося скрыть своё местоположение через VPN/proxy.
+  Этапы SOC-триажа:
+  - Сопоставьте `source.geo.continent_name` и `source.geo.country_name` с обычной
+    пользовательской базой организации.
+  - По `source.geo.timezone` проверьте, не приходится ли время атаки на нерабочее
+    местное время (ночь, праздник).
+  - Выполните корреляцию, есть ли из этой страны попытки входа в другие системы
+    (VPN gateway, email, auth).
+  - Если существует политика geo-blocking, трафик из этого региона не должен был доходить до WAF — проверьте политику.
+description_en: |
+  WAF rules were triggered from a new geographic region (country or continent)
+  where attacks are not normally observed. This may indicate the start of a new attack campaign or
+  an attacker trying to hide their location via VPN/proxy.
+  SOC triage steps:
+  - Compare `source.geo.continent_name` and `source.geo.country_name` with the organization's
+    usual user base.
+  - Using `source.geo.timezone`, check whether the attack time falls outside local
+    business hours (night, holiday).
+  - Correlate whether there are login attempts from this country to other systems
+    (VPN gateway, email, auth).
+  - If a geo-blocking policy exists, traffic from this region should not have reached the WAF — check the policy.
 type: esql
 params: '{}'
 schedule_interval: 10m

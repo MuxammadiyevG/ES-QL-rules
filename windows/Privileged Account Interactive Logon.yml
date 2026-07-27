@@ -1,13 +1,31 @@
 rule_id: 7441da8e-c184-48f6-921d-6c1e01f17cfb
-name: Privileged Account Interactive Logon
-description: |
+name_uz: "Imtiyozli akkauntning interaktiv logoni"
+name_ru: "Интерактивный вход привилегированной учётной записи"
+name_en: "Privileged Account Interactive Logon"
+description_uz: |
   Ushbu qoida imtiyozli akkauntning interaktiv/RDP logon'ini aniqlaydi (4624, LogonType 2/10).
   Built-in Administrator (SID RID-500) yoki admin nomidagi akkauntning logon'i — ayniqsa
-  noodatiy hostda — lateral movement yoki imtiyoz suiiste'moli belgisi bo'lishi mumkin.
+  noodatiy hostda — lateral harakat yoki imtiyoz suiiste'moli belgisi bo'lishi mumkin.
   SOC triage:
   - `target_user`/`source_ips`/`workstations` odatiy admin segmentidanmi?
   - `elevated_tokens` — to'liq token bilan kirilganmi?
   - Tasdiqlanmasa: sessiyani uzing, credential'ni yangilang, manbani izolyatsiya qiling.
+description_ru: |
+  Это правило обнаруживает интерактивный/RDP вход привилегированной учётной записи (4624, LogonType 2/10).
+  Вход встроенной учётной записи Administrator (SID RID-500) или учётной записи с admin в имени — особенно
+  на необычном хосте — может быть признаком горизонтального перемещения или злоупотребления привилегиями.
+  SOC triage:
+  - Относятся ли `target_user`/`source_ips`/`workstations` к обычному административному сегменту?
+  - `elevated_tokens` — выполнен ли вход с полным токеном?
+  - Если не подтверждено: разорвите сессию, смените учётные данные, изолируйте источник.
+description_en: |
+  This rule detects an interactive/RDP logon by a privileged account (4624, LogonType 2/10).
+  A logon by the built-in Administrator (SID RID-500) or an admin-named account — especially
+  on an unusual host — may be a sign of lateral movement or privilege abuse.
+  SOC triage:
+  - Are `target_user`/`source_ips`/`workstations` from the usual admin segment?
+  - `elevated_tokens` — was the logon performed with a full token?
+  - If not confirmed: terminate the session, rotate the credential, isolate the source.
 type: esql
 params: '{}'
 schedule_interval: 10m

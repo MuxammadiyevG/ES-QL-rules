@@ -1,6 +1,36 @@
 rule_id: 9df50a83-d2fd-4a60-bcb7-f159b6bf531c
-name: "GDPR Art.33(1) - Personal Data Breach Detection Trigger (72h Notification Clock)"
-description: |
+name_uz: "GDPR Art.33(1) - Shaxsiy ma'lumotlar buzilishini aniqlash triggeri (72 soatlik xabar berish hisoblagichi)"
+name_ru: "GDPR Art.33(1) - Триггер обнаружения утечки персональных данных (72-часовой отсчёт уведомления)"
+name_en: "GDPR Art.33(1) - Personal Data Breach Detection Trigger (72h Notification Clock)"
+description_uz: |
+  GDPR 33(1)-moddasi bo'yicha nazorat organiga 72 soatlik xabar berish hisoblagichini ishga tushiruvchi
+  yuqori ishonchli shaxsiy ma'lumotlar buzilishi indikatorlarini aniqlaydi. Ushbu qoida shunchaki muvaffaqiyatsiz
+  urinishlarni emas, balki haqiqiy yoki ehtimoliy shaxsiy ma'lumotlar oshkorligini ko'rsatuvchi korrelyatsiyalangan hodisalarni topadi.
+  Buzilish indikatorlari: (1) brute force'dan keyingi muvaffaqiyatli kirish, (2) imtiyozlarni oshirishdan keyin
+  ommaviy ma'lumotlarga kirish, (3) shaxsiy ma'lumotlar tizimlaridan katta hajmli chiquvchi uzatma,
+  (4) ish vaqtidan tashqari admin akkaunt yaratilishi, (5) ma'lum zararli yoki anomal geografik
+  joylashuvlardan muvaffaqiyatli kirish.
+  Ushbu qoida bir necha soat ichida triage qilinishi shart bo'lgan HARAKATGA CHORLOVCHI alertlar yaratish uchun mo'ljallangan.
+  Trigger: Shaxsiy ma'lumotlar tizimlarida muvaffaqiyatli kirish + anomal xulq kombinatsiyasi.
+  False positive: Ish vaqtidan tashqari qonuniy admin ishlari, ruxsat etilgan penetration testing.
+  Triage: DARHOL - Shaxsiy ma'lumotlarga kirilgani yoki eksfiltratsiya qilinganini aniqlang,
+  ta'sirlangan ma'lumot subyektlari doirasini aniqlang, 72 soatlik Art.33 xabari qo'llanilishini baholang,
+  DPO bilan darhol bog'laning, Art.33(3) xabari mazmuni uchun barcha forensik dalillarni saqlang.
+description_ru: |
+  Обнаруживает высокодостоверные индикаторы утечки персональных данных, запускающие 72-часовой
+  отсчёт уведомления надзорного органа по статье 33(1) GDPR. Правило выявляет коррелированные
+  события, явно указывающие на фактическое или вероятное раскрытие персональных данных, а не только на неудачные попытки.
+  Индикаторы утечки: (1) успешный вход после перебора паролей (brute force), (2) массовый доступ к данным после
+  повышения привилегий, (3) крупная исходящая передача данных из систем персональных данных,
+  (4) административная учётная запись создана вне рабочих часов, (5) успешный доступ из известных
+  вредоносных или аномальных географических локаций.
+  Правило спроектировано для генерации ДЕЙСТВЕННЫХ алертов, которые должны быть разобраны в течение часов.
+  Триггер: Сочетание успешного доступа + аномального поведения в системах персональных данных.
+  Ложные срабатывания: Легитимная административная работа во внерабочее время, санкционированное тестирование на проникновение.
+  Разбор: НЕМЕДЛЕННО - Определите, были ли персональные данные получены или выгружены,
+  определите круг затронутых субъектов данных, оцените применимость 72-часового уведомления по Art.33,
+  немедленно свяжитесь с DPO, сохраните все криминалистические доказательства для содержания уведомления по Art.33(3).
+description_en: |
   Detects high-confidence personal data breach indicators that start the GDPR Article 33(1)
   72-hour notification clock to the supervisory authority. This rule identifies correlated
   events strongly suggesting actual or likely personal data exposure, not just failed attempts.

@@ -1,15 +1,37 @@
 rule_id: 132f85c8-f847-4b82-9b32-a78e495fe372
-name: FortiGate Admin Login/Logout Activity Detection
-description: |
+name_uz: "FortiGate admin login/logout faoliyatini aniqlash"
+name_ru: "FortiGate - Обнаружение активности входа/выхода администратора"
+name_en: "FortiGate Admin Login/Logout Activity Detection"
+description_uz: |
   Ushbu qoida FortiGate qurilmalarida tizimga kirish (login) va chiqish (logout) harakatlarini monitoring qilish uchun mo'ljallangan. 
   Admin paneli yoki CLI orqali amalga oshirilgan muvaffaqiyatli yoki muvaffaqiyatsiz urinishlarni kuzatish persistence va lateral movement xavflarini barvaqt aniqlashga yordam beradi.
   Qonuniy holatlar: IT administratorlarining rejaviy ishlari va monitoring tizimlarining avtomatik so'rovlari.
-  
+
   SOC triage bosqichlari:
   - Hodisadagi `Dev` (qurilma nomi) va `message` ichidagi foydalanuvchini aniqlang.
   - Login amalga oshirilgan vaqt va `srcip` (agar logda mavjud bo'lsa) legitimligini tekshiring.
   - Bir nechta muvaffaqiyatsiz login urinishlaridan keyin muvaffaqiyatli kirish bo'lganini tekshiring (Brute force belgisi).
   - Agar shubhali faoliyat tasdiqlansa, sessiyani uzing va administrator parolini yangilang.
+description_ru: |
+  Данное правило предназначено для мониторинга действий входа (login) и выхода (logout) на устройствах FortiGate. 
+  Отслеживание успешных и неуспешных попыток через админ-панель или CLI помогает своевременно выявлять риски закрепления (persistence) и горизонтального перемещения (lateral movement).
+  Легитимные случаи: плановые работы IT-администраторов и автоматические запросы систем мониторинга.
+
+  Этапы SOC-триажа:
+  - Определите `Dev` (имя устройства) в событии и пользователя внутри `message`.
+  - Проверьте легитимность времени входа и `srcip` (если он присутствует в логе).
+  - Проверьте, был ли успешный вход после нескольких неуспешных попыток входа (признак brute force).
+  - Если подозрительная активность подтвердится, завершите сессию и смените пароль администратора.
+description_en: |
+  This rule is intended for monitoring login and logout actions on FortiGate devices. 
+  Tracking successful and failed attempts made through the admin panel or the CLI helps to detect persistence and lateral movement risks early.
+  Legitimate cases: scheduled work by IT administrators and automated queries from monitoring systems.
+
+  SOC triage steps:
+  - Identify the `Dev` (device name) in the event and the user inside `message`.
+  - Verify the legitimacy of the login time and `srcip` (if present in the log).
+  - Check whether a successful login occurred after several failed login attempts (a brute force indicator).
+  - If suspicious activity is confirmed, terminate the session and change the administrator password.
 type: esql
 params: '{}'
 schedule_interval: 10m

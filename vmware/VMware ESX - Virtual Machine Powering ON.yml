@@ -1,6 +1,8 @@
 rule_id: a04a9c08-3c10-4796-80dc-05df7c6e55e0
-name: VMware ESX - Virtual Machine Powering ON
-description: |
+name_uz: "VMware ESX - Virtual mashina yoqilmoqda"
+name_ru: "VMware ESX - Включение виртуальной машины"
+name_en: "VMware ESX - Virtual Machine Powering ON"
+description_uz: |
   VMware ESX muhitida virtual mashina yoqilish jarayoni boshlandi (VM_STATE_POWERING_ON).
   Bu normal holat bo'lishi mumkin, ammo ruxsatsiz mashina ishga tushirilishi
   noodatiy aktivlik belgisi.
@@ -8,6 +10,22 @@ description: |
   - Mashina kimning tomonidan yoqilganini vmware.originator orqali aniqlang
   - Kutilmagan vaqtda yoqilgan VM'larni tekshiring
   - vmware.opid orqali operatsiyani kuzating
+description_ru: |
+  В среде VMware ESX начался процесс включения виртуальной машины (VM_STATE_POWERING_ON).
+  Это может быть нормальным состоянием, однако несанкционированный запуск машины —
+  признак нетипичной активности.
+  Шаги SOC-триажа:
+  - Определите через vmware.originator, кто включил машину
+  - Проверьте ВМ, включённые в неожиданное время
+  - Отследите операцию через vmware.opid
+description_en: |
+  In a VMware ESX environment a virtual machine power-on process started (VM_STATE_POWERING_ON).
+  This may be a normal state, but an unauthorized start of a machine is
+  a sign of unusual activity.
+  SOC triage steps:
+  - Identify via vmware.originator who powered the machine on
+  - Check VMs powered on at unexpected times
+  - Trace the operation via vmware.opid
 type: esql
 params: '{}'
 schedule_interval: 5m

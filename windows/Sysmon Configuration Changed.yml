@@ -1,9 +1,19 @@
 rule_id: 128b9dc2-8785-45ee-a42d-f4c753c86773
-name: Sysmon Configuration Changed
-description: |
+name_uz: "Sysmon konfiguratsiyasi o'zgartirildi"
+name_ru: "Изменена конфигурация Sysmon"
+name_en: "Sysmon Configuration Changed"
+description_uz: |
   Ushbu qoida Sysmon konfiguratsiyasi o'zgartirilishini aniqlaydi (Sysmon EventID 16). Hujumchi
   monitoring qamrovini kamaytirish uchun Sysmon config'ini o'zgartirishi mumkin (T1562).
   Konfiguratsiya o'zgarishi rejalashtirilgan deployment bilan mosligini tasdiqlang.
+description_ru: |
+  Данное правило выявляет изменение конфигурации Sysmon (Sysmon EventID 16). Злоумышленник
+  может изменить config Sysmon, чтобы снизить охват мониторинга (T1562).
+  Подтвердите, что изменение конфигурации соответствует запланированному deployment.
+description_en: |
+  This rule detects a change of the Sysmon configuration (Sysmon EventID 16). An attacker
+  may change the Sysmon config in order to reduce monitoring coverage (T1562).
+  Confirm that the configuration change matches a planned deployment.
 type: esql
 params: '{}'
 schedule_interval: 10m

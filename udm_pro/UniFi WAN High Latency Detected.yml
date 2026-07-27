@@ -1,8 +1,16 @@
 rule_id: 304dc9a4-2d11-4d0d-b335-0ae97cab36fb
-name: UniFi WAN High Latency Detected
-description: |
+name_uz: "UniFi WAN'da yuqori latency aniqlandi"
+name_ru: "Обнаружена высокая задержка на WAN UniFi"
+name_en: "UniFi WAN High Latency Detected"
+description_uz: |
   Ushbu qoida WAN latency yuqori bo'lganini aniqlaydi.
   ISP, routing, congestion, interface va DoS belgilarini tekshiring.
+description_ru: |
+  Это правило обнаруживает высокую задержку (latency) на WAN.
+  Проверьте признаки, связанные с ISP, routing, congestion, интерфейсом и DoS.
+description_en: |
+  This rule detects that the WAN latency is high.
+  Check for ISP, routing, congestion, interface and DoS indicators.
 type: esql
 params: "{}"
 schedule_interval: 5m

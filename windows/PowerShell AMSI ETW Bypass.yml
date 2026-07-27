@@ -1,11 +1,25 @@
 rule_id: a08803c4-0d5f-449b-82bd-56ba78aa8e02
-name: PowerShell AMSI / ETW Bypass
-description: |
+name_uz: "PowerShell AMSI / ETW chetlab o'tish"
+name_ru: "Обход PowerShell AMSI / ETW"
+name_en: "PowerShell AMSI / ETW Bypass"
+description_uz: |
   Ushbu qoida AMSI (Antimalware Scan Interface) yoki ETW logging'ni chetlab o'tish urinishini
   aniqlaydi: ScriptBlock (4104) ichida `amsiInitFailed`, `AmsiUtils`, `amsiContext` yoki
   `EtwEventWrite` manipulyatsiyasi. Bu xavfsizlik nazoratini o'chirish (T1562.001).
   SOC triage:
   - `sample_script` da reflection orqali AMSI/ETW patch bormi? Darhol host'ni tekshiring.
+description_ru: |
+  Это правило обнаруживает попытки обойти AMSI (Antimalware Scan Interface) или ETW-логирование:
+  манипуляции `amsiInitFailed`, `AmsiUtils`, `amsiContext` или `EtwEventWrite` внутри
+  ScriptBlock (4104). Это отключение средств защиты (T1562.001).
+  SOC triage:
+  - Есть ли в `sample_script` патч AMSI/ETW через reflection? Немедленно проверьте хост.
+description_en: |
+  This rule detects attempts to bypass AMSI (Antimalware Scan Interface) or ETW logging:
+  `amsiInitFailed`, `AmsiUtils`, `amsiContext` or `EtwEventWrite` manipulation inside a
+  ScriptBlock (4104). This is impairing security controls (T1562.001).
+  SOC triage:
+  - Is there an AMSI/ETW patch via reflection in `sample_script`? Check the host immediately.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,14 @@
 rule_id: 6e9fc5bf-d026-4097-91a2-7150b041cef0
-name: "User Discovery - Linux"
-description: |
+name_uz: "Foydalanuvchilarni aniqlash (discovery) - Linux"
+name_ru: "Разведка пользователей - Linux"
+name_en: "User Discovery - Linux"
+description_uz: |
+  Foydalanuvchilarni sanab chiqish va aniqlash buyruqlarini aniqlaydi.
+  Tajovuzkorlar nishonga olish uchun foydalanuvchi hisoblarini aniqlashga urinishi mumkin.
+description_ru: |
+  Обнаруживает команды перечисления и разведки пользователей.
+  Злоумышленники могут пытаться выявить учётные записи пользователей для последующих атак.
+description_en: |
   Detects user enumeration and discovery commands.
   Adversaries may attempt to identify user accounts for targeting.
 type: esql

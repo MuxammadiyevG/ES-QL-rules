@@ -1,9 +1,19 @@
 rule_id: e8ca9cc3-9493-4ccd-a6e1-52ddae4fe9a1
-name: Computer Account Logons - Domain Joined Systems
-description: |
+name_uz: "Computer akkaunt kirishlari - domenga ulangan tizimlar"
+name_ru: "Входы машинных учётных записей - системы, включённые в домен"
+name_en: "Computer Account Logons - Domain Joined Systems"
+description_uz: |
   Baseline/monitoring qoidasi: mashina (computer$) akkauntlarining network logon (4624,
   LogonType 3) hodisalarini yig'adi. Domenga ulangan tizimlar autentikatsiyasining normal
   darajasini kuzatish uchun (alert emas, kontekst).
+description_ru: |
+  Baseline/мониторинговое правило: собирает события network logon (4624,
+  LogonType 3) машинных (computer$) учётных записей. Служит для наблюдения за нормальным
+  уровнем аутентификации систем, включённых в домен (это контекст, а не алерт).
+description_en: |
+  Baseline/monitoring rule: collects network logon (4624,
+  LogonType 3) events of machine (computer$) accounts. Used to observe the normal
+  level of authentication of domain-joined systems (context, not an alert).
 type: esql
 params: '{}'
 schedule_interval: 10m

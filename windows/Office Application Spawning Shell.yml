@@ -1,11 +1,25 @@
 rule_id: 5db112bb-0a27-43b0-bd8b-d2d5c20f1b47
-name: Office Application Spawning Shell
-description: |
+name_uz: "Office ilovasi shell ishga tushirmoqda"
+name_ru: "Office-приложение запускает shell"
+name_en: "Office Application Spawning Shell"
+description_uz: |
   Ushbu qoida Office ilovasi (Word/Excel/PowerPoint/Outlook) shell yoki skript interpretatori
   ishga tushirishini aniqlaydi — fishing/makro orqali boshlang'ich ijro klassik belgisi
   (T1566/T1059). Sysmon 1 (ParentImage → Image).
   SOC triage:
   - `child` nima (powershell/cmd/wscript/mshta)? `command_lines` da nima?
+description_ru: |
+  Это правило обнаруживает запуск Office-приложением (Word/Excel/PowerPoint/Outlook) shell или интерпретатора
+  скриптов — классический признак первичного выполнения через фишинг/макросы
+  (T1566/T1059). Sysmon 1 (ParentImage → Image).
+  SOC triage:
+  - Что такое `child` (powershell/cmd/wscript/mshta)? Что в `command_lines`?
+description_en: |
+  This rule detects an Office application (Word/Excel/PowerPoint/Outlook) launching a shell or script
+  interpreter — a classic sign of initial execution via phishing/macros
+  (T1566/T1059). Sysmon 1 (ParentImage → Image).
+  SOC triage:
+  - What is `child` (powershell/cmd/wscript/mshta)? What is in `command_lines`?
 type: esql
 params: '{}'
 schedule_interval: 10m

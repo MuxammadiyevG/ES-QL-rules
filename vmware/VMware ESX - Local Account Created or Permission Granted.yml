@@ -1,6 +1,8 @@
 rule_id: 77681dab-64f0-4df8-85c9-ab01c4426ddb
-name: VMware ESX - Local Account Created or Permission Granted
-description: |
+name_uz: "VMware ESX - lokal akkaunt yaratildi yoki ruxsat berildi"
+name_ru: "VMware ESX - создана локальная учётная запись или выданы права"
+name_en: "VMware ESX - Local Account Created or Permission Granted"
+description_uz: |
   VMware ESX hostida yangi lokal foydalanuvchi yaratildi yoki rol/ruxsat (permission)
   biriktirildi. Hujumchilar hostda doimiy kirishni saqlash uchun rogue akkaunt yaratishi
   yoki mavjud akkauntga ortiqcha imtiyoz berishi mumkin (Persistence / Create Account)
@@ -11,6 +13,28 @@ description: |
   - Yangi akkaunt nomi va biriktirilgan rolni message orqali tekshiring
   - O'zgarish tasdiqlangan IT so'rovi/ticket bilan mos kelishini tekshiring
   - Noqonuniy bo'lsa akkauntni o'chiring va ruxsatni qaytaring
+description_ru: |
+  На хосте VMware ESX создан новый локальный пользователь либо назначена роль/разрешение (permission).
+  Злоумышленники могут создать rogue-учётную запись для сохранения постоянного доступа к хосту
+  либо выдать избыточные привилегии существующей учётной записи (Persistence / Create Account)
+  (T1136.001).
+  Легитимные случаи: добавление нового администратора, плановое управление правами.
+  Шаги SOC-триажа:
+  - Определите через vmware.originator, кто создал учётную запись или разрешение
+  - Проверьте через message имя новой учётной записи и назначенную роль
+  - Проверьте соответствие изменения утверждённой IT-заявке/тикету
+  - Если изменение нелегитимно, удалите учётную запись и отзовите разрешение
+description_en: |
+  A new local user was created on the VMware ESX host or a role/permission (permission)
+  was assigned. Attackers may create a rogue account to maintain persistent access on the host
+  or grant excessive privileges to an existing account (Persistence / Create Account)
+  (T1136.001).
+  Legitimate cases: onboarding of a new administrator, planned permission management.
+  SOC triage steps:
+  - Determine who created the account or the permission via vmware.originator
+  - Check the new account name and the assigned role via message
+  - Check that the change matches an approved IT request/ticket
+  - If illegitimate, delete the account and revoke the permission
 type: esql
 params: '{}'
 schedule_interval: 5m

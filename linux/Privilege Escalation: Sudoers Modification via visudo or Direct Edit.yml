@@ -1,11 +1,22 @@
 rule_id: d43eb4c0-479d-444b-957f-12f70302150c
-name: "Privilege Escalation: Sudoers Modification via visudo or Direct Edit"
-description: |
+name_uz: "Privilege Escalation: visudo yoki to'g'ridan-to'g'ri tahrir orqali sudoers o'zgartirilishi"
+name_ru: "Privilege Escalation: изменение sudoers через visudo или прямое редактирование"
+name_en: "Privilege Escalation: Sudoers Modification via visudo or Direct Edit"
+description_uz: |
   Ushbu qoida `/etc/sudoers` fayli yoki `/etc/sudoers.d/` direktoriyasidagi
   fayllarga visudo, editor yoki boshqa process orqali o‘zgartirish kiritish
   holatlarini aniqlaydi. Bu foydalanuvchiga sudo huquqlarini berish yoki
   privilege escalation uchun ishlatilishi mumkin.
-
+description_ru: |
+  Данное правило выявляет внесение изменений через visudo, редактор или другой
+  процесс в файл `/etc/sudoers` либо в файлы каталога `/etc/sudoers.d/`.
+  Это может использоваться для предоставления пользователю прав sudo или для
+  повышения привилегий.
+description_en: |
+  This rule detects modifications made via visudo, an editor or another process
+  to the `/etc/sudoers` file or to files in the `/etc/sudoers.d/` directory.
+  This may be used to grant a user sudo privileges or for privilege
+  escalation.
 type: esql
 params: "{}"
 schedule_interval: 10m

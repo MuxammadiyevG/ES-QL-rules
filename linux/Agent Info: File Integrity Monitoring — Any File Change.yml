@@ -1,8 +1,16 @@
 rule_id: 9cf6f6fb-e9d6-4e2e-b224-e9a1b45a4937
-name: "Agent Info: File Integrity Monitoring — Any File Change"
-description: |
+name_uz: "Agent Info: Fayl yaxlitligi monitoringi — har qanday fayl o'zgarishi"
+name_ru: "Agent Info: Мониторинг целостности файлов — любое изменение файла"
+name_en: "Agent Info: File Integrity Monitoring — Any File Change"
+description_uz: |
   FIM moduli tomonidan aniqlangan barcha fayl o'zgarishlarini qayd etadi.
   Tizimda qaysi fayllar o'zgarayotganini ko'rish va baseline yaratish uchun ishlatiladi.
+description_ru: |
+  Фиксирует все изменения файлов, обнаруженные модулем FIM.
+  Используется для наблюдения за тем, какие файлы изменяются в системе, и для создания baseline.
+description_en: |
+  Records all file changes detected by the FIM module.
+  Used to see which files are changing on the system and to build a baseline.
 type: esql
 params: '{}'
 schedule_interval: 5m

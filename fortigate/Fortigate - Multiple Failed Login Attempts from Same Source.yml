@@ -1,6 +1,8 @@
 rule_id: 18973ee0-d386-4900-9c51-345423995bd4
-name: Fortigate - Multiple Failed Login Attempts from Same Source
-description: |
+name_uz: "Fortigate - Bir manbadan ko'p marta muvaffaqiyatsiz login urinishlari"
+name_ru: "Fortigate - Множественные неудачные попытки входа из одного источника"
+name_en: "Fortigate - Multiple Failed Login Attempts from Same Source"
+description_uz: |
   Ushbu qoida Fortigate firewall'da bir xil manbadan ko'p marta muvaffaqiyatsiz login urinishlarini aniqlaydi.
   Bu brute force hujum belgisi bo'lishi mumkin (MITRE ATT&CK T1110).
   Qonuniy holatlar: parol unutish, autentifikatsiya xatolari.
@@ -10,6 +12,26 @@ description: |
   - Geo-location va IP reputation tekshiring
   - Tashqi yoki ichki manba ekanligini aniqlang
   - Muvaffaqiyatli login bo'lganmi yo'qmi tekshiring
+description_ru: |
+  Данное правило выявляет многократные неудачные попытки входа на Fortigate firewall из одного и того же источника.
+  Это может быть признаком атаки перебора паролей (brute force) (MITRE ATT&CK T1110).
+  Легитимные случаи: забытый пароль, ошибки аутентификации.
+  Этапы SOC-триажа:
+  - Проверьте IP-адрес источника и имя пользователя
+  - Проанализируйте временной интервал между попытками входа
+  - Проверьте geo-location и IP reputation
+  - Определите, является ли источник внешним или внутренним
+  - Проверьте, был ли успешный вход или нет
+description_en: |
+  This rule detects repeated failed login attempts on a Fortigate firewall from the same source.
+  This may be a sign of a brute force attack (MITRE ATT&CK T1110).
+  Legitimate cases: forgotten password, authentication errors.
+  SOC triage steps:
+  - Check the source IP address and the user name
+  - Analyze the time interval between login attempts
+  - Check geo-location and IP reputation
+  - Determine whether the source is external or internal
+  - Check whether a successful login occurred or not
 type: esql
 params: '{}'
 schedule_interval: 10m

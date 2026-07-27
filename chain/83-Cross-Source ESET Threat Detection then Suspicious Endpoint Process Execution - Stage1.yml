@@ -1,10 +1,22 @@
 rule_id: 4622144c-dfaf-4c0b-804a-8da6651c5d82
-name: "Chain: Cross-Source: ESET Threat Detection then Suspicious Endpoint Process Execution — Stage 1: ESET Malware/Threat Detection"
-description: |
+name_uz: "Zanjir: Cross-Source: ESET tahdid aniqlanishi, so'ng shubhali endpoint jarayoni ishga tushishi — 1-bosqich: ESET Malware/Threat Detection"
+name_ru: "Цепочка: Cross-Source: обнаружение угрозы ESET, затем подозрительный запуск процесса на endpoint — Этап 1: обнаружение вредоносного ПО/угрозы ESET"
+name_en: "Chain: Cross-Source: ESET Threat Detection then Suspicious Endpoint Process Execution — Stage 1: ESET Malware/Threat Detection"
+description_uz: |
   ESET Malware/Threat Detection (standalone).
   IZOH: avval bu cross-source zanjirning 1-bosqichi edi, lekin 2-bosqich (endpoint process, R84) decouple qilindi —
   ESET monitoring hostlari Windows/auditd hostlaridan ajralgan, shuning uchun cross-source korrelyatsiya mumkin emas edi.
   Endi mustaqil ESET threat detektori (R28 bilan o'xshash — kerak bo'lsa bittasini o'chirish mumkin).
+description_ru: |
+  ESET Malware/Threat Detection (standalone).
+  ПРИМЕЧАНИЕ: раньше это был Этап 1 cross-source цепочки, но Этап 2 (endpoint-процесс, R84) был отделён —
+  хосты мониторинга ESET отделены от хостов Windows/auditd, поэтому cross-source корреляция была невозможна.
+  Теперь это самостоятельный детектор угроз ESET (похож на R28 — при необходимости один из них можно отключить).
+description_en: |
+  ESET Malware/Threat Detection (standalone).
+  NOTE: this used to be Stage 1 of a cross-source chain, but Stage 2 (endpoint process, R84) was decoupled —
+  the ESET monitoring hosts are separate from the Windows/auditd hosts, so cross-source correlation was not possible.
+  Now it is a standalone ESET threat detector (similar to R28 — one of them can be disabled if needed).
 type: esql
 enabled: true
 params: "{}"

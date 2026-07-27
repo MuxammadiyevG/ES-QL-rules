@@ -1,6 +1,8 @@
 rule_id: f4fdf515-3f13-49e7-a886-1d35f6ab3901
-name: FortiGate - Security Profile Disabled (AV/IPS/WebFilter)
-description: |
+name_uz: "FortiGate - Xavfsizlik profili o'chirildi (AV/IPS/WebFilter)"
+name_ru: "FortiGate - Отключён профиль безопасности (AV/IPS/WebFilter)"
+name_en: "FortiGate - Security Profile Disabled (AV/IPS/WebFilter)"
+description_uz: |
   Ushbu qoida FortiGate qurilmalarida antivirus, IPS, web filter yoki application control
   xavfsizlik profillarini o'chirib qo'yuvchi konfiguratsiya o'zgarishlarini aniqlaydi.
   Hujumchilar himoya mexanizmlarini chetlab o'tish (Defense Evasion) maqsadida bu profillarni
@@ -12,6 +14,30 @@ description: |
   - Qaysi profil (`cfgpath`) o'chirilganini `message` maydonidan tekshiring.
   - O'zgarish tasdiqlangan Change Management bileti bilan mos kelishini tekshiring.
   - Noqonuniy bo'lsa, profilni qayta yoqing (rollback) va admin akkauntini tekshiring.
+description_ru: |
+  Данное правило выявляет изменения конфигурации, отключающие профили безопасности antivirus, IPS, web filter
+  или application control на устройствах FortiGate.
+  Атакующие могут отключать эти профили с целью обхода механизмов защиты (Defense Evasion)
+  (T1562.001).
+  Легитимные случаи: плановое обслуживание, временное отключение в ходе troubleshooting.
+
+  Этапы SOC-триажа:
+  - Определите администратора (`user.name`), внёсшего изменение, и IP источника (`source.ip`).
+  - Проверьте в поле `message`, какой профиль (`cfgpath`) был отключён.
+  - Проверьте, соответствует ли изменение утверждённому тикету Change Management.
+  - Если действие нелегитимно, включите профиль обратно (rollback) и проверьте учётную запись администратора.
+description_en: |
+  This rule detects configuration changes that disable antivirus, IPS, web filter or application control
+  security profiles on FortiGate devices.
+  Attackers may disable these profiles in order to bypass protection mechanisms (Defense Evasion)
+  (T1562.001).
+  Legitimate cases: scheduled maintenance, temporary disabling during troubleshooting.
+
+  SOC triage steps:
+  - Identify the administrator (`user.name`) who made the change and the source IP (`source.ip`).
+  - Check the `message` field for which profile (`cfgpath`) was disabled.
+  - Check whether the change matches an approved Change Management ticket.
+  - If illegitimate, re-enable the profile (rollback) and review the administrator account.
 type: esql
 params: '{}'
 schedule_interval: 10m

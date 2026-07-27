@@ -1,6 +1,30 @@
 rule_id: 5616866b-2f81-49a7-80f9-b3abbd71ffe5
-name: "PCI DSS 1.3.5 - Unauthorized Outbound Traffic from CDE (Palo Alto)"
-description: |
+name_uz: "PCI DSS 1.3.5 - CDE'dan ruxsatsiz chiquvchi trafik (Palo Alto)"
+name_ru: "PCI DSS 1.3.5 - несанкционированный исходящий трафик из CDE (Palo Alto)"
+name_en: "PCI DSS 1.3.5 - Unauthorized Outbound Traffic from CDE (Palo Alto)"
+description_uz: |
+  Karta egasi ma'lumotlari muhitidan (CDE) Internetga yo'nalgan ruxsatsiz chiquvchi trafikni aniqlaydi,
+  bu PCI DSS 1.3.5 talabini buzadi.
+  CDE tarmoq segmentlaridan chiquvchi trafik bo'yicha Palo Alto firewall deny/drop harakatlarini kuzatadi.
+  Rad etilgan chiquvchi trafikning katta hajmi malware C2, data exfiltration urinishlaridan
+  yoki tashqi endpoint'larga ulanmoqchi bo'lgan noto'g'ri sozlangan ilovadan darak berishi mumkin.
+  Trigger: 5 daqiqa ichida bitta CDE hostidan >10 ta alohida rad etilgan chiquvchi ulanish.
+  False positive: kategoriyalanmagan URL'larga murojaat qiladigan yangi ilova deploy'lari, noto'g'ri sozlangan proxy'lar.
+  Triage: maqsad IP/domenlarni aniqlang, manba host buzilganmi tekshiring,
+  tasdiqlangan ilovalar aloqa matritsasi bilan solishtiring.
+  ESLATMA: source.ip CIDR diapazonlarini o'zingizning haqiqiy CDE tarmoq segmentlaringizga moslang.
+description_ru: |
+  Обнаруживает несанкционированный исходящий трафик из среды данных держателей карт (CDE)
+  в Интернет, нарушающий требование PCI DSS 1.3.5.
+  Отслеживает действия deny/drop межсетевого экрана Palo Alto для исходящего трафика из сегментов сети CDE.
+  Большой объём запрещённого исходящего трафика может указывать на malware C2, попытки data exfiltration
+  или на некорректно настроенное приложение, пытающееся достучаться до внешних endpoint.
+  Trigger: >10 различных запрещённых исходящих соединений с одного хоста CDE за 5 минут.
+  False positives: развёртывания новых приложений, обращающихся к некатегоризированным URL, некорректно настроенные прокси.
+  Triage: определите IP/домены назначения, проверьте, не скомпрометирован ли исходный хост,
+  сверьтесь с утверждённой матрицей коммуникаций приложений.
+  ПРИМЕЧАНИЕ: обновите диапазоны CIDR в source.ip в соответствии с вашими реальными сегментами сети CDE.
+description_en: |
   Detects unauthorized outbound traffic originating from the cardholder data environment (CDE)
   to the Internet, violating PCI DSS Requirement 1.3.5.
   Monitors Palo Alto firewall deny/drop actions on outbound traffic from CDE network segments.

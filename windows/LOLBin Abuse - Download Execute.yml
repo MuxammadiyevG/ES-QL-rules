@@ -1,11 +1,25 @@
 rule_id: f18f0132-cd56-4c15-95d2-93d00d48e030
-name: LOLBin Abuse - Download / Proxy Execution
-description: |
+name_uz: "LOLBin suiiste'moli - Download / Proxy Execution"
+name_ru: "Злоупотребление LOLBin - Download / Proxy Execution"
+name_en: "LOLBin Abuse - Download / Proxy Execution"
+description_uz: |
   Ushbu qoida tizim ikkilik fayllarini (LOLBins) suiiste'mol qilishni aniqlaydi: certutil,
   bitsadmin, mshta, regsvr32, rundll32, installutil, msbuild — fayl yuklash yoki kod ijro
   etish uchun (T1218/T1105). Sysmon EventID 1 (CommandLine).
   SOC triage:
   - `command_lines` da URL/decode/scrobj bormi? `parent` kim ishga tushirgan?
+description_ru: |
+  Это правило обнаруживает злоупотребление системными бинарными файлами (LOLBins): certutil,
+  bitsadmin, mshta, regsvr32, rundll32, installutil, msbuild — для загрузки файлов или выполнения
+  кода (T1218/T1105). Sysmon EventID 1 (CommandLine).
+  SOC triage:
+  - Есть ли в `command_lines` URL/decode/scrobj? Кто запустил, `parent`?
+description_en: |
+  This rule detects abuse of system binaries (LOLBins): certutil,
+  bitsadmin, mshta, regsvr32, rundll32, installutil, msbuild — to download files or execute
+  code (T1218/T1105). Sysmon EventID 1 (CommandLine).
+  SOC triage:
+  - Is there a URL/decode/scrobj in `command_lines`? Who launched it, the `parent`?
 type: esql
 params: '{}'
 schedule_interval: 10m

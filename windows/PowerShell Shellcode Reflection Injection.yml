@@ -1,11 +1,25 @@
 rule_id: c91d76bd-0be6-4db3-bc71-82a726c1bd70
-name: PowerShell Shellcode / Reflection / Injection
-description: |
+name_uz: "PowerShell Shellcode / Reflection / Injection"
+name_ru: "PowerShell Shellcode / Reflection / Injection"
+name_en: "PowerShell Shellcode / Reflection / Injection"
+description_uz: |
   Ushbu qoida PowerShell orqali xotiraga kod yuklash / process injection belgilarini aniqlaydi:
   `VirtualAlloc`, `CreateThread`, `CreateRemoteThread`, `WriteProcessMemory`,
   `[Reflection.Assembly]::Load`, `Marshal.Copy`, `GetProcAddress` + kernel32/ntdll API'lari.
   SOC triage:
   - `sample_script` da in-memory injection bormi? Host'ni izolyatsiya qiling.
+description_ru: |
+  Это правило обнаруживает признаки загрузки кода в память / process injection через PowerShell:
+  `VirtualAlloc`, `CreateThread`, `CreateRemoteThread`, `WriteProcessMemory`,
+  `[Reflection.Assembly]::Load`, `Marshal.Copy`, `GetProcAddress` + API kernel32/ntdll.
+  SOC triage:
+  - Есть ли в `sample_script` in-memory injection? Изолируйте хост.
+description_en: |
+  This rule detects signs of loading code into memory / process injection via PowerShell:
+  `VirtualAlloc`, `CreateThread`, `CreateRemoteThread`, `WriteProcessMemory`,
+  `[Reflection.Assembly]::Load`, `Marshal.Copy`, `GetProcAddress` + kernel32/ntdll APIs.
+  SOC triage:
+  - Is there in-memory injection in `sample_script`? Isolate the host.
 type: esql
 params: '{}'
 schedule_interval: 10m

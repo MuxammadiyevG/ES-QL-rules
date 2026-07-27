@@ -1,9 +1,19 @@
 rule_id: 652e68d7-02b3-418d-9194-39be0f47e7ef
-name: "Windows File Server: File Read via Detailed File Share"
-description: |
+name_uz: "Windows File Server: Detailed File Share orqali Fayl O'qilishi"
+name_ru: "Windows File Server: чтение файла через Detailed File Share"
+name_en: "Windows File Server: File Read via Detailed File Share"
+description_uz: |
   Ushbu qoida Windows File Server SMB share ichida fayl yoki papka o‘qilganini
   aniqlaydi. 5145 hodisasida `ReadData`, `ReadAttributes` yoki `ReadEA`
   accesslari fayl o‘qish yoki papka list qilish holatlarini bildiradi.
+description_ru: |
+  Это правило выявляет чтение файла или папки внутри SMB-шары Windows File Server.
+  В событии 5145 доступы `ReadData`, `ReadAttributes` или `ReadEA`
+  означают чтение файла или получение списка папки.
+description_en: |
+  This rule detects that a file or folder inside a Windows File Server SMB share
+  has been read. In the 5145 event, the `ReadData`, `ReadAttributes`, or `ReadEA`
+  accesses indicate file read or folder listing operations.
 type: esql
 params: "{}"
 schedule_interval: 5m

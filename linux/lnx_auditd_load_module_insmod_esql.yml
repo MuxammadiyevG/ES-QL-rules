@@ -1,6 +1,16 @@
 rule_id: 0cf6ec18-866e-4a02-bf7d-003517edb50f
-name: "Kernel Module Loading (Insmod) Detection"
-description: |
+name_uz: "Kernel modul yuklanishini (insmod) aniqlash"
+name_ru: "Обнаружение загрузки модуля ядра (insmod)"
+name_en: "Kernel Module Loading (Insmod) Detection"
+description_uz: |
+  insmod buyrug'i bilan kernel modullari yuklanishini aniqlaydi.
+  Tajovuzkorlar mustahkamlanish (persistence) yoki imtiyozlarni oshirish uchun zararli kernel modullarini yuklashi mumkin.
+  kmod/insmod ning ishga tushirilishini kuzatadi.
+description_ru: |
+  Обнаруживает загрузку модулей ядра командой insmod.
+  Злоумышленники могут загружать вредоносные модули ядра для закрепления или повышения привилегий.
+  Отслеживает запуск kmod/insmod.
+description_en: |
   Detects loading of kernel modules with insmod command.
   Adversaries may load malicious kernel modules for persistence or privilege escalation.
   Monitors execution of kmod/insmod.

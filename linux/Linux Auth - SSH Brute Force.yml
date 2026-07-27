@@ -1,6 +1,8 @@
 rule_id: 15b68698-b2b4-4435-a8fc-3448eb9e3022
-name: Linux Auth - SSH Brute Force
-description: |
+name_uz: "Linux Auth - SSH brute force"
+name_ru: "Linux Auth - SSH brute force"
+name_en: "Linux Auth - SSH Brute Force"
+description_uz: |
   Ushbu qoida Linux auth.log (logs-linux.auth-*) dagi sshd hodisalarini kuzatib, bitta
   `source.ip` dan qisqa vaqt ichida ko'p sonli muvaffaqiyatsiz SSH kirish urinishlarini
   aniqlaydi. Bu brute-force yoki password spray hujumi (T1110) belgisi. Muvaffaqiyatsiz
@@ -11,6 +13,28 @@ description: |
   - `success_count > 0` bo'lsa — kirish muvaffaqiyatli bo'lgan, darhol escalation qiling.
   - `source.geo` orqali noodatiy mamlakatni tekshiring.
   - Noqonuniy faoliyat tasdiqlansa: IP ni bloklang, parollarni rotatsiya qiling.
+description_ru: |
+  Данное правило отслеживает события sshd в Linux auth.log (logs-linux.auth-*) и выявляет
+  большое число неуспешных попыток входа по SSH с одного `source.ip` за короткое время.
+  Это признак атаки перебора паролей (brute force) или password spray (T1110). Успешный
+  вход после неуспешных попыток указывает на возможную компрометацию.
+  Легитимные случаи: неверно настроенный клиент, служба, повторяющая попытки с expired credential.
+  Шаги SOC-триажа:
+  - Определите источник атаки `source.ip` и целевые `actor`.
+  - Если `success_count > 0` — вход был успешным, немедленно выполните escalation.
+  - Проверьте нетипичную страну через `source.geo`.
+  - При подтверждении нелегитимной активности: заблокируйте IP, выполните ротацию паролей.
+description_en: |
+  This rule monitors sshd events in the Linux auth.log (logs-linux.auth-*) and detects a
+  large number of failed SSH login attempts from a single `source.ip` within a short
+  period of time. This is a sign of a brute-force or password spray attack (T1110). A
+  successful login after failed attempts indicates a possible compromise.
+  Legitimate cases: a misconfigured client, a service retrying with an expired credential.
+  SOC triage steps:
+  - Identify the attack source `source.ip` and the targeted `actor`s.
+  - If `success_count > 0` — the login succeeded, escalate immediately.
+  - Check for an unusual country via `source.geo`.
+  - If malicious activity is confirmed: block the IP, rotate the passwords.
 type: esql
 params: '{}'
 schedule_interval: 10m

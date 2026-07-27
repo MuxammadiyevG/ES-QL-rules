@@ -1,6 +1,8 @@
 rule_id: 7ec0243e-1dc3-42b1-a1b0-5f4edc45f6ea
-name: "PAN-OS: Multiple Failed Administrator Logins"
-description: |
+name_uz: "PAN-OS: administratorning ko'p sonli muvaffaqiyatsiz login urinishlari"
+name_ru: "PAN-OS: множественные неудачные входы администратора"
+name_en: "PAN-OS: Multiple Failed Administrator Logins"
+description_uz: |
   Ushbu qoida Palo Alto NGFW boshqaruv interfeysiga (web/CLI) administrator
   hisoblari orqali qisqa vaqt ichida ko'p sonli muvaffaqiyatsiz login
   urinishlarini aniqlaydi (panw.system / auth, event.outcome failure).
@@ -13,6 +15,32 @@ description: |
   - Urinishlardan keyin muvaffaqiyatli login bo'lganmi (parol topilganmi)?
   - Mgmt interfeysga kirish faqat ruxsat etilgan IP'lardan ekanligini tasdiqlang.
   - Kerak bo'lsa: manba IP'ni bloklang, admin parolni majburiy almashtiring.
+description_ru: |
+  Это правило выявляет множественные неудачные попытки входа за короткое время
+  под учётными записями администраторов в интерфейс управления Palo Alto NGFW
+  (web/CLI) (panw.system / auth, event.outcome failure).
+  Это может быть признаком перебора паролей (brute force) или подбора учётных данных
+  к mgmt межсетевого экрана (T1110 - Brute Force).
+  Легитимные случаи: администратор забыл пароль, устаревший сохранённый пароль, ошибка автоматизации.
+  Этапы SOC-триажа:
+  - Определите, под какой учётной записью администратора и с какого IP-источника были попытки.
+  - Проверьте, внутренний или внешний IP-источник — внешний IP означает высокий риск.
+  - Был ли успешный вход после попыток (был ли подобран пароль)?
+  - Подтвердите, что доступ к mgmt-интерфейсу возможен только с разрешённых IP.
+  - При необходимости: заблокируйте IP-источник, принудительно смените пароль администратора.
+description_en: |
+  This rule detects multiple failed login attempts in a short time
+  through administrator accounts to the Palo Alto NGFW management interface
+  (web/CLI) (panw.system / auth, event.outcome failure).
+  This may be a sign of a brute-force or credential guessing attack
+  against the firewall mgmt (T1110 - Brute Force).
+  Legitimate cases: admin forgot the password, stale saved password, automation error.
+  SOC triage steps:
+  - Identify which admin account and which source IP the attempts came from.
+  - Check whether the source IP is internal or external — an external IP is high risk.
+  - Was there a successful login after the attempts (was the password found)?
+  - Confirm that access to the mgmt interface is only from allowed IPs.
+  - If needed: block the source IP, force an admin password change.
 type: esql
 params: '{}'
 schedule_interval: 5m

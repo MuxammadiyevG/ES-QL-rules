@@ -1,6 +1,8 @@
 rule_id: 5420dc08-dfb1-4382-a10a-31422925e7f3
-name: "PAN-OS: Medium-Risk URL Threat Detection - High Volume"
-description: |
+name_uz: "PAN-OS: o'rtacha xavfli URL tahdidini aniqlash - yuqori hajm"
+name_ru: "PAN-OS: обнаружение URL-угроз среднего риска - большой объём"
+name_en: "PAN-OS: Medium-Risk URL Threat Detection - High Volume"
+description_uz: |
   Ushbu qoida Palo Alto Networks firewall tomonidan aniqlangan "medium-risk" tahdidlarning yuqori hajmda sodir bo'lishini kuzatadi.
   Bu holat C2 (Command & Control) aloqasi, data exfiltration yoki malware yuklab olish urinishlarini ko'rsatishi mumkin.
   App teglari: "used-by-malware", "able-to-transfer-file", "has-known-vulnerability", "tunnel-other-application".
@@ -11,6 +13,28 @@ description: |
   - SSL trafigi ichida anomal portlar yoki sertifikat muammolari borligini tekshiring.
   - Firewall "alert" action qo'llagan — block qilish kerakligini baholang.
   - Noqonuniy bo'lsa: IP'ni bloklang, DMZ hostini izolyatsiya qiling, incident oching.
+description_ru: |
+  Это правило отслеживает большой объём угроз "medium-risk", обнаруженных межсетевым экраном Palo Alto Networks.
+  Это может указывать на связь C2 (Command & Control), data exfiltration или попытки загрузки malware.
+  Теги App: "used-by-malware", "able-to-transfer-file", "has-known-vulnerability", "tunnel-other-application".
+  Легитимные случаи: массовые сервисы CDN, обновления антивируса, трафик корпоративного прокси.
+  Этапы SOC-триажа:
+  - Проверьте IP-адрес 194.93.25.227 по threat intelligence через VirusTotal/Shodan.
+  - Определите источник 10.25.255.6 в DMZ (сервер или прокси?).
+  - Проверьте наличие аномальных портов или проблем с сертификатами в SSL-трафике.
+  - Межсетевой экран применил action "alert" — оцените необходимость блокировки.
+  - Если нелегитимно: заблокируйте IP, изолируйте хост в DMZ, откройте инцидент.
+description_en: |
+  This rule monitors a high volume of "medium-risk" threats detected by the Palo Alto Networks firewall.
+  This may indicate C2 (Command & Control) communication, data exfiltration or malware download attempts.
+  App tags: "used-by-malware", "able-to-transfer-file", "has-known-vulnerability", "tunnel-other-application".
+  Legitimate cases: public CDN services, antivirus updates, corporate proxy traffic.
+  SOC triage steps:
+  - Check threat intelligence for IP address 194.93.25.227 via VirusTotal/Shodan.
+  - Identify the source 10.25.255.6 in the DMZ (server or proxy?).
+  - Check for anomalous ports or certificate issues inside the SSL traffic.
+  - The firewall applied the "alert" action — assess whether blocking is needed.
+  - If illegitimate: block the IP, isolate the DMZ host, open an incident.
 type: esql
 params: '{}'
 schedule_interval: 5m

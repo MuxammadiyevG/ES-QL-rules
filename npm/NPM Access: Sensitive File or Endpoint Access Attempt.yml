@@ -1,6 +1,8 @@
 rule_id: d523f444-9adb-4b27-9427-a86b776243ff
-name: "NPM Access: Sensitive File or Endpoint Access Attempt"
-description: |
+name_uz: "NPM Access: Maxfiy Fayl yoki Endpointga Kirish Urinishi"
+name_ru: "NPM Access: попытка доступа к конфиденциальному файлу или endpoint"
+name_en: "NPM Access: Sensitive File or Endpoint Access Attempt"
+description_uz: |
   Ushbu qoida NPM orqali himoyalangan yoki maxfiy fayl va endpoint larga
   kirish urinishlarini aniqlaydi. .env, .git, wp-admin, phpmyadmin,
   backup fayllar, konfiguratsiya fayllar kabi patternlar.
@@ -10,6 +12,26 @@ description: |
   - event.original — to'liq URL ni saqlang.
   - Backend serverda shu fayllar ochiq emasligini tekshiring.
   - WAF va nginx deny rule qo'shing.
+description_ru: |
+  Данное правило выявляет попытки доступа через NPM к защищённым или
+  конфиденциальным файлам и endpoint. Паттерны вида .env, .git, wp-admin, phpmyadmin,
+  файлы резервных копий, файлы конфигурации.
+  Легитимные случаи: отсутствуют, эти паттерны всегда подозрительны.
+  Шаги SOC-триажа:
+  - Response status — если 200, это критично.
+  - event.original — сохраните полный URL.
+  - Проверьте, что эти файлы не открыты на backend-сервере.
+  - Добавьте правила deny в WAF и nginx.
+description_en: |
+  This rule detects attempts to access protected or sensitive files and endpoints
+  through NPM. Patterns such as .env, .git, wp-admin, phpmyadmin,
+  backup files, configuration files.
+  Legitimate cases: none, these patterns are always suspicious.
+  SOC triage steps:
+  - Response status — critical if 200.
+  - event.original — preserve the full URL.
+  - Verify that these files are not exposed on the backend server.
+  - Add WAF and nginx deny rules.
 type: esql
 params: '{}'
 schedule_interval: 5m

@@ -1,6 +1,8 @@
 rule_id: fd9b26e9-c1d0-482d-b7ca-3089505f1efd
-name: "Agent Privilege Escalation: Group Identity Changed via newgrp"
-description: |
+name_uz: "Agent Privilege Escalation: newgrp orqali guruh identifikatori o'zgartirildi"
+name_ru: "Agent Privilege Escalation: Групповая идентичность изменена через newgrp"
+name_en: "Agent Privilege Escalation: Group Identity Changed via newgrp"
+description_uz: |
   Ushbu qoida Privilege Escalation texnikasiga bog'liq bo'lib, foydalanuvchining aktiv guruh identifikatorini o'zgartirish hodisalarini aniqlaydi.
   Hujumchi newgrp buyrug'i orqali docker, sudo yoki wheel kabi imtiyozli guruhlarga kirish huquqini qo'lga kiritmoqchi bo'lishi mumkin.
   Qonuniy holatlar: developer workflow (docker guruhiga kirish), tizim administratori ish jarayonlari.
@@ -10,6 +12,26 @@ description: |
   - O'zgarish sodir bo'lgan terminal (`auditd.data.terminal`) va session (`auditd.session`) ni aniqlang.
   - Agar yangi guruh docker, sudo yoki wheel bo'lsa — yuqori prioritet bilan tekshiring.
   - Noqonuniy bo'lsa: sessiyani tugatib, foydalanuvchi guruh membershipsni audit qiling.
+description_ru: |
+  Это правило связано с техникой Privilege Escalation и выявляет события изменения активного группового идентификатора пользователя.
+  С помощью команды newgrp злоумышленник может попытаться получить доступ к привилегированным группам, таким как docker, sudo или wheel.
+  Легитимные случаи: developer workflow (вход в группу docker), рабочие процессы системного администратора.
+  Шаги SOC-триажа:
+  - Сравните `auditd.summary.actor.primary` (исходный пользователь) и `user.name` (новая идентичность).
+  - Проверьте, является ли новая группа (`user.new-gid.name`) привилегированной (docker, sudo, wheel, root).
+  - Определите терминал (`auditd.data.terminal`) и сессию (`auditd.session`), в которых произошло изменение.
+  - Если новая группа — docker, sudo или wheel — проверяйте с высоким приоритетом.
+  - Если нелегитимно: завершите сессию и проведите аудит членства пользователя в группах.
+description_en: |
+  This rule is related to the Privilege Escalation technique and detects events where a user's active group identifier is changed.
+  Using the newgrp command, an attacker may try to gain access to privileged groups such as docker, sudo or wheel.
+  Legitimate cases: developer workflow (joining the docker group), system administrator work processes.
+  SOC triage steps:
+  - Compare `auditd.summary.actor.primary` (the original user) and `user.name` (the new identity).
+  - Check whether the new group (`user.new-gid.name`) is privileged (docker, sudo, wheel, root).
+  - Identify the terminal (`auditd.data.terminal`) and session (`auditd.session`) in which the change occurred.
+  - If the new group is docker, sudo or wheel — investigate with high priority.
+  - If illegitimate: terminate the session and audit the user's group memberships.
 type: esql
 params: '{}'
 schedule_interval: 5m

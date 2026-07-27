@@ -1,9 +1,19 @@
 rule_id: 4e99a134-bf24-470d-905a-f07032e07bcc
-name: "Chain: Windows Lateral Movement via Service — Stage 3: Process Execution via Installed Service"
-description: |
+name_uz: "Zanjir: Windows Lateral Movement via Service — 3-bosqich: O'rnatilgan xizmat orqali jarayon bajarilishi"
+name_ru: "Цепочка: Windows Lateral Movement via Service — Этап 3: Запуск процесса через установленную службу"
+name_en: "Chain: Windows Lateral Movement via Service — Stage 3: Process Execution via Installed Service"
+description_uz: |
   Windows Lateral Movement via Service zanjiri — 3-bosqich (3 dan).
   Process Execution via Installed Service.
   Oldingi bosqichga (stage 2) bog'langan.
+description_ru: |
+  Цепочка Windows Lateral Movement via Service — этап 3 (из 3).
+  Запуск процесса через установленную службу.
+  Связано с предыдущим этапом (stage 2).
+description_en: |
+  Windows Lateral Movement via Service chain — stage 3 (of 3).
+  Process Execution via Installed Service.
+  Linked to the previous stage (stage 2).
 type: esql
 enabled: true
 params: "{}"

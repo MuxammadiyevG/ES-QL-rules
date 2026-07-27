@@ -1,9 +1,19 @@
 rule_id: cc65a0a9-d67a-4a4c-bc34-edf5cbff51e0
-name: "Chain: Windows Kerberos TGT Abuse — Stage 1: Kerberos TGT Enumeration Burst"
-description: |
+name_uz: "Zanjir: Windows Kerberos TGT suiiste'moli — 1-bosqich: Kerberos TGT enumeratsiya seriyasi"
+name_ru: "Цепочка: злоупотребление Kerberos TGT в Windows — Этап 1: всплеск перечисления Kerberos TGT"
+name_en: "Chain: Windows Kerberos TGT Abuse — Stage 1: Kerberos TGT Enumeration Burst"
+description_uz: |
   Windows Kerberos TGT Abuse zanjiri — 1-bosqich (2 dan).
   Kerberos TGT Enumeration Burst — kuchsiz shifrlash (RC4/DES) bilan.
   FP kamaytirish: normal AD AES (0x12) ishlatadi; faqat downgrade (RC4 0x17 / DES) TGT so'rovlari olinadi, bu kerberoast/overpass-the-hash signali.
+description_ru: |
+  Цепочка злоупотребления Kerberos TGT в Windows — Этап 1 (из 2).
+  Всплеск перечисления Kerberos TGT — со слабым шифрованием (RC4/DES).
+  Снижение FP: обычный AD использует AES (0x12); берутся только TGT-запросы с понижением шифрования (RC4 0x17 / DES), что является признаком kerberoast/overpass-the-hash.
+description_en: |
+  Windows Kerberos TGT Abuse chain — Stage 1 (of 2).
+  Kerberos TGT Enumeration Burst — with weak encryption (RC4/DES).
+  FP reduction: normal AD uses AES (0x12); only downgraded (RC4 0x17 / DES) TGT requests are taken, which is a kerberoast/overpass-the-hash signal.
 type: esql
 enabled: true
 params: "{}"

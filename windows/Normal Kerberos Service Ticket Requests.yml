@@ -1,9 +1,19 @@
 rule_id: 026e78d3-5cfa-4d86-8a23-0b92cb3008d3
-name: Normal Kerberos Service Ticket Requests
-description: |
+name_uz: "Normal Kerberos service ticket so'rovlari"
+name_ru: "Нормальные запросы service ticket Kerberos"
+name_en: "Normal Kerberos Service Ticket Requests"
+description_uz: |
   Baseline/monitoring qoidasi: muvaffaqiyatli TGS (4769) so'rovlarini foydalanuvchi va
   servis bo'yicha yig'adi. Kerberoasting yoki anomal TGS xulqi uchun normal darajani
   belgilash maqsadida ishlatiladi (alert emas, kontekst).
+description_ru: |
+  Правило baseline/мониторинга: агрегирует успешные запросы TGS (4769) по пользователю и
+  сервису. Используется для определения нормального уровня при Kerberoasting или аномальном
+  поведении TGS (не алерт, контекст).
+description_en: |
+  Baseline/monitoring rule: aggregates successful TGS (4769) requests by user and
+  service. Used to establish the normal level for Kerberoasting or anomalous TGS
+  behaviour (not an alert, context).
 type: esql
 params: '{}'
 schedule_interval: 10m

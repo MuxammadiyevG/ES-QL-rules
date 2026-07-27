@@ -1,6 +1,8 @@
 rule_id: 44f53f18-11cb-47a9-9541-25dfce182ac6
-name: PostgreSQL - Database Authentication Success
-description: |
+name_uz: "PostgreSQL - Ma'lumotlar Bazasida Muvaffaqiyatli Autentifikatsiya"
+name_ru: "PostgreSQL - успешная аутентификация в базе данных"
+name_en: "PostgreSQL - Database Authentication Success"
+description_uz: |
   Ushbu qoida PostgreSQL da muvaffaqiyatli autentifikatsiya hodisalarini kuzatadi (Rule 50511).
   Muvaffaqiyatli kirish odatda qonuniy bo'lsa ham, noodatiy vaqt, IP yoki foydalanuvchidan
   kirish hisobni egallash (T1078) belgisi bo'lishi mumkin.
@@ -10,6 +12,26 @@ description: |
   - `source.ip` manzili va vaqtni tekshiring — noodatiy soatda kirish bormi.
   - GeoIP ma'lumotlarini tekshiring.
   - Ko'p muvaffaqiyatli kirish brute-force dan keyin bo'lishi mumkin.
+description_ru: |
+  Данное правило отслеживает события успешной аутентификации в PostgreSQL (Rule 50511).
+  Хотя успешный вход обычно легитимен, вход в необычное время, с необычного IP или
+  от необычного пользователя может быть признаком захвата учётной записи (T1078).
+  Легитимные случаи: входы обычных пользователей и сервисных учётных записей.
+  Шаги SOC-триажа:
+  - Проверьте `actor` (user.name) и `db.name`.
+  - Проверьте адрес `source.ip` и время — нет ли входа в необычный час.
+  - Проверьте данные GeoIP.
+  - Множество успешных входов может следовать за перебором паролей (brute force).
+description_en: |
+  This rule tracks successful authentication events in PostgreSQL (Rule 50511).
+  Although a successful login is usually legitimate, a login at an unusual time, from an unusual IP
+  or by an unusual user may be a sign of account takeover (T1078).
+  Legitimate cases: logins of ordinary users and service accounts.
+  SOC triage steps:
+  - Check `actor` (user.name) and `db.name`.
+  - Check the `source.ip` address and the time — is there a login at an unusual hour.
+  - Check the GeoIP data.
+  - Many successful logins may follow a brute-force attack.
 type: esql
 params: '{}'
 schedule_interval: 10m

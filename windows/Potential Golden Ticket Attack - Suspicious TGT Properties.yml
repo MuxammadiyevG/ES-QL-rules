@@ -1,6 +1,8 @@
 rule_id: c2207e8a-7c8c-431e-949d-5bd9f38d0320
-name: Potential Golden Ticket Attack - Suspicious TGT Properties
-description: |
+name_uz: "Ehtimoliy Golden Ticket hujumi - shubhali TGT xossalari"
+name_ru: "Возможная атака Golden Ticket - подозрительные свойства TGT"
+name_en: "Potential Golden Ticket Attack - Suspicious TGT Properties"
+description_uz: |
   Ushbu qoida soxta Kerberos ticket (Golden/Silver) belgilarini evristik tarzda aniqlaydi:
   zamonaviy AD'da deyarli uchramaydigan DES (0x1/0x3) shifrli ticketlar yoki AES o'rniga
   RC4 (0x17) bilan so'ralgan TGT (4768). Encryption downgrade ko'pincha mimikatz/forged
@@ -10,6 +12,26 @@ description: |
   - `enc_types` qaysi: DES (0x1/0x3) — deyarli har doim shubhali; RC4 — domen AES bo'lsa shubhali.
   - `users`/`services` va `src_ips` ni KDC normal xulqi bilan solishtiring.
   - Tasdiqlansa: krbtgt parolini IKKI marta rotatsiya qiling (Golden Ticket containment), Tier-0 IR.
+description_ru: |
+  Это правило эвристически обнаруживает признаки поддельных билетов Kerberos (Golden/Silver):
+  билеты с шифрованием DES (0x1/0x3), которое почти не встречается в современном AD, либо TGT
+  (4768), запрошенные с RC4 (0x17) вместо AES. Понижение уровня шифрования часто связано с
+  mimikatz/поддельными билетами.
+  Легитимные случаи: очень старые legacy-системы (DES/RC4) — ведите их отдельным списком.
+  SOC triage:
+  - Какие `enc_types`: DES (0x1/0x3) — почти всегда подозрительно; RC4 — подозрительно, если домен на AES.
+  - Сравните `users`/`services` и `src_ips` с обычным поведением KDC.
+  - При подтверждении: смените пароль krbtgt ДВА раза (Golden Ticket containment), Tier-0 IR.
+description_en: |
+  This rule heuristically detects signs of forged Kerberos tickets (Golden/Silver):
+  tickets with DES (0x1/0x3) encryption, almost never seen in modern AD, or TGTs
+  (4768) requested with RC4 (0x17) instead of AES. Encryption downgrade is often linked to
+  mimikatz/forged tickets.
+  Legitimate cases: very old legacy systems (DES/RC4) — keep a separate list of them.
+  SOC triage:
+  - Which `enc_types`: DES (0x1/0x3) — almost always suspicious; RC4 — suspicious if the domain is AES.
+  - Compare `users`/`services` and `src_ips` with normal KDC behaviour.
+  - If confirmed: rotate the krbtgt password TWICE (Golden Ticket containment), Tier-0 IR.
 type: esql
 params: '{}'
 schedule_interval: 10m

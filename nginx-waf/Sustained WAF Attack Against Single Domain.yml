@@ -1,16 +1,40 @@
 rule_id: 11b4e708-6e95-429a-9dd5-153d2094a16d
-name: Sustained WAF Attack Against Single Domain
-description: |
+name_uz: "Bitta domenga qarshi uzluksiz WAF hujumi"
+name_ru: "Продолжительная WAF-атака на один домен"
+name_en: "Sustained WAF Attack Against Single Domain"
+description_uz: |
   Bitta domen uzoq vaqt davomida uzluksiz WAF hujumlariga duchor bo'lmoqda.
   Bu maqsadli APT hujumi, raqobatchilar tomonidan uyushtirilgan sabotaj,
   yoki domenning ma'lum zaifligini exploitlashga qaratilgan persistent kampaniya bo'lishi mumkin.
-  Qisqa muddatli portlar emas, balki davomiy va tizimli hujum patterni xavfli hisoblanadi.
+  Qisqa muddatli portlashlar emas, balki davomiy va tizimli hujum patterni xavfli hisoblanadi.
   SOC triage bosqichlari:
   - `first_seen` va `last_seen` oralig'idagi hujum davomiyligini hisoblang.
   - Bir xil domenga qaratilgan turli `source.ip` manzillar botnet koordinatsiyasini ko'rsatadi.
   - Domenning backend serveri, ma'lumotlar bazasi va autentifikatsiya loglarini parallel tekshiring.
   - Hujum intensivligi (attacks_per_window) ortib borsa real-time eskalyatsiya qiling.
   - Domenga rate limiting yoki captcha qo'shish zarurligini baholang.
+description_ru: |
+  Один домен в течение длительного времени подвергается непрерывным атакам, фиксируемым WAF.
+  Это может быть целенаправленная APT-атака, саботаж, организованный конкурентами,
+  или persistent-кампания, направленная на эксплуатацию известной уязвимости домена.
+  Опасным считается не кратковременный всплеск, а продолжительный и системный паттерн атаки.
+  Этапы SOC-триажа:
+  - Рассчитайте длительность атаки между `first_seen` и `last_seen`.
+  - Разные адреса `source.ip`, направленные на один и тот же домен, указывают на координацию ботнета.
+  - Параллельно проверьте backend-сервер домена, базу данных и логи аутентификации.
+  - Если интенсивность атаки (attacks_per_window) растёт, эскалируйте в реальном времени.
+  - Оцените необходимость добавления rate limiting или captcha для домена.
+description_en: |
+  A single domain is being subjected to continuous WAF attacks over a long period.
+  This may be a targeted APT attack, sabotage organized by competitors,
+  or a persistent campaign aimed at exploiting a known vulnerability of the domain.
+  It is not short-lived bursts but a sustained and systematic attack pattern that is considered dangerous.
+  SOC triage steps:
+  - Calculate the attack duration between `first_seen` and `last_seen`.
+  - Different `source.ip` addresses aimed at the same domain indicate botnet coordination.
+  - Check the domain's backend server, database and authentication logs in parallel.
+  - If the attack intensity (attacks_per_window) is increasing, escalate in real time.
+  - Assess whether rate limiting or captcha needs to be added for the domain.
 type: esql
 params: '{}'
 schedule_interval: 10m

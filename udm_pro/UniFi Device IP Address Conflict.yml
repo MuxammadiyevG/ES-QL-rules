@@ -1,8 +1,16 @@
 rule_id: 789ab361-15b1-41ed-a1b8-43a1022171d1
-name: UniFi Device IP Address Conflict
-description: |
+name_uz: "UniFi qurilmasida IP manzil to'qnashuvi"
+name_ru: "Конфликт IP-адресов устройства UniFi"
+name_en: "UniFi Device IP Address Conflict"
+description_uz: |
   Ushbu qoida bir IP manzildan bir nechta qurilma foydalanayotganini aniqlaydi.
   Noto'g'ri static IP, DHCP xatosi, rogue device yoki ARP spoofing ehtimolini tekshiring.
+description_ru: |
+  Это правило обнаруживает использование одного IP-адреса несколькими устройствами.
+  Проверьте вероятность неверного static IP, ошибки DHCP, rogue device или ARP spoofing.
+description_en: |
+  This rule detects multiple devices using the same IP address.
+  Check for an incorrect static IP, a DHCP error, a rogue device or possible ARP spoofing.
 type: esql
 params: "{}"
 schedule_interval: 5m

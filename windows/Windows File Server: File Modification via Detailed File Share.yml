@@ -1,10 +1,22 @@
 rule_id: 06997501-d0bf-4814-b4eb-3f1eed0ace7a
-name: "Windows File Server: File Modification via Detailed File Share"
-description: |
+name_uz: "Windows File Server: Detailed File Share orqali Fayl O'zgartirilishi"
+name_ru: "Windows File Server: изменение файла через Detailed File Share"
+name_en: "Windows File Server: File Modification via Detailed File Share"
+description_uz: |
   Ushbu qoida Windows File Server SMB share ichidagi faylga o‘zgartirish
   kiritilganini aniqlaydi. `WriteData`, `AppendData`, `WriteEA` yoki
   `WriteAttributes` accesslari fayl kontenti yoki metadata o‘zgarganini
   ko‘rsatishi mumkin.
+description_ru: |
+  Это правило выявляет внесение изменений в файл внутри SMB-шары
+  Windows File Server. Доступы `WriteData`, `AppendData`, `WriteEA` или
+  `WriteAttributes` могут указывать на то, что содержимое файла или метаданные
+  изменились.
+description_en: |
+  This rule detects that a modification has been made to a file inside a
+  Windows File Server SMB share. The `WriteData`, `AppendData`, `WriteEA`, or
+  `WriteAttributes` accesses may indicate that the file content or metadata
+  has changed.
 type: esql
 params: "{}"
 schedule_interval: 5m

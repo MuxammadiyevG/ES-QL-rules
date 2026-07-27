@@ -8,8 +8,24 @@ rule_id: 8c78f66b-4e9d-49dd-a656-5e6007d7ece3
 #//Field validation: Requires Sysmon EventID 3 (NetworkConnect) events in logs-winlog*
 #//Tuning notes: Allowlist known cloud services, CDN providers
 #
-name: "Suspicious Outbound Connection"
-description: |
+name_uz: "Shubhali chiquvchi ulanish"
+name_ru: "Подозрительное исходящее подключение"
+name_en: "Suspicious Outbound Connection"
+description_uz: |
+  Kutilmagan jarayonlardan g'ayrioddiy manzil yoki portlarga chiquvchi tarmoq ulanishlarini aniqlaydi.
+  Nostandart portlarga (>10000), Tor exit node'larga yoki tizim jarayonlaridan qilingan ulanishlar buzilish belgisidir.
+  Odatda tashqi aloqa qilmaydigan jarayonlardan chiqqan ulanishlarga e'tibor bering.
+  False positive: qonuniy cloud servislar, dasturiy ta'minot yangilanishlari, CDN ulanishlari.
+  Triage: manzil IP reputatsiyasini tekshiring, jarayon legitimligini tasdiqlang, ma'lum malware IOC'larini ko'rib chiqing,
+  ulanish chastotasi va ma'lumot hajmini tahlil qiling.
+description_ru: |
+  Выявляет исходящие сетевые подключения к необычным назначениям или портам от неожиданных процессов.
+  Подключения к нестандартным портам (>10000), к Tor exit nodes или от системных процессов указывают на компрометацию.
+  Обратите внимание на подключения от процессов, которые обычно не взаимодействуют с внешней сетью.
+  Ложные срабатывания: легитимные облачные сервисы, обновления ПО, подключения к CDN.
+  Triage: проверьте репутацию IP назначения, подтвердите легитимность процесса, проверьте известные IOC вредоносного ПО,
+  проанализируйте частоту подключений и объём данных.
+description_en: |
   Detects outbound network connections to unusual destinations or ports from unexpected processes.
   Connections to non-standard ports (>10000), Tor exit nodes, or from system processes indicate compromise.
   Focus on connections from processes that normally don't communicate externally.

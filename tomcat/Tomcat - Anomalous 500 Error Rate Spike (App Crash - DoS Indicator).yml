@@ -1,8 +1,10 @@
 rule_id: 475fa8e0-a66b-4df5-801c-0303642cf5fa
-name: Tomcat - Anomalous 500 Error Rate Spike (App Crash / DoS Indicator)
-description: |
-  Ushbu qoida qisqa vaqt ichida katta miqdordagi HTTP 500 xatoliklarini 
-  aniqlaydi. Bu DoS hujumi, exploit urinishi yoki ilovaning nosozligi 
+name_uz: "Tomcat - Anomal 500 Xatolik Darajasining Keskin Oshishi (Ilova Nosozligi / DoS Belgisi)"
+name_ru: "Tomcat - аномальный всплеск ошибок 500 (сбой приложения / признак DoS)"
+name_en: "Tomcat - Anomalous 500 Error Rate Spike (App Crash / DoS Indicator)"
+description_uz: |
+  Ushbu qoida qisqa vaqt ichida katta miqdordagi HTTP 500 xatoliklarini
+  aniqlaydi. Bu DoS hujumi, exploit urinishi yoki ilovaning nosozligi
   belgisi bo'lishi mumkin (T1499, T1190).
   Qonuniy holatlar: deploy yangilanishi, DB ulanish muammosi, memory pressure.
   SOC triage bosqichlari:
@@ -11,6 +13,28 @@ description: |
   - Xatoliklar bir nechta hostdan kelayaptimi yoki bittadanmi?
   - DB/backend servis holatini tekshiring
   - Manba IP'lar majmuini tekshiring
+description_ru: |
+  Данное правило выявляет большое количество ошибок HTTP 500 за короткий
+  промежуток времени. Это может быть признаком DoS-атаки, попытки эксплуатации
+  или сбоя приложения (T1499, T1190).
+  Легитимные случаи: обновление при деплое, проблема подключения к БД, memory pressure.
+  Шаги SOC-триажа:
+  - Определите время начала всплеска ошибок
+  - Проверьте, не было ли в это же время деплоя
+  - Ошибки приходят с нескольких хостов или только с одного?
+  - Проверьте состояние сервиса БД/backend
+  - Проверьте совокупность исходных IP
+description_en: |
+  This rule detects a large number of HTTP 500 errors within a short
+  period of time. This may be a sign of a DoS attack, an exploit attempt or an
+  application failure (T1499, T1190).
+  Legitimate cases: deploy update, DB connection problem, memory pressure.
+  SOC triage steps:
+  - Determine when the error spike started
+  - Check whether a deploy happened at the same time
+  - Are the errors coming from several hosts or from just one?
+  - Check the state of the DB/backend service
+  - Check the set of source IPs
 type: esql
 params: '{}'
 schedule_interval: 5m

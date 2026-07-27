@@ -1,6 +1,8 @@
 rule_id: 87bda738-026f-42ee-af5c-7f369d4315c9
-name: "Agent FIM: Windows New Host Initial Scan Detected"
-description: |
+name_uz: "Agent FIM: Windows yangi hostning dastlabki skanerlashi aniqlandi"
+name_ru: "Agent FIM: обнаружено первичное сканирование нового хоста Windows"
+name_en: "Agent FIM: Windows New Host Initial Scan Detected"
+description_uz: |
   Ushbu qoida Discovery texnikasiga bog'liq bo'lib, yangi Windows hostda FIM
   agentining birinchi marta skanerlashini (initial_scan) aniqlaydi. Bu hodisa
   monitoring uchun foydali bo'lib, yangi host tarmoqqa qo'shilganini yoki agent
@@ -12,6 +14,30 @@ description: |
   - `@timestamp` — biznes soatlaridan tashqarida bo'lsa shubhali.
   - Tarmoq diagrammasi bilan solishtiring — ruxsatsiz host qo'shilganmi.
   - Noqonuniy bo'lsa: hostni izolyatsiya qiling, kim o'rnatganini aniqlang.
+description_ru: |
+  Данное правило связано с техникой Discovery и обнаруживает первое сканирование
+  (initial_scan) FIM-агента на новом хосте Windows. Это событие
+  полезно для мониторинга и означает, что в сеть добавлен новый хост или агент
+  был переустановлен. Неожиданный новый хост может быть подозрительным.
+  Легитимные случаи: установка нового сервера, agent reinstall, восстановление системы.
+  Этапы SOC-триажа:
+  - `host.hostname` и `host.ip` — есть ли этот хост в asset inventory.
+  - `agent.id` — новый ли это, ранее не встречавшийся agent ID.
+  - `@timestamp` — если это вне рабочих часов, подозрительно.
+  - Сравните со схемой сети — не был ли добавлен несанкционированный хост.
+  - Если нелегитимно: изолируйте хост, установите, кто его развернул.
+description_en: |
+  This rule is related to the Discovery technique and detects the first scan
+  (initial_scan) by the FIM agent on a new Windows host. This event is
+  useful for monitoring and indicates that a new host was added to the network or that the agent
+  was reinstalled. An unexpected new host may be suspicious.
+  Legitimate cases: deployment of a new server, agent reinstall, system restore.
+  SOC triage steps:
+  - `host.hostname` and `host.ip` — is this host present in the asset inventory.
+  - `agent.id` — is this a new, previously unseen agent ID.
+  - `@timestamp` — suspicious if outside business hours.
+  - Compare against the network diagram — was an unauthorized host added.
+  - If illegitimate: isolate the host, determine who deployed it.
 type: esql
 params: '{}'
 schedule_interval: 5m

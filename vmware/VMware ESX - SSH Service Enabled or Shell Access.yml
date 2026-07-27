@@ -1,6 +1,8 @@
 rule_id: b3f68456-e1eb-416a-bffb-b186493ccd05
-name: VMware ESX - SSH Service Enabled / Shell Access
-description: |
+name_uz: "VMware ESX - SSH xizmati yoqilgan / Shell kirish"
+name_ru: "VMware ESX - Включена служба SSH / доступ к Shell"
+name_en: "VMware ESX - SSH Service Enabled / Shell Access"
+description_uz: |
   VMware ESX hostida SSH xizmati yoki ESXi Shell yoqilganligi aniqlandi.
   SSH/Shell odatda xavfsizlik uchun o'chirilgan bo'ladi; uning yoqilishi
   ransomware operatorlari uchun tipik dastlabki qadam bo'lib, qo'lda boshqarish
@@ -12,6 +14,30 @@ description: |
   - Yoqilish vaqti tasdiqlangan maintenance oynasiga mos kelishini tekshiring
   - Keyingi login va fayl o'zgarishlari bilan korrelyatsiya qiling
   - Noqonuniy bo'lsa SSH/Shell ni o'chiring va hostni izolyatsiya qiling
+description_ru: |
+  На хосте VMware ESX обнаружено включение службы SSH или ESXi Shell.
+  SSH/Shell обычно отключены из соображений безопасности; их включение
+  является типичным первым шагом операторов ransomware и может указывать на ручное
+  управление и обход защиты (Remote Services / Impair Defenses)
+  (T1021.004, T1562.001).
+  Легитимные случаи: плановое устранение неполадок, сессия поддержки вендора.
+  Шаги SOC-триажа:
+  - Определите через vmware.originator, кто включил SSH/Shell
+  - Проверьте, совпадает ли время включения с утверждённым окном обслуживания
+  - Сопоставьте с последующими входами и изменениями файлов
+  - Если действие несанкционированное, отключите SSH/Shell и изолируйте хост
+description_en: |
+  The SSH service or ESXi Shell was detected as enabled on a VMware ESX host.
+  SSH/Shell is normally disabled for security reasons; enabling it
+  is a typical first step for ransomware operators and may indicate manual
+  control and defense evasion (Remote Services / Impair Defenses)
+  (T1021.004, T1562.001).
+  Legitimate cases: planned troubleshooting, a vendor support session.
+  SOC triage steps:
+  - Identify via vmware.originator who enabled SSH/Shell
+  - Verify that the enablement time matches an approved maintenance window
+  - Correlate with subsequent logins and file changes
+  - If unauthorized, disable SSH/Shell and isolate the host
 type: esql
 params: '{}'
 schedule_interval: 5m

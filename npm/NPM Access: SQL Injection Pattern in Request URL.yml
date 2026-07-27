@@ -1,6 +1,8 @@
 rule_id: be6daf25-d927-40da-bc8c-dc2a479a772e
-name: "NPM Access: SQL Injection Pattern in Request URL"
-description: |
+name_uz: "NPM Access: So'rov URL da SQL Injection Patterni"
+name_ru: "NPM Access: паттерн SQL-инъекции в URL запроса"
+name_en: "NPM Access: SQL Injection Pattern in Request URL"
+description_uz: |
   Ushbu qoida HTTP request URL da SQL injection pattern larini aniqlaydi.
   UNION SELECT, OR 1=1, DROP TABLE, xp_cmdshell kabi klassik SQLi payloadlari.
   Qonuniy holatlar: penetration testing (ruxsat bilan).
@@ -10,6 +12,26 @@ description: |
   - Response status — 200 bo'lsa SQLi muvaffaqiyatli bo'lgan bo'lishi mumkin.
   - Backend loglarini tekshiring — DB xatoliklari bormi.
   - Noqonuniy bo'lsa: Client IP ni bloklang, WAF rule qo'shing.
+description_ru: |
+  Данное правило выявляет паттерны SQL-инъекции в URL HTTP-запроса.
+  Классические SQLi-payload'ы вида UNION SELECT, OR 1=1, DROP TABLE, xp_cmdshell.
+  Легитимные случаи: тестирование на проникновение (с разрешения).
+  Шаги SOC-триажа:
+  - event.original — проверьте полный запрос.
+  - Client IP — много попыток с одного IP означает автоматический сканер.
+  - Response status — если 200, SQLi могла быть успешной.
+  - Проверьте логи backend — есть ли ошибки БД.
+  - Если активность нелегитимна: заблокируйте Client IP, добавьте правило WAF.
+description_en: |
+  This rule detects SQL injection patterns in the HTTP request URL.
+  Classic SQLi payloads such as UNION SELECT, OR 1=1, DROP TABLE, xp_cmdshell.
+  Legitimate cases: penetration testing (with authorization).
+  SOC triage steps:
+  - event.original — check the full request.
+  - Client IP — many attempts from one IP means an automated scanner.
+  - Response status — if 200, the SQLi may have been successful.
+  - Check the backend logs — are there DB errors.
+  - If illegitimate: block the Client IP, add a WAF rule.
 type: esql
 params: '{}'
 schedule_interval: 5m

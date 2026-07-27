@@ -1,9 +1,19 @@
 rule_id: b19a3caf-2ee5-46b6-b566-0a725ccc628c
-name: UniFi WiFi Client Roamed
-description: |
+name_uz: "UniFi WiFi klienti roaming qildi"
+name_ru: "WiFi-клиент UniFi выполнил роуминг"
+name_en: "UniFi WiFi Client Roamed"
+description_uz: |
   Ushbu qoida klientning bir APdan boshqa APga roaming qilishini kuzatadi.
   Oldingi va yangi AP, kanal, band hamda RSSI qiymatlari chiqariladi.
   Yangi RSSI oldingisidan yomon bo'lsa noto'g'ri roaming yoki RF muammosi bo'lishi mumkin.
+description_ru: |
+  Это правило отслеживает роуминг клиента с одной AP на другую.
+  Выводятся предыдущая и новая AP, канал, band, а также значения RSSI.
+  Если новый RSSI хуже предыдущего, это может быть некорректный роуминг или проблема RF.
+description_en: |
+  This rule tracks a client roaming from one AP to another.
+  The previous and new AP, channel, band and RSSI values are reported.
+  If the new RSSI is worse than the previous one, it may be incorrect roaming or an RF issue.
 type: esql
 params: "{}"
 schedule_interval: 10m

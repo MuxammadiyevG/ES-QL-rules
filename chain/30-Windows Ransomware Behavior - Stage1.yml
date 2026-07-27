@@ -1,7 +1,15 @@
 rule_id: ca24ab9d-fd65-4d77-a270-3f28a580237a
-name: "Chain: Windows Ransomware Behavior — Stage 1: Mass File Modification Burst"
-description: |
+name_uz: "Zanjir: Windows Ransomware Behavior — 1-bosqich: Ommaviy fayl o'zgartirish to'lqini"
+name_ru: "Цепочка: Windows Ransomware Behavior — Этап 1: Всплеск массового изменения файлов"
+name_en: "Chain: Windows Ransomware Behavior — Stage 1: Mass File Modification Burst"
+description_uz: |
   Windows Ransomware Behavior zanjiri — 1-bosqich (2 dan).
+  Mass File Modification Burst.
+description_ru: |
+  Цепочка Windows Ransomware Behavior — этап 1 (из 2).
+  Всплеск массового изменения файлов.
+description_en: |
+  Windows Ransomware Behavior chain — stage 1 (of 2).
   Mass File Modification Burst.
 type: esql
 enabled: true

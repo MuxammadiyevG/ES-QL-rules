@@ -1,13 +1,28 @@
 rule_id: bb1a0647-b475-4905-891d-c5b881a7c165
-name: "Privilege Escalation: New SUID or SGID File Created"
-description: |
+name_uz: "Privilege Escalation: yangi SUID yoki SGID fayl yaratildi"
+name_ru: "Privilege Escalation: создан новый файл с SUID или SGID"
+name_en: "Privilege Escalation: New SUID or SGID File Created"
+description_uz: |
   Ushbu qoida Linux tizimida yangi SUID yoki SGID permission o‘rnatilgan
   fayllar paydo bo‘lishini aniqlaydi.
 
   SUID/SGID bitlari attacker tomonidan privilege escalation uchun ishlatilishi
   mumkin. Masalan, oddiy foydalanuvchi root huquqida ishlaydigan binary yaratishi
   yoki mavjud faylga SUID/SGID bit qo‘yishi mumkin.
+description_ru: |
+  Данное правило выявляет появление файлов с вновь установленным permission
+  SUID или SGID в системе Linux.
 
+  Биты SUID/SGID могут использоваться злоумышленником для повышения привилегий.
+  Например, обычный пользователь может создать binary, работающий с правами root,
+  либо установить бит SUID/SGID на существующий файл.
+description_en: |
+  This rule detects the appearance of files on a Linux system with a newly set
+  SUID or SGID permission.
+
+  SUID/SGID bits can be used by an attacker for privilege escalation. For example,
+  an ordinary user may create a binary that runs with root privileges, or set a
+  SUID/SGID bit on an existing file.
 type: esql
 params: "{}"
 schedule_interval: 10m

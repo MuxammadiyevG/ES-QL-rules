@@ -1,6 +1,8 @@
 rule_id: 5359a48b-726a-4126-bc35-35de7b0d83d1
-name: "Agent FIM: Windows FIM Error — File Locked by Another Process (Possible Ransomware)"
-description: |
+name_uz: "Agent FIM: Windows FIM xatosi — fayl boshqa process tomonidan lock qilingan (ehtimoliy Ransomware)"
+name_ru: "Agent FIM: ошибка Windows FIM — файл заблокирован другим процессом (возможен Ransomware)"
+name_en: "Agent FIM: Windows FIM Error — File Locked by Another Process (Possible Ransomware)"
+description_uz: |
   Ushbu qoida Impact texnikasiga bog'liq bo'lib, FIM agentining fayllarga kirish xatoliklarini
   aniqlaydi. Ko'p sonli "file being used by another process" xatoliklari ransomware
   faoliyatining belgisi bo'lishi mumkin — ransomware fayllarni encrypt qilayotganda ularni lock
@@ -13,6 +15,32 @@ description: |
   - CPU va disk I/O metrikalarini tekshiring — yuqori bo'lsa encryption jarayoni.
   - Network loglarini tekshiring — C2 ulanish yoki exfiltration borligini aniqlang.
   - Darhol: hostni tarmoqdan ajrating, snapshot oling, incident oching.
+description_ru: |
+  Данное правило связано с техникой Impact и обнаруживает ошибки доступа FIM-агента
+  к файлам. Большое количество ошибок "file being used by another process" может быть
+  признаком активности ransomware — при шифровании файлов ransomware блокирует их,
+  и FIM не может получить hash.
+  Легитимные случаи: antivirus real-time scanning, Windows Update, VSS snapshot.
+  Этапы SOC-триажа:
+  - Если `error_count` высок и укладывается в короткий промежуток времени — признак шифрования ransomware.
+  - Проверьте разнообразие значений `file.path` — если это разные каталоги, риск высокий.
+  - Сопоставьте с другими событиями на `host.hostname`.
+  - Проверьте метрики CPU и дискового I/O — если они высокие, идёт процесс шифрования.
+  - Проверьте сетевые логи — определите, есть ли подключение к C2 или exfiltration.
+  - Немедленно: отключите хост от сети, снимите snapshot, откройте инцидент.
+description_en: |
+  This rule is related to the Impact technique and detects file access errors of the FIM agent.
+  A large number of "file being used by another process" errors may be a sign of ransomware
+  activity — while encrypting files, ransomware locks them
+  and FIM cannot obtain a hash.
+  Legitimate cases: antivirus real-time scanning, Windows Update, VSS snapshot.
+  SOC triage steps:
+  - If `error_count` is high and occurs within a short time window — a sign of ransomware encryption.
+  - Check the diversity of `file.path` values — if they span different directories, the risk is high.
+  - Correlate with other events on `host.hostname`.
+  - Check CPU and disk I/O metrics — if they are high, an encryption process is running.
+  - Check network logs — determine whether there is a C2 connection or exfiltration.
+  - Immediately: disconnect the host from the network, take a snapshot, open an incident.
 type: esql
 params: '{}'
 schedule_interval: 5m

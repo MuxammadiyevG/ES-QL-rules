@@ -1,6 +1,8 @@
 rule_id: 0f65f19b-74aa-4379-9665-faad3e9d9775
-name: "NPM Access: Non-Standard HTTP Method Used"
-description: |
+name_uz: "NPM Access: Nostandart HTTP Metodi Ishlatilgan"
+name_ru: "NPM Access: использован нестандартный HTTP-метод"
+name_en: "NPM Access: Non-Standard HTTP Method Used"
+description_uz: |
   Ushbu qoida GET, POST, PUT, DELETE dan tashqari HTTP metodlarini aniqlaydi.
   TRACE, CONNECT, OPTIONS ko'p, PATCH g'ayrioddiy kontekstda ishlatilishi
   server konfiguratsiyasini aniqlash yoki bypass urinishi bo'lishi mumkin.
@@ -10,6 +12,26 @@ description: |
   - CONNECT — proxy tunnel ochishga urinish.
   - Response status — 200 bo'lsa server metodni qabul qilgan.
   - Server konfiguratsiyasida kerak bo'lmagan metodlarni o'chiring.
+description_ru: |
+  Данное правило выявляет HTTP-методы, отличные от GET, POST, PUT, DELETE.
+  Частое использование TRACE, CONNECT, OPTIONS либо PATCH в необычном контексте
+  может быть разведкой конфигурации сервера или попыткой обхода.
+  Метод CONNECT используется для proxy-туннелирования.
+  Шаги SOC-триажа:
+  - TRACE — используется для атаки Cross-Site Tracing (XST).
+  - CONNECT — попытка открыть proxy-туннель.
+  - Response status — если 200, сервер принял метод.
+  - Отключите ненужные методы в конфигурации сервера.
+description_en: |
+  This rule detects HTTP methods other than GET, POST, PUT, DELETE.
+  Frequent use of TRACE, CONNECT, OPTIONS, or PATCH in an unusual context,
+  may be server configuration discovery or a bypass attempt.
+  The CONNECT method is used for proxy tunneling.
+  SOC triage steps:
+  - TRACE — used for the Cross-Site Tracing (XST) attack.
+  - CONNECT — an attempt to open a proxy tunnel.
+  - Response status — if 200, the server accepted the method.
+  - Disable the unnecessary methods in the server configuration.
 type: esql
 params: '{}'
 schedule_interval: 5m

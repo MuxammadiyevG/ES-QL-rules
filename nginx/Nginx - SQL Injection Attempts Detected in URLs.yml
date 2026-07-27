@@ -1,6 +1,8 @@
 rule_id: 010e4218-711d-4f78-a94c-c959d59cc098
-name: Nginx - SQL Injection Attempts Detected in URLs
-description: |
+name_uz: "Nginx - URL'larda SQL Injection urinishlari aniqlandi"
+name_ru: "Nginx - Обнаружены попытки SQL Injection в URL"
+name_en: "Nginx - SQL Injection Attempts Detected in URLs"
+description_uz: |
   Ushbu qoida Nginx access log'da URL'larda SQL injection pattern'larni aniqlaydi.
   Bu database exploitation urinishi belgisi (T1190).
   Qonuniy holatlar: false positive, legitimate SQL-like strings in URLs.
@@ -10,6 +12,26 @@ description: |
   - HTTP response code va application behavior tekshiring
   - Backend WAF yoki IPS detection'i bormi confirm qiling
   - Application vulnerability assessment zarurligini baholang
+description_ru: |
+  Это правило обнаруживает паттерны SQL injection в URL в access log Nginx.
+  Это признак попытки эксплуатации базы данных (T1190).
+  Легитимные случаи: ложное срабатывание, легитимные SQL-подобные строки в URL.
+  Этапы SOC triage:
+  - Проанализируйте payload SQL injection
+  - Определите целевое приложение и тип базы данных
+  - Проверьте HTTP response code и поведение приложения
+  - Подтвердите, есть ли детект на backend WAF или IPS
+  - Оцените необходимость оценки уязвимостей приложения
+description_en: |
+  This rule detects SQL injection patterns in URLs in the Nginx access log.
+  This is an indicator of a database exploitation attempt (T1190).
+  Legitimate cases: false positive, legitimate SQL-like strings in URLs.
+  SOC triage steps:
+  - Analyze the SQL injection payload
+  - Identify the target application and database type
+  - Check the HTTP response code and application behavior
+  - Confirm whether there is a backend WAF or IPS detection
+  - Assess whether an application vulnerability assessment is required
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: ecf6cc98-3f0b-452a-8382-b199719405b9
-name: Nginx - Invalid URI with Extremely Long Filename
-description: |
+name_uz: "Nginx - juda uzun fayl nomi bilan noto'g'ri URI"
+name_ru: "Nginx - некорректный URI с чрезмерно длинным именем файла"
+name_en: "Nginx - Invalid URI with Extremely Long Filename"
+description_uz: |
   Ushbu qoida Nginx'da juda uzun filename bilan invalid URI request'larni aniqlaydi.
   Bu buffer overflow yoki path traversal attack urinishi belgisi bo'lishi mumkin.
   Qonuniy holatlar: misconfigured client, legitimate long URL, application bug.
@@ -10,6 +12,26 @@ description: |
   - Source IP va attack intent'ni baholang
   - Web server va application version vulnerability'sini tekshiring
   - Similar attack pattern'lar bormi qidiring
+description_ru: |
+  Это правило обнаруживает в Nginx запросы с некорректным URI и очень длинным именем файла.
+  Это может быть признаком попытки атаки buffer overflow или path traversal.
+  Легитимные случаи: неверно настроенный клиент, легитимный длинный URL, ошибка приложения.
+  Этапы SOC-триажа:
+  - Проанализируйте длину и структуру URI запроса
+  - Проверьте, есть ли шаблон buffer overflow или path traversal
+  - Оцените IP источника и намерение атаки
+  - Проверьте уязвимости версии веб-сервера и приложения
+  - Поищите похожие шаблоны атак
+description_en: |
+  This rule detects invalid URI requests with an extremely long filename in Nginx.
+  This may be a sign of a buffer overflow or path traversal attack attempt.
+  Legitimate cases: misconfigured client, legitimate long URL, application bug.
+  SOC triage steps:
+  - Analyze the request URI length and structure
+  - Check whether there is a buffer overflow or path traversal pattern
+  - Assess the source IP and the attack intent
+  - Check the web server and application version for vulnerabilities
+  - Search for similar attack patterns
 type: esql
 params: '{}'
 schedule_interval: 15m

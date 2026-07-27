@@ -1,6 +1,32 @@
 rule_id: 460ad591-db8e-4081-94b7-270cb8f65698
-name: "GDPR Art.32(1)(b) - Confidentiality and Integrity of Processing Systems Compromised"
-description: |
+name_uz: "GDPR Art.32(1)(b) - Ishlov berish tizimlarining maxfiyligi va yaxlitligi buzilgan"
+name_ru: "GDPR Art.32(1)(b) - Нарушены конфиденциальность и целостность систем обработки"
+name_en: "GDPR Art.32(1)(b) - Confidentiality and Integrity of Processing Systems Compromised"
+description_uz: |
+  Shaxsiy ma'lumotlarga ishlov beruvchi tizimlarning maxfiyligi yoki yaxlitligi yo'qolganini ko'rsatuvchi
+  hodisalarni aniqlaydi; agent_id, GDPR 32(1)(b)-moddasi ishlov berish tizimlari va servislarining doimiy maxfiyligi,
+  yaxlitligi, mavjudligi va barqarorligini ta'minlashni talab qiladi.
+  Yuqori darajadagi xavfsizlik hodisalarini agregatsiya qiladi: imtiyozlarni oshirish, akkauntni egallash indikatorlari,
+  kritik fayl o'zgarishlari va Windows hamda Linux hostlaridagi audit siyosati o'zgarishlari.
+  Bu hodisalarning qisqa oyna ichida bitta hostda birgalikda uchrashi shaxsiy ma'lumotlarga ishlov beruvchi
+  tizimning faol komprometatsiyasidan kuchli darak beradi.
+  Trigger: 10 daqiqa ichida bitta hostda 3+ turli yuqori darajadagi hodisa turi.
+  False positive: maintenance oynalari davomida bir vaqtda bajarilayotgan qonuniy admin faoliyatlari.
+  Triage: ta'sirlangan hostdagi barcha hodisa turlarini identifikatsiya qiling, change management bilan korrelyatsiya qiling,
+  komprometatsiya tasdiqlansa hostni izolyatsiya qiling, GDPR breach baholash jarayonini darhol boshlang.
+description_ru: |
+  Выявляет события, указывающие на потерю конфиденциальности или целостности систем, обрабатывающих
+  персональные данные, как того требует agent_id, статья 32(1)(b) GDPR — обеспечивать постоянную конфиденциальность,
+  целостность, доступность и устойчивость систем и сервисов обработки.
+  Агрегирует события безопасности высокой критичности: повышение привилегий, индикаторы захвата учётных записей,
+  изменения критичных файлов и изменения политики аудита на хостах Windows и Linux.
+  Сочетание этих событий на одном хосте в течение короткого окна убедительно указывает
+  на активную компрометацию системы обработки персональных данных.
+  Trigger: 3+ различных типов событий высокой критичности на одном хосте в течение 10 минут.
+  False positives: одновременная легитимная административная активность во время окон обслуживания.
+  Triage: определите все типы событий на затронутом хосте, сопоставьте с change management,
+  изолируйте хост при подтверждении компрометации, немедленно инициируйте процесс оценки GDPR breach.
+description_en: |
   Detects events indicating loss of confidentiality or integrity of systems processing
   personal data, as required by agent_id, GDPR Article 32(1)(b) to ensure ongoing confidentiality,
   integrity, availability and resilience of processing systems and services.

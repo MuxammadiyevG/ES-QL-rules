@@ -1,9 +1,19 @@
 rule_id: f5bf6474-b656-4a87-bb21-526f2a85e2f6
-name: "Chain: Windows Ransomware Behavior — Stage 2: Shadow Copy and Recovery Tampering"
-description: |
+name_uz: "Zanjir: Windows Ransomware Behavior — 2-bosqich: Shadow Copy va tiklashni buzish"
+name_ru: "Цепочка: Windows Ransomware Behavior — Этап 2: Вмешательство в Shadow Copy и восстановление"
+name_en: "Chain: Windows Ransomware Behavior — Stage 2: Shadow Copy and Recovery Tampering"
+description_uz: |
   Windows Ransomware Behavior zanjiri — 2-bosqich (2 dan).
   Shadow Copy and Recovery Tampering.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows Ransomware Behavior — этап 2 (из 2).
+  Вмешательство в Shadow Copy и восстановление.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows Ransomware Behavior chain — stage 2 (of 2).
+  Shadow Copy and Recovery Tampering.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

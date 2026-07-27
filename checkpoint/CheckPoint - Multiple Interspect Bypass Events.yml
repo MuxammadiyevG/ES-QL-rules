@@ -1,6 +1,8 @@
 rule_id: 4203b2c4-3e89-4e0f-869c-155ff9f4d9c0
-name: CheckPoint - Multiple Interspect Bypass Events
-description: |
+name_uz: "CheckPoint - Bir nechta Interspect bypass hodisasi"
+name_ru: "CheckPoint - Множественные события обхода (bypass) Interspect"
+name_en: "CheckPoint - Multiple Interspect Bypass Events"
+description_uz: |
   Ushbu qoida CheckPoint Interspect'dan bypass bo'lgan connection'larni monitoring qiladi.
   Bypass transparently inspection'dan o'tgan connection'larni ko'rsatadi va security gap belgisi bo'lishi mumkin.
   Qonuniy holatlar: whitelisted traffic, performance optimization, encrypted traffic.
@@ -10,6 +12,26 @@ description: |
   - Destination'lar va application'larni tekshiring
   - Policy configuration'ni review qiling
   - Risk assessment qiling - inspection kerakmi yo'qmi
+description_ru: |
+  Это правило отслеживает соединения, обошедшие (bypass) CheckPoint Interspect.
+  Bypass указывает на соединения, прошедшие транзитом мимо инспекции, и может быть признаком пробела в безопасности.
+  Легитимные ситуации: трафик из белого списка, оптимизация производительности, зашифрованный трафик.
+  Этапы SOC-триажа:
+  - Определите причину обхода (bypass)
+  - Проанализируйте тип обойдённого трафика
+  - Проверьте назначения и приложения
+  - Просмотрите конфигурацию политики
+  - Проведите оценку рисков - нужна ли инспекция
+description_en: |
+  This rule monitors connections that bypassed CheckPoint Interspect.
+  Bypass indicates connections that passed transparently without inspection and may be a sign of a security gap.
+  Legitimate cases: whitelisted traffic, performance optimization, encrypted traffic.
+  SOC triage steps:
+  - Determine the bypass reason
+  - Analyze the type of bypassed traffic
+  - Check the destinations and applications
+  - Review the policy configuration
+  - Perform a risk assessment - whether inspection is required
 type: esql
 params: '{}'
 schedule_interval: 15m

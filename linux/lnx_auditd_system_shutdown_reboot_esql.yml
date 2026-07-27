@@ -1,6 +1,14 @@
 rule_id: a6299f65-c310-47d7-a98b-236a746689e8
-name: "System Shutdown/Reboot Detection"
-description: |
+name_uz: "Tizimni o'chirish/qayta yuklashni aniqlash"
+name_ru: "Обнаружение выключения/перезагрузки системы"
+name_en: "System Shutdown/Reboot Detection"
+description_uz: |
+  Tizimni o'chirish yoki qayta yuklash buyruqlarini aniqlaydi.
+  Bu impact yoki xizmatdan voz kechishga qaratilgan (denial of service) faoliyat belgisi bo'lishi mumkin.
+description_ru: |
+  Обнаруживает команды выключения или перезагрузки системы.
+  Может указывать на воздействие (impact) или атаки типа отказ в обслуживании.
+description_en: |
   Detects system shutdown or reboot commands.
   May indicate impact or denial of service activities.
 type: esql

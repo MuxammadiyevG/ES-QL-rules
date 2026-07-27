@@ -1,9 +1,19 @@
 rule_id: e259873c-5c77-4644-a99c-cdd5a3169c0f
-name: "Chain: Windows Admin Share Access Recon — Stage 2: Process Execution After Share Access"
-description: |
+name_uz: "Zanjir: Windows Admin Share Access Recon — 2-bosqich: Share'ga kirishdan keyin jarayon bajarilishi"
+name_ru: "Цепочка: Windows Admin Share Access Recon — Этап 2: Запуск процесса после обращения к share"
+name_en: "Chain: Windows Admin Share Access Recon — Stage 2: Process Execution After Share Access"
+description_uz: |
   Windows Admin Share Access Recon zanjiri — 2-bosqich (2 dan).
   Process Execution After Share Access.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows Admin Share Access Recon — этап 2 (из 2).
+  Запуск процесса после обращения к share.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows Admin Share Access Recon chain — stage 2 (of 2).
+  Process Execution After Share Access.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

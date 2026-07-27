@@ -1,9 +1,16 @@
 rule_id: 017c1be5-9005-446d-bd9a-33adc87cb7e0
-name: "Execution: New Executable File Created or Executed in Temp Directories"
-description: |
+name_uz: "Execution: vaqtinchalik kataloglarda yangi executable fayl yaratildi yoki bajarildi"
+name_ru: "Execution: во временных каталогах создан или запущен новый executable-файл"
+name_en: "Execution: New Executable File Created or Executed in Temp Directories"
+description_uz: |
   Ushbu qoida `/tmp`, `/dev/shm`, `/var/tmp` kataloglari ichida yangi fayl
   yaratilishi, yozilishi yoki u yerdan executable ishga tushirilishini aniqlaydi.
-
+description_ru: |
+  Данное правило выявляет создание или запись нового файла внутри каталогов `/tmp`,
+  `/dev/shm`, `/var/tmp`, а также запуск executable оттуда.
+description_en: |
+  This rule detects the creation or writing of a new file inside the `/tmp`, `/dev/shm`,
+  `/var/tmp` directories, or the launching of an executable from there.
 type: esql
 params: "{}"
 schedule_interval: 10m

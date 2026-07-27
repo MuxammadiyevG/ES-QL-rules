@@ -1,6 +1,28 @@
 rule_id: 70f9eaf1-e64e-4428-97e1-8608a13ea8a2
-name: "PCI DSS 10.2.6 - Audit Log Service Stopped or Paused (Windows)"
-description: |
+name_uz: "PCI DSS 10.2.6 - Audit log servisi to'xtatildi yoki pauza qilindi (Windows)"
+name_ru: "PCI DSS 10.2.6 - Служба журнала аудита остановлена или приостановлена (Windows)"
+name_en: "PCI DSS 10.2.6 - Audit Log Service Stopped or Paused (Windows)"
+description_uz: |
+  Windows tizimlarida audit log servislarini to'xtatish, pauza qilish yoki ularga aralashishni aniqlaydi.
+  PCI DSS Requirement 10.2.6 audit loglarini ishga tushirish, to'xtatish yoki pauza qilishni loglashni talab qiladi.
+  Event 1100 (audit log servisi o'chirildi), 1102 (audit log tozalandi),
+  1104 (xavfsizlik logi to'ldi) va 4719 (tizim audit siyosati o'zgartirildi) ni kuzatadi.
+  Bu HIGH darajadagi hodisa - audit loglarini o'chirish hujumchining izlarini yashirayotgani yoki
+  insider tahdid faoliyatining kuchli indikatoridir.
+  False positive: rejalashtirilgan tizim maintenance ishlari, qonuniy GPO audit siyosati o'zgarishlari.
+  Triage: DARHOL o'zgarish avtorizatsiya qilinganini tekshiring, kim o'zgartirganini aniqlang,
+  yondosh vaqt oralig'idagi shubhali faoliyatni ko'rib chiqing, incident response ga eskalatsiya qiling.
+description_ru: |
+  Обнаруживает остановку, приостановку или вмешательство в работу служб журналов аудита в системах Windows.
+  PCI DSS Requirement 10.2.6 требует логирования инициализации, остановки или приостановки журналов аудита.
+  Отслеживает Event 1100 (служба журнала аудита остановлена), 1102 (журнал аудита очищен),
+  1104 (журнал безопасности переполнен) и 4719 (изменена системная политика аудита).
+  Это событие уровня HIGH - отключение журналов аудита является сильным индикатором того,
+  что атакующий заметает следы, или инсайдерской активности.
+  False positives: плановое обслуживание системы, легитимные изменения политики аудита через GPO.
+  Triage: НЕМЕДЛЕННО проверьте, было ли изменение авторизовано, выясните, кто его внёс,
+  просмотрите соседний временной интервал на предмет подозрительной активности, эскалируйте в incident response.
+description_en: |
   Detects stopping, pausing, or tampering with audit log services on Windows systems.
   PCI DSS Requirement 10.2.6 requires logging of initialization, stopping, or pausing of audit logs.
   Monitors Event 1100 (audit log service shutdown), 1102 (audit log cleared),

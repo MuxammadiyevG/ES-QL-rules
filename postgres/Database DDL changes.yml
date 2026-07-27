@@ -1,6 +1,8 @@
 rule_id: f6f5f83a-29b7-4dd9-80cf-653abc1b1c89
-name: "Database DDL changes"
-description: |
+name_uz: "Ma'lumotlar bazasidagi DDL o'zgarishlari"
+name_ru: "Изменения DDL в базе данных"
+name_en: "Database DDL changes"
+description_uz: |
   Ushbu qoida ma'lumotlar bazasidagi DDL (Data Definition Language) o'zgarishlarini aniqlaydi.
   CREATE, ALTER, DROP, TRUNCATE kabi DDL operatsiyalari ma'lumotlar bazasi strukturasini o'zgartiradi.
   Bu turdagi hodisa ruxsatsiz schema o'zgarishi, ma'lumotlarni yo'q qilish yoki backdoor yaratish maqsadida amalga oshirilayotgan bo'lishi mumkinligi sababli xavfli hisoblanadi.
@@ -12,6 +14,30 @@ description: |
   - DROP yoki TRUNCATE operatsiyalari ayniqsa xavfli — ma'lumotlar yo'qolishi mumkin.
   - Hostda boshqa shubhali hodisalar borligini tekshiring.
   - Noqonuniy faoliyat tasdiqlansa tezkor containment bajaring: foydalanuvchi sessiyasini to'xtating, backup dan tiklang va huquqlarni cheklang.
+description_ru: |
+  Данное правило выявляет изменения DDL (Data Definition Language) в базе данных.
+  Операции DDL, такие как CREATE, ALTER, DROP, TRUNCATE, изменяют структуру базы данных.
+  Событие такого типа считается опасным, поскольку может выполняться с целью несанкционированного изменения схемы, уничтожения данных или создания backdoor.
+  В качестве легитимных случаев могут встречаться плановые обновления схемы, процессы миграции или изменения конфигурации, выполненные администратором.
+  Шаги SOC-триажа:
+  - Точно идентифицируйте `user.name`, `db.name` и `postgresql.log.sql_operation` в событии.
+  - Проверьте, есть ли для изменения утверждённый change ticket или запись о развёртывании.
+  - Проверьте роль и права пользователя, выполнившего операцию DDL.
+  - Операции DROP и TRUNCATE особенно опасны — возможна потеря данных.
+  - Проверьте, есть ли на хосте другие подозрительные события.
+  - При подтверждении нелегитимной активности выполните оперативный containment: завершите сессию пользователя, восстановите из резервной копии и ограничьте права.
+description_en: |
+  This rule detects DDL (Data Definition Language) changes in the database.
+  DDL operations such as CREATE, ALTER, DROP, TRUNCATE change the database structure.
+  An event of this type is considered dangerous because it may be carried out for the purpose of an unauthorized schema change, data destruction or backdoor creation.
+  Legitimate cases may include planned schema updates, migration processes or configuration changes performed by an administrator.
+  SOC triage steps:
+  - Precisely identify `user.name`, `db.name` and `postgresql.log.sql_operation` in the event.
+  - Check whether there is an approved change ticket or deployment record for the change.
+  - Check the role and privileges of the user who performed the DDL operation.
+  - DROP and TRUNCATE operations are especially dangerous — data may be lost.
+  - Check whether there are other suspicious events on the host.
+  - If illegitimate activity is confirmed, perform rapid containment: terminate the user session, restore from backup and restrict privileges.
 type: esql
 params: '{}'
 schedule_interval: 5m

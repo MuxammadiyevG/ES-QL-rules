@@ -1,11 +1,37 @@
 rule_id: ad750a89-90b8-4fdb-b832-70dbb7e9e1a0
-name: "PCI DSS 11.5 - Critical File Modification Detected (Linux)"
-description: |
+name_uz: "PCI DSS 11.5 - muhim fayl o'zgartirilishi aniqlandi (Linux)"
+name_ru: "PCI DSS 11.5 - обнаружено изменение критичного файла (Linux)"
+name_en: "PCI DSS 11.5 - Critical File Modification Detected (Linux)"
+description_uz: |
+  auditd FIM qoidalari orqali Linux'dagi muhim tizim fayllarining ruxsatsiz o'zgartirilishini aniqlaydi.
+  PCI DSS Requirement 11.5 muhim tizim fayllari, konfiguratsiya fayllari va kontent fayllari uchun
+  ruxsatsiz o'zgarishlar haqida ogohlantirish beruvchi o'zgarishlarni aniqlash mexanizmini talab qiladi.
+  Muhim yo'llarga yozish/atribut o'zgarishlarini kuzatadi: /etc/passwd, /etc/shadow,
+  /etc/sudoers, /etc/ssh/*, /etc/cron*/*, /etc/hosts, /etc/pam.d/*,
+  /usr/bin/, /usr/sbin/, /bin/, /sbin/ va h.k.
+  Muhim fayl yo'llari uchun -w (watch) bilan sozlangan auditd qoidalarini talab qiladi.
+  Trigger: kuzatilayotgan muhim fayl yo'llariga har qanday yozish yoki atribut o'zgarishi.
+  False positive: qonuniy paket yangilanishlari (yum/apt), ruxsat etilgan admin o'zgarishlari.
+  Triage: o'zgarishni amalga oshirgan process va foydalanuvchini aniqlang, change management
+  tizimi bilan solishtiring, aktor paket menejeri bo'lganini yoki qo'lda tahrir ekanini tekshiring.
+description_ru: |
+  Выявляет несанкционированное изменение критичных системных файлов в Linux через правила auditd FIM.
+  PCI DSS Requirement 11.5 требует механизма обнаружения изменений для критичных системных файлов,
+  конфигурационных файлов и файлов контента с оповещениями о несанкционированных изменениях.
+  Отслеживает запись/изменение атрибутов по критичным путям: /etc/passwd, /etc/shadow,
+  /etc/sudoers, /etc/ssh/*, /etc/cron*/*, /etc/hosts, /etc/pam.d/*,
+  /usr/bin/, /usr/sbin/, /bin/, /sbin/ и т.д.
+  Требует правил auditd, настроенных с -w (watch) на критичные пути файлов.
+  Trigger: любая запись или изменение атрибутов на отслеживаемых критичных путях файлов.
+  False positives: легитимные обновления пакетов (yum/apt), авторизованные изменения администраторов.
+  Triage: определите процесс и пользователя, внёсших изменение, сверьте с системой
+  change management, проверьте, был ли субъектом пакетный менеджер или это ручная правка.
+description_en: |
   Detects unauthorized modification of critical system files on Linux via auditd FIM rules.
   PCI DSS Requirement 11.5 requires a change-detection mechanism for critical system files,
   configuration files, and content files with alerts for unauthorized modifications.
   Monitors writes/attribute changes to critical paths: /etc/passwd, /etc/shadow,
-  /etc/sudoers, /etc/ssh/*, /etc/cron*/*, /etc/hosts, /etc/pam.d/*, 
+  /etc/sudoers, /etc/ssh/*, /etc/cron*/*, /etc/hosts, /etc/pam.d/*,
   /usr/bin/, /usr/sbin/, /bin/, /sbin/ etc.
   Requires auditd rules configured for -w (watch) on critical file paths.
   Trigger: Any write, attribute change on monitored critical file paths.

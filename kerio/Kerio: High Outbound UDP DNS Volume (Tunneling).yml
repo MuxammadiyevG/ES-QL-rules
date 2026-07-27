@@ -1,6 +1,8 @@
 rule_id: 61a9fb8a-4996-4606-89c9-8590d477d560
-name: "Kerio: High Outbound UDP/DNS Volume (Tunneling)"
-description: |
+name_uz: "Kerio: Yuqori hajmli chiquvchi UDP/DNS trafik (Tunneling)"
+name_ru: "Kerio: Высокий объём исходящего UDP/DNS-трафика (Tunneling)"
+name_en: "Kerio: High Outbound UDP/DNS Volume (Tunneling)"
+description_uz: |
   Ushbu qoida bitta ichki hostdan qisqa vaqt ichida abnormal yuqori hajmli
   DNS/UDP (port 53) outbound trafikni aniqlaydi. DNS tunneling orqali data
   exfiltration yoki C2 covert channel shu pattern bilan amalga oshiriladi
@@ -11,6 +13,28 @@ description: |
   - destination.ip — qaysi DNS serverga so'rovlar ketyapti (tashqimi?).
   - avg_pkt_len/max_pkt_len katta bo'lsa — tunneling ehtimoli yuqori.
   - query_count juda yuqori bo'lsa — avtomatlashtirilgan so'rovlar.
+description_ru: |
+  Это правило выявляет аномально высокий объём исходящего DNS/UDP-трафика
+  (порт 53) с одного внутреннего хоста за короткий промежуток времени. Через DNS tunneling
+  именно по такому шаблону выполняется exfiltration данных или скрытый канал C2
+  (T1071.004 - DNS, T1048 - Exfiltration Over Alternative Protocol).
+  Легитимные ситуации: DNS-сервер, большой объём DNS-запросов, средства мониторинга.
+  Этапы SOC-триажа:
+  - Подтвердите, что хост source.ip не является DNS-резолвером.
+  - destination.ip — на какой DNS-сервер уходят запросы (внешний?).
+  - Если avg_pkt_len/max_pkt_len велики — вероятность tunneling высокая.
+  - Если query_count очень высок — запросы автоматизированы.
+description_en: |
+  This rule detects an abnormally high volume of outbound DNS/UDP (port 53)
+  traffic from a single internal host within a short time window. Data exfiltration
+  over DNS tunneling or a C2 covert channel is carried out with exactly this pattern
+  (T1071.004 - DNS, T1048 - Exfiltration Over Alternative Protocol).
+  Legitimate cases: DNS server, large DNS query volume, monitoring tooling.
+  SOC triage steps:
+  - Confirm that the source.ip host is not a DNS resolver.
+  - destination.ip — which DNS server the queries are going to (external?).
+  - If avg_pkt_len/max_pkt_len are large — tunneling is likely.
+  - If query_count is very high — automated queries.
 type: esql
 params: '{}'
 schedule_interval: 10m

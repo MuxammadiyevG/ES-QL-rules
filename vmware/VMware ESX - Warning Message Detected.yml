@@ -1,12 +1,28 @@
 rule_id: fe6acda5-4591-4b5c-9c18-cd159c7e305c
-name: VMware ESX - Warning Message Detected
-description: |
+name_uz: "VMware ESX - Warning darajasidagi xabar aniqlandi"
+name_ru: "VMware ESX - Обнаружено сообщение уровня warning"
+name_en: "VMware ESX - Warning Message Detected"
+description_uz: |
   VMware ESX tizimidan warn darajasidagi xabar qayd etildi.
   Tizim resurslarida yoki konfiguratsiyada potensial muammo belgisi.
   SOC triage bosqichlari:
   - Warning xabar matnini tahlil qiling
   - Takrorlanuvchi warning'larni kuzating
   - Boshqa xabarlar bilan korrelyatsiya qiling
+description_ru: |
+  Зафиксировано сообщение уровня warn от системы VMware ESX.
+  Признак потенциальной проблемы с системными ресурсами или конфигурацией.
+  Шаги SOC-триажа:
+  - Проанализируйте текст warning-сообщения
+  - Отслеживайте повторяющиеся warning-сообщения
+  - Сопоставьте с другими сообщениями
+description_en: |
+  A warn-level message was recorded from the VMware ESX system.
+  This is a sign of a potential problem with system resources or configuration.
+  SOC triage steps:
+  - Analyze the warning message text
+  - Monitor recurring warnings
+  - Correlate with other messages
 type: esql
 params: '{}'
 schedule_interval: 5m

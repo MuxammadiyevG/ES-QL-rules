@@ -1,6 +1,12 @@
 rule_id: 64ce632f-606b-466e-b663-ee1bb461166a
-name: "Hidden ZIP Files Steganography"
-description: |
+name_uz: "Yashirin ZIP fayllar steganografiyasi"
+name_ru: "Стеганография в скрытых ZIP-файлах"
+name_en: "Hidden ZIP Files Steganography"
+description_uz: |
+  Steganografiya maqsadida yashirin ZIP fayllar yaratilishini aniqlaydi.
+description_ru: |
+  Обнаруживает создание скрытых ZIP-файлов в целях стеганографии.
+description_en: |
   Detects creation of hidden ZIP files for steganography purposes.
 type: esql
 params: '{}'

@@ -1,7 +1,15 @@
 rule_id: bc238fff-37c4-45ee-96f5-77075dadb26e
-name: "Chain: Windows WMI Persistence — Stage 1: WMI Permanent Event Subscription Activity"
-description: |
+name_uz: "Zanjir: Windows WMI orqali mustahkamlanish (persistence) — 1-bosqich: WMI doimiy event subscription faoliyati"
+name_ru: "Цепочка: закрепление через WMI в Windows — Этап 1: активность постоянной подписки на события WMI"
+name_en: "Chain: Windows WMI Persistence — Stage 1: WMI Permanent Event Subscription Activity"
+description_uz: |
   Windows WMI Persistence zanjiri — 1-bosqich (2 dan).
+  WMI Permanent Event Subscription Activity.
+description_ru: |
+  Цепочка закрепления через WMI в Windows — Этап 1 (из 2).
+  Активность постоянной подписки на события WMI.
+description_en: |
+  Windows WMI Persistence chain — Stage 1 (of 2).
   WMI Permanent Event Subscription Activity.
 type: esql
 enabled: true

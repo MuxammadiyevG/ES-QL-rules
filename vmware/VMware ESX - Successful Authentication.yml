@@ -1,6 +1,8 @@
 rule_id: aadce2f5-b8e7-4f99-bf54-c27f9083cfa6
-name: VMware ESX - Successful Authentication (logged in)
-description: |
+name_uz: "VMware ESX - Muvaffaqiyatli autentifikatsiya (logged in)"
+name_ru: "VMware ESX - Успешная аутентификация (logged in)"
+name_en: "VMware ESX - Successful Authentication (logged in)"
+description_uz: |
   VMware ESX tizimiga muvaffaqiyatli autentifikatsiya qayd etildi.
   Bu normal hodisa bo'lishi mumkin, ammo noodatiy vaqtda yoki noma'lum
   foydalanuvchi tomonidan bo'lsa tekshirish tavsiya etiladi (T1078).
@@ -9,6 +11,24 @@ description: |
   - Login vaqti va joyini solishtiring
   - Avvalgi login tarixini kuzating
   - Muvaffaqiyatsiz urinishlar ketidan kelgan login'larni aniqlang
+description_ru: |
+  Зафиксирована успешная аутентификация в системе VMware ESX.
+  Это может быть нормальным событием, однако при нетипичном времени или
+  неизвестном пользователе рекомендуется проверка (T1078).
+  Шаги SOC-триажа:
+  - Проверьте имя вошедшего пользователя
+  - Сопоставьте время и место входа
+  - Изучите историю предыдущих входов
+  - Выявите входы, следующие за неудачными попытками
+description_en: |
+  A successful authentication to the VMware ESX system was recorded.
+  This may be a normal event, but if it occurs at an unusual time or by an unknown
+  user, review is recommended (T1078).
+  SOC triage steps:
+  - Check the name of the user who logged in
+  - Compare the login time and location
+  - Review the previous login history
+  - Identify logins that follow failed attempts
 type: esql
 params: '{}'
 schedule_interval: 5m

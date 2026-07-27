@@ -1,11 +1,25 @@
 rule_id: 3b422da1-7709-4700-9cf6-7410ea6287d6
-name: DNS DGA-like / High-Entropy Domain
-description: |
+name_uz: "DGA-ga o'xshash / yuqori entropiyali DNS domeni"
+name_ru: "DNS-домен в стиле DGA / с высокой энтропией"
+name_en: "DNS DGA-like / High-Entropy Domain"
+description_uz: |
   Ushbu qoida DGA (Domain Generation Algorithm) uslubidagi domenlarni aniqlaydi (Sysmon 22):
   uzun, tasodifiy ko'rinadigan label (20+ alfanumerik). Malware C2'ni topish uchun shunday
   domenlar generatsiya qiladi (T1568.002). Evristik — ma'lum CDN/telemetriya chiqarilgan.
   SOC triage:
   - `domains` haqiqatan tasodifiymi? `images` qaysi jarayon? FP bo'lishi mumkin — tekshiring.
+description_ru: |
+  Это правило выявляет домены в стиле DGA (Domain Generation Algorithm) (Sysmon 22):
+  длинные, случайно выглядящие метки (20+ буквенно-цифровых символов). Malware генерирует такие
+  домены, чтобы найти свой C2 (T1568.002). Эвристика — известные CDN/телеметрия исключены.
+  Триаж SOC:
+  - Действительно ли `domains` случайны? Какой процесс в `images`? Возможен FP — проверьте.
+description_en: |
+  This rule detects DGA (Domain Generation Algorithm) style domains (Sysmon 22):
+  long, random-looking labels (20+ alphanumeric characters). Malware generates such
+  domains in order to find its C2 (T1568.002). Heuristic — known CDN/telemetry is excluded.
+  SOC triage:
+  - Are the `domains` really random? Which process is in `images`? It may be an FP — verify.
 type: esql
 params: '{}'
 schedule_interval: 10m

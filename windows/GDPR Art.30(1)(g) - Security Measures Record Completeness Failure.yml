@@ -1,6 +1,38 @@
 rule_id: e4b3571e-c6dc-429f-bd92-7324d6abd469
-name: "GDPR Art.30(1)(g) - Security Measures Record Completeness Failure"
-description: |
+name_uz: "GDPR Art.30(1)(g) - Xavfsizlik choralari yozuvlari to'liqligining buzilishi"
+name_ru: "GDPR Art.30(1)(g) - Нарушение полноты записей о мерах безопасности"
+name_en: "GDPR Art.30(1)(g) - Security Measures Record Completeness Failure"
+description_uz: |
+  agent_id, GDPR 30(1)(g)-moddasi talab qiladigan texnik va tashkiliy xavfsizlik choralari haqidagi aniq
+  yozuvlarni yuritish imkoniyatini buzadigan holatlarni aniqlaydi; ushbu modda ishlov berish faoliyati
+  yozuvlariga xavfsizlik choralarining umumiy tavsifi kiritilishini majburiy qiladi.
+  Monitoring qilinadi: (1) oldindan ro'yxatdan o'tmasdan loglarda paydo bo'lgan yangi hostlar (shaxsiy
+  ma'lumotlarga ishlov beruvchi hujjatlashtirilmagan tizimlar), (2) kutilmaganda paydo bo'lgan yangi event source/dataset lar
+  (noma'lum ishlov berish faoliyati), (3) hodisa yuborayotgan tizimlar to'plamidagi sezilarli
+  o'zgarishlar (shaxsiy ma'lumotlarga ishlov berish muhitida scope creep).
+  Shaxsiy ma'lumotlarga ishlov beruvchi hujjatlashtirilmagan tizimlar bir vaqtning o'zida Art.30 yozuvlarni yuritish va
+  Art.25 (dizayn orqali ma'lumotlar himoyasi) talablarini buzadi.
+  Trigger: xavfsizlik loglarida oldingi 7 kunlik baseline'da bo'lmagan yangi host.name ko'rinishi.
+  False positive: qonuniy yangi server deploymentlari, nomi o'zgartirilgan hostlar, cloud auto-scaling.
+  Triage: yangi tizimni identifikatsiya qiling, u shaxsiy ma'lumotlarga ishlov berishini tekshiring, qonuniy bo'lsa Art.30
+  Records of Processing Activities (RoPA) ni yangilang, ruxsatsiz tizim deploymenti bo'lsa tergov qiling,
+  yangi ishlov berish faoliyati uchun DPIA (Art.35) o'tkazilganini tekshiring.
+description_ru: |
+  Выявляет условия, подрывающие возможность вести точные записи о технических
+  и организационных мерах безопасности, требуемые agent_id, статьёй 30(1)(g) GDPR, которая предписывает,
+  чтобы записи о деятельности по обработке включали общее описание мер безопасности.
+  Отслеживается: (1) новые хосты, появляющиеся в логах без предварительной регистрации (недокументированные системы,
+  обрабатывающие персональные данные), (2) неожиданно появляющиеся новые event source/dataset
+  (неизвестные виды обработки), (3) значительные изменения в наборе систем, отправляющих
+  события (scope creep в среде обработки персональных данных).
+  Недокументированные системы, обрабатывающие персональные данные, одновременно нарушают требования Art.30 о ведении записей и
+  Art.25 (защита данных на этапе проектирования).
+  Trigger: новый host.name в логах безопасности, отсутствовавший в baseline за предыдущие 7 дней.
+  False positives: легитимные развёртывания новых серверов, переименованные хосты, cloud auto-scaling.
+  Triage: идентифицируйте новую систему, проверьте, обрабатывает ли она персональные данные, при легитимности обновите Art.30
+  Records of Processing Activities (RoPA), расследуйте, если это несанкционированное
+  развёртывание системы, проверьте, проводилась ли DPIA (Art.35) для нового вида обработки.
+description_en: |
   Detects conditions that undermine the ability to maintain accurate records of technical
   and organisational security measures as required by agent_id, GDPR Article 30(1)(g), which mandates
   that records of processing activities include a general description of security measures.

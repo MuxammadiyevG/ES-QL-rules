@@ -1,9 +1,19 @@
 rule_id: ad9151e5-5485-4371-a010-0acc4d5bbe36
-name: "Chain: Windows Sensitive Privilege Abuse — Stage 2: Sensitive Privileged Operation by Same Account"
-description: |
+name_uz: "Zanjir: Windows Sensitive Privilege Abuse — 2-bosqich: O'sha akkaunt tomonidan maxfiy imtiyozli amal"
+name_ru: "Цепочка: Windows Sensitive Privilege Abuse — Этап 2: Чувствительная привилегированная операция той же учётной записью"
+name_en: "Chain: Windows Sensitive Privilege Abuse — Stage 2: Sensitive Privileged Operation by Same Account"
+description_uz: |
   Windows Sensitive Privilege Abuse zanjiri — 2-bosqich (2 dan).
   Sensitive Privileged Operation by Same Account.
   Oldingi bosqichga (stage 1) bog'langan.
+description_ru: |
+  Цепочка Windows Sensitive Privilege Abuse — этап 2 (из 2).
+  Чувствительная привилегированная операция той же учётной записью.
+  Связано с предыдущим этапом (stage 1).
+description_en: |
+  Windows Sensitive Privilege Abuse chain — stage 2 (of 2).
+  Sensitive Privileged Operation by Same Account.
+  Linked to the previous stage (stage 1).
 type: esql
 enabled: true
 params: "{}"

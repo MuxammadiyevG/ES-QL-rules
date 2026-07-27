@@ -1,6 +1,8 @@
 rule_id: 21bfa1c0-0676-4349-b730-2a7fbfe20d07
-name: VMware ESX - User Login via vmware-hostd or vmware-authd
-description: |
+name_uz: "VMware ESX - vmware-hostd yoki vmware-authd orqali foydalanuvchi kirishi"
+name_ru: "VMware ESX - Вход пользователя через vmware-hostd или vmware-authd"
+name_en: "VMware ESX - User Login via vmware-hostd or vmware-authd"
+description_uz: |
   VMware ESX tizimiga vmware-hostd yoki vmware-authd orqali
   muvaffaqiyatli foydalanuvchi kirishi qayd etildi (T1078).
   SOC triage bosqichlari:
@@ -8,6 +10,22 @@ description: |
   - vmware-hostd vs vmware-authd qaysi process orqali kirganligi muhim
   - vmware.sid orqali sessiyani kuzating
   - Noodatiy vaqt yoki joy bo'lsa eskalatsiya qiling
+description_ru: |
+  Зафиксирован успешный вход пользователя в систему VMware ESX через
+  vmware-hostd или vmware-authd (T1078).
+  Шаги SOC-триажа:
+  - Проверьте учётную запись вошедшего пользователя
+  - Важно, через какой процесс выполнен вход: vmware-hostd или vmware-authd
+  - Отследите сессию через vmware.sid
+  - Эскалируйте при нетипичном времени или месте
+description_en: |
+  A successful user login to the VMware ESX system via vmware-hostd or
+  vmware-authd was recorded (T1078).
+  SOC triage steps:
+  - Check the account of the user who logged in
+  - vmware-hostd vs vmware-authd: which process the login came through matters
+  - Track the session via vmware.sid
+  - Escalate if the time or location is unusual
 type: esql
 params: '{}'
 schedule_interval: 5m

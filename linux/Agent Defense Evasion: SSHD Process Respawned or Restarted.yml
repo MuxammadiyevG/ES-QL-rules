@@ -1,6 +1,8 @@
 rule_id: c8037c6b-000b-4404-82e3-09d3e4438bb2
-name: "Agent Defense Evasion: SSHD Process Respawned or Restarted"
-description: |
+name_uz: "Agent Defense Evasion: SSHD jarayoni qayta yaratildi yoki qayta ishga tushirildi"
+name_ru: "Agent Defense Evasion: процесс SSHD пересоздан или перезапущен"
+name_en: "Agent Defense Evasion: SSHD Process Respawned or Restarted"
+description_uz: |
   Ushbu qoida Defense Evasion va Persistence texnikalariga bog'liq bo'lib, sshd daemon
   jarayonining qayta ishga tushirilishini aniqlaydi. Hujumchi sshd binary ni trojanize
   qilib yoki sshd konfiguratsiyasini o'zgartirib persistent backdoor yaratishi mumkin.
@@ -12,6 +14,30 @@ description: |
   - `auditd.paths.inode` ni saqlang va keyingi o'zgarishlar bilan solishtiring.
   - sshd binary hash ni tekshiring: `sha256sum /usr/sbin/sshd`.
   - Noqonuniy bo'lsa: sshd binary ni verify qiling, konfiguratsiyani tekshiring.
+description_ru: |
+  Это правило связано с техниками Defense Evasion и Persistence и выявляет перезапуск
+  процесса демона sshd. Злоумышленник может троянизировать бинарный файл sshd
+  или изменить конфигурацию sshd и создать постоянный бэкдор.
+  Легитимные случаи: перезагрузка системы, reload службы systemd, обновление OpenSSH.
+  Шаги SOC-триажа:
+  - Проверьте `process.parent.pid` — запущен systemd (PID 1) или другим процессом.
+  - Проверьте флаги в `process.args`: `-D -R` — норма, необычные флаги подозрительны.
+  - `auditd.paths.mode` и `file.mode` — проверьте права бинарного файла sshd (0755 — норма).
+  - Сохраните `auditd.paths.inode` и сравните с последующими изменениями.
+  - Проверьте хеш бинарного файла sshd: `sha256sum /usr/sbin/sshd`.
+  - Если активность нелегитимна: верифицируйте бинарный файл sshd, проверьте конфигурацию.
+description_en: |
+  This rule is related to Defense Evasion and Persistence techniques and detects the sshd daemon
+  process being restarted. An attacker may trojanize the sshd binary
+  or modify the sshd configuration to create a persistent backdoor.
+  Legitimate cases: system restart, systemd service reload, OpenSSH update.
+  SOC triage steps:
+  - Check `process.parent.pid` — started by systemd (PID 1) or by another process.
+  - Check the flags in `process.args`: `-D -R` is normal, unusual flags are suspicious.
+  - `auditd.paths.mode` and `file.mode` — check the sshd binary permissions (0755 is normal).
+  - Record `auditd.paths.inode` and compare it with subsequent changes.
+  - Check the sshd binary hash: `sha256sum /usr/sbin/sshd`.
+  - If illegitimate: verify the sshd binary, review the configuration.
 type: esql
 params: '{}'
 schedule_interval: 5m

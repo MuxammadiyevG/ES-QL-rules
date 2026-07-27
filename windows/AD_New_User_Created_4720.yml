@@ -1,6 +1,8 @@
 rule_id: edf3d62c-e980-4521-b121-a4eed9c149d1
-name: AD New User Created on Domain Controller (4720)
-description: |
+name_uz: "Domain Controller'da Yangi AD Foydalanuvchi Yaratilishi (4720)"
+name_ru: "Создание новой учётной записи AD на контроллере домена (4720)"
+name_en: "AD New User Created on Domain Controller (4720)"
+description_uz: |
   Ushbu qoida persistence va privilege escalation texnikalariga bog'liq bo'lib, AD muhitida yangi foydalanuvchi yaratilishini aniqlaydi.
   Domain Controller'da yangi akkaunt ochilishi hujumchi uchun uzoq muddatli kirish nuqtasi yaratishi, keyinchalik guruh a'zoliklari orqali yuqori huquqlarga chiqishi mumkinligi sababli xavfli hisoblanadi.
   Qonuniy holatlarda HR onboarding, avtomatlashtirilgan IAM provisioning yoki migratsiya jarayonlari sabab bo'lishi mumkin.
@@ -10,6 +12,26 @@ description: |
   - Hodisa manbasi bo'lgan `src_ip` va unga tegishli hostni tekshiring.
   - Yaratilgan akkauntning guruh a'zoligini, ayniqsa imtiyozli guruhlarni tekshiring.
   - Tasdiqlanmagan bo'lsa akkauntni vaqtincha bloklang, sessiyalarni bekor qiling va DC bo'yicha containment choralarini boshlang.
+description_ru: |
+  Это правило связано с техниками закрепления и повышения привилегий и обнаруживает создание нового пользователя в среде AD.
+  Создание новой учётной записи на Domain Controller считается опасным, поскольку оно может дать атакующему долгосрочную точку входа, а затем — выход на повышенные права через членство в группах.
+  В легитимных случаях причиной могут быть HR onboarding, автоматизированный IAM provisioning или процессы миграции.
+  Шаги SOC triage:
+  - Определите актора и целевой объект (`actor`, `target_user`, `hostn`).
+  - Подтвердите наличие change ticket или официального deployment для этого изменения.
+  - Проверьте `src_ip`, являющийся источником события, и связанный с ним хост.
+  - Проверьте членство созданной учётной записи в группах, особенно в привилегированных.
+  - Если не подтверждено, временно заблокируйте учётную запись, отзовите сессии и начните меры containment на DC.
+description_en: |
+  This rule is related to persistence and privilege escalation techniques and detects the creation of a new user in the AD environment.
+  Creating a new account on a Domain Controller is considered dangerous because it can give an attacker a long-term entry point and later an escalation to higher rights through group memberships.
+  In legitimate cases the reason may be HR onboarding, automated IAM provisioning or migration processes.
+  SOC triage steps:
+  - Identify the actor and the target object (`actor`, `target_user`, `hostn`).
+  - Confirm that a change ticket or an official deployment exists for the change.
+  - Check the `src_ip` that is the source of the event and the host associated with it.
+  - Review the group membership of the created account, especially privileged groups.
+  - If unconfirmed, temporarily block the account, revoke the sessions and start containment measures on the DC.
 type: esql
 params: '{}'
 schedule_interval: 10m

@@ -1,6 +1,8 @@
 rule_id: 70d5591b-df0d-4831-9e05-6dd990b0c509
-name: "Privilege Escalation / Discovery: Suspicious Software Installed or Removed via apt/dpkg"
-description: |
+name_uz: "Privilege Escalation / Discovery: apt/dpkg orqali shubhali dasturiy ta'minot o'rnatildi yoki o'chirildi"
+name_ru: "Privilege Escalation / Discovery: подозрительное ПО установлено или удалено через apt/dpkg"
+name_en: "Privilege Escalation / Discovery: Suspicious Software Installed or Removed via apt/dpkg"
+description_uz: |
   Ushbu qoida Linux tizimida apt, apt-get yoki dpkg orqali shubhali yoki
   xavfsizlik nuqtai nazaridan sezgir dasturiy ta’minot o‘rnatilishi yoki
   o‘chirilishini aniqlaydi.
@@ -16,7 +18,38 @@ description: |
 
   Bu discovery, credential access, lateral movement yoki privilege escalation
   tayyorgarligi belgisi bo‘lishi mumkin.
+description_ru: |
+  Данное правило выявляет установку или удаление подозрительного либо
+  чувствительного с точки зрения безопасности программного обеспечения через
+  apt, apt-get или dpkg в системе Linux.
 
+  Отслеживаемые пакеты:
+  - nmap, masscan, zmap
+  - tcpdump, tshark, wireshark
+  - gcc, g++, make, cmake, build-essential
+  - netcat, ncat, socat
+  - hydra, john, hashcat
+  - python3-pip, pipx
+  - docker, docker.io
+
+  Это может быть признаком подготовки к discovery, доступу к учётным данным,
+  горизонтальному перемещению или повышению привилегий.
+description_en: |
+  This rule detects the installation or removal of suspicious or
+  security-sensitive software via apt, apt-get or dpkg on a Linux
+  system.
+
+  Packages monitored:
+  - nmap, masscan, zmap
+  - tcpdump, tshark, wireshark
+  - gcc, g++, make, cmake, build-essential
+  - netcat, ncat, socat
+  - hydra, john, hashcat
+  - python3-pip, pipx
+  - docker, docker.io
+
+  This may be a sign of preparation for discovery, credential access,
+  lateral movement or privilege escalation.
 type: esql
 params: "{}"
 schedule_interval: 10m

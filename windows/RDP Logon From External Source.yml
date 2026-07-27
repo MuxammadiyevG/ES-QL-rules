@@ -1,11 +1,25 @@
 rule_id: 0f7cb245-8f7d-4e36-aff7-cdcbbb3a52b8
-name: RDP Logon From External (Non-RFC1918) Source
-description: |
+name_uz: "Tashqi (non-RFC1918) manbadan RDP logon"
+name_ru: "RDP-вход с внешнего (non-RFC1918) источника"
+name_en: "RDP Logon From External (Non-RFC1918) Source"
+description_uz: |
   Ushbu qoida tashqi (internal bo'lmagan) IPv4 manzildan muvaffaqiyatli RDP logon (4624,
   LogonType 10) ni aniqlaydi. Internet'dan to'g'ridan-to'g'ri RDP juda xavfli kirish nuqtasi.
   SOC triage:
   - `src_ip` qayerdan (geo/reputatsiya), `target_user` kim?
   - RDP internetga ochiqligini tekshiring; VPN/gateway orqali bo'lishi kerak.
+description_ru: |
+  Это правило обнаруживает успешный вход по RDP (4624, LogonType 10) с внешнего (невнутреннего)
+  IPv4-адреса. RDP, доступный напрямую из Интернета, — крайне опасная точка входа.
+  SOC triage:
+  - Откуда `src_ip` (гео/репутация), кто `target_user`?
+  - Проверьте, открыт ли RDP в Интернет; доступ должен идти через VPN/шлюз.
+description_en: |
+  This rule detects a successful RDP logon (4624, LogonType 10) from an external (non-internal)
+  IPv4 address. RDP exposed directly from the Internet is a very dangerous entry point.
+  SOC triage:
+  - Where is `src_ip` from (geo/reputation), who is `target_user`?
+  - Check whether RDP is exposed to the Internet; it should go through a VPN/gateway.
 type: esql
 params: '{}'
 schedule_interval: 10m

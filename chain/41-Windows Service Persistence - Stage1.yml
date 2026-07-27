@@ -1,7 +1,15 @@
 rule_id: ac0ab9b7-0ae5-4f69-a7ed-74d9ce82b2d5
-name: "Chain: Windows Service Persistence — Stage 1: Suspicious Service Installation"
-description: |
+name_uz: "Zanjir: Windows Service Persistence — 1-bosqich: Shubhali xizmat o'rnatilishi"
+name_ru: "Цепочка: Windows Service Persistence — Этап 1: Установка подозрительной службы"
+name_en: "Chain: Windows Service Persistence — Stage 1: Suspicious Service Installation"
+description_uz: |
   Windows Service Persistence zanjiri — 1-bosqich (2 dan).
+  Suspicious Service Installation.
+description_ru: |
+  Цепочка Windows Service Persistence — этап 1 (из 2).
+  Установка подозрительной службы.
+description_en: |
+  Windows Service Persistence chain — stage 1 (of 2).
   Suspicious Service Installation.
 type: esql
 enabled: true

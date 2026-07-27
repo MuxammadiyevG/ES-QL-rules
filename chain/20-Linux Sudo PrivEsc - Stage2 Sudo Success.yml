@@ -1,9 +1,19 @@
 rule_id: 097764a7-491e-4e78-a500-64b44d146f03
-name: "Chain: Sudo Success After Failures (Linux)"
-description: |
+name_uz: "Zanjir: Muvaffaqiyatsizliklardan keyin sudo muvaffaqiyati (Linux)"
+name_ru: "Цепочка: Успешный sudo после неудач (Linux)"
+name_en: "Chain: Sudo Success After Failures (Linux)"
+description_uz: |
   Linux sudo privesc zanjiri — 2-bosqich.
   Muvaffaqiyatsiz urinishlardan keyin o'sha foydalanuvchi sudo'dan muvaffaqiyatli o'tishi.
   1-bosqichga bog'langan.
+description_ru: |
+  Цепочка Linux sudo privesc — этап 2.
+  После неудачных попыток тот же пользователь успешно проходит sudo.
+  Связан с этапом 1.
+description_en: |
+  Linux sudo privesc chain — stage 2.
+  After failed attempts, the same user successfully passes sudo.
+  Linked to stage 1.
 type: esql
 enabled: true
 params: "{}"

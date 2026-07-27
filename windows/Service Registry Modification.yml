@@ -1,11 +1,25 @@
 rule_id: 851ab6af-caaa-4875-a91b-62ebd51ae301
-name: Service Registry Key Modification (ImagePath / ServiceDll)
-description: |
+name_uz: "Xizmat registri kalitining o'zgartirilishi (ImagePath / ServiceDll)"
+name_ru: "Изменение ключа реестра службы (ImagePath / ServiceDll)"
+name_en: "Service Registry Key Modification (ImagePath / ServiceDll)"
+description_uz: |
   Ushbu qoida xizmat registriga (Services\<name>\ImagePath yoki Parameters\ServiceDll)
   yozishni aniqlaydi (Sysmon 13) — xizmat orqali persistence yoki svchost-DLL hijack
   (T1543.003 / T1574.002).
   SOC triage:
   - `details` (yangi yo'l) qonuniy joydami? `target_objects` qaysi xizmat?
+description_ru: |
+  Это правило выявляет запись в реестр службы (Services\<name>\ImagePath или Parameters\ServiceDll)
+  (Sysmon 13) — закрепление (persistence) через службу или svchost-DLL hijack
+  (T1543.003 / T1574.002).
+  SOC triage:
+  - Является ли `details` (новый путь) легитимным расположением? Какая служба в `target_objects`?
+description_en: |
+  This rule detects a write to the service registry (Services\<name>\ImagePath or Parameters\ServiceDll)
+  (Sysmon 13) — persistence via a service or svchost-DLL hijack
+  (T1543.003 / T1574.002).
+  SOC triage:
+  - Is `details` (the new path) a legitimate location? Which service is `target_objects`?
 type: esql
 params: '{}'
 schedule_interval: 10m

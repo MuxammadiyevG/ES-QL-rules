@@ -1,8 +1,16 @@
 rule_id: 79e151a9-135d-4812-a468-3b0a723b52c9
-name: UniFi Poor AP Link Speed
-description: |
+name_uz: "UniFi AP uplink tezligi past"
+name_ru: "Низкая скорость линка UniFi AP"
+name_en: "UniFi Poor AP Link Speed"
+description_uz: |
   Ushbu qoida AP uplink tezligi kutilganidan past bo'lganini aniqlaydi.
   Kabel, port negotiation, PoE, duplex yoki switch port muammolarini tekshirish kerak.
+description_ru: |
+  Это правило обнаруживает, что скорость uplink точки доступа (AP) ниже ожидаемой.
+  Следует проверить проблемы кабеля, port negotiation, PoE, duplex или switch port.
+description_en: |
+  This rule detects that the AP uplink speed is lower than expected.
+  Cable, port negotiation, PoE, duplex or switch port issues should be checked.
 type: esql
 params: "{}"
 schedule_interval: 10m

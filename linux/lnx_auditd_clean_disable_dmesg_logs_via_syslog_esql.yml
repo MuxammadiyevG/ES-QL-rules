@@ -1,6 +1,16 @@
 rule_id: cf9894c0-1101-40b5-a58d-5388e8f8c428
-name: "Kernel Ring Buffer (dmesg) Clearing Detection"
-description: |
+name_uz: "Kernel ring buffer (dmesg) tozalanishini aniqlash"
+name_ru: "Обнаружение очистки кольцевого буфера ядра (dmesg)"
+name_en: "Kernel Ring Buffer (dmesg) Clearing Detection"
+description_uz: |
+  syslog syscall orqali kernel ring buffer (dmesg) loglarining tozalanishi yoki o'chirilishini aniqlaydi.
+  Tajovuzkorlar ekspluatatsiya yoki drayver yuklash izlarini yashirish uchun kernel loglarini tozalashi mumkin.
+  syslog syscall ni 4 (READ_CLEAR), 5 (CLEAR) yoki 6 (CONSOLE_OFF) amallari bilan kuzatadi.
+description_ru: |
+  Обнаруживает очистку или отключение журналов кольцевого буфера ядра (dmesg) через системный вызов syslog.
+  Злоумышленники могут очищать журналы ядра, чтобы скрыть следы эксплуатации или загрузки драйверов.
+  Отслеживает системный вызов syslog с действиями 4 (READ_CLEAR), 5 (CLEAR) или 6 (CONSOLE_OFF).
+description_en: |
   Detects clearing or disabling of kernel ring buffer (dmesg) logs via syslog syscall.
   Adversaries may clear kernel logs to hide traces of exploitation or driver loading.
   Monitors syslog syscall with actions 4 (READ_CLEAR), 5 (CLEAR), or 6 (CONSOLE_OFF).

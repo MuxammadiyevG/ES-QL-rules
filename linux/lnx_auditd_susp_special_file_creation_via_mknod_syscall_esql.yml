@@ -1,6 +1,16 @@
 rule_id: eb188e5b-fa43-46e4-ad30-e91566e8cc0a
-name: "Special File Creation via Mknod Syscall"
-description: |
+name_uz: "Mknod syscall orqali maxsus fayl yaratish"
+name_ru: "Создание специальных файлов через системный вызов Mknod"
+name_en: "Special File Creation via Mknod Syscall"
+description_uz: |
+  mknod syscall yordamida maxsus fayllar (blok/belgili qurilmalar) yaratilishini aniqlaydi.
+  Tajovuzkorlar soxta qurilmalar yoki yashirin kanallar yaratishi mumkin.
+  Audit qoidasi talab qilinadi: -S mknod / -S mknodat.
+description_ru: |
+  Обнаруживает создание специальных файлов (блочных/символьных устройств) с помощью системного вызова mknod.
+  Злоумышленники могут создавать поддельные устройства или скрытые каналы.
+  Требуется правило аудита: -S mknod / -S mknodat.
+description_en: |
   Detects creation of special files (block/character devices) using mknod syscall.
   Adversaries may creating fake devices or covert channels.
   Requires audit rule: -S mknod / -S mknodat.

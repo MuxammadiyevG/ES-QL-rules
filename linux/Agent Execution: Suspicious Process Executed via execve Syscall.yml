@@ -1,6 +1,8 @@
 rule_id: aad8a429-7ebb-4a0c-a0a5-8abf638b3567
-name: "Agent Execution: Suspicious Process Executed via execve Syscall"
-description: |
+name_uz: "Agent Execution: execve syscall orqali shubhali jarayon bajarildi"
+name_ru: "Agent Execution: подозрительный процесс выполнен через syscall execve"
+name_en: "Agent Execution: Suspicious Process Executed via execve Syscall"
+description_uz: |
   Ushbu qoida Execution texnikasiga bog'liq bo'lib, tizimda execve syscall orqali ishga tushirilgan
   jarayonlarni aniqlaydi. Hujumchi shell, interpreter yoki tizim vositalarini ishlatib zarar etkazuvchi
   buyruqlarni bajarishi mumkin.
@@ -12,6 +14,30 @@ description: |
   - `auditd.data.tty` qiymatini tekshiring: interaktiv (pts/X) vs avtomatik (none).
   - Jarayon parent PID zanjirini ko'rib, zararli chain borligini aniqlang.
   - Noqonuniy bo'lsa: jarayonni o'ldiring, sessiyani to'xtating, forensic dump oling.
+description_ru: |
+  Это правило связано с техникой Execution и выявляет процессы, запущенные в системе
+  через syscall execve. Злоумышленник может с помощью shell, интерпретатора или системных утилит выполнять
+  вредоносные команды.
+  Легитимные случаи: обычные системные процессы, перезапуск демонов, задания cron, SSH-сессии.
+  Шаги SOC-триажа:
+  - Проверьте `process.executable` и `process.args` — выявите необычные аргументы или пути.
+  - Сравните `auditd.summary.actor.primary` (исходный пользователь) и `user.name` (эффективный).
+  - Если `process.working_directory` находится вне домашнего каталога — обратите внимание.
+  - Проверьте значение `auditd.data.tty`: интерактивный (pts/X) или автоматический (none).
+  - Изучите цепочку родительских PID процесса и определите, есть ли вредоносная цепочка.
+  - Если активность нелегитимна: завершите процесс, остановите сессию, снимите форензик-дамп.
+description_en: |
+  This rule is related to the Execution technique and detects processes started on the system
+  via the execve syscall. An attacker may use a shell, an interpreter, or system utilities to run
+  malicious commands.
+  Legitimate cases: ordinary system processes, daemon restart, cron jobs, SSH sessions.
+  SOC triage steps:
+  - Check `process.executable` and `process.args` — identify unusual arguments or paths.
+  - Look at the difference between `auditd.summary.actor.primary` (original user) and `user.name` (effective).
+  - If `process.working_directory` is outside the home directory — pay attention.
+  - Check the `auditd.data.tty` value: interactive (pts/X) vs automated (none).
+  - Review the process parent PID chain and determine whether a malicious chain exists.
+  - If illegitimate: kill the process, terminate the session, take a forensic dump.
 type: esql
 params: '{}'
 schedule_interval: 5m

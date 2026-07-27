@@ -1,6 +1,8 @@
 rule_id: 302c92fa-e321-47c0-b38e-79ca762adf4b
-name: "Agent Network: Promiscuous Mode Enabled on Network Interface"
-description: |
+name_uz: "Agent Network: Tarmoq interfeysida promiscuous mode yoqildi"
+name_ru: "Agent Network: На сетевом интерфейсе включён promiscuous mode"
+name_en: "Agent Network: Promiscuous Mode Enabled on Network Interface"
+description_uz: |
   Ushbu qoida Collection va Credential Access texnikalariga bog'liq bo'lib, tarmoq interfeysida promiscuous mode yoqilishini aniqlaydi.
   Hujumchi tarmoq trafikini tinglash (sniffing) orqali login credential yoki maxfiy ma'lumotlarni ushlamoqchi bo'lishi mumkin.
   Qonuniy holatlar: tarmoq diagnostikasi vositalari (tcpdump, Wireshark), monitoring agentlari, virtual switch konfiguratsiyasi.
@@ -10,6 +12,26 @@ description: |
   - O'sha paytda qaysi process ishlayotganini tekshiring (process.executable).
   - Docker/veth interfeyslari uchun container context ni tekshiring.
   - Noqonuniy bo'lsa: interfeys promiscuous modeni o'chiring, host trafikini tekshiring.
+description_ru: |
+  Это правило связано с техниками Collection и Credential Access и выявляет включение promiscuous mode на сетевом интерфейсе.
+  Злоумышленник может пытаться перехватить учётные данные для входа или конфиденциальную информацию, прослушивая сетевой трафик (sniffing).
+  Легитимные случаи: средства сетевой диагностики (tcpdump, Wireshark), агенты мониторинга, конфигурация virtual switch.
+  Шаги SOC-триажа:
+  - Определите интерфейс (`auditd.data.dev`) и хост (`host.hostname`), на которых произошло событие.
+  - Сравните значения `auditd.data.prom` и `auditd.data.old_prom`.
+  - Проверьте, какой процесс работал в это время (process.executable).
+  - Для интерфейсов Docker/veth проверьте container context.
+  - Если нелегитимно: отключите promiscuous mode на интерфейсе, проверьте трафик хоста.
+description_en: |
+  This rule is related to Collection and Credential Access techniques and detects promiscuous mode being enabled on a network interface.
+  An attacker may try to capture login credentials or confidential data by listening to network traffic (sniffing).
+  Legitimate cases: network diagnostic tools (tcpdump, Wireshark), monitoring agents, virtual switch configuration.
+  SOC triage steps:
+  - Identify the interface (`auditd.data.dev`) and the host (`host.hostname`) where the event occurred.
+  - Compare the `auditd.data.prom` and `auditd.data.old_prom` values.
+  - Check which process was running at that moment (process.executable).
+  - For Docker/veth interfaces, check the container context.
+  - If illegitimate: disable promiscuous mode on the interface, inspect the host traffic.
 type: esql
 params: '{}'
 schedule_interval: 5m

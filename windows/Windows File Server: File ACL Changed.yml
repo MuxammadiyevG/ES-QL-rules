@@ -1,10 +1,22 @@
 rule_id: 0adcbc24-08dd-458d-84b9-a11873cc6a6f
-name: "Windows File Server: File ACL Changed"
-description: |
+name_uz: "Windows File Server: Fayl ACL O'zgartirildi"
+name_ru: "Windows File Server: изменение ACL файла"
+name_en: "Windows File Server: File ACL Changed"
+description_uz: |
   Ushbu qoida Windows File Server share ostidagi fayl yoki papkada ACL,
   permission yoki DACL o‘zgartirilganini aniqlaydi. 4670 permission change
   hodisasi eng aniq signal hisoblanadi. 4663 dagi `WRITE_DAC` yoki `0x40000`
   accesslari permission change urinishini ko‘rsatishi mumkin.
+description_ru: |
+  Это правило выявляет изменение ACL, разрешений или DACL у файла или папки
+  под шарой Windows File Server. Событие 4670 (permission change)
+  считается наиболее точным сигналом. Доступы `WRITE_DAC` или `0x40000`
+  в 4663 могут указывать на попытку permission change.
+description_en: |
+  This rule detects that the ACL, permissions, or DACL of a file or folder
+  under a Windows File Server share has been changed. The 4670 permission change
+  event is considered the most precise signal. The `WRITE_DAC` or `0x40000`
+  accesses in 4663 may indicate a permission change attempt.
 type: esql
 params: "{}"
 schedule_interval: 5m

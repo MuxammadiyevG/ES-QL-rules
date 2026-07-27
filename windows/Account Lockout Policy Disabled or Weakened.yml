@@ -1,6 +1,8 @@
 rule_id: 5bdd228b-cae6-486f-a186-9a027b726227
-name: Account Lockout / Domain Policy Changed
-description: |
+name_uz: "Akkaunt lockout / domen siyosati o'zgartirildi"
+name_ru: "Изменена политика блокировки учётных записей / политика домена"
+name_en: "Account Lockout / Domain Policy Changed"
+description_uz: |
   Ushbu qoida domen siyosati o'zgarishini aniqlaydi (4739 — Domain Policy Changed). 4739
   kamdan-kam va yuqori imtiyoz talab qiladi; lockout/parol siyosatini zaiflashtirish brute
   force'ga yo'l ochadi.
@@ -11,6 +13,28 @@ description: |
   SOC triage:
   - `actor` kim, bu rasmiy baseline o'zgarishimi (change ticket)?
   - Tasdiqlanmasa: siyosatni tiklang, aktorni cheklang.
+description_ru: |
+  Данное правило выявляет изменение доменной политики (4739 — Domain Policy Changed). 4739
+  встречается редко и требует высоких привилегий; ослабление политики lockout/паролей открывает путь
+  к перебору паролей (brute force).
+  Примечание: в вашем индексе `LockoutThreshold`/`LockoutDuration` ОТСУТСТВУЮТ — по этой
+  причине точное значение lockout показать невозможно; правило выводит любое изменение 4739 и имеющийся
+  `MinimumPasswordLength`. Чтобы увидеть значение lockout, в audit/parser
+  включите эти поля.
+  SOC triage:
+  - Кто такой `actor`, является ли это официальным изменением baseline (change ticket)?
+  - Если не подтверждено: восстановите политику, ограничьте актора.
+description_en: |
+  This rule detects a domain policy change (4739 — Domain Policy Changed). 4739
+  is rare and requires high privileges; weakening the lockout/password policy opens the way to brute
+  force.
+  Note: your index does NOT have `LockoutThreshold`/`LockoutDuration` — for this
+  reason it cannot show the exact lockout value; the rule surfaces any 4739 change and the available
+  `MinimumPasswordLength`. To see the lockout value, enable those fields in the
+  audit/parser.
+  SOC triage:
+  - Who is the `actor`, is this an official baseline change (change ticket)?
+  - If not confirmed: restore the policy, restrict the actor.
 type: esql
 params: '{}'
 schedule_interval: 10m

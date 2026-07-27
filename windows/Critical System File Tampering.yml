@@ -8,8 +8,26 @@ rule_id: aac8e2ae-d220-4d99-9d32-7492508af4e7
 #//Field validation: Requires Sysmon configured on logs-winlog* agents
 #//Tuning notes: Allowlist software update processes, patch windows
 
-name: "Critical System File Tampering"
-description: |
+name_uz: "Muhim tizim fayllarining buzib o'zgartirilishi"
+name_ru: "Вмешательство в критичные системные файлы"
+name_en: "Critical System File Tampering"
+description_uz: |
+  Operatsion tizimning muhim binar fayllari va kutubxonalariga kiritilgan o'zgarishlarni aniqlaydi.
+  System32 dagi fayllarning o'zgarishi rootkit yoki malware yuqqanligi ehtimolidan darak beradi.
+  Sysmon FileCreate (event 11) va FileCreateTime (event 2) hodisalaridan foydalanadi.
+  Bajariladigan fayllarda fayl yaratilishi yoki timestamp o'zgarishi fayl almashtirish hujumlarining kuchli indikatoridir.
+  False positive: Windows yangilanishlari, qonuniy patching.
+  Triage: o'zgarish maintenance window ichida sodir bo'lganini tekshiring, fayl imzosini tekshiring,
+  hashni ma'lum-yaxshi (known-good) baseline bilan solishtiring, antivirus bilan skanerlang.
+description_ru: |
+  Обнаруживает изменения критичных двоичных файлов и библиотек операционной системы.
+  Изменения файлов в System32 указывают на возможное заражение rootkit или malware.
+  Использует события Sysmon FileCreate (event 11) и FileCreateTime (event 2).
+  Создание файла или изменение временных меток исполняемых файлов — надёжный индикатор атак с подменой файлов.
+  Ложные срабатывания: обновления Windows, легитимная установка патчей.
+  Триаж: проверьте, произошло ли изменение в течение окна обслуживания, проверьте подпись файла,
+  сравните хеш с эталонным (known-good) baseline, выполните проверку антивирусом.
+description_en: |
   Detects modifications to critical operating system binaries and libraries.
   Changes to files in System32 indicate potential rootkit or malware infection.
   Uses Sysmon FileCreate (event 11) and FileCreateTime (event 2) events.

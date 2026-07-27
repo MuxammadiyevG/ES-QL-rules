@@ -1,10 +1,22 @@
 rule_id: 076d94d4-e89b-43cb-baee-20b639322b82
-name: "Switch NT_GREEN: Portda bir nechta LLDP qo'shni aniqlandi"
-description: |
+name_uz: "Switch NT_GREEN: Portda bir nechta LLDP qo'shni aniqlandi"
+name_ru: "Switch NT_GREEN: На порту обнаружено несколько LLDP-соседей"
+name_en: "Switch NT_GREEN: Multiple LLDP Neighbors Detected on Port"
+description_uz: |
   Bitta switch portida bir nechta LLDP qo'shni qurilma aniqlandi.
   Bu odatda portga hub, unmanaged switch yoki tarmoq taplovchi
   qurilma ulanganligini ko'rsatadi.
   SOC triage: Port ga ruxsatsiz qurilma ulanmaganligini tekshiring.
+description_ru: |
+  На одном порту switch обнаружено несколько соседних LLDP-устройств.
+  Обычно это указывает на то, что к порту подключён hub, unmanaged switch
+  или устройство сетевого ответвления (tap).
+  SOC triage: Проверьте, что к порту не подключено несанкционированное устройство.
+description_en: |
+  Multiple LLDP neighbor devices were detected on a single switch port.
+  This usually indicates that a hub, an unmanaged switch or a network tapping
+  device is connected to the port.
+  SOC triage: Verify that no unauthorized device is connected to the port.
 type: esql
 params: '{}'
 schedule_interval: 5m

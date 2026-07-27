@@ -1,7 +1,15 @@
 rule_id: 6fa58b80-bb25-4cdc-8f56-e0bc4775348c
-name: "Chain: Linux Container Privileged Escape — Stage 1: Dangerous Container Invocation"
-description: |
+name_uz: "Zanjir: Linux konteynerdan imtiyozli chiqish (escape) — 1-bosqich: xavfli konteyner ishga tushirilishi"
+name_ru: "Цепочка: привилегированный побег из контейнера Linux — Этап 1: опасный запуск контейнера"
+name_en: "Chain: Linux Container Privileged Escape — Stage 1: Dangerous Container Invocation"
+description_uz: |
   Linux Container Privileged Escape zanjiri — 1-bosqich (2 dan).
+  Dangerous Container Invocation.
+description_ru: |
+  Цепочка привилегированного побега из контейнера Linux — Этап 1 (из 2).
+  Опасный запуск контейнера.
+description_en: |
+  Linux Container Privileged Escape chain — Stage 1 (of 2).
   Dangerous Container Invocation.
 type: esql
 enabled: true

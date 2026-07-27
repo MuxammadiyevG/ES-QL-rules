@@ -1,6 +1,8 @@
 rule_id: d098e695-2b6c-40cc-aa09-87fc97348a5c
-name: "Agent FIM: Windows Event Log File Modified or Deleted (Log Tampering)"
-description: |
+name_uz: "Agent FIM: Windows Event Log fayli o'zgartirildi yoki o'chirildi (Log Tampering)"
+name_ru: "Agent FIM: изменение или удаление файла Windows Event Log (Log Tampering)"
+name_en: "Agent FIM: Windows Event Log File Modified or Deleted (Log Tampering)"
+description_uz: |
   Ushbu qoida Defense Evasion texnikasiga bog'liq bo'lib, Windows Event Log fayllarining
   o'zgartirilishi yoki o'chirilishini aniqlaydi. Hujumchi o'z izlarini yashirish maqsadida
   .evtx log fayllarini o'chirishi yoki o'zgartirishi mumkin.
@@ -11,6 +13,28 @@ description: |
   - `file.size` kutilganidan kichik bo'lsa — log cleared bo'lishi mumkin.
   - Windows Event ID 1102 (Security log cleared) va 104 (System log cleared) bilan korrelatsiya.
   - Noqonuniy bo'lsa: backup dan tiklang, incident oching, forensic dump oling.
+description_ru: |
+  Данное правило связано с техникой Defense Evasion и обнаруживает изменение
+  или удаление файлов Windows Event Log. Атакующий с целью скрыть свои следы может
+  удалить или изменить файлы журналов .evtx.
+  Легитимные случаи: log rotation, система Windows log management.
+  Этапы SOC-триажа:
+  - `file.name` — Security.evtx, System.evtx, Application.evtx — критичные файлы.
+  - `event.action` — если deleted, реагируйте немедленно.
+  - Если `file.size` меньше ожидаемого — возможно, журнал был очищен (log cleared).
+  - Корреляция с Windows Event ID 1102 (Security log cleared) и 104 (System log cleared).
+  - Если нелегитимно: восстановите из резервной копии, откройте инцидент, снимите forensic dump.
+description_en: |
+  This rule is related to the Defense Evasion technique and detects modification
+  or deletion of Windows Event Log files. To hide their traces, an attacker may
+  delete or modify .evtx log files.
+  Legitimate cases: log rotation, Windows log management system.
+  SOC triage steps:
+  - `file.name` — Security.evtx, System.evtx, Application.evtx are critical files.
+  - `event.action` — if deleted, respond immediately.
+  - If `file.size` is smaller than expected — the log may have been cleared.
+  - Correlation with Windows Event ID 1102 (Security log cleared) and 104 (System log cleared).
+  - If illegitimate: restore from backup, open an incident, take a forensic dump.
 type: esql
 params: '{}'
 schedule_interval: 5m
