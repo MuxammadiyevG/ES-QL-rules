@@ -1,0 +1,77 @@
+rule_id: "53979e24-478d-4371-925a-56e4e1d02404"
+
+name_uz: "Tizim xavfsizlik devori (firewall) xizmati to'xtatilgan yoki o'chirilgan"
+name_ru: "Остановка или отключение службы системного межсетевого экрана"
+name_en: "System Firewall Service Stopped or Disabled"
+
+description_uz: |
+  Tizim xavfsizlik devori xizmatlarini (firewalld, ufw, iptables) to'xtatish yoki o'chirishni aniqlaydi.
+  Hujumchilar tarmoq nazoratini chetlab o'tish uchun xavfsizlik devorini o'chirishi mumkin.
+  systemctl/service buyruqlari va Auditd SERVICE_STOP hodisalarini kuzatadi.
+description_ru: |
+  Обнаруживает остановку или отключение служб межсетевого экрана (firewalld, ufw, iptables).
+  Злоумышленники могут отключать межсетевые экраны, чтобы обойти сетевые средства контроля.
+  Отслеживает команды systemctl/service и события Auditd SERVICE_STOP.
+description_en: |
+  Detects stopping or disabling of system firewall services (firewalld, ufw, iptables).
+  Adversaries may disable firewalls to bypass network controls.
+  Monitors systemctl/service commands and Auditd SERVICE_STOP events.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  /* auditd EXECVE or SERVICE_STOP */
+  /* selection 1: command execution (systemctl/service stop) */
+  | WHERE (
+      (
+        process.name IN ("systemctl", "service", "ufw", "firewall-cmd")
+        AND (
+          (
+            TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*(stop|disable|kill).*"
+            AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*(firewalld|ufw|iptables|nftables).*"
+          )
+          OR (
+            process.name == "ufw" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*disable.*"
+          )
+        )
+      )
+    )
+    /* selection 2: auditd SERVICE_STOP event */
+    OR (
+      event.type == "SERVICE_STOP"
+      AND (
+        TO_LOWER(COALESCE(event.original, "")) RLIKE ".*unit=firewalld.*"
+        OR TO_LOWER(COALESCE(event.original, "")) RLIKE ".*unit=ufw.*"
+        OR TO_LOWER(COALESCE(event.original, "")) RLIKE ".*unit=iptables.*"
+      )
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      command_lines = VALUES(process.title),
+      hosts = VALUES(host.name),
+      raw_samples = VALUES(event.original)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, hosts, raw_samples
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.defense-evasion
+  - attack.t1562.004
+severity: high
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1562/004/"
+  - "https://firewalld.org/documentation/man-pages/firewall-cmd.html"
+nist: ["SI-4", "AU-12", "SC-7"]
+pci_dss: ["10.2", "1.4"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0005:
+    T1562: ["T1562.004"]

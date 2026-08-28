@@ -1,0 +1,47 @@
+rule_id: "08d77dce-33cd-47d5-ae53-113757200238"
+
+name_uz: "Tizimni o'chirish yoki qayta yuklashni aniqlash"
+name_ru: "Обнаружение выключения или перезагрузки системы"
+name_en: "System Shutdown/Reboot Detection"
+
+description_uz: |
+  Tizimni o'chirish yoki qayta yuklash buyruqlarini aniqlaydi.
+  Zarar yetkazish (impact) yoki xizmatdan voz kechirish (DoS) faoliyatidan darak berishi mumkin.
+description_ru: |
+  Обнаруживает команды выключения или перезагрузки системы.
+  Может указывать на воздействие (impact) или отказ в обслуживании.
+description_en: |
+  Detects system shutdown or reboot commands.
+  May indicate impact or denial of service activities.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  | WHERE event.action == "executed"
+  | WHERE process.name IN ("shutdown", "poweroff", "reboot", "halt")
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      command_lines = VALUES(process.title),
+      hosts = VALUES(host.name)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, hosts
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.impact
+  - attack.t1529
+severity: medium
+risk_score: 60
+nist: ["SI-4", "AU-12"]
+pci_dss: ["10.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0040:
+    T1529: []

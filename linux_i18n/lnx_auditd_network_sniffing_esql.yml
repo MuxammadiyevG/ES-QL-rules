@@ -1,0 +1,67 @@
+rule_id: "c78aa970-7107-4479-b2f1-a2f1af7a33f5"
+
+name_uz: "Tarmoq trafigini tinglashni (sniffing) aniqlash — Linux"
+name_ru: "Обнаружение перехвата сетевого трафика — Linux"
+name_en: "Network Sniffing Detection - Linux"
+
+description_uz: |
+  Tarmoq tinglash (sniffing) — tizimning tarmoq interfeysidan simli yoki simsiz ulanish orqali uzatilayotgan ma'lumotlarni kuzatish yoki qo'lga olish uchun foydalanishdir.
+  Hujumchi tarmoqdagi ma'lumotlarga passiv kirish uchun tarmoq interfeysini promiscuous rejimga o'tkazishi yoki ko'proq ma'lumot to'plash uchun span portlaridan foydalanishi mumkin.
+  tcpdump va tshark tinglash vositalaridan foydalanishni aniqlaydi.
+  Eslatma: qonuniy administratorlar bu vositalardan nosozliklarni bartaraf etish uchun foydalanishi mumkin. Muhitingiz uchun bazaviy profil tuzing.
+description_ru: |
+  Перехват сетевого трафика (sniffing) — это использование сетевого интерфейса системы для мониторинга или захвата данных, передаваемых по проводному или беспроводному соединению.
+  Злоумышленник может перевести сетевой интерфейс в неразборчивый (promiscuous) режим для пассивного доступа к данным в сети или использовать span-порты для захвата большего объёма данных.
+  Обнаруживает использование инструментов tcpdump и tshark.
+  Примечание: легитимные администраторы могут применять эти инструменты для диагностики. Составьте базовый профиль вашей среды.
+description_en: |
+  Network sniffing refers to using the network interface on a system to monitor or capture information sent over a wired or wireless connection.
+  An adversary may place a network interface into promiscuous mode to passively access data in transit over the network, or use span ports to capture a larger amount of data.
+  Detects usage of tcpdump and tshark network sniffing tools.
+  Note: Legitimate administrators may use these tools for troubleshooting. Baseline your environment.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  /* auditd execve telemetry */
+  | WHERE event.action == "executed"
+  /* selection: tcpdump or tshark with capture flags */
+  | WHERE (
+      (process.name == "tcpdump" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*-c.*-i.*")
+      OR (process.name == "tshark" AND TO_LOWER(COALESCE(MV_CONCAT(process.args, " "), "")) RLIKE ".*-c.*-i.*")
+    )
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      command_lines = VALUES(process.title),
+      executables = VALUES(process.executable),
+      hosts = VALUES(host.name),
+      raw_samples = VALUES(event.original)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, command_lines, executables, hosts, raw_samples
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.credential-access
+  - attack.discovery
+  - attack.t1040
+  - detection.threat-hunting
+severity: low
+risk_score: 40
+references:
+  - "https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1040/T1040.md"
+  - "https://attack.mitre.org/techniques/T1040/"
+nist: ["SI-4", "AU-12", "AC-3"]
+pci_dss: ["10.2", "10.6.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0006:
+    T1040: []
+  TA0007:
+    T1040: []

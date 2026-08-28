@@ -1,0 +1,55 @@
+rule_id: "c3e1a017-8c8c-4413-8f26-fb6ee1e1d030"
+
+name_uz: "Foydalanuvchi hisobi yaratilishini aniqlash"
+name_ru: "Обнаружение создания учётной записи пользователя"
+name_en: "User Account Creation Detection"
+
+description_uz: |
+  Tizimda yangi foydalanuvchi hisobi yaratilishini aniqlaydi.
+  Hujumchilar tizimda mustahkamlanish (persistence) uchun yangi hisoblar yaratishi mumkin.
+  useradd buyrug'i bajarilishi yoki ADD_USER audit hodisalarini kuzatadi.
+description_ru: |
+  Обнаруживает создание новой учётной записи пользователя.
+  Злоумышленники могут создавать новые учётные записи для закрепления в системе.
+  Отслеживает выполнение команды useradd и события аудита ADD_USER.
+description_en: |
+  Detects the creation of a new user account.
+  Adversaries may create new accounts for persistence.
+  Monitors execution of useradd command or ADD_USER audit events.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  /* auditd SYSCALL or ADD_USER events */
+  /* selection: useradd execution or ADD_USER record */
+  | WHERE (process.executable RLIKE ".*/useradd" OR event.action == "added-user-account" OR event.type == "ADD_USER")
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      hosts = VALUES(host.name),
+      raw_samples = VALUES(event.original)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, hosts, raw_samples
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.persistence
+  - attack.t1136.001
+  - detection.threat-hunting
+severity: medium
+risk_score: 50
+references:
+  - "https://attack.mitre.org/techniques/T1136/001/"
+nist: ["SI-4", "AU-12", "AC-2"]
+pci_dss: ["10.2", "8.1"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1136: ["T1136.001"]

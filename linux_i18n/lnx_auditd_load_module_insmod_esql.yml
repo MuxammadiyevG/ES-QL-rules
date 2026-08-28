@@ -1,0 +1,59 @@
+rule_id: "4b0234f5-29e0-407b-a66d-ec29d95808ae"
+
+name_uz: "Yadro moduli yuklanishini (insmod) aniqlash"
+name_ru: "Обнаружение загрузки модуля ядра (insmod)"
+name_en: "Kernel Module Loading (Insmod) Detection"
+
+description_uz: |
+  insmod buyrug'i orqali yadro modullari yuklanishini aniqlaydi.
+  Hujumchilar mustahkamlanish yoki imtiyozlarni oshirish uchun zararli yadro modullarini yuklashi mumkin.
+  kmod/insmod bajarilishini kuzatadi.
+description_ru: |
+  Обнаруживает загрузку модулей ядра командой insmod.
+  Злоумышленники могут загружать вредоносные модули ядра для закрепления или повышения привилегий.
+  Отслеживает выполнение kmod/insmod.
+description_en: |
+  Detects loading of kernel modules with insmod command.
+  Adversaries may load malicious kernel modules for persistence or privilege escalation.
+  Monitors execution of kmod/insmod.
+type: esql
+params: '{}'
+schedule_interval: 10m
+index:
+  - logs-updive.audit-*
+query_language: esql
+query: |
+  FROM logs-updive.audit-*
+  | WHERE @timestamp >= NOW() - 10 minutes
+  /* auditd SYSCALL events */
+  /* selection: insmod execution */
+  | WHERE (process.name == "insmod" OR process.executable == "/usr/bin/kmod")
+  | STATS
+      event_count = COUNT(*),
+      users = VALUES(user.name),
+      processes = VALUES(process.name),
+      executables = VALUES(process.executable),
+      command_lines = VALUES(process.title),
+      hosts = VALUES(host.name),
+      raw_samples = VALUES(event.original)
+    BY agent_id, host.name, user.name, bucket = DATE_TRUNC(10 minutes, @timestamp)
+  | KEEP agent_id, bucket, host.name, user.name, event_count, users, processes, executables, command_lines, hosts, raw_samples
+  | SORT event_count DESC
+enabled: false
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1547.006
+severity: high
+risk_score: 70
+references:
+  - "https://attack.mitre.org/techniques/T1547/006/"
+  - "https://linux.die.net/man/8/insmod"
+nist: ["SI-4", "AU-12", "CM-6"]
+pci_dss: ["10.2"]
+gdpr: ["32.1.b"]
+mitre_attack:
+  TA0003:
+    T1547: ["T1547.006"]
+  TA0004:
+    T1547: ["T1547.006"]
